@@ -679,7 +679,7 @@ An example `.agentrc` file at the project root:
 
 The instructions string shapes everything. Here is a production-grade prompt for a coding agent, with explanations of each section:
 
-```python
+````python
 # agent_harness/instructions.py
 """
 Build the system instructions string at startup.
@@ -771,7 +771,7 @@ commands, search codebases, and delegate work to sub-agents.
 ```
 {memory}
 """
-```
+````
 
 The memory file (Phase 6's `CLAUDE.md` or `AGENTS.md`) is injected here so the model always has project-specific context without consuming it as a conversation turn.
 
