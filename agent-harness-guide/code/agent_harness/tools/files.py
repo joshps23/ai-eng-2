@@ -52,7 +52,10 @@ def read_file(path: str) -> str:
 
     path: Relative or absolute path to the file to read.
     """
-    resolved = _safe_path(path)
+    try:
+        resolved = _safe_path(path)
+    except PermissionError as exc:
+        return f"Error: {exc}"
     try:
         content = resolved.read_text(encoding="utf-8", errors="replace")
     except FileNotFoundError:
