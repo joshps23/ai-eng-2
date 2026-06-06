@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "agent-harness"
+version = "0.1.0"
+description = "A reference LLM agent harness built on the OpenAI Responses API"
+requires-python = ">=3.10"
+dependencies = [
+    "openai>=1.0.0",
+]
+
+[project.optional-dependencies]
+tiktoken = ["tiktoken"]
+dev = ["pytest"]
+
+[project.scripts]
+agent-harness = "agent_harness.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["agent_harness*"]
