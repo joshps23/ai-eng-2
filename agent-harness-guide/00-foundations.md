@@ -269,13 +269,15 @@ Phase 3.
 For a live UI you stream events instead of waiting for the whole response:
 
 ```python
-with client.responses.stream(model=MODEL, input=input_items, tools=tools) as stream:
+final = None
+with client.responses.create(model=MODEL, input=input_items, tools=tools, stream=True) as stream:
     for event in stream:
         if event.type == "response.output_text.delta":
             print(event.delta, end="", flush=True)
         elif event.type == "response.function_call_arguments.delta":
             ...  # tool arguments streaming in token by token
-    final = stream.get_final_response()   # same shape as a non-streamed response
+        elif event.type == "response.completed":
+            final = event.response   # same shape as a non-streamed response
 ```
 
 Key event types you'll use: `response.output_text.delta`,

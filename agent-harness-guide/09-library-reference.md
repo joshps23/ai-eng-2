@@ -222,21 +222,36 @@ def create_with_retry(client, **kwargs):
             delay = min(delay * 2, 60)   # exponential back-off, capped
 ```
 
-### 1.7 Streaming — `client.responses.stream(...)`
+### 1.7 Streaming — `client.responses.create(..., stream=True)`
 
-For live, token-by-token output, use `stream()` as a **context manager**. It takes the
-same parameters as `create()` and yields typed events.
+For live, token-by-token output, pass `stream=True` to `create()`. This is the **core
+Responses API streaming primitive** — it takes exactly the same parameters as a normal
+`create()` call, but instead of returning a `Response` it returns a `Stream` object
+that is both **iterable** (yielding typed events) and a **context manager** (use it
+with `with` so the connection is closed for you).
+
+> **Note.** The SDK also ships a higher-level helper, `client.responses.stream()`,
+> that aggregates events and offers `get_final_response()`. We deliberately use the
+> lower-level `create(stream=True)` here: it's the primitive documented in the API
+> reference, it's the one you'd hit from any language/HTTP client, and assembling the
+> final response yourself is exactly the "under the hood" skill this guide teaches.
+
+There is **no** `get_final_response()` on this stream. The fully-assembled `Response`
+arrives inside the **`response.completed`** event, on its `.response` attribute:
 
 ```python
-with client.responses.stream(
+final = None
+with client.responses.create(
     model="gpt-4o",
     instructions="You are concise.",
     input=[{"role": "user", "content": "Count to three."}],
+    stream=True,                               # -> returns a Stream of events
 ) as stream:
     for event in stream:
         if event.type == "response.output_text.delta":
             print(event.delta, end="", flush=True)   # a text chunk
-    final = stream.get_final_response()   # the same Response object as create()
+        elif event.type == "response.completed":
+            final = event.response                    # the full Response object
 print()
 print(final.usage.total_tokens)
 ```
@@ -247,13 +262,13 @@ Event types you'll care about:
 |--------------|---------------|---------|
 | `response.output_text.delta` | `event.delta` (str) | A chunk of assistant text. |
 | `response.function_call_arguments.delta` | `event.delta` (str) | A chunk of a tool call's JSON arguments. |
-| `response.output_item.done` | `event.item` | An output item finished. |
-| `response.completed` | – | The whole response is done. |
+| `response.output_item.added` / `.done` | `event.item` | An output item started / finished. |
+| `response.completed` | `event.response` (`Response`) | The whole response is done; grab the final object here. |
 | `response.error` | `event.error` | Something went wrong. |
 
-`stream.get_final_response()` **returns** the assembled `Response` (same shape as
-§1.3), so after streaming for display you still get `output`, `output_text`, and
-`usage` for your bookkeeping.
+Because the `response.completed` event carries the **same `Response` shape** as a
+non-streamed call (§1.3), after streaming for display you still get `output`,
+`output_text`, and `usage` for your bookkeeping.
 
 ---
 

@@ -283,8 +283,9 @@ The stream emits these event types (in rough order of appearance):
 | `response.completed` | — | All output items are done |
 | `response.error` | `.error` | An error occurred mid-stream |
 
-After the loop exits, call `stream.get_final_response()` to get the same structured object
-as a non-streamed call (with `.output`, `.usage`, etc.).
+To obtain the fully-assembled final response (with `.output`, `.usage`, etc. — the same
+structured object as a non-streamed call), capture it from the `response.completed` event:
+that event's `.response` attribute holds the complete `Response`.
 
 ### 3.3 `stream_turn()` — Full Implementation
 
@@ -315,12 +316,16 @@ def stream_turn(
 
     print("\nAssistant: ", end="", flush=True)
 
-    with client.responses.stream(
+    # stream=True makes create() return an iterator of events instead of a Response.
+    # The Stream is also a context manager, so the HTTP connection is closed on exit.
+    with client.responses.create(
         model=MODEL,
         instructions=instructions,
         input=conversation.to_input(),
         tools=tools,
+        stream=True,
     ) as stream:
+        final = None
         try:
             for event in stream:
                 etype = event.type
@@ -354,6 +359,10 @@ def stream_turn(
                 elif etype == "response.output_text.done":
                     pass  # text already printed via deltas
 
+                # --- Final assembled Response ---
+                elif etype == "response.completed":
+                    final = event.response  # the fully-assembled Response
+
                 # --- Error ---
                 elif etype == "response.error":
                     print(f"\n[stream error: {event.error}]", file=sys.stderr)
@@ -365,15 +374,16 @@ def stream_turn(
             raise
 
     print()  # newline after streaming ends
-    final = stream.get_final_response()
     return final
 ```
 
 **Key implementation notes:**
 
-- `stream.get_final_response()` must be called **after** the `with` block's loop has
-  exhausted — calling it earlier returns an incomplete response.  It returns the same object
-  shape as `client.responses.create()`.
+- The fully-assembled final `Response` arrives in the `response.completed` event's
+  `.response` field.  Capture it during the loop (`final = event.response`); it has the same
+  object shape as a non-streamed `client.responses.create()` (`.output`, `.output_text`,
+  `.usage`, `.id`, `.status`).  Initialize `final = None` before the loop so a stream that
+  ends early (e.g. via `response.error`) still returns a defined value.
 - `KeyboardInterrupt` propagates after the context manager closes the connection, so no
   resource leak occurs.
 - The dim ANSI escape `\033[2m` is purely cosmetic; remove it for plain terminals.
@@ -386,12 +396,14 @@ If you want zero escape codes:
 def stream_turn_plain(conversation, tools, instructions):
     print("\nAssistant: ", end="", flush=True)
 
-    with client.responses.stream(
+    with client.responses.create(
         model=MODEL,
         instructions=instructions,
         input=conversation.to_input(),
         tools=tools,
+        stream=True,
     ) as stream:
+        final = None
         for event in stream:
             if event.type == "response.output_text.delta":
                 print(event.delta, end="", flush=True)
@@ -403,9 +415,11 @@ def stream_turn_plain(conversation, tools, instructions):
                 print(event.delta, end="", flush=True)
             elif event.type == "response.function_call_arguments.done":
                 print()
+            elif event.type == "response.completed":
+                final = event.response
 
     print()
-    return stream.get_final_response()
+    return final
 ```
 
 ---
@@ -679,12 +693,14 @@ class Conversation:
 def stream_turn(conversation: Conversation, tools: list[dict], instructions: str) -> Any:
     print("\nAssistant: ", end="", flush=True)
 
-    with client.responses.stream(
+    with client.responses.create(
         model=MODEL,
         instructions=instructions,
         input=conversation.to_input(),
         tools=tools,
+        stream=True,
     ) as stream:
+        final = None
         try:
             for event in stream:
                 etype = event.type
@@ -703,6 +719,9 @@ def stream_turn(conversation: Conversation, tools: list[dict], instructions: str
                 elif etype == "response.function_call_arguments.done":
                     print("\033[2m)\033[0m", flush=True)
 
+                elif etype == "response.completed":
+                    final = event.response
+
                 elif etype == "response.error":
                     print(f"\n[stream error: {event.error}]", file=sys.stderr)
                     break
@@ -712,7 +731,7 @@ def stream_turn(conversation: Conversation, tools: list[dict], instructions: str
             raise
 
     print()
-    return stream.get_final_response()
+    return final
 
 
 # ── Agent loop ────────────────────────────────────────────────────────
@@ -829,12 +848,13 @@ which is appended as item 7.  The loop then terminates because `function_calls` 
 
 ## 6. Pitfalls
 
-> **Pitfall 1 — Forgetting `get_final_response()` and losing structured items**
+> **Pitfall 1 — Dropping the `response.completed` event and losing structured items**
 >
-> If you break out of the stream loop early, or forget to call
-> `stream.get_final_response()`, you have only the raw event deltas — no `.output` list,
-> no `.usage`.  Always call `get_final_response()` after the `with` block completes.  The
-> call is cheap (it does not make a network request; the data is buffered internally).
+> If you break out of the stream loop early, or never handle the `response.completed`
+> event, you have only the raw event deltas — no `.output` list, no `.usage`.  Always add
+> an `elif event.type == "response.completed": final = event.response` branch and capture
+> the fully-assembled `Response` from its `.response` field.  No extra network request is
+> made; the final object is delivered as the last event of the stream.
 
 > **Pitfall 2 — Mixing streamed text handling with tool-call ordering**
 >
@@ -883,7 +903,7 @@ which is appended as item 7.  The loop then terminates because `function_calls` 
 | `Conversation` class | Single source of truth; handles add/extend/tool-result/save/load |
 | Reasoning items | Append them like any other output; use `encrypted_content` with `store=False` |
 | `instructions` | Top-level parameter, not in `input_items`; pass on every call |
-| Streaming | Use `client.responses.stream()`; drive UI from events; call `get_final_response()` after |
+| Streaming | Call `client.responses.create(..., stream=True)`; drive UI from events; grab the final `Response` from the `response.completed` event's `.response` field |
 | Append order | `conv.extend(resp.output)` before `conv.add_tool_result(...)` — always |
 | Cancellation | `KeyboardInterrupt` inside `with stream:` is safe; context manager cleans up |
 
