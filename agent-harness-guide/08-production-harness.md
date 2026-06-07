@@ -1223,16 +1223,20 @@ class Agent:
             elapsed = time.monotonic() - t0
 
             # ── Step 4: Record usage ──────────────────────────────────
+            # usage can be None on some streaming paths — guard it.
+            usage = getattr(resp, "usage", None)
+            in_tok = getattr(usage, "input_tokens", 0) if usage else 0
+            out_tok = getattr(usage, "output_tokens", 0) if usage else 0
             self.accounting.record_turn(
-                input_tokens=resp.usage.input_tokens,
-                output_tokens=resp.usage.output_tokens,
+                input_tokens=in_tok,
+                output_tokens=out_tok,
             )
             self.tracer.turn_end(
                 self.turn_count,
-                resp.usage.input_tokens,
-                resp.usage.output_tokens,
+                in_tok,
+                out_tok,
                 elapsed,
-                stop_reason=str(getattr(resp, "stop_reason", "unknown")),
+                stop_reason=str(getattr(resp, "status", "unknown")),
             )
 
             # ── Step 5: Carry output items into transcript ────────────
@@ -1427,7 +1431,7 @@ trace.jsonl              # auto-saved event log (gitignore this)
 ```toml
 [build-system]
 requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.backends.legacy:build"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "agent-harness"
@@ -1436,12 +1440,13 @@ description = "A production-grade LLM agent harness in pure Python"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "openai>=1.40.0",
+    # The Responses API (client.responses.create) was added in openai 1.66.0.
+    "openai>=1.66.0",
 ]
 
 [project.optional-dependencies]
 tiktoken = ["tiktoken>=0.7"]  # accurate token counting
-dev = ["pytest>=8", "pytest-asyncio"]
+dev = ["pytest>=8"]
 
 [project.scripts]
 agent = "agent_harness.cli:main"

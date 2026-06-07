@@ -1,6 +1,6 @@
 [build-system]
 requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.backends.legacy:build"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "agent-harness"
@@ -8,7 +8,8 @@ version = "0.1.0"
 description = "A reference LLM agent harness built on the OpenAI Responses API"
 requires-python = ">=3.10"
 dependencies = [
-    "openai>=1.0.0",
+    # The Responses API (client.responses.create) was added in openai 1.66.0.
+    "openai>=1.66.0",
 ]
 
 [project.optional-dependencies]

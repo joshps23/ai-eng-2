@@ -512,7 +512,7 @@ def make_audit_logger(log_path: str | pathlib.Path) -> PostHook:
 
     def _hook(ctx: PostToolContext) -> str | None:
         record = {
-            "ts":        datetime.datetime.utcnow().isoformat() + "Z",
+            "ts":        datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "tool":      ctx.tool_name,
             "risk":      ctx.tool_risk,
             "args":      ctx.args,
@@ -1105,7 +1105,7 @@ def make_audit_logger(log_path: str | pathlib.Path) -> PostHook:
 
     def _hook(ctx: PostToolContext) -> str | None:
         record = {
-            "ts":             datetime.datetime.utcnow().isoformat() + "Z",
+            "ts":             datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "tool":           ctx.tool_name,
             "risk":           ctx.tool_risk,
             "args":           ctx.args,
@@ -1254,9 +1254,11 @@ def run_agent(
     if hooks is None:
         hooks = default_hooks(audit_log=audit_log)
 
+    # The system prompt goes in `instructions=` (the channel Phase 3 established),
+    # NOT as a role:"system" item in `input`. Keep `input` for the running
+    # user/assistant/tool transcript.
     input_items: list[dict[str, Any]] = [
-        {"role": "system",    "content": system_prompt},
-        {"role": "user",      "content": user_message},
+        {"role": "user", "content": user_message},
     ]
 
     iteration = 0
@@ -1265,6 +1267,7 @@ def run_agent(
 
         response = client.responses.create(
             model=model,
+            instructions=system_prompt,
             input=input_items,
             tools=registry.api_schemas(),
         )

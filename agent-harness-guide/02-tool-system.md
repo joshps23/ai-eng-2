@@ -2,17 +2,17 @@
 
 ## Where We Left Off
 
-Phase 1 gave us a working agent loop in roughly 80 lines. The dispatch logic looked something like this:
+Phase 1 gave us a working agent loop in roughly 80 lines. The dispatch logic was a hand-written router with one branch per tool:
 
 ```python
 def dispatch(name: str, arguments: str) -> str:
     args = json.loads(arguments)
-    if name == "add":
-        return str(args["a"] + args["b"])
-    raise ValueError(f"Unknown tool: {name}")
+    if name == "get_current_time":
+        return get_current_time(**args)
+    return f"ERROR: unknown tool '{name}'"   # returns a string, never raises
 ```
 
-That works for a demo. It does not work for anything else. Every new tool requires editing the dispatch function, the tool list passed to the API, and potentially the argument parsing. There is no schema generation, no validation, no structure, and no way to run multiple tools concurrently. This phase replaces the entire approach.
+That works for a demo. It does not scale. Every new tool requires editing the dispatch function, the hand-written schema, and the tool list passed to the API. There is no schema generation, no validation, no structure, and no way to run multiple tools concurrently. This phase replaces the entire approach.
 
 By the end of this phase you will have:
 
@@ -337,7 +337,7 @@ class ToolRegistry:
     # Schema export                                                        #
     # ------------------------------------------------------------------ #
 
-    def to_openai_schema(self, strict: bool = True) -> list[dict]:
+    def to_openai_schema(self, strict: bool = False) -> list[dict]:
         """
         Return the tools list suitable for the `tools=` parameter of
         client.responses.create().
@@ -348,20 +348,17 @@ class ToolRegistry:
                 "name": ...,
                 "description": ...,
                 "parameters": <JSON Schema>,
-                "strict": True,
             }
 
-        When strict=True (recommended for production), the API enforces
-        that all required properties are present and no extra keys are sent.
-        This requires that every schema has `additionalProperties: false`
-        and every property is listed in `required` (for optional params,
-        you must use `anyOf: [<type>, {"type": "null"}]` with a null default).
-        The schemas produced by @tool already satisfy this with one caveat:
-        optional parameters are NOT in `required`, so strict mode will reject
-        them if the model omits them. For strict=True with optional params,
-        promote them to required and include null in their type. For
-        simplicity, the examples here use strict=False so optional params
-        work without modification.
+        We default to strict=False. Strict mode (strict=True) makes the API
+        enforce that the model's arguments validate against the schema, but it
+        requires every property to be listed in `required` AND
+        `additionalProperties: false`. That is incompatible with ordinary
+        optional parameters (to make a param optional under strict mode you'd
+        promote it to required with a nullable type:
+        `"type": ["<type>", "null"]`). Since @tool leaves optional parameters
+        out of `required`, we keep strict off so they work without
+        modification.
         """
         result = []
         for t in self._tools.values():
@@ -1113,7 +1110,8 @@ def get_time(timezone: str) -> str:
     Args:
         timezone: The desired timezone label (informational only).
     """
-    now = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+    # utcnow() is deprecated in Python 3.12+; use a timezone-aware "now".
+    now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     return json.dumps({"timezone": timezone, "time": now})
 
 

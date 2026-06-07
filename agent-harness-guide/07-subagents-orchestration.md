@@ -824,8 +824,8 @@ The three workers ran concurrently (6.2 s wall time vs. ~18 s serial) and the or
 Add a thin wrapper around `dispatch_subagent` for debugging:
 
 ```python
-def timed_dispatch(role: str, description: str, task: str, **kwargs) -> tuple[str, float, str]:
-    """Returns (call_id, elapsed_seconds, result)."""
+def timed_dispatch(role: str, description: str, task: str, **kwargs) -> tuple[float, str]:
+    """Run a sub-agent and time it. Returns (elapsed_seconds, result)."""
     t0 = time.perf_counter()
     result = dispatch_subagent(role=role, task=task, **kwargs)
     elapsed = time.perf_counter() - t0
@@ -927,9 +927,9 @@ Then accumulate in the orchestrator:
 
 ```python
 total_usage = UsageSummary()
-total_usage.add_from(orchestrator.usage)
+total_usage.add(orchestrator.usage)
 for result in subagent_results:
-    total_usage.add_from(result.usage)
+    total_usage.add(result.usage)
 ```
 
 For production systems, log per-agent token consumption so you can identify which roles are most expensive.

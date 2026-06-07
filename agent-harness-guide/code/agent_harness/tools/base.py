@@ -84,15 +84,24 @@ class Tool:
     parameters: dict  # JSON Schema dict
     run: Callable[..., str]
     risk: str = "low"  # low / medium / high
+    # Strict mode makes the API guarantee the arguments match the schema, but it
+    # requires EVERY property to be listed in "required" and
+    # "additionalProperties": False. Our auto-generated schemas leave optional
+    # parameters out of "required" (so the model can omit them), which is
+    # incompatible with strict mode. Default to non-strict so tools with
+    # optional params (e.g. bash's timeout, grep's recursive) are accepted.
+    strict: bool = False
 
     def to_openai_schema(self) -> dict:
-        return {
+        schema: dict[str, Any] = {
             "type": "function",
             "name": self.name,
             "description": self.description,
             "parameters": self.parameters,
-            "strict": True,
         }
+        if self.strict:
+            schema["strict"] = True
+        return schema
 
 
 def tool(

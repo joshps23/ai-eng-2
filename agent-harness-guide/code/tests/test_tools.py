@@ -99,6 +99,18 @@ class TestToolSchemaGeneration:
         assert schema["type"] == "function"
         assert schema["name"] == "my_func"
         assert "parameters" in schema
+        # Tools are non-strict by default (so optional params are allowed).
+        assert "strict" not in schema
+
+    def test_strict_opt_in(self):
+        @tool
+        def my_func(x: str) -> str:
+            """Test."""
+            return x
+
+        # Opting into strict mode emits the flag for the API.
+        my_func.strict = True
+        schema = my_func.to_openai_schema()
         assert schema.get("strict") is True
 
     def test_no_params(self):
