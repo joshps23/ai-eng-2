@@ -34,7 +34,7 @@ The OpenAI client raises typed exceptions. Map them to a retry policy once, here
 ```python
 # agent_harness/llm.py
 """
-Thin resilient wrapper around client.responses.create / .stream.
+Thin resilient wrapper around client.responses.create (including stream=True).
 
 Retryable:
   - RateLimitError (429)           — honour Retry-After header when present
@@ -173,6 +173,14 @@ def stream(
 ) -> Generator[Any, None, None]:
     """
     Context manager: yields a streaming response with the same retry policy.
+
+    We stay on the low-level primitive: this is just
+    ``client.responses.create(stream=True, **kwargs)``, which returns an
+    iterator of typed events (and is itself a context manager, so the HTTP
+    connection closes cleanly). We deliberately do NOT use the higher-level
+    ``client.responses.stream()`` helper — driving the event loop and
+    assembling the final response is the whole point of the harness.
+
     Because streaming errors often surface only after the first chunk,
     we retry at the connection / open stage. Mid-stream errors propagate as-is.
     """
@@ -180,7 +188,7 @@ def stream(
 
     for attempt in range(max_attempts):
         try:
-            with client.responses.stream(**kwargs) as s:
+            with client.responses.create(stream=True, **kwargs) as s:
                 yield s
             return  # clean exit from context manager
 
@@ -206,7 +214,7 @@ def stream(
     ) from last_exc
 ```
 
-Call sites replace bare `client.responses.create(...)` with `llm.create(client, ...)` and `client.responses.stream(...)` with `llm.stream(client, ...)`.
+Call sites replace bare `client.responses.create(...)` with `llm.create(client, ...)` and the streaming form `client.responses.create(..., stream=True)` with `llm.stream(client, ...)`.
 
 ### 2.2 Timeouts and KeyboardInterrupt Handling
 
@@ -1350,6 +1358,7 @@ class Agent:
 
     def _stream_turn(self, tool_schemas: list[dict]) -> Any:
         """Stream the turn, printing text chunks, then return the final response."""
+        final = None
         with llm.stream(
             self.client,
             model=self.model,
@@ -1358,12 +1367,14 @@ class Agent:
             tools=tool_schemas,
         ) as stream_ctx:
             for event in stream_ctx:
-                # The streaming event object varies; adapt to your SDK version.
-                chunk_text = getattr(event, "text", None)
-                if chunk_text:
-                    print(chunk_text, end="", flush=True)
+                if event.type == "response.output_text.delta":
+                    print(event.delta, end="", flush=True)
+                elif event.type == "response.completed":
+                    # The raw stream has no get_final_response(); the assembled
+                    # Response arrives here, on event.response.
+                    final = event.response
             print()  # newline after streamed output
-            return stream_ctx.get_final_response()
+        return final
 
     # ------------------------------------------------------------------
     # Tool execution (never raises)

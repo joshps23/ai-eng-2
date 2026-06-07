@@ -222,21 +222,26 @@ def create_with_retry(client, **kwargs):
             delay = min(delay * 2, 60)   # exponential back-off, capped
 ```
 
-### 1.7 Streaming — `client.responses.stream(...)`
+### 1.7 Streaming — `client.responses.create(..., stream=True)`
 
-For live, token-by-token output, use `stream()` as a **context manager**. It takes the
-same parameters as `create()` and yields typed events.
+For live, token-by-token output, pass `stream=True` to the **same** `create()` call. It
+takes the same parameters as a non-streamed call but returns an iterator of typed events
+instead of a single `Response`. The returned object is itself a context manager, so the
+HTTP connection closes cleanly on exit.
 
 ```python
-with client.responses.stream(
+final = None
+with client.responses.create(
     model="gpt-4o",
     instructions="You are concise.",
     input=[{"role": "user", "content": "Count to three."}],
+    stream=True,
 ) as stream:
     for event in stream:
         if event.type == "response.output_text.delta":
             print(event.delta, end="", flush=True)   # a text chunk
-    final = stream.get_final_response()   # the same Response object as create()
+        elif event.type == "response.completed":
+            final = event.response   # the same Response object as a non-streamed create()
 print()
 print(final.usage.total_tokens)
 ```
@@ -248,12 +253,20 @@ Event types you'll care about:
 | `response.output_text.delta` | `event.delta` (str) | A chunk of assistant text. |
 | `response.function_call_arguments.delta` | `event.delta` (str) | A chunk of a tool call's JSON arguments. |
 | `response.output_item.done` | `event.item` | An output item finished. |
-| `response.completed` | – | The whole response is done. |
+| `response.completed` | `event.response` | The whole response is done; carries the final `Response`. |
 | `response.error` | `event.error` | Something went wrong. |
 
-`stream.get_final_response()` **returns** the assembled `Response` (same shape as
-§1.3), so after streaming for display you still get `output`, `output_text`, and
-`usage` for your bookkeeping.
+There is no `get_final_response()` when you stream this way: you reconstruct the assembled
+`Response` (same shape as §1.3) yourself by capturing `event.response` on the
+`response.completed` event, so after streaming for display you still get `output`,
+`output_text`, and `usage` for your bookkeeping.
+
+> **Why not `client.responses.stream()`?** The SDK also ships a higher-level
+> `client.responses.stream()` context-manager helper that auto-accumulates state and
+> exposes `get_final_response()`. We deliberately avoid it throughout this guide: the
+> whole point is to drive the event loop and assemble the final response ourselves, so you
+> can see exactly what that helper does under the hood. Everything here uses the low-level
+> `create(stream=True)` primitive.
 
 ---
 
