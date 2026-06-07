@@ -249,7 +249,7 @@ Event types you'll care about:
 | `response.function_call_arguments.delta` | `event.delta` (str) | A chunk of a tool call's JSON arguments. |
 | `response.output_item.done` | `event.item` | An output item finished. |
 | `response.completed` | – | The whole response is done. |
-| `response.error` | `event.error` | Something went wrong. |
+| `error` | `event.error` | Something went wrong. |
 
 `stream.get_final_response()` **returns** the assembled `Response` (same shape as
 §1.3), so after streaming for display you still get `output`, `output_text`, and

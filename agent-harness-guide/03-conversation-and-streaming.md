@@ -281,7 +281,7 @@ The stream emits these event types (in rough order of appearance):
 | `response.function_call_arguments.done` | — | Tool call arguments are complete |
 | `response.output_item.done` | `.item` (the fully-formed item) | An output item is complete |
 | `response.completed` | — | All output items are done |
-| `response.error` | `.error` | An error occurred mid-stream |
+| `error` | `.error` | An error occurred mid-stream |
 
 After the loop exits, call `stream.get_final_response()` to get the same structured object
 as a non-streamed call (with `.output`, `.usage`, etc.).
@@ -355,7 +355,7 @@ def stream_turn(
                     pass  # text already printed via deltas
 
                 # --- Error ---
-                elif etype == "response.error":
+                elif etype == "error":
                     print(f"\n[stream error: {event.error}]", file=sys.stderr)
                     break
 
@@ -703,7 +703,7 @@ def stream_turn(conversation: Conversation, tools: list[dict], instructions: str
                 elif etype == "response.function_call_arguments.done":
                     print("\033[2m)\033[0m", flush=True)
 
-                elif etype == "response.error":
+                elif etype == "error":
                     print(f"\n[stream error: {event.error}]", file=sys.stderr)
                     break
 
@@ -865,11 +865,11 @@ which is appended as item 7.  The loop then terminates because `function_calls` 
 > normalizes to dicts immediately, so this is only a risk if you bypass `extend()` and
 > push SDK objects directly into `_items`.
 
-> **Pitfall 6 — Ignoring `response.error` events**
+> **Pitfall 6 — Ignoring `error` events**
 >
-> If the server encounters an error mid-stream it emits a `response.error` event and
+> If the server encounters an error mid-stream it emits an `error` event and
 > closes the stream.  If your loop only handles text and function-call events, the error
-> is silently swallowed.  Always handle `response.error` — at minimum print it to stderr
+> is silently swallowed.  Always handle the `error` event — at minimum print it to stderr
 > and break, or raise an exception.
 
 ---

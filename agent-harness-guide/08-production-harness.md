@@ -1358,10 +1358,10 @@ class Agent:
             tools=tool_schemas,
         ) as stream_ctx:
             for event in stream_ctx:
-                # The streaming event object varies; adapt to your SDK version.
-                chunk_text = getattr(event, "text", None)
-                if chunk_text:
-                    print(chunk_text, end="", flush=True)
+                # Text deltas arrive as `response.output_text.delta` events,
+                # with the chunk in `event.delta`.
+                if event.type == "response.output_text.delta":
+                    print(event.delta, end="", flush=True)
             print()  # newline after streamed output
             return stream_ctx.get_final_response()
 
