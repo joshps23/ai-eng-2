@@ -266,21 +266,28 @@ Phase 3.
 
 ### 0.3.8 Streaming (preview — full treatment in Phase 3)
 
-For a live UI you stream events instead of waiting for the whole response:
+For a live UI you stream events instead of waiting for the whole response. Pass
+`stream=True` to the **same** `responses.create()` call — it then returns an iterator of
+typed events instead of a single response:
 
 ```python
-with client.responses.stream(model=MODEL, input=input_items, tools=tools) as stream:
+final = None
+with client.responses.create(model=MODEL, input=input_items, tools=tools, stream=True) as stream:
     for event in stream:
         if event.type == "response.output_text.delta":
             print(event.delta, end="", flush=True)
         elif event.type == "response.function_call_arguments.delta":
             ...  # tool arguments streaming in token by token
-    final = stream.get_final_response()   # same shape as a non-streamed response
+        elif event.type == "response.completed":
+            final = event.response   # same shape as a non-streamed response
 ```
 
-Key event types you'll use: `response.output_text.delta`,
-`response.function_call_arguments.delta`, `response.output_item.added`,
-`response.completed`. Phase 3 builds a full streaming renderer.
+There is no separate `get_final_response()` call: you assemble the final response yourself
+by capturing `event.response` on the `response.completed` event. (The SDK does ship a
+higher-level `client.responses.stream()` helper that does this for you, but we avoid it on
+purpose — the harness drives the event loop itself.) Key event types you'll use:
+`response.output_text.delta`, `response.function_call_arguments.delta`,
+`response.output_item.added`, `response.completed`. Phase 3 builds a full streaming renderer.
 
 ### 0.3.9 Usage & cost
 
