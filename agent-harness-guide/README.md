@@ -35,10 +35,32 @@ Claude-Code-shaped harness.
 | **6** | [`06-context-management.md`](./06-context-management.md) | Long-session survival | Token budgeting, pruning, compaction |
 | **7** | [`07-subagents-orchestration.md`](./07-subagents-orchestration.md) | Multi-agent orchestration | Spawning **parallel** sub-agents dynamically |
 | **8** | [`08-production-harness.md`](./08-production-harness.md) | The full assembled harness | Retries, observability, persistence, the CLI |
+| **A** | [`09-library-reference.md`](./09-library-reference.md) | Reference appendix | Every external library (`openai`, `tiktoken`) + key stdlib, with methods, parameters, return types, and examples |
 
 > **Start with [Phase 0](./00-foundations.md).** It establishes the API contract and
 > conventions (naming, data shapes, project layout) that every later phase depends on.
 > If a later code sample looks unfamiliar, Phase 0 is your reference.
+
+## The canonical, runnable code
+
+Each phase's markdown shows code **as it grows** — a Phase 3 snippet is deliberately
+simpler than its Phase 8 descendant, and a few designs (the tool registry, the
+conversation object) are intentionally refactored as the guide introduces new needs.
+That's the teaching arc, not the finished product.
+
+The **single, consistent, end-to-end implementation** lives in
+[`code/agent_harness/`](./code/). It is the source of truth: one tool registry, one
+`Conversation`, one permission system, wired together and **covered by a passing test
+suite** that runs entirely offline (a `FakeClient` stands in for the API):
+
+```bash
+cd code
+pip install -e ".[dev]"
+pytest -q          # all tests pass, no API key or network needed
+```
+
+If a per-phase snippet and the package ever seem to disagree, the package is correct —
+read the phase for the *idea*, read `code/agent_harness/` for the *implementation*.
 
 ## The one idea behind everything
 

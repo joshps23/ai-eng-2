@@ -433,7 +433,10 @@ def register(schema: dict):
     """Decorator: register a Python function as a tool."""
     def decorator(fn: ToolFn):
         _registry[schema["name"]] = fn
-        _schemas.append({"type": "function", "function": schema})
+        # Responses API wants the function fields FLAT (name/description/
+        # parameters at the top level), NOT nested under a "function" key the
+        # way the older Chat Completions API did.
+        _schemas.append({"type": "function", **schema})
         return fn
     return decorator
 
@@ -563,7 +566,10 @@ _schemas: list[dict] = []
 def register(schema: dict):
     def decorator(fn: ToolFn):
         _registry[schema["name"]] = fn
-        _schemas.append({"type": "function", "function": schema})
+        # Responses API wants the function fields FLAT (name/description/
+        # parameters at the top level), NOT nested under a "function" key the
+        # way the older Chat Completions API did.
+        _schemas.append({"type": "function", **schema})
         return fn
     return decorator
 

@@ -33,11 +33,12 @@ class FakeItem:
 
     def model_dump(self) -> dict:
         if self.type == "message":
+            # Mirror the real SDK: the dumped input item has no top-level
+            # "output_text" (that's a response-level accessor only).
             return {
                 "type": "message",
                 "role": "assistant",
                 "content": self.content,
-                "output_text": self.output_text,
                 "id": self.id,
             }
         elif self.type == "function_call":

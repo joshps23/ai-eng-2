@@ -65,12 +65,18 @@ def default_policy() -> PermissionPolicy:
     return PermissionPolicy(rules=rules)
 
 
-def _arg_summary(args: dict) -> str:
-    """Produce a short string representation of args for pattern matching."""
+def _arg_summary(args: dict, truncate: bool = True) -> str:
+    """Produce a string representation of args.
+
+    truncate=True shortens long values for a readable human prompt.
+    truncate=False keeps the full text — REQUIRED for hard-deny matching, so a
+    long command can't push a dangerous substring (e.g. "rm -rf") past the cap
+    and silently bypass the deny rules.
+    """
     parts = []
     for v in args.values():
         s = str(v)
-        if len(s) > 60:
+        if truncate and len(s) > 60:
             s = s[:60] + "..."
         parts.append(s)
     return " ".join(parts)
@@ -89,14 +95,16 @@ def check_permission(
     On ASK: calls asker(prompt)->bool; if asker is None defaults to False.
     """
     mode = PermissionMode(mode) if isinstance(mode, str) else mode
-    summary = _arg_summary(args)
+    summary = _arg_summary(args)                       # for display
+    full_summary = _arg_summary(args, truncate=False)  # for matching
 
     # Bypass mode skips everything
     if mode == PermissionMode.BYPASS:
         return True
 
-    # Always check hard denies first (even in always_allow mode)
-    decision = policy.evaluate(tool_name, summary)
+    # Always check hard denies first (even in always_allow mode).
+    # Match against the FULL (untruncated) args so denies can't be evaded.
+    decision = policy.evaluate(tool_name, full_summary)
     if decision == Decision.DENY:
         return False
 

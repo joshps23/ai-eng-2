@@ -32,7 +32,9 @@ def _safe_path(rel_or_abs: str) -> Path:
         p = _WORKSPACE_ROOT / p
     p = p.resolve()
     workspace = _WORKSPACE_ROOT.resolve()
-    if not str(p).startswith(str(workspace)):
+    # Use is_relative_to, NOT str.startswith: a plain prefix check would let a
+    # sibling dir like "/ws-evil" slip through for workspace "/ws".
+    if p != workspace and not p.is_relative_to(workspace):
         raise PermissionError(
             f"Path '{p}' is outside workspace root '{workspace}'"
         )
@@ -118,7 +120,7 @@ def glob_files(pattern: str) -> str:
     for m in sorted(matches):
         try:
             p = Path(m).resolve()
-            if str(p).startswith(str(workspace)):
+            if p == workspace or p.is_relative_to(workspace):
                 safe.append(str(p.relative_to(workspace)))
         except ValueError:
             pass

@@ -24,11 +24,13 @@ def to_input_dict(item: Any) -> dict:
     # Fallback: manually read attributes
     item_type = getattr(item, "type", "unknown")
     if item_type == "message":
+        # Note: we deliberately do NOT include a top-level "output_text" — that
+        # is a convenience accessor on the *response*, not a valid field on an
+        # input message item. The text lives inside content parts.
         return {
             "type": "message",
             "role": getattr(item, "role", "assistant"),
             "content": getattr(item, "content", []),
-            "output_text": getattr(item, "output_text", ""),
             "id": getattr(item, "id", ""),
         }
     elif item_type == "function_call":

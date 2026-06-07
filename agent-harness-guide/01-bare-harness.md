@@ -78,7 +78,6 @@ GET_CURRENT_TIME_SCHEMA = {
         },
         "required": [],
     },
-    "strict": True,
 }
 
 
@@ -95,8 +94,13 @@ def get_current_time(timezone: str = "") -> str:
 Key points:
 
 - The schema is **flat** — `type`, `name`, `description`, `parameters` are all top-level keys. There is no nested `"function"` wrapper.
-- `"strict": True` tells the API to enforce the schema against the model's output.
 - `required` is an empty list because `timezone` is optional; the model may omit it entirely.
+- We do **not** set `"strict": True` here. Strict mode makes the API guarantee
+  the arguments match the schema exactly, but it requires *every* property to be
+  listed in `required` (and `"additionalProperties": false`). That is
+  incompatible with an optional parameter like `timezone`. To use strict mode
+  you would have to make `timezone` required with a nullable type
+  (`"type": ["string", "null"]`). We keep it simple and non-strict for now.
 - `zoneinfo` is stdlib (Python 3.9+). No external dependencies.
 
 ---
@@ -280,7 +284,8 @@ GET_CURRENT_TIME_SCHEMA = {
         },
         "required": [],
     },
-    "strict": True,
+    # No "strict": True — see note above; strict mode requires every property
+    # to be in "required", which is incompatible with an optional timezone.
 }
 
 # ── Tool implementation ───────────────────────────────────────────────────────
@@ -421,10 +426,10 @@ This harness is intentionally thin. The table below maps every gap to the phase 
 | No argument schema validation | Bad model output passes silently to the function | Phase 2 |
 | No streaming | First token appears only after the full response | Phase 3 — Conversation & streaming |
 | Single-turn only (`run_agent` does not persist state) | Every call starts fresh; no multi-turn memory | Phase 3 |
-| No tool permissions / confirmation | Any tool runs unconditionally | Phase 4 — Permissions & human-in-the-loop |
-| No real-world tools | `get_current_time` is illustrative; real agents need web search, file I/O, etc. | Phase 4 |
-| Context limits not managed | Long conversations will eventually exceed the token window | Phase 5 — Context management |
-| No sub-agents or parallelism | One model call at a time; no fan-out | Phase 6 — Multi-agent orchestration |
+| No real-world tools | `get_current_time` is illustrative; real agents need file I/O, shell, search, etc. | Phase 4 — Real-world tools |
+| No tool permissions / confirmation | Any tool runs unconditionally | Phase 5 — Permissions & safety |
+| Context limits not managed | Long conversations will eventually exceed the token window | Phase 6 — Context management |
+| No sub-agents or parallelism | One model call at a time; no fan-out | Phase 7 — Sub-agents & orchestration |
 
 ---
 

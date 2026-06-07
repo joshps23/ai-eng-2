@@ -53,28 +53,47 @@ from typing import Any
 # Token counting — tiktoken if available, else heuristic (4 chars ≈ 1 token)
 # ---------------------------------------------------------------------------
 
+def _heuristic(text: str) -> int:
+    # Dependency-free fallback: empirically ~4 characters per token across
+    # English prose and code.  Overestimates slightly, which is the safe
+    # direction (we compact a little earlier than strictly necessary).
+    return max(1, len(text) // 4)
+
+
 try:
     import tiktoken
 
     def _get_encoding():
-        """Return an encoding appropriate for current-generation OpenAI models."""
+        """Return an encoding for current-generation OpenAI models, or None.
+
+        IMPORTANT: the FIRST time an encoding is used, tiktoken downloads the
+        vocabulary file over the network. encoding_for_model can raise KeyError
+        for an unknown model name, but the download can raise *other* errors
+        (e.g. requests.ConnectionError/HTTPError) when offline. We catch
+        broadly and return None so we fall back to the heuristic instead of
+        crashing the whole import.
+        """
         try:
-            return tiktoken.encoding_for_model("gpt-4o")
-        except KeyError:
-            return tiktoken.get_encoding("o200k_base")
+            try:
+                enc = tiktoken.encoding_for_model("gpt-4o")
+            except KeyError:
+                enc = tiktoken.get_encoding("o200k_base")
+            enc.encode("warmup")  # force the lazy download to happen here
+            return enc
+        except Exception:
+            return None
 
     _ENC = _get_encoding()
 
     def count_tokens(text: str) -> int:
-        """Return the exact BPE token count for *text*."""
+        """Return the BPE token count, or the heuristic if tiktoken is unusable."""
+        if _ENC is None:
+            return _heuristic(text)
         return len(_ENC.encode(text))
 
 except ImportError:
-    # Dependency-free fallback: empirically ~4 characters per token across
-    # English prose and code.  Overestimates slightly, which is the safe
-    # direction (we compact a little earlier than strictly necessary).
     def count_tokens(text: str) -> int:  # type: ignore[misc]
-        return max(1, len(text) // 4)
+        return _heuristic(text)
 ```
 
 ### 2.3 `count_items` — serialise the transcript
@@ -653,8 +672,8 @@ def update_memory(note: str) -> str:
     """
     MEMORY_FILE.parent.mkdir(parents=True, exist_ok=True)
     with MEMORY_FILE.open("a", encoding="utf-8") as f:
-        from datetime import datetime
-        f.write(f"\n## {datetime.utcnow().isoformat(timespec='seconds')}Z\n")
+        from datetime import datetime, timezone
+        f.write(f"\n## {datetime.now(timezone.utc).isoformat(timespec='seconds')}\n")
         f.write(note.strip() + "\n")
     return f"Memory updated. File is now {MEMORY_FILE.stat().st_size} bytes."
 ```
@@ -757,23 +776,33 @@ if TYPE_CHECKING:
 # Token counting
 # ---------------------------------------------------------------------------
 
+def _heuristic(text: str) -> int:
+    return max(1, len(text) // 4)
+
+
 try:
     import tiktoken
 
     def _get_encoding():
+        # See §2.2: catch broadly so an offline vocab download can't crash import.
         try:
-            return tiktoken.encoding_for_model("gpt-4o")
-        except KeyError:
-            return tiktoken.get_encoding("o200k_base")
+            try:
+                enc = tiktoken.encoding_for_model("gpt-4o")
+            except KeyError:
+                enc = tiktoken.get_encoding("o200k_base")
+            enc.encode("warmup")
+            return enc
+        except Exception:
+            return None
 
     _ENC = _get_encoding()
 
     def count_tokens(text: str) -> int:
-        return len(_ENC.encode(text))
+        return _heuristic(text) if _ENC is None else len(_ENC.encode(text))
 
 except ImportError:
     def count_tokens(text: str) -> int:  # type: ignore[misc]
-        return max(1, len(text) // 4)
+        return _heuristic(text)
 
 
 def _item_to_text(item: dict[str, Any]) -> str:

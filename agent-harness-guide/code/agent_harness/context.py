@@ -14,16 +14,48 @@ try:
 except ImportError:
     _TIKTOKEN_AVAILABLE = False
 
+# Cache encoders per model so we don't re-resolve (and re-download) on every call.
+_ENCODER_CACHE: dict[str, Any] = {}
+# Once tiktoken proves it can't load an encoding (e.g. offline, blocked network),
+# stop retrying the network on every call and use the heuristic instead.
+_TIKTOKEN_USABLE = _TIKTOKEN_AVAILABLE
 
-def count_tokens(text: str, model: str = "gpt-4o") -> int:
-    """Count tokens in text using tiktoken if available, else ~4 chars/token heuristic."""
-    if _TIKTOKEN_AVAILABLE:
+
+def _get_encoder(model: str) -> Any | None:
+    """Return a cached tiktoken encoder for ``model``, or None if unavailable.
+
+    tiktoken's ``encoding_for_model`` may raise ``KeyError`` for unknown models,
+    but it can also raise network errors the *first* time an encoding is used
+    because the vocabulary file is downloaded lazily. We catch broadly and fall
+    back to a heuristic so the harness keeps working offline.
+    """
+    global _TIKTOKEN_USABLE
+    if not _TIKTOKEN_USABLE:
+        return None
+    if model in _ENCODER_CACHE:
+        return _ENCODER_CACHE[model]
+    try:
         try:
             enc = _tiktoken.encoding_for_model(model)
         except KeyError:
             enc = _tiktoken.get_encoding("cl100k_base")
+        # Force the (possibly lazy) vocabulary download to happen now so any
+        # network failure is caught here, not deep inside a later .encode call.
+        enc.encode("warmup")
+    except Exception:
+        # Any failure (network, KeyError, etc.) -> disable tiktoken for good.
+        _TIKTOKEN_USABLE = False
+        return None
+    _ENCODER_CACHE[model] = enc
+    return enc
+
+
+def count_tokens(text: str, model: str = "gpt-4o") -> int:
+    """Count tokens in text using tiktoken if available, else ~4 chars/token heuristic."""
+    enc = _get_encoder(model)
+    if enc is not None:
         return len(enc.encode(text))
-    # Heuristic: ~4 characters per token
+    # Heuristic: ~4 characters per token (good enough for budgeting).
     return max(1, len(text) // 4)
 
 
@@ -72,11 +104,7 @@ def prune_to_budget(
                 if (candidate.get("type") == "function_call_output"
                         and candidate.get("call_id") == call_id):
                     group.append(candidate)
-                    # Consume up to and including the output
-                    # Advance i past all of group
-                    items_to_consume = j - i
-                    for _ in range(items_to_consume):
-                        pass
+                    # Consume everything up to and including the matched output.
                     groups.append(group)
                     i = j + 1
                     break
