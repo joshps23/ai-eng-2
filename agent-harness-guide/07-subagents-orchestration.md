@@ -187,7 +187,9 @@ class Agent:
                 if item.type == "function_call"
             ]
 
-            # Extend the transcript with the model's raw output
+            # Extend the transcript with the model's raw output. This includes
+            # any `reasoning` item (reasoning models only), which must be carried
+            # forward so the worker keeps its chain-of-thought across iterations.
             self._conversation.extend(resp.output)
 
             if not tool_calls:
@@ -226,6 +228,7 @@ Key design decisions:
 - **One transcript per instance.** Calling `.run()` on a fresh `Agent` starts with a clean slate. There is no shared global state between agents.
 - **`depth` is carried from parent to child.** When the orchestrator spawns a sub-agent it passes `depth=self.depth + 1`, allowing the guard to trigger before a recursion goes too deep.
 - **`registry.dispatch_parallel` is the Phase 2 machinery.** Phase 2 already handles running multiple tool calls concurrently; nothing new is needed here.
+- **Reasoning carries forward within a worker, never across the boundary.** As in Phase 3, `self._conversation.extend(resp.output)` appends *every* output item — including any `reasoning` item from a reasoning model — so the worker's chain-of-thought persists across its own tool-call iterations (the reason → act → observe → reason loop). Never drop reasoning items from `_conversation`, or you break that chain (and some models reject a `function_call` whose preceding `reasoning` item is missing). Crucially, that reasoning stays *inside* the sub-agent: the parent only ever receives the worker's final text as the `function_call_output`, so a worker's private thinking never leaks into the orchestrator's context. This context isolation is a feature, not a limitation — it is the main reason to delegate noisy, exploratory work to a sub-agent.
 
 ---
 
