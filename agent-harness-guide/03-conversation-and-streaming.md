@@ -275,6 +275,9 @@ The stream emits these event types (in rough order of appearance):
 |---|---|---|
 | `response.created` | — | Stream opened, response ID assigned |
 | `response.output_item.added` | `.item` (the new item, may be partial) | A new output item starts (message, function_call, reasoning) |
+| `response.reasoning_summary_part.added` | `.part` | A new reasoning chain-of-thought section starts (reasoning models only) |
+| `response.reasoning_summary_text.delta` | `.delta` (string) | A chunk of the model's reasoning summary |
+| `response.reasoning_summary_text.done` | `.text` (the full summary) | A reasoning summary section is complete |
 | `response.output_text.delta` | `.delta` (string) | A text chunk within a message item |
 | `response.output_text.done` | — | The text item is complete |
 | `response.function_call_arguments.delta` | `.delta` (string) | A chunk of JSON arguments for a tool call |
@@ -287,6 +290,26 @@ The `response.completed` event carries the fully-assembled response on `event.re
 the same structured object as a non-streamed call (with `.output`, `.usage`, etc.).  Capture
 it as the events go by: when you stream with `client.responses.create(stream=True)` there is
 no separate "get the final response" call, so you assemble it yourself from this event.
+
+#### Reasoning and the reason → act → observe chain
+
+With a reasoning model (the guide standardizes on `gpt-5`), each turn can begin with a
+`reasoning` output item — the model's private chain-of-thought — *before* it emits any text
+or tool calls.  Two things are needed to make that chain visible and to keep it working
+across turns:
+
+1. **Ask for a summary.** Raw reasoning is never exposed, but passing
+   `reasoning={"summary": "auto"}` to `responses.create()` makes the model emit a
+   human-readable *summary* of its thinking, which streams in via the
+   `response.reasoning_summary_text.delta` events above.  (This parameter only applies to
+   reasoning models; sending it to a non-reasoning model like `gpt-4o` is a 400 error.)
+2. **Carry it forward.** The loop already appends every output item — reasoning included —
+   with `conv.extend(resp.output)`.  That is what turns isolated turns into a *chain*: the
+   reasoning item from turn _N_ is sent back as input on turn _N+1_, so after a tool result
+   comes back the model resumes the same train of thought instead of starting over.  This is
+   the reason → act (tool call) → observe (tool result) → reason loop.  **Never drop
+   reasoning items from the transcript** — doing so breaks the chain (and, for some models,
+   the API rejects a `function_call` whose preceding `reasoning` item is missing).
 
 ### 3.3 `stream_turn()` — Full Implementation
 
@@ -328,6 +351,9 @@ def stream_turn(
         instructions=instructions,
         input=conversation.to_input(),
         tools=tools,
+        reasoning={"summary": "auto"},  # surface the chain-of-thought (reasoning
+                                        # models only); streams via the
+                                        # response.reasoning_summary_text.* events
         stream=True,
     ) as stream:
         try:
@@ -343,6 +369,18 @@ def stream_turn(
                         _current_tool_name = item.name
                         _current_tool_args = ""
                         print(f"\n\033[2m⚙  calling {item.name}(\033[0m", end="", flush=True)
+
+                # --- Reasoning chain-of-thought starting ---
+                elif etype == "response.reasoning_summary_part.added":
+                    print("\n\033[2m🤔 thinking: \033[0m", end="", flush=True)
+
+                # --- Reasoning summary streaming (the model's thought process) ---
+                elif etype == "response.reasoning_summary_text.delta":
+                    print(f"\033[2m{event.delta}\033[0m", end="", flush=True)
+
+                # --- Reasoning summary section complete ---
+                elif etype == "response.reasoning_summary_text.done":
+                    print()  # newline before text / tool calls begin
 
                 # --- Text streaming ---
                 elif etype == "response.output_text.delta":
@@ -408,11 +446,14 @@ def stream_turn_plain(conversation, tools, instructions):
         instructions=instructions,
         input=conversation.to_input(),
         tools=tools,
+        reasoning={"summary": "auto"},
         stream=True,
     ) as stream:
         for event in stream:
             if event.type == "response.output_text.delta":
                 print(event.delta, end="", flush=True)
+            elif event.type == "response.reasoning_summary_text.delta":
+                print(event.delta, end="", flush=True)   # chain-of-thought
             elif event.type == "response.output_item.added":
                 item = event.item
                 if getattr(item, "type", None) == "function_call":
@@ -705,6 +746,7 @@ def stream_turn(conversation: Conversation, tools: list[dict], instructions: str
         instructions=instructions,
         input=conversation.to_input(),
         tools=tools,
+        reasoning={"summary": "auto"},  # stream the chain-of-thought too
         stream=True,
     ) as stream:
         try:
@@ -715,6 +757,15 @@ def stream_turn(conversation: Conversation, tools: list[dict], instructions: str
                     item = event.item
                     if getattr(item, "type", None) == "function_call":
                         print(f"\n\033[2m⚙  calling {item.name}(\033[0m", end="", flush=True)
+
+                elif etype == "response.reasoning_summary_part.added":
+                    print("\n\033[2m🤔 thinking: \033[0m", end="", flush=True)
+
+                elif etype == "response.reasoning_summary_text.delta":
+                    print(f"\033[2m{event.delta}\033[0m", end="", flush=True)
+
+                elif etype == "response.reasoning_summary_text.done":
+                    print()
 
                 elif etype == "response.output_text.delta":
                     print(event.delta, end="", flush=True)
@@ -822,14 +873,17 @@ sentence 'The quick brown fox jumps over the lazy dog'. Then summarise both resu
 one sentence.
 
 Assistant: 
-
-[turn 1]
+🤔 thinking: The user wants two things — a sum and a word count. I'll call add
+for the arithmetic and count_words for the sentence, then summarise.
 
 ⚙  calling add({"a": 1234, "b": 5678})
 
 ⚙  calling count_words({"text": "The quick brown fox jumps over the lazy dog"})
 
-Assistant: The sum of 1234 and 5678 is 6912, and the sentence
+Assistant: 
+🤔 thinking: add returned 6912 and count_words returned 9. I have both results,
+so I can write the one-sentence summary now.
+The sum of 1234 and 5678 is 6912, and the sentence
 'The quick brown fox jumps over the lazy dog' contains 9 words.
 
 [tokens: in=312 out=47 total=359]

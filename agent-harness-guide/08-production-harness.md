@@ -1365,10 +1365,13 @@ class Agent:
             instructions=self.instructions,
             input=self.conversation.items,
             tools=tool_schemas,
+            reasoning={"summary": "auto"},  # surface the chain-of-thought
         ) as stream_ctx:
             for event in stream_ctx:
                 if event.type == "response.output_text.delta":
                     print(event.delta, end="", flush=True)
+                elif event.type == "response.reasoning_summary_text.delta":
+                    print(event.delta, end="", flush=True)  # chain-of-thought
                 elif event.type == "response.completed":
                     # The raw stream has no get_final_response(); the assembled
                     # Response arrives here, on event.response.
