@@ -42,10 +42,10 @@ Status legend: ☐ not started · ◐ in progress · ☑ adapted for beginners
 
 | File | Status | Notes |
 |------|:------:|-------|
-| `README.md` (top level) | ☐ | |
-| `agent-harness-guide/README.md` | ☐ | |
+| `README.md` (top level) | ☑ | Beginner-track pointer box. |
+| `agent-harness-guide/README.md` | ☑ | Beginner-track pointer in "Who this is for". |
 | `00-foundations.md` | ☑ | Added orientation pointer + scaffolding for dot-access, `json.loads`, JSON Schema, `with`/stream, threads. |
-| `01-bare-harness.md` | ☐ | |
+| `01-bare-harness.md` | ☑ | Scaffolding for type hints, `**args`, `try/except`, list comprehension (with plain-loop equivalent), `__main__`. |
 | `02-tool-system.md` | ☐ | |
 | `03-conversation-and-streaming.md` | ☐ | |
 | `04-real-tools.md` | ☐ | |

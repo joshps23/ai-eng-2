@@ -7,6 +7,13 @@ program that powers tools like Claude Code and Cursor) from scratch, using **onl
 OpenAI Responses API and the Python standard library. No LangChain, no agent SDKs — the
 point is to understand what those frameworks hide and be able to rebuild them yourself.
 
+> 🟢 **New to Python?** This guide was written for experienced engineers, but it now
+> ships with a beginner track. If you know **functions, lists, dictionaries,
+> operators, and `client.responses.create(...)`**, start with
+> **[`BEGINNER-NOTES.md`](./agent-harness-guide/BEGINNER-NOTES.md)** — it translates
+> every other concept (classes, `json.loads`, JSON Schema, `with`, threads) into
+> those terms, and inline 🟢 boxes in each phase bridge the gaps as they appear.
+
 ## Start here
 
 - 📖 **[The guide](./agent-harness-guide/README.md)** — 8 incremental phases, from an

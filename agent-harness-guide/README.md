@@ -18,6 +18,13 @@ orchestration. By the end you'll have built a production-shaped harness with a C
 a sandboxed toolset, an approval system, automatic context compaction, and parallel
 sub-agents.
 
+> 🟢 **Newer to Python?** You don't need to be an expert to follow along. If you're
+> comfortable with **functions, lists, dictionaries, operators, and
+> `client.responses.create(...)`**, read **[`BEGINNER-NOTES.md`](./BEGINNER-NOTES.md)**
+> first. It explains every other concept the guide uses — classes, `json.loads`,
+> JSON Schema, `with`, threads — in those terms, and green 🟢 boxes throughout the
+> phases bridge each gap exactly where it appears.
+
 ## How the guide is structured
 
 The guide is **incremental**. Each phase is runnable on its own and builds directly
