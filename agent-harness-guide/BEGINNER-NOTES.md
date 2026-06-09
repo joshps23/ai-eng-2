@@ -1,0 +1,59 @@
+# Beginner Orientation & Review Tracker
+
+> **Who this version is for.** You are comfortable with exactly five things:
+> **functions**, **lists**, **dictionaries**, **operators** (`+ - * / == and or not in` …),
+> and the **OpenAI Responses API** called with `client.responses.create(...)`.
+> Everything else in this guide is explained the first time it shows up, in a box
+> like the one below. Where the original guide used an advanced tool just for
+> convenience, this version shows a plain-functions way to get the same result.
+
+This file has two jobs:
+
+1. **Orientation** — a cheat-sheet of every concept the guide uses that goes
+   beyond your five, each explained in one or two sentences (below).
+2. **Review tracker** — a checklist of which files have been adapted for you, so
+   the review can continue in passes without losing its place.
+
+---
+
+## 1. Concepts beyond your five (the cheat-sheet)
+
+Read these once. Each scaffolding box in the guide links back here.
+
+| Thing you'll see | What it really is, in terms you know |
+|------------------|--------------------------------------|
+| **`class` / methods** | A bundle of related functions plus some shared data. You can mentally read `obj.do_thing(x)` as "call the `do_thing` function, passing `obj`'s data along." This version replaces classes with plain functions wherever it can. |
+| **`item.type` (a dot, not `["type"]`)** | The Responses API gives back *objects*. Reading a field with a dot (`item.type`) is just like reading a dict key (`item["type"]`) — same idea, different punctuation. |
+| **`json.loads(s)` / `json.dumps(d)`** | `loads` turns a **string that looks like a dict** (e.g. `'{"city": "Paris"}'`) into a real dict. `dumps` does the reverse: dict → string. The API hands you tool arguments as a *string*, so you `json.loads` it into a dict. |
+| **JSON Schema** | Just a **dictionary** that describes what arguments a function takes (their names and types). The model reads it to decide how to call your function. You already know dicts — this is one with an agreed-upon shape. |
+| **`try` / `except`** | "Try to run this; if it blows up, do that instead, don't crash." This version keeps these tiny and always explains them inline. |
+| **`with ... as x:`** | A way to use something and clean it up automatically afterward. When you see `with client.responses.create(..., stream=True) as stream:`, read it as "open a stream, loop over it, close it when done." |
+| **type hints** (`x: str`, `-> dict`) | Optional notes that say "this is a string" or "this returns a dict." They change nothing at runtime — you can ignore them while reading. |
+| **`*args` / `**kwargs`** | "Accept any extra positional/keyword arguments." `run(**kwargs)` just means "this function accepts named arguments and gathers them into a dict called `kwargs`." |
+| **decorators** (`@something`) | A line starting with `@` above a function that wraps it to add behavior. Where the original used these for convenience, this version shows the plain-function equivalent. |
+| **threads / `ThreadPoolExecutor`** | A way to run several slow things (like API or disk calls) at the same time instead of one after another. The simple, sequential (one-after-another) version is always shown first. |
+| **f-strings** (`f"hi {name}"`) | A string with `{...}` holes that get filled in with values. `f"{a} + {b}"` is the same as `str(a) + " + " + str(b)`. |
+
+---
+
+## 2. Review tracker
+
+Status legend: ☐ not started · ◐ in progress · ☑ adapted for beginners
+
+| File | Status | Notes |
+|------|:------:|-------|
+| `README.md` (top level) | ☐ | |
+| `agent-harness-guide/README.md` | ☐ | |
+| `00-foundations.md` | ☑ | Added orientation pointer + scaffolding for dot-access, `json.loads`, JSON Schema, `with`/stream, threads. |
+| `01-bare-harness.md` | ☐ | |
+| `02-tool-system.md` | ☐ | |
+| `03-conversation-and-streaming.md` | ☐ | |
+| `04-real-tools.md` | ☐ | |
+| `05-permissions-and-safety.md` | ☐ | |
+| `06-context-management.md` | ☐ | |
+| `07-subagents-orchestration.md` | ☐ | |
+| `08-production-harness.md` | ☐ | |
+| `09-library-reference.md` | ☐ | |
+| `code/` package | ☐ | Decide per-file: annotate with scaffolding comments or provide functions-only variant. |
+
+Each pass: pick the next ☐ file, adapt it, flip it to ☑, and note what was done.

@@ -8,6 +8,14 @@
 > HTTP client) and the Python standard library. The whole point of this guide is to
 > show you what those frameworks hide.
 
+> 🟢 **New to Python? Read this first.** This guide originally assumed an
+> experienced engineer. If you only know **functions, lists, dictionaries,
+> operators, and `client.responses.create(...)`**, start with
+> [`BEGINNER-NOTES.md`](./BEGINNER-NOTES.md). It explains — in those terms — every
+> other concept the guide uses (classes, `json.loads`, JSON Schema, `with`,
+> threads…). Green boxes like this one appear throughout to bridge each gap as it
+> comes up.
+
 ---
 
 ## 0.1 What is an "agent harness"?
@@ -162,6 +170,12 @@ plain-string content for user messages is fine.
 
 ### 0.3.4 The output: a list of typed items
 
+> 🟢 **`item.type` uses a dot, not `["type"]`.** The API gives back *objects*, not
+> plain dicts. Reading a field with a dot — `item.type`, `item.name` — is the same
+> idea as reading a dict key (`item["type"]`), just different punctuation. So
+> `resp.output` is a list you can loop over, and each element's fields are read with
+> a dot.
+
 `resp.output` is a **list**. Each element has a `.type`. The types we care about:
 
 | `item.type` | Meaning | Key fields |
@@ -203,6 +217,13 @@ The `parameters` object is a **JSON Schema**. The model uses it to decide *wheth
 and *how* to call your function. Good descriptions here are the difference between a
 useful agent and a confused one.
 
+> 🟢 **"JSON Schema" is just a dictionary.** Don't let the name scare you — every
+> tool above is a plain Python **dict**, the kind you already write. The
+> `"parameters"` key holds another dict that describes the function's arguments:
+> `"properties"` lists each argument name and its type, and `"required"` is a list
+> of which ones must be provided. That's all a schema is — a dict in an agreed
+> shape that tells the model how to call your function.
+
 > **Strict mode (optional but recommended):** add `"strict": True` to a tool to make
 > the model's `arguments` provably conform to your schema. Strict mode requires every
 > property be listed in `required` and `additionalProperties: False`. We'll discuss
@@ -222,6 +243,12 @@ When the model wants a tool, `resp.output` contains a `function_call` item:
     "arguments": '{"city": "Paris"}',  # JSON *string*, you must json.loads it
 }
 ```
+
+> 🟢 **`json.loads` turns a string into a dict.** Look closely at `arguments` above:
+> it's wrapped in quotes, so it's a **string** that merely *looks* like a dict, not a
+> dict you can index yet. `import json` then `json.loads(item.arguments)` converts
+> that string into a real dict — after which `args["city"]` gives you `"Paris"`.
+> (`json.dumps(some_dict)` does the reverse: dict → string.)
 
 To answer it, you append **two things** to your `input_items` list, in order:
 
@@ -269,6 +296,14 @@ Phase 3.
 For a live UI you stream events instead of waiting for the whole response. Pass
 `stream=True` to the **same** `responses.create()` call — it then returns an iterator of
 typed events instead of a single response:
+
+> 🟢 **Reading the `with ... as stream:` line.** `with` is just a way to open
+> something and have Python close it for you automatically when the block ends. Read
+> this block as: "start a streaming response, call it `stream`, loop over its events,
+> and close it when the loop finishes." The `for event in stream:` part is an
+> ordinary loop — each `event` is an object whose `.type` you check, exactly like the
+> output items above. You don't need to fully understand `with` to follow along;
+> Phase 3 revisits streaming in detail.
 
 ```python
 final = None
@@ -374,6 +409,13 @@ agents — we use `concurrent.futures.ThreadPoolExecutor` for tool/agent paralle
 (the OpenAI SDK also has a fully `async` client, `AsyncOpenAI`, which we note as the
 alternative). Threads are simplest because our tools are I/O bound (network, disk,
 subprocess).
+
+> 🟢 **"Concurrency / threads" = doing slow things at the same time.** Normally your
+> code runs one line after another: if you call three tools, the second waits for the
+> first to finish. "Threads" let all three run *at once*, which is faster when each
+> one is mostly waiting (for the network, the disk, a command). Until Phase 7 every
+> example runs the simple one-after-another way, and when threads appear, this version
+> shows the sequential version first so you can see they produce the same result.
 
 ---
 
