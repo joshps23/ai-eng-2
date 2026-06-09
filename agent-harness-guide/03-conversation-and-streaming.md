@@ -14,6 +14,66 @@ By the end you will have:
 
 ---
 
+> ## 🟢 Beginner track: two things to know before you start
+>
+> **1. The `Conversation` class is just the `input_items` list you already used —
+> with a few helper functions.** In Phase 1 you kept the whole conversation in a plain
+> list and appended to it. This phase wraps that list in a `class` so it can also
+> save/load itself. You can get every benefit using only a **dict** and **functions**:
+>
+> ```python
+> import json
+>
+> def new_conversation(instructions=""):
+>     # The conversation is just a dict holding a list of items.
+>     return {"instructions": instructions, "items": []}
+>
+> def add_user(conv, text):
+>     conv["items"].append({"role": "user", "content": text})
+>
+> def extend_items(conv, output_items):
+>     # Turn each SDK object into a plain dict, then store it.
+>     for item in output_items:
+>         if hasattr(item, "model_dump"):
+>             item = item.model_dump()   # SDK object -> plain dict
+>         conv["items"].append(dict(item))
+>
+> def add_tool_result(conv, call_id, output):
+>     conv["items"].append({
+>         "type": "function_call_output",
+>         "call_id": call_id,
+>         "output": output,
+>     })
+>
+> def to_input(conv):
+>     return list(conv["items"])        # the list you pass to input=
+>
+> def save(conv, path):
+>     with open(path, "w") as f:
+>         json.dump(conv, f, indent=2)  # it's just a dict -> write it as JSON
+>
+> def load(path):
+>     with open(path) as f:
+>         return json.load(f)           # read the dict back
+> ```
+>
+> Use these wherever the phase says `conv.add_user(...)`, `conv.extend(...)`,
+> `conv.to_input()`, etc. — read the dot-method `conv.add_user(text)` as the function
+> call `add_user(conv, text)`. (`hasattr(item, "model_dump")` just asks "does this
+> object have a `model_dump` method?" — `True` for SDK objects, `False` for plain
+> dicts.)
+>
+> **2. Streaming is optional. You can skip the entire streaming half of this phase.**
+> Streaming only changes *how the answer is displayed* — character-by-character as the
+> model types, instead of all at once. It does **not** change the loop or the results.
+> The plain `client.responses.create(...)` call you already know (without
+> `stream=True`) works perfectly; just read `resp.output_text` for the final text and
+> loop over `resp.output` for tool calls, exactly as in Phases 1–2. Come back to the
+> streaming code (`with ... stream=True`, the event types, the ANSI colors) only when
+> you specifically want a live-typing UI.
+
+---
+
 ## 1. Two Orthogonal Concerns
 
 **Transcript management** determines what you send in `input` on each call.  You have two
@@ -91,6 +151,15 @@ This is intentionally minimal.  The API silently ignores unknown fields in input
 including extra fields from `model_dump()` is harmless.
 
 ### 2.4 The `Conversation` Class
+
+> 🟢 **Reading the class.** Each `def ...(self, ...)` below is a **method** — a
+> function attached to the conversation object, where `self` is the object's own data
+> (here, `self._items`, the list of items). `__init__` is the setup function that runs
+> when you write `Conversation(...)`. `@classmethod def load(cls, ...)` is an
+> alternate constructor — `Conversation.load(path)` builds a conversation from a file.
+> Every one of these maps directly to a plain function in the
+> [beginner box above](#-beginner-track-two-things-to-know-before-you-start); if
+> classes are unfamiliar, use those functions and skip this class entirely.
 
 ```python
 import json
@@ -475,6 +544,15 @@ def stream_turn_plain(conversation, tools, instructions):
 
 This function wires together the `Conversation` class, `stream_turn()`, and the Phase 2
 parallel tool dispatcher.
+
+> 🟢 **The `register(schema)` here is a "decorator that takes an argument," which is
+> why there's a function inside a function.** You can ignore that machinery. It does
+> the same job as the simple `register(name, fn, schema)` from the
+> [Phase 2 beginner track](./02-tool-system.md#-beginner-track-the-same-tool-system-using-only-functions--dicts):
+> store the function in a dict under its name, and store its schema in a list. If you
+> built the Phase 2 `TOOLS` dict, keep using it here. Also note `dispatch_parallel`
+> uses **threads** again — the plain `for`-loop `run_tool_calls` from Phase 2 produces
+> identical results if you prefer to avoid threads.
 
 ```python
 import json
