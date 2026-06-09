@@ -51,8 +51,8 @@ Status legend: ☐ not started · ◐ in progress · ☑ adapted for beginners
 | `04-real-tools.md` | ☑ | One consolidated box: tools are plain functions; `@tool` is optional (hand-write schemas per Phase 2); plus heads-ups on `pathlib.Path`, `lambda`, f-string format specs, and try/except. |
 | `05-permissions-and-safety.md` | ☑ | Beginner track: full permission check in dicts + if/else (TOOL_RISK, AUTO_OK, check_permission/ask_user); concept table for dataclass≈dict, Enum≈string constants, set≈list, closure, tuple-return, hooks. Inline box reframing hooks as plain functions. |
 | `06-context-management.md` | ☑ | Beginner box: one idea (shrink the growing list) + three tactics (clip/drop-oldest/summarize) as plain functions; syntax notes on count_tokens≈len//4, the bare-`*` keyword-only marker, generator comprehensions, isinstance. |
-| `07-subagents-orchestration.md` | ☐ | |
-| `08-production-harness.md` | ☐ | |
+| `07-subagents-orchestration.md` | ☑ | Beginner track: a sub-agent = calling your run_agent loop again from inside a `task` tool; Agent class→loop+conversation dict; presets→dict; parallel optional. Syntax table for @dataclass/@property/factory-closure/asyncio. |
+| `08-production-harness.md` | ☑ | Beginner track: phase is polish not new ideas; retry shown as plain for-loop+try/except+sleep; table mapping dataclass/@property/@contextmanager/argparse/logging/typed-except/ThreadPool to known concepts. |
 | `09-library-reference.md` | ☐ | |
 | `code/` package | ☐ | Decide per-file: annotate with scaffolding comments or provide functions-only variant. |
 

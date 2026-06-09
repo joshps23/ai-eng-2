@@ -55,6 +55,84 @@ The critical insight is that the orchestrator **decides at runtime** how many wo
 
 ---
 
+> ## 🟢 Beginner track: a "sub-agent" is just calling your agent loop again
+>
+> This phase uses an `Agent` **class**, but the whole idea works with the
+> **agent-loop function** you already wrote in Phases 1–2 plus a couple of dicts.
+> Here's the entire concept:
+>
+> > A **sub-agent** is what you get when one of your tools, instead of reading a file,
+> > **runs the agent loop again** with a different prompt and its own fresh
+> > conversation. The result it returns becomes the tool's output. That's it.
+>
+> **An "Agent" is just the loop + its own conversation list.** Bundle them in a dict:
+>
+> ```python
+> def run_agent(instructions, task, tools_dict):
+>     """Your Phase 1-2 loop, as a plain function. Returns the final text."""
+>     conversation = [{"role": "user", "content": task}]
+>     while True:
+>         resp = client.responses.create(
+>             model=MODEL, instructions=instructions,
+>             input=conversation, tools=tools_for_api(tools_dict),
+>         )
+>         conversation += list(resp.output)
+>         calls = [it for it in resp.output if it.type == "function_call"]
+>         if not calls:
+>             return resp.output_text          # done — hand back the answer
+>         for fc in calls:                     # run tools (sequential is fine)
+>             conversation.append({
+>                 "type": "function_call_output",
+>                 "call_id": fc.call_id,
+>                 "output": dispatch(tools_dict, fc.name, fc.arguments),
+>             })
+> ```
+>
+> **Roles ("presets") are just a dict** of role name → its instructions and tool list:
+>
+> ```python
+> PRESETS = {
+>     "researcher": {"instructions": "Research and summarize. Return only the summary.",
+>                    "tools": ["read_file", "list_directory"]},
+>     "reviewer":   {"instructions": "Find bugs. Return a list of findings.",
+>                    "tools": ["read_file"]},
+> }
+> ```
+>
+> **The `task` tool is a function that runs a sub-agent:**
+>
+> ```python
+> def task(role, prompt):
+>     preset = PRESETS.get(role, PRESETS["researcher"])
+>     # Hand the worker only the tools its role allows (filter the big tools dict)
+>     worker_tools = {name: ALL_TOOLS[name] for name in preset["tools"]}
+>     return run_agent(preset["instructions"], prompt, worker_tools)  # <-- loop again
+> ```
+>
+> Register `task` like any other tool. Now when the model calls `task("reviewer",
+> "check auth.py")`, your harness runs a *second* agent loop with the reviewer's prompt
+> and tools, and feeds its answer back as the tool result. The "orchestrator" is just an
+> agent whose only tool is `task`.
+>
+> **Running several workers at once is the same optional speed-up as before.** A plain
+> `for` loop over the `task` calls gives identical results; the `ThreadPoolExecutor`
+> code just runs them at the same time to save wall-clock time. Start sequential.
+>
+> Syntax heads-ups for reading the original:
+>
+> | In the original | What it is |
+> |-----------------|------------|
+> | `class Agent:` with `self._conversation` | the loop + its conversation list, bundled. Read `agent.run(task)` as `run_agent(instructions, task, tools)`. |
+> | `@dataclass class AgentPreset` | a fixed-field dict (the `PRESETS` dict above). |
+> | `@property def total_tokens` | a method you read like a field: `usage.total_tokens`. Here it just returns `input + output`. |
+> | `def make_task_tool(...)` returning a `class TaskTool` | a **closure/factory** — a function that builds the `task` tool with the registry "baked in." The plain `task(role, prompt)` function above does the same job. |
+> | the `asyncio` section (§8) | an *alternative* to threads. Skip it; threads (and plain loops) cover everything. |
+>
+> Read the rest of the phase for the ideas (isolated context, depth limits, disjoint
+> file scopes). Build it with the functions above.
+
+---
+
 ## 2. Refactoring the Loop into a Reusable `Agent` Class
 
 Until now the agent loop lived in a standalone function or script. To support sub-agents we need agents to be *values* — objects you can instantiate, configure, and pass around. The refactor is small but important.
