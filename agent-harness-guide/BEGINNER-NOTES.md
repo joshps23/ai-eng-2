@@ -46,7 +46,7 @@ Status legend: ☐ not started · ◐ in progress · ☑ adapted for beginners
 | `agent-harness-guide/README.md` | ☑ | Beginner-track pointer in "Who this is for". |
 | `00-foundations.md` | ☑ | Added orientation pointer + scaffolding for dot-access, `json.loads`, JSON Schema, `with`/stream, threads. |
 | `01-bare-harness.md` | ☑ | Scaffolding for type hints, `**args`, `try/except`, list comprehension (with plain-loop equivalent), `__main__`. |
-| `02-tool-system.md` | ☐ | |
+| `02-tool-system.md` | ☑ | Added full functions-only "beginner track" (tool = fn + schema dict; registry = dict; dispatch + for-loop), plus inline boxes translating classes, the `@tool` decorator/introspection, and threads. |
 | `03-conversation-and-streaming.md` | ☐ | |
 | `04-real-tools.md` | ☐ | |
 | `05-permissions-and-safety.md` | ☐ | |

@@ -24,6 +24,135 @@ By the end of this phase you will have:
 
 ---
 
+> ## 🟢 Beginner track: the same tool system, using only functions + dicts
+>
+> This phase is the first that leans hard on **classes**, a **decorator** (`@tool`),
+> and **threads** — none of which are in your five concepts. You do **not** need them.
+> Everything here can be built with the things you already know: **functions, dicts,
+> and lists**. Read this box first; then you can follow the rest of the phase as
+> *background reading*, using the green boxes to translate each class/decorator into
+> its plain-function equivalent.
+>
+> **The whole idea in one sentence:** a "tool" is just *a function plus a dict that
+> describes it*, and a "registry" is just *a dict that maps a tool's name to those
+> two things*.
+>
+> ### A tool = a function + a schema dict (both things you already know)
+>
+> The fancy `@tool` decorator's only job is to *write the schema dict for you* by
+> inspecting the function. You can skip all that machinery and just **write the dict
+> by hand** — you already know how to write dicts, and it's clearer about what the
+> model sees:
+>
+> ```python
+> import json
+>
+> # 1) An ordinary function. No classes, no decorators.
+> def add(a, b):
+>     return str(a + b)
+>
+> # 2) A plain dict describing it for the model (this is the "JSON Schema").
+> add_schema = {
+>     "type": "function",
+>     "name": "add",
+>     "description": "Add two numbers and return the result.",
+>     "parameters": {
+>         "type": "object",
+>         "properties": {
+>             "a": {"type": "number", "description": "First number."},
+>             "b": {"type": "number", "description": "Second number."},
+>         },
+>         "required": ["a", "b"],
+>         "additionalProperties": False,
+>     },
+> }
+> ```
+>
+> ### The registry = one dict
+>
+> ```python
+> # The registry maps a tool name -> {"fn": the function, "schema": the dict}.
+> TOOLS = {}
+>
+> def register(name, fn, schema):
+>     """Add one tool to the TOOLS dict."""
+>     TOOLS[name] = {"fn": fn, "schema": schema}
+>
+> register("add", add, add_schema)
+> ```
+>
+> ### Getting the list to send to the API
+>
+> ```python
+> def tools_for_api():
+>     """Build the list passed to client.responses.create(tools=...)."""
+>     result = []
+>     for entry in TOOLS.values():
+>         result.append(entry["schema"])
+>     return result
+> ```
+>
+> ### Running a tool call (dispatch) — a plain function with one try/except
+>
+> ```python
+> def dispatch(name, arguments_str):
+>     """Look up a tool, run it, and ALWAYS return a string (never crash)."""
+>     if name not in TOOLS:
+>         return f"Error: unknown tool '{name}'."
+>     try:
+>         args = json.loads(arguments_str)   # JSON string -> dict
+>     except json.JSONDecodeError as exc:
+>         return f"Error: invalid JSON arguments: {exc}"
+>     try:
+>         fn = TOOLS[name]["fn"]
+>         result = fn(**args)                # call the function with the dict's keys
+>         if not isinstance(result, str):    # tools must hand back a string
+>             result = json.dumps(result)
+>         return result
+>     except Exception as exc:
+>         return f"Error ({type(exc).__name__}): {exc}"
+> ```
+>
+> ### Running several tool calls — just a `for` loop over a list
+>
+> The original phase runs tool calls on multiple **threads** to go faster. You don't
+> need that to get correct results — a plain loop does the same work, one call after
+> another:
+>
+> ```python
+> def run_tool_calls(function_calls):
+>     """function_calls is the list of function_call items from resp.output."""
+>     outputs = []
+>     for fc in function_calls:
+>         output = dispatch(fc.name, fc.arguments)
+>         outputs.append({
+>             "type": "function_call_output",
+>             "call_id": fc.call_id,   # echo this back exactly
+>             "output": output,
+>         })
+>     return outputs
+> ```
+>
+> That's the entire tool system in functions and dicts. The class-based version in the
+> rest of this phase does the *same things* with more structure (handy once you have
+> dozens of tools), plus auto-generated schemas and parallel threads (a speed
+> optimization). When you reach the class version, map it back to this box:
+>
+> | Class/decorator version | This box's plain-function version |
+> |-------------------------|-----------------------------------|
+> | `class Tool` / `class FunctionTool` | a function + its `schema` dict |
+> | `@tool` decorator (auto-builds schema) | you write the `schema` dict by hand |
+> | `class ToolRegistry` + `.register()` | the `TOOLS` dict + `register()` function |
+> | `registry.to_openai_schema()` | `tools_for_api()` |
+> | `registry.dispatch()` | `dispatch()` |
+> | `dispatch_parallel()` (threads) | `run_tool_calls()` (a `for` loop) |
+>
+> Everything below is optional reading. The plain version above is enough to complete
+> every later phase; where a later phase needs a registry, you can pass this `TOOLS`
+> dict and these functions.
+
+---
+
 ## 1. The Problem with Ad-Hoc Dispatch
 
 The Phase 1 approach has five concrete failure modes:
@@ -53,6 +182,16 @@ Good tooling infrastructure requires:
 Start with a clear interface. Every tool is an object with a name, a description, a JSON Schema for its parameters, and a `run` method that accepts keyword arguments and returns a string.
 
 ### 2a. Subclassing
+
+> 🟢 **What a `class` is, in one box.** A `class` bundles some data with the functions
+> that work on it. A function defined inside a class is called a **method**, and its
+> first parameter is always `self` — a handle to "this particular object's data." So
+> `class Tool: ... def run(self, **kwargs): ...` defines a blueprint, and writing
+> `AddTool().run(a=2, b=3)` *makes* an `AddTool` object and calls its `run`. "Subclass
+> and override `run`" means: make a new blueprint based on `Tool` and supply your own
+> `run`. In the [beginner box above](#-beginner-track-the-same-tool-system-using-only-functions--dicts)
+> this whole class is replaced by *a function plus a `schema` dict* — same information,
+> no new syntax.
 
 The explicit approach: subclass `Tool` and override `run`.
 
@@ -100,6 +239,18 @@ This works but it is verbose. For every tool you must write the JSON Schema by h
 ### 2b. The `@tool` Decorator
 
 The better approach: write a plain Python function with type hints and a docstring. The decorator generates the JSON Schema automatically.
+
+> 🟢 **Decorator + "introspection" — what's really happening.** A **decorator** is the
+> `@tool` line written directly above a function. It means "after defining this
+> function, pass it through `tool()` and keep the result under the same name." The
+> `tool()` function here uses **introspection** (`inspect`, `get_type_hints`) — code
+> that *reads other code* — to look at the function's parameter names, type hints, and
+> docstring and **build the schema dict for you**. It's convenient, but it's just
+> automating the dict you can write by hand. **If this feels like too much, don't use
+> it:** the [beginner box above](#-beginner-track-the-same-tool-system-using-only-functions--dicts)
+> writes the same schema dict directly, which is fewer moving parts and shows you
+> exactly what the model receives. You can read the rest of this section for interest
+> and skip straight to using hand-written schema dicts.
 
 ```python
 # tools/base.py  (continued — full file shown at the end of this section)
@@ -538,6 +689,16 @@ A single response `resp.output` might contain:
 ```
 
 Both calls need results before the model can proceed. Running them serially wastes time. Since most tools are I/O-bound (network calls, file reads, subprocess runs), they release the GIL and `ThreadPoolExecutor` gives true concurrency.
+
+> 🟢 **Parallel tools are an optimization, not a requirement.** The code below uses
+> **threads** (`ThreadPoolExecutor`) to run several tool calls at the same time so the
+> turn finishes faster. It does **not** change the *results* — a plain `for` loop over
+> the tool calls (the `run_tool_calls` / `dispatch_sequential` version) produces
+> identical outputs, just one after another. If threads are unfamiliar, use the
+> sequential loop everywhere; come back to this section only when speed matters. One
+> bit of new syntax below — `{... for fc in function_calls}` — is a **dict
+> comprehension**, the dict cousin of the list comprehension from Phase 1; it builds a
+> dict in one line instead of with a loop.
 
 ### Parallel Dispatch
 
