@@ -473,4 +473,39 @@ print(resp.output_text)   # -> something like "21 + 21 = 42"
 If that prints a correct answer, your key, model access, and understanding of the
 handshake are all good. **You now have everything you need to build the loop.**
 
+---
+
+## Key takeaways
+
+- An LLM is **stateless**: text in, text out. The harness supplies the two things it
+  lacks — **memory** (the growing `input` list) and **hands** (tools).
+- The Responses API is `client.responses.create(model, input, tools)` →
+  `response.output`, a **list of typed items**. Each item's `.type` is either a
+  `message` (text for the user) or a `function_call` (a request to run a tool).
+- The **tool handshake**: the model emits a `function_call` with a `call_id` and a
+  JSON **string** of `arguments`; you run the matching function and append a
+  `function_call_output` carrying the **same `call_id`** and a **string** result.
+- The conversation is **append-only**: the model's own output items travel back into
+  the next call's `input`. That re-sent list *is* the model's memory.
+
+## Check yourself
+
+Before moving on, can you answer these?
+
+1. What two capabilities does a harness add to a stateless LLM?
+2. What's inside `response.output`, and how do you tell a tool request from a final answer?
+3. The model asks to call a tool. What must the `function_call_output` you send back contain?
+4. Why must you append the model's *own* output items back into `input` each turn?
+
+<details><summary>Answers</summary>
+
+1. **Memory** (the persisted `input` transcript) and **hands** (tools it can call).
+2. A **list of typed items**; check `item.type` — `"function_call"` means it wants a
+   tool, `"message"` means it's the final text answer.
+3. The **same `call_id`** as the call, a **string** `output`, and the type
+   `function_call_output`. Always return one output per call, even on error.
+4. Each `create()` call is stateless — the API only "remembers" what you send. Re-sending
+   the model's prior output items is exactly what preserves the conversation.
+</details>
+
 Proceed to **Phase 1 — A bare harness in ~80 lines**.

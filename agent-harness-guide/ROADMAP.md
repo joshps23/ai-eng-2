@@ -38,7 +38,7 @@ Status: ☐ todo · ◐ in progress · ☑ done
 |--:|------|-------------|:------:|
 | 1 | **Glossary** of every harness/Python term the guide uses, linked from the READMEs and referenced from phases | 2 | ☑ |
 | 2 | **Setup gotchas fix**: document `python -m pytest` (not bare `pytest`), venv guidance, and an API-key-free first-run path | 1 | ☑ |
-| 3 | **Per-phase "Key takeaways" + "Check yourself"** blocks, made consistent across all 8 phases | 4 | ☐ |
+| 3 | **Per-phase "Key takeaways" + "Check yourself"** blocks, made consistent across all 8 phases | 4 | ◐ |
 | 4 | **Hands-on exercises** ("Your turn") with hidden solutions at the end of each phase | 3 | ☐ |
 | 5 | **A guided learning path / syllabus** ("Day 1 / Day 2 …" or "if you have 2 hours") at the top level | 5 | ☑ |
 | 6 | **Beginner FAQ / troubleshooting** page: API keys, rate limits, common tracebacks, Windows vs. mac/Linux | 1, 4 | ☑ |
@@ -51,6 +51,9 @@ Status: ☐ todo · ◐ in progress · ☑ done
 
 Newest first. One line per shipped iteration.
 
+- **2026-06-09** — Started **Item 3** (◐): added "Key takeaways" + "Check yourself"
+  (with collapsible answers) to the Taster-track phases **0, 1, 2**. Remaining: phases
+  3–8. Confirmed the CI run on PR #6 went green (3.10/3.11/3.12).
 - **2026-06-09** — Shipped **Item 7**: GitHub Actions CI (`.github/workflows/ci.yml`)
   running `python -m pytest` on a 3.10/3.11/3.12 matrix for every push/PR (offline, no
   secrets). Added a CI badge to the README. Markdown link-check left as a future add-on.

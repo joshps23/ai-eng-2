@@ -499,4 +499,34 @@ a serialisation error at the API boundary.
 
 ---
 
+## Key takeaways
+
+- The entire agent is **one loop**: `create()` → if the output has `function_call`
+  items, dispatch each and append a `function_call_output`, then loop; otherwise print
+  the `message` and stop.
+- A tool is **two things**: a JSON **schema** (sent to the model) and a Python
+  **function** (run locally). The schema is how the model "sees" the tool.
+- Arguments arrive as a JSON **string** — `json.loads` them into a dict. Whatever your
+  tool returns must go back as a **string**.
+- Always set a **`MAX_ITERATIONS`** cap: a tool that keeps erroring will make the model
+  keep calling it, billing you until you kill it.
+
+## Check yourself
+
+1. In the loop, what exactly makes the agent **stop** versus **keep looping**?
+2. Why do you append *both* the model's output items *and* the tool outputs before the
+   next `create()`?
+3. Your tool returns a `dict`. What must you do before putting it in `function_call_output`?
+4. What stops a misbehaving tool from looping forever (and billing forever)?
+
+<details><summary>Answers</summary>
+
+1. **Stop** when the response has no `function_call` items (it's a final `message`);
+   **loop** when it has at least one tool call to run.
+2. The API is stateless per call. The model's items preserve *what it decided*; the tool
+   outputs preserve *what happened* — both are needed for the next turn to make sense.
+3. `json.dumps(...)` it into a string — `output` must be a string.
+4. A `MAX_ITERATIONS` cap that breaks the loop (and logs) when reached.
+</details>
+
 *Next: Phase 2 — Tool Registry and Multi-Tool Dispatch*

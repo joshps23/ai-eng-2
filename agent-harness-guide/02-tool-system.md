@@ -1401,3 +1401,35 @@ In turn 1 the model issued two `function_call` items simultaneously. Both ran in
 | **Registering the same tool twice** | `ToolRegistry.register` raises `ValueError`. In multi-module projects, import order can trigger this unexpectedly. | Import tools from one place; instantiate the registry once at startup and pass it around. Do not call `register` from module-level code that might be imported multiple times. |
 | **Returning non-string from `run`** | `FunctionTool.run` JSON-encodes non-strings, but a handwritten `Tool` subclass that returns `None` or an integer will cause a type error when the API receives it. | Always return `str` from `run`. `FunctionTool` coerces automatically; subclasses must do it manually. |
 | **Truncated or enormous tool output** | Very large outputs (e.g., a full file) consume most of the context window, crowding out conversation history. | Truncate, summarize, or paginate tool output. A good rule: keep any single tool output under 2000 characters. |
+
+---
+
+## Key takeaways
+
+- A **registry** (a name → tool lookup) replaces ad-hoc `if/elif` dispatch, so adding a
+  tool no longer means editing the loop.
+- `@tool` **auto-generates the JSON schema** from the function's type hints and
+  docstring — or hand-write the schema yourself (the beginner-track approach from this
+  phase). Either way the model gets the same dict.
+- Tool results are always **strings**: return an **error string** instead of raising, and
+  return exactly **one output per `call_id`** — even for a failed call.
+- Run **independent** tool calls in **parallel** (threads) for speed; fall back to
+  **sequential** when tools have conflicting side effects.
+
+## Check yourself
+
+1. What can you change *without touching the agent loop* once you have a registry?
+2. Where does `@tool` get the schema's parameter names and types from?
+3. When should you **not** run tool calls in parallel?
+4. A tool hits an error. What should it return, and why does that matter for the loop?
+
+<details><summary>Answers</summary>
+
+1. Add, remove, or swap tools — the loop just looks them up by name in the registry.
+2. From the function's **type hints** (for the JSON types) and its **docstring** (for the
+   descriptions).
+3. When the calls have **conflicting side effects** (e.g. two edits to the same file) —
+   run those **sequentially** so order is deterministic.
+4. An **error string**. The model can then *see* what went wrong and adapt, and every
+   `call_id` still gets its required matching output so the next `create()` is valid.
+</details>
