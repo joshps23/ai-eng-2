@@ -21,6 +21,8 @@ point is to understand what those frameworks hide and be able to rebuild them yo
 - 🧭 **[Learning path](./agent-harness-guide/LEARNING-PATH.md)** — not sure what to
   read or how long it takes? This turns the 8 phases into a step-by-step plan with
   time-budgeted tracks (2 hours / a weekend / deep) and per-phase checkpoints.
+- 🛠️ **[Exercises](./agent-harness-guide/EXERCISES.md)** — a warm-up + a stretch task per
+  phase (with hints) so you *build*, not just read.
 - 📖 **[The guide](./agent-harness-guide/README.md)** — 8 incremental phases, from an
   ~80-line agent to a production-shaped harness (loop, tools, streaming, permissions,
   context management, sub-agents).

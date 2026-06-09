@@ -39,7 +39,7 @@ Status: ☐ todo · ◐ in progress · ☑ done
 | 1 | **Glossary** of every harness/Python term the guide uses, linked from the READMEs and referenced from phases | 2 | ☑ |
 | 2 | **Setup gotchas fix**: document `python -m pytest` (not bare `pytest`), venv guidance, and an API-key-free first-run path | 1 | ☑ |
 | 3 | **Per-phase "Key takeaways" + "Check yourself"** blocks, made consistent across all 8 phases | 4 | ☑ |
-| 4 | **Hands-on exercises** ("Your turn") with hidden solutions at the end of each phase | 3 | ☐ |
+| 4 | **Hands-on exercises** ("Your turn") with hidden solutions — shipped as a dedicated `EXERCISES.md` (warm-up + stretch per phase) | 3 | ☑ |
 | 5 | **A guided learning path / syllabus** ("Day 1 / Day 2 …" or "if you have 2 hours") at the top level | 5 | ☑ |
 | 6 | **Beginner FAQ / troubleshooting** page: API keys, rate limits, common tracebacks, Windows vs. mac/Linux | 1, 4 | ☑ |
 | 7 | **CI** that runs the test suite (and ideally a markdown link/code-block check) on every push | 6 | ☑ |
@@ -51,6 +51,11 @@ Status: ☐ todo · ◐ in progress · ☑ done
 
 Newest first. One line per shipped iteration.
 
+- **2026-06-09** — Shipped **Item 4**: `EXERCISES.md` — a warm-up + a stretch task per
+  phase (0–8) plus a capstone, each with a collapsible hint that points at the relevant
+  phase section and the canonical `code/` answer key. Linked from the README and Learning
+  Path. (Kept as one consolidated file rather than scattered per-phase blocks, so it's a
+  single practice surface that complements the per-phase "Check yourself".)
 - **2026-06-09** — **Completed Item 3** ☑: added "Key takeaways" + "Check yourself" to
   phases **6, 7, 8** — all 8 phases now carry the recap/self-test layer. Also fixed a
   second navigation bug: phase 7's "What's Next" described a stale 10-phase plan

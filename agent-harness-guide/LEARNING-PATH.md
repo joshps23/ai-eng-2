@@ -7,7 +7,9 @@
 
 If you ever hit an unfamiliar word, keep the **[Glossary](./GLOSSARY.md)** open in a
 tab. If you're newer to Python, read **[`BEGINNER-NOTES.md`](./BEGINNER-NOTES.md)**
-once before Phase 1.
+once before Phase 1. To *practice* (not just read), each phase has a warm-up and a
+stretch task in **[`EXERCISES.md`](./EXERCISES.md)** — do them right after the phase's
+"Check yourself".
 
 ---
 
