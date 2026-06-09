@@ -8,6 +8,38 @@
 
 ---
 
+> ## 🟢 Beginner track: good news — this phase is mostly plain functions
+>
+> Each tool below (`read_file`, `write_file`, `bash`, `grep`, …) is **an ordinary
+> function** built from things you know: `if`/`else`, `for`, lists, dicts, string
+> operators, and `return`. You can read every tool body directly. A few heads-ups so
+> nothing trips you up:
+>
+> - **`@tool` above each function** is the decorator from
+>   [Phase 2](./02-tool-system.md#-beginner-track-the-same-tool-system-using-only-functions--dicts).
+>   It only auto-writes the schema dict. You can delete the `@tool` lines and register
+>   each function the simple way — `register("read_file", read_file, read_file_schema)`
+>   with a hand-written schema dict — exactly as in the Phase 2 beginner box. The
+>   function bodies don't change at all.
+> - **`pathlib.Path`** is the standard way to handle file paths. `p = Path("src/a.py")`
+>   makes a path *object*; then `p.exists()`, `p.read_text()`, `p.is_file()` are
+>   methods that ask/do things with it. Read `p.read_text()` as "read this file's text."
+>   It's an object with handy functions attached — nothing more.
+> - **`key=lambda e: e.name.lower()`** (in the `sorted(...)` calls). A `lambda` is just
+>   a one-line function with no name. `lambda e: e.name.lower()` is the same as defining
+>   `def f(e): return e.name.lower()` and passing `f`. Here it tells `sorted` to order
+>   entries by their lowercased name.
+> - **Fancy f-strings** like `f"{n:.0f}"` or `f"{e.name:<40s}"` just control formatting
+>   (decimal places, column width). The `{...}` still means "drop a value in here"; the
+>   part after `:` is cosmetic. You can ignore the details.
+> - **`try:` / `except:`** appears throughout — see the
+>   [Phase 1 box](./01-bare-harness.md) if you need the refresher: "try this; if it
+>   errors, return an error string instead of crashing."
+>
+> With those five notes, the entire phase is readable with your five concepts.
+
+---
+
 ## 1. Why Tools Define the Agent's Power
 
 The loop from Phase 1 is the skeleton. Tools are the muscles. A model that can only

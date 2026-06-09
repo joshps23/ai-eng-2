@@ -23,6 +23,17 @@ pip install "openai>=1.66.0"   # Responses API was added in 1.66.0
 pip install tiktoken           # optional
 ```
 
+> 🟢 **Beginner reading order for this appendix.** **§1 (`openai`) is the one section
+> to actually know** — it's the `client.responses.create(...)` API you already use, and
+> every example there is built from strings, dicts, and lists. Read it closely. The
+> other three are *background you only need when you reach that feature*: §2 `tiktoken`
+> matters only for Phase 6 (and is optional — there's always the `len(text)//4`
+> fallback), and §3 `concurrent.futures` + §4 `subprocess` are the **threads** and
+> **shell** pieces that earlier green boxes already flagged as advanced/optional. When
+> you see `with ... as x:` or `try/except` here, they mean the same as in the
+> [Phase 0](./00-foundations.md) and [Phase 1](./01-bare-harness.md) boxes. So: study
+> §1, skim §2–§4 for reference when you need them.
+
 ---
 
 ## 1. `openai` — the Responses API

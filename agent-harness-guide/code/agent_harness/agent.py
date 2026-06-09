@@ -1,4 +1,11 @@
-"""Agent: the main agentic loop."""
+"""Agent: the main agentic loop.
+
+Beginner note: this is the production (class-based) version of the loop. For the
+same loop written with only functions, lists, and dicts, see the green "Beginner
+track" boxes in ../../01-bare-harness.md and ../../07-subagents-orchestration.md
+(and ../../BEGINNER-NOTES.md for the concept cheat-sheet). Read `agent.run(task)`
+as "call the run() loop with this agent's data."
+"""
 from __future__ import annotations
 
 import json

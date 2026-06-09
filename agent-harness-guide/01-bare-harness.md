@@ -91,6 +91,14 @@ def get_current_time(timezone: str = "") -> str:
     return now.isoformat(timespec="seconds")
 ```
 
+> 🟢 **Two small bits of new syntax in that function.** (1) The `: str` and `-> str`
+> are **type hints** — optional labels saying "this is a string." They do nothing when
+> the code runs; read past them. (2) Later you'll see the function called as
+> `get_current_time(**args)` where `args` is a dict like `{"timezone": "Asia/Tokyo"}`.
+> The `**` "spreads" a dict into named arguments, so that call is exactly the same as
+> writing `get_current_time(timezone="Asia/Tokyo")`. See
+> [`BEGINNER-NOTES.md`](./BEGINNER-NOTES.md) for the full list.
+
 Key points:
 
 - The schema is **flat** — `type`, `name`, `description`, `parameters` are all top-level keys. There is no nested `"function"` wrapper.
@@ -108,6 +116,13 @@ Key points:
 ### 3b. The Dispatcher
 
 The dispatcher is a thin router: it receives a tool name and a raw `arguments` string, parses the JSON, calls the right function, and always returns a string. It **never raises** into the agent loop — errors become string results so the model can self-correct.
+
+> 🟢 **`try:` / `except:` in one minute.** `try:` means "attempt the code below."
+> `except SomeError as exc:` means "if that code crashes with this kind of error,
+> jump here instead of stopping the whole program, and call the error object `exc`."
+> So the dispatcher *tries* to parse the JSON and run the tool, and if anything goes
+> wrong it *catches* the error and returns it as a plain string. That string travels
+> back to the model, which can then fix its mistake — much better than crashing.
 
 ```python
 import json
@@ -136,6 +151,19 @@ def dispatch(name: str, arguments: str) -> str:
 ---
 
 ### 3c. The Agent Loop
+
+> 🟢 **One new line to decode below:**
+> `tool_calls = [item for item in resp.output if item.type == "function_call"]`.
+> That's a **list comprehension** — a compact way to build a list. It means exactly
+> the same as this plain loop you already know how to write:
+> ```python
+> tool_calls = []
+> for item in resp.output:
+>     if item.type == "function_call":
+>         tool_calls.append(item)
+> ```
+> Both produce a list of just the tool-call items. Use whichever you find clearer —
+> they behave identically.
 
 ```python
 from openai import OpenAI
@@ -231,6 +259,11 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 ```
+
+> 🟢 **`if __name__ == "__main__":`** is boilerplate that means "only run `main()`
+> when this file is executed directly (e.g. `python bare_harness.py`), not when it's
+> imported by another file." You can treat it as a fixed phrase that goes at the
+> bottom of a runnable script.
 
 ---
 

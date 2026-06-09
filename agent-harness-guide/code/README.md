@@ -6,6 +6,42 @@ No LangChain, no other frameworks. Requires Python 3.10+.
 
 ---
 
+> ## 🟢 New to Python? Read this before opening the code
+>
+> This package is the **production reference**: it uses classes, decorators,
+> dataclasses, and threads to stay organized and fast. That's more machinery than a
+> beginner needs to *understand* the ideas. If you only know **functions, lists,
+> dictionaries, operators, and `client.responses.create(...)`**, do this:
+>
+> 1. **Learn the ideas from the phase guides first**, not from this package. Start at
+>    [`../BEGINNER-NOTES.md`](../BEGINNER-NOTES.md). Each phase has a green "🟢 Beginner
+>    track" box that rebuilds that phase's piece using only functions and dicts.
+> 2. **Treat this package as the "grown-up" version** of those same pieces. Nothing
+>    here does anything the beginner boxes don't — it just adds structure. Use this map
+>    to jump from a file to its plain-functions explanation:
+>
+> | Package file | What it is | Plain-functions version |
+> |--------------|-----------|--------------------------|
+> | `agent.py` | the agent loop, as a class | [Phase 1](../01-bare-harness.md) loop + [Phase 7 box](../07-subagents-orchestration.md) `run_agent` |
+> | `tools/base.py`, `tools/registry.py` | `Tool` class, `@tool`, `ToolRegistry` | [Phase 2 beginner box](../02-tool-system.md) (tool = function + schema dict; registry = a dict) |
+> | `tools/parallel.py` | run tools on threads | [Phase 2 box](../02-tool-system.md) `run_tool_calls` (a plain `for` loop) |
+> | `tools/files.py`, `tools/shell.py` | the real tools | [Phase 4](../04-real-tools.md) — already plain functions |
+> | `conversation.py` | `Conversation` class | [Phase 3 box](../03-conversation-and-streaming.md) (conversation = a dict + functions) |
+> | `context.py` | token budget + compaction | [Phase 6 box](../06-context-management.md) (clip / drop-oldest / summarize) |
+> | `permissions.py`, `hooks.py` | permission gate + hooks | [Phase 5 box](../05-permissions-and-safety.md) (dicts + `if`/`else`) |
+> | `subagents.py` | sub-agent orchestration | [Phase 7 box](../07-subagents-orchestration.md) (a `task` tool that calls the loop again) |
+> | `llm.py`, `config.py`, `cli.py` | retry, settings, REPL | [Phase 8 box](../08-production-harness.md) (polish: retry = `for` + `try/except` + `sleep`) |
+>
+> 3. **When you read a class**, remember the one rule from the beginner notes: a method
+>    `obj.do(x)` is just a function call, and `self` is "this object's data." Read
+>    `registry.dispatch(name, args)` as `dispatch(registry, name, args)`.
+>
+> You do **not** need to reproduce this package to have a working agent — the
+> functions-and-dicts versions in the phase boxes run on their own. This package is here
+> for when you're ready to see how the production shape fits together.
+
+---
+
 ## Installation
 
 ```bash

@@ -25,6 +25,61 @@ Each section below is a self-contained module. All of them plug into `agent_harn
 
 ---
 
+> ## 🟢 Beginner track: this phase is polish, not new core ideas
+>
+> Take a breath — there's **no new agent concept** in Phase 8. The loop at the heart of
+> `run_turn` (§7) is the *same loop* you wrote in Phases 1–2: call the model, run the
+> tools it asks for, feed results back, repeat until done. Everything else here is
+> *optional production polish* wrapped around that loop:
+>
+> - **Retries** (`llm.py`) — if the network hiccups, try again after waiting.
+> - **Logging / tracing** — fancy `print()` that writes to a file for later debugging.
+> - **Config** (`Settings`) — read options from the command line / env instead of
+>   hardcoding them.
+> - **Cost accounting** — add up tokens × price.
+> - **CLI** (`cli.py`) — the `You: ` prompt loop and `/help`-style commands.
+> - **Packaging** (`pyproject.toml`) — so you can type `agent` to start it.
+>
+> You can run the agent with **none** of this. Here's the single most useful piece —
+> retry — written with only the things you know (a `for` loop, `try/except`, and
+> `time.sleep`), no exception classes or decorators:
+>
+> ```python
+> import time
+>
+> def create_with_retry(client, **kwargs):
+>     """Call the API; if it fails, wait a bit and try again, up to 5 times."""
+>     for attempt in range(5):
+>         try:
+>             return client.responses.create(**kwargs)
+>         except Exception as exc:
+>             wait = 2 ** attempt          # 1s, 2s, 4s, 8s, 16s
+>             print(f"API error ({exc}); retrying in {wait}s…")
+>             time.sleep(wait)
+>     raise RuntimeError("API still failing after 5 tries")
+> ```
+>
+> Use `create_with_retry(client, model=..., input=..., tools=...)` anywhere the guide
+> calls `client.responses.create(...)`. That captures 90% of the value of the much
+> longer `llm.py`.
+>
+> How to read the heavier syntax in this phase:
+>
+> | In the original | What it is, in your terms |
+> |-----------------|---------------------------|
+> | `@dataclass class Settings` / `SessionAccounting` | a dict with fixed keys; read `settings.model` as `settings["model"]`. |
+> | `@property def total_tokens` | a method you read like a field (`acc.total_tokens`); just returns a computed value. |
+> | `@contextmanager` / `@classmethod` | decorators that adjust how a function is used. Skim past them; the function body is the part that matters. |
+> | `argparse` | reads options typed after the command (`agent --model gpt-5`). Conceptually: fill a settings dict from the command line. |
+> | `logging` | `print()` with on/off levels that can write to a file. |
+> | the typed `except RateLimitError / APIConnectionError` list | "which errors are worth retrying" — the simple version above just retries on *any* error. |
+> | `ThreadPoolExecutor` (again) | run approved tools at the same time; a plain `for` loop over them works identically. |
+>
+> Read this phase to understand *what a production harness adds and why*. You do not
+> need to build every module to have a working agent — you already do.
+
+---
+
 ## 2. Reliability
 
 ### 2.1 The Resilient LLM Wrapper — `llm.py`
