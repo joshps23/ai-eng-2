@@ -1530,10 +1530,47 @@ For HTTP-heavy workloads (many parallel sub-agents all making long-running API c
 
 ## 10. What's Next
 
-Phase 7 completes the orchestration story. The remaining phases build on this foundation:
+Phase 7 completes the orchestration story. One phase remains:
 
-- **Phase 8** — Persistent memory and cross-session state: giving agents the ability to remember things between runs via external storage, so knowledge accumulates rather than evaporating at the end of each conversation.
-- **Phase 9** — Evaluation, testing, and reliability: how to write deterministic tests for non-deterministic agents, measure tool-call accuracy, and catch regressions before they reach production.
-- **Phase 10** — Deployment: packaging the harness as a service, exposing it via HTTP, managing secrets, and operating it at scale.
+- **Phase 8 — The production harness:** the final assembly. Reliability (retries with
+  backoff, iteration caps, graceful Ctrl-C), observability (structured logging),
+  configuration, system-prompt engineering, packaging, and a real CLI — all wrapped
+  around the loop you've built since Phase 1. (Persistent cross-session memory was
+  already introduced back in Phase 6.)
 
-The architecture you have now — a loop, a typed tool system, permissions, streaming, structured output, and multi-agent orchestration — is production-grade. The remaining phases harden, test, and deploy it.
+The architecture you have now — a loop, a typed tool system, permissions, streaming,
+structured output, and multi-agent orchestration — is production-grade. Phase 8 hardens,
+packages, and ships it.
+
+---
+
+## Key takeaways
+
+- **One agent isn't enough** for large jobs; the fix is to let the agent **delegate** to
+  focused sub-agents.
+- **The key trick:** a sub-agent is just **your `run_agent` loop called again** from
+  inside a `task` *tool* — so spawning a sub-agent is itself something the main agent can
+  *choose* to do, with its own short conversation and limited toolset.
+- Independent sub-agents can run **in parallel** (threads) for fan-out; `asyncio` is an
+  alternative shown at the end.
+- Give each sub-agent a **narrow brief and limited tools**, then combine their results —
+  this keeps each context small and the blast radius contained.
+
+## Check yourself
+
+1. In one sentence, what *is* a sub-agent in this design?
+2. How does the *main* agent decide to delegate work to a sub-agent?
+3. When does running sub-agents in parallel actually help?
+4. Why hand each sub-agent a focused brief and a restricted set of tools?
+
+<details><summary>Answers</summary>
+
+1. The **same agent loop invoked again** from within a tool, with its own conversation
+   and tools.
+2. Sub-agent spawning is exposed **as a tool** (`task`), so the model calls it like any
+   other tool when it judges delegation is useful.
+3. When the subtasks are **independent** (e.g. searching several areas at once) — fan-out
+   overlaps their latency instead of serialising it.
+4. Focus improves quality, a small toolset limits what can go wrong, and a short brief
+   keeps each sub-agent's **context small** (cheaper, clearer reasoning).
+</details>

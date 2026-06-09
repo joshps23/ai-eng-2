@@ -1174,3 +1174,36 @@ def compact(
 | Persistent memory file | Cross-session facts | Small (injected in instructions) | None |
 
 With these five mechanisms layered in order, the harness can sustain arbitrarily long sessions without degrading or crashing — the difference between a demo and a tool you would trust with a real engineering task.
+
+---
+
+## Key takeaways
+
+- **One core problem:** the transcript grows every turn, but the context window is
+  finite — a long session *must* shed tokens without losing the thread.
+- **Know your budget:** count tokens with `tiktoken` (exact) or `len(text) // 4`
+  (approximate) so you know when you're approaching the limit.
+- **Layer the tactics in order:** clip oversized tool output at the source → sliding-window
+  prune old turns → model **compaction** (summarise) as you near ~75% of budget →
+  externalise big artefacts to disk → a persistent memory file for cross-session facts.
+- **Preserve vs drop:** always keep the system prompt, the most recent turns, and
+  task-critical facts; drop stale, reconstructable detail first.
+
+## Check yourself
+
+1. Why must a long agentic session eventually summarise or drop history?
+2. Give two ways to count tokens, and when you'd use each.
+3. How does **sliding-window pruning** differ from **model compaction**?
+4. When the budget gets tight, what do you protect from being dropped?
+
+<details><summary>Answers</summary>
+
+1. The context window is **finite** — past some length the transcript no longer fits, so
+   tokens must be shed or the call fails / the model degrades.
+2. **`tiktoken`** for an exact per-model count (when installed); **`len(text) // 4`** as a
+   cheap, dependency-free approximation for budgeting.
+3. Pruning **discards old turns silently** (no token cost, information lost); compaction
+   **summarises** them (small token cost, gist preserved).
+4. The **system prompt, recent turns, and task-critical facts** — drop stale/reconstructable
+   detail instead.
+</details>

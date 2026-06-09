@@ -1818,4 +1818,35 @@ The result is a harness where each concern is isolated, each component is testab
 
 ---
 
+## Key takeaways
+
+- The gap between a **demo and a production harness** is *not* new agent ideas — it's
+  **reliability, observability, configuration, and clean packaging** around the same loop.
+- **Reliability:** retry transient/rate-limit errors with **exponential backoff**, cap
+  iterations, and handle **Ctrl-C** gracefully.
+- **Observability:** **structured logging** of tool calls, timings, and failures lets you
+  see *inside* a run and debug it.
+- It all assembles into **one CLI** (`argparse`) over the `Conversation`, `ToolRegistry`,
+  and `PermissionPolicy` you've built since Phase 1 — each a separately testable piece.
+
+## Check yourself
+
+1. Name two things that separate a production harness from a demo.
+2. What technique rides out a transient `RateLimitError`?
+3. What does structured logging buy you operationally?
+4. Is this phase mostly new concepts, or hardening of the existing loop?
+
+<details><summary>Answers</summary>
+
+1. Any two of: **retries/reliability**, **observability/logging**, **configuration**, and
+   **packaging/CLI**.
+2. **Retry with exponential backoff** (wait 1s, 2s, 4s… between attempts).
+3. **Visibility** — which tools ran, how long they took, and what failed — so you can
+   diagnose problems instead of guessing.
+4. **Hardening and assembly.** The agent ideas are already in place; Phase 8 makes them
+   reliable, observable, and shippable.
+</details>
+
+---
+
 *End of Phase 8 — and of the guide. You now have a complete, from-scratch implementation of a production coding agent in pure Python.*

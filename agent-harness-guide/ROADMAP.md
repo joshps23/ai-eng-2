@@ -38,7 +38,7 @@ Status: ☐ todo · ◐ in progress · ☑ done
 |--:|------|-------------|:------:|
 | 1 | **Glossary** of every harness/Python term the guide uses, linked from the READMEs and referenced from phases | 2 | ☑ |
 | 2 | **Setup gotchas fix**: document `python -m pytest` (not bare `pytest`), venv guidance, and an API-key-free first-run path | 1 | ☑ |
-| 3 | **Per-phase "Key takeaways" + "Check yourself"** blocks, made consistent across all 8 phases | 4 | ◐ |
+| 3 | **Per-phase "Key takeaways" + "Check yourself"** blocks, made consistent across all 8 phases | 4 | ☑ |
 | 4 | **Hands-on exercises** ("Your turn") with hidden solutions at the end of each phase | 3 | ☐ |
 | 5 | **A guided learning path / syllabus** ("Day 1 / Day 2 …" or "if you have 2 hours") at the top level | 5 | ☑ |
 | 6 | **Beginner FAQ / troubleshooting** page: API keys, rate limits, common tracebacks, Windows vs. mac/Linux | 1, 4 | ☑ |
@@ -51,6 +51,10 @@ Status: ☐ todo · ◐ in progress · ☑ done
 
 Newest first. One line per shipped iteration.
 
+- **2026-06-09** — **Completed Item 3** ☑: added "Key takeaways" + "Check yourself" to
+  phases **6, 7, 8** — all 8 phases now carry the recap/self-test layer. Also fixed a
+  second navigation bug: phase 7's "What's Next" described a stale 10-phase plan
+  (phases 8/9/10) instead of the real, final Phase 8.
 - **2026-06-09** — Continued **Item 3** (◐): added "Key takeaways" + "Check yourself"
   to phases **3, 4, 5**. Also fixed a navigation bug — phase 3's "Next" pointer
   mislabeled Phase 4 as context management (it's Real Tools). Remaining: phases 6–8.
