@@ -19,6 +19,8 @@ point is to understand what those frameworks hide and be able to rebuild them yo
 - 📖 **[The guide](./agent-harness-guide/README.md)** — 8 incremental phases, from an
   ~80-line agent to a production-shaped harness (loop, tools, streaming, permissions,
   context management, sub-agents).
+- 📒 **[Glossary](./agent-harness-guide/GLOSSARY.md)** — every harness and Python
+  term the guide uses, defined in plain language. Hit an unfamiliar word? Start here.
 - 📚 **[Library reference appendix](./agent-harness-guide/09-library-reference.md)** —
   every external library used (`openai`, `tiktoken`) plus key stdlib, documented with
   methods, parameters, return types, and examples.
@@ -30,7 +32,7 @@ point is to understand what those frameworks hide and be able to rebuild them yo
 ```bash
 cd agent-harness-guide/code
 pip install -e ".[dev]"
-pytest -q                       # all tests pass offline (no API key needed)
+python -m pytest -q             # all tests pass offline (no API key needed)
 
 export OPENAI_API_KEY="sk-..."  # then, to actually run the agent:
 agent-harness
