@@ -47,9 +47,12 @@ Claude-Code-shaped harness.
 | **A** | [`09-library-reference.md`](./09-library-reference.md) | Reference appendix | Every external library (`openai`, `tiktoken`) + key stdlib, with methods, parameters, return types, and examples |
 | **G** | [`GLOSSARY.md`](./GLOSSARY.md) | Plain-language glossary | Every harness/Python term used in the guide, defined for beginners |
 
-> **Start with [Phase 0](./00-foundations.md).** It establishes the API contract and
-> conventions (naming, data shapes, project layout) that every later phase depends on.
-> If a later code sample looks unfamiliar, Phase 0 is your reference.
+> **New and want a plan?** The **[Learning Path](./LEARNING-PATH.md)** turns these
+> phases into a step-by-step route with time-budgeted tracks and per-phase
+> checkpoints. Otherwise, **start with [Phase 0](./00-foundations.md).** It
+> establishes the API contract and conventions (naming, data shapes, project layout)
+> that every later phase depends on. If a later code sample looks unfamiliar, Phase 0
+> is your reference.
 
 ## The canonical, runnable code
 
