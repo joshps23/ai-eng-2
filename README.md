@@ -24,6 +24,9 @@ point is to understand what those frameworks hide and be able to rebuild them yo
   context management, sub-agents).
 - 📒 **[Glossary](./agent-harness-guide/GLOSSARY.md)** — every harness and Python
   term the guide uses, defined in plain language. Hit an unfamiliar word? Start here.
+- 🛟 **[Beginner FAQ & troubleshooting](./agent-harness-guide/FAQ.md)** — fixes for
+  the common first-run errors (install, API keys, models, "the agent did nothing",
+  reading tracebacks, Windows notes).
 - 📚 **[Library reference appendix](./agent-harness-guide/09-library-reference.md)** —
   every external library used (`openai`, `tiktoken`) plus key stdlib, documented with
   methods, parameters, return types, and examples.

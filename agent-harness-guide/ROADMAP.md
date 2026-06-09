@@ -41,7 +41,7 @@ Status: ☐ todo · ◐ in progress · ☑ done
 | 3 | **Per-phase "Key takeaways" + "Check yourself"** blocks, made consistent across all 8 phases | 4 | ☐ |
 | 4 | **Hands-on exercises** ("Your turn") with hidden solutions at the end of each phase | 3 | ☐ |
 | 5 | **A guided learning path / syllabus** ("Day 1 / Day 2 …" or "if you have 2 hours") at the top level | 5 | ☑ |
-| 6 | **Beginner FAQ / troubleshooting** page: API keys, rate limits, common tracebacks, Windows vs. mac/Linux | 1, 4 | ☐ |
+| 6 | **Beginner FAQ / troubleshooting** page: API keys, rate limits, common tracebacks, Windows vs. mac/Linux | 1, 4 | ☑ |
 | 7 | **CI** that runs the test suite (and ideally a markdown link/code-block check) on every push | 6 | ☐ |
 | 8 | **Verify phase code samples** against the canonical package — flag any drift between snippets and `code/` | 6 | ☐ |
 | 9 | **Visual diagrams**: replace/augment ASCII with clearer flow diagrams where it helps a beginner | 4 | ☐ |
@@ -51,6 +51,10 @@ Status: ☐ todo · ◐ in progress · ☑ done
 
 Newest first. One line per shipped iteration.
 
+- **2026-06-09** — Shipped **Item 6**: `FAQ.md` — beginner troubleshooting grounded in
+  the actual code (install/interpreter mismatch, `OPENAI_API_KEY`, model selection &
+  `--model`, rate limits, "agent did nothing", reading tracebacks bottom-up, Windows
+  notes). Linked from the README and Learning Path.
 - **2026-06-09** — Shipped **Item 5**: `LEARNING-PATH.md` — a guided route with three
   time-budgeted tracks (Taster / Weekend / Deep), a per-phase "build / do / checkpoint"
   plan, and a one-time setup block. Linked as the first "Start here" item in both READMEs.

@@ -21,9 +21,9 @@ once before Phase 1.
    pip install -e ".[dev]"
    python -m pytest -q          # expect: all tests pass, no API key needed
    ```
-   If anything here fails, see **Setup & troubleshooting** in the
-   [top-level README](../README.md). Getting the tests green now means every later
-   "run it" step will just work.
+   If anything here fails, check the **[Beginner FAQ & troubleshooting](./FAQ.md)**
+   (or **Setup & troubleshooting** in the [top-level README](../README.md)). Getting
+   the tests green now means every later "run it" step will just work.
 3. **(Optional, for actually chatting with the agent)** Set `OPENAI_API_KEY`. You do
    **not** need this to learn — the whole guide and its tests run offline.
 
