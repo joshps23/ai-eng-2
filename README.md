@@ -40,3 +40,21 @@ agent-harness
 
 Python 3.10+. The only required dependency is `openai>=1.66.0` (the version that added
 the Responses API); `tiktoken` is an optional extra for exact local token counting.
+
+### Setup & troubleshooting (read this if something won't run)
+
+- **Use a virtual environment.** `python -m venv .venv && source .venv/bin/activate`
+  (Windows: `.venv\Scripts\activate`) *before* `pip install`. This avoids the most
+  common gotcha: a globally-installed `pytest` belonging to a different interpreter
+  that can't find the package (`ModuleNotFoundError: No module named 'agent_harness'`).
+- **Run tests as `python -m pytest`,** not bare `pytest`. The `python -m` form uses
+  the *same* interpreter you installed into, so imports resolve. Run it from
+  `agent-harness-guide/code`.
+- **No API key needed to learn.** The full test suite runs offline — a `FakeClient`
+  stands in for the API. You only need `OPENAI_API_KEY` to actually *chat* with the
+  agent (`agent-harness`).
+- **`agent-harness: command not found`?** The console script is installed by
+  `pip install -e ".[dev]"`; make sure your venv is active, or run it as
+  `python -m agent_harness.cli`.
+- **Unfamiliar term anywhere?** See the
+  **[Glossary](./agent-harness-guide/GLOSSARY.md)**.

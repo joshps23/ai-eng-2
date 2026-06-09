@@ -37,7 +37,7 @@ Status: ☐ todo · ◐ in progress · ☑ done
 | # | Item | Rubric axis | Status |
 |--:|------|-------------|:------:|
 | 1 | **Glossary** of every harness/Python term the guide uses, linked from the READMEs and referenced from phases | 2 | ☑ |
-| 2 | **Setup gotchas fix**: document `python -m pytest` (not bare `pytest`), venv guidance, and an API-key-free first-run path | 1 | ☐ |
+| 2 | **Setup gotchas fix**: document `python -m pytest` (not bare `pytest`), venv guidance, and an API-key-free first-run path | 1 | ☑ |
 | 3 | **Per-phase "Key takeaways" + "Check yourself"** blocks, made consistent across all 8 phases | 4 | ☐ |
 | 4 | **Hands-on exercises** ("Your turn") with hidden solutions at the end of each phase | 3 | ☐ |
 | 5 | **A guided learning path / syllabus** ("Day 1 / Day 2 …" or "if you have 2 hours") at the top level | 5 | ☐ |
@@ -51,6 +51,9 @@ Status: ☐ todo · ◐ in progress · ☑ done
 
 Newest first. One line per shipped iteration.
 
+- **2026-06-09** — Shipped **Item 2**: a "Setup & troubleshooting" section on the
+  top-level README (venv guidance, `python -m pytest` rationale, API-key-free path,
+  `command not found` fix). Verified `python -m agent_harness.cli` is a valid entry.
 - **2026-06-09** — Established this roadmap + rubric; shipped **Item 1**: a 50+ term
   `GLOSSARY.md` covering harness, agent-loop, and Python/API jargon, linked from
   both READMEs. Confirmed the test suite (56 tests) passes via `python -m pytest`.
