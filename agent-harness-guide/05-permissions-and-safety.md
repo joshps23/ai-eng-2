@@ -1474,3 +1474,35 @@ The injection detector prepends a warning and returns the full (warning + conten
 | `agent_loop.py` | `safe_dispatch()` and updated `run_agent()` wiring everything together |
 
 Phase 6 will add multi-turn conversation management, context-window budgeting, and graceful handling of very long sessions.
+
+---
+
+## Key takeaways
+
+- Start from a **threat model**: the model's tool requests are *untrusted* (prompt
+  injection and plain mistakes are real), and tools can do real damage.
+- Gate risk in layers: **classify** tools by risk, apply **permission modes** + a
+  **policy engine**, and route dangerous calls through an **approval gate**.
+- **Hooks** run before/after every tool to log, block, or modify — adding safety
+  behavior *without* changing the core loop.
+- Pure-Python **sandboxing** (subprocess hardening: env allowlist, POSIX resource
+  limits, a constrained workspace) shrinks the blast radius when a tool does run.
+
+## Check yourself
+
+1. Why treat the model's tool requests as untrusted input?
+2. What layer stops a destructive tool (e.g. `rm -rf`) from running unattended?
+3. What can a hook do that you'd rather not bake into the agent loop itself?
+4. Name one thing pure-Python sandboxing can restrict for a shell tool.
+
+<details><summary>Answers</summary>
+
+1. The model can be **steered by prompt injection** in tool output/inputs, or simply
+   make mistakes — so its requests must pass through safety checks, not run blindly.
+2. The **approval gate** under a strict **permission mode** — risky calls pause for
+   explicit user approval (or a policy rule) before executing.
+3. Cross-cutting behavior like **logging, blocking, or rewriting** tool calls — kept out
+   of the loop so the loop stays about *the loop*.
+4. Any of: an **environment-variable allowlist**, **CPU/memory resource limits**, or a
+   restricted **working directory / workspace root**.
+</details>

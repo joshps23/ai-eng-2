@@ -1654,3 +1654,34 @@ a thin wrapper around `registry.dispatch`.
 fills the context window: how to summarize stale tool results, implement a sliding
 window over the transcript, and use `max_output_tokens` budgeting to keep the model
 reasoning clearly across hundreds of tool calls.
+
+---
+
+## Key takeaways
+
+- **Tools define the agent's power.** `read_file`, `edit_file`, `bash`, `grep`, and
+  `glob` are what turn the bare loop into a coding agent.
+- Every tool shares the same **discipline**: keep paths inside the workspace, return
+  **error strings** instead of raising, and practice **output-size discipline** —
+  truncate/paginate so one big result can't swamp the context window.
+- **`make_default_registry()`** wires the whole toolset together in one place, so the
+  loop just dispatches by name.
+- The genuinely **risky** tools (writing files, running shell) are exactly where
+  Phase 5's permission layer plugs in — the harness itself stays unchanged.
+
+## Check yourself
+
+1. Name three tools that turn the loop into a coding agent.
+2. Why is truncating/paginating tool output a correctness concern, not just cosmetics?
+3. What should a tool do when it's handed a missing file or a path outside the workspace?
+4. Where is the full toolset assembled for the agent to use?
+
+<details><summary>Answers</summary>
+
+1. Any three of `read_file`, `edit_file`, `bash`, `grep`, `glob`.
+2. Oversized output **crowds out conversation history** in the context window, degrading
+   the model's reasoning — so bounded output keeps long sessions coherent.
+3. Return a **clear error string** (not raise) and refuse paths that escape the
+   workspace root — so the model can see the problem and the harness stays safe.
+4. In **`make_default_registry()`**.
+</details>

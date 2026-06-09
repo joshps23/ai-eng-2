@@ -1045,5 +1045,38 @@ which is appended as item 7.  The loop then terminates because `function_calls` 
 | Append order | `conv.extend(resp.output)` before `conv.add_tool_result(...)` — always |
 | Cancellation | `KeyboardInterrupt` inside `with stream:` is safe; context manager cleans up |
 
-**Next:** Phase 4 — Persistent Memory and Context Window Management (summarization, retrieval,
-and deciding what to keep in `input_items`).
+---
+
+## Key takeaways
+
+- This phase separates **two orthogonal concerns**: *owning the transcript* (state) and
+  *streaming* (presentation). Each works without the other.
+- The transcript is **yours to manage**. Every turn, append the model's output items
+  **first**, then the tool results — `conv.extend(resp.output)` before
+  `conv.add_tool_result(...)`, always.
+- **Streaming is optional.** `create(..., stream=True)` yields events you drive the UI
+  from; grab the final complete `Response` from the `response.completed` event. Plain
+  `create()` + `output_text` is simpler and behaves identically to the model.
+- Because you own the transcript, you can **save and reload** a conversation — that's
+  what makes resuming a session possible.
+
+## Check yourself
+
+1. What are the two orthogonal concerns this phase pulls apart?
+2. In what order must you append the model's items and the tool results each turn, and why?
+3. With streaming, where do you obtain the final, complete `Response` object?
+4. Do you need streaming for a *correct* agent?
+
+<details><summary>Answers</summary>
+
+1. **Transcript/state** (what the model remembers) vs **streaming/presentation** (how
+   output reaches the user).
+2. **Model output items first, then tool results.** The tool results refer back to the
+   model's `function_call` items by `call_id`, so those must already be in the transcript.
+3. From the **`response.completed`** event emitted at the end of the stream.
+4. **No** — streaming only changes *how* text is displayed, not what the model computes.
+   It's a UX feature.
+</details>
+
+**Next:** Phase 4 — Real Tools (the `read_file`, `edit_file`, `bash`, `grep`, `glob`
+toolset that turns the loop into a genuine coding agent).

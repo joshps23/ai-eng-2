@@ -51,6 +51,9 @@ Status: ☐ todo · ◐ in progress · ☑ done
 
 Newest first. One line per shipped iteration.
 
+- **2026-06-09** — Continued **Item 3** (◐): added "Key takeaways" + "Check yourself"
+  to phases **3, 4, 5**. Also fixed a navigation bug — phase 3's "Next" pointer
+  mislabeled Phase 4 as context management (it's Real Tools). Remaining: phases 6–8.
 - **2026-06-09** — Started **Item 3** (◐): added "Key takeaways" + "Check yourself"
   (with collapsible answers) to the Taster-track phases **0, 1, 2**. Remaining: phases
   3–8. Confirmed the CI run on PR #6 went green (3.10/3.11/3.12).
