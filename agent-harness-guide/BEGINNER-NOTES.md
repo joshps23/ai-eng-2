@@ -49,7 +49,7 @@ Status legend: ☐ not started · ◐ in progress · ☑ adapted for beginners
 | `02-tool-system.md` | ☑ | Added full functions-only "beginner track" (tool = fn + schema dict; registry = dict; dispatch + for-loop), plus inline boxes translating classes, the `@tool` decorator/introspection, and threads. |
 | `03-conversation-and-streaming.md` | ☑ | Beginner track: `Conversation` as a plain dict + functions (new_conversation/add_user/extend_items/save/load); streaming framed as optional (use non-streaming `create()` + `output_text`). Inline boxes on the class methods and the argument-taking decorator. |
 | `04-real-tools.md` | ☑ | One consolidated box: tools are plain functions; `@tool` is optional (hand-write schemas per Phase 2); plus heads-ups on `pathlib.Path`, `lambda`, f-string format specs, and try/except. |
-| `05-permissions-and-safety.md` | ☐ | |
+| `05-permissions-and-safety.md` | ☑ | Beginner track: full permission check in dicts + if/else (TOOL_RISK, AUTO_OK, check_permission/ask_user); concept table for dataclass≈dict, Enum≈string constants, set≈list, closure, tuple-return, hooks. Inline box reframing hooks as plain functions. |
 | `06-context-management.md` | ☐ | |
 | `07-subagents-orchestration.md` | ☐ | |
 | `08-production-harness.md` | ☐ | |

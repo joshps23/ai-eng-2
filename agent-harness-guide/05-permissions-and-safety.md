@@ -21,6 +21,76 @@ The design principle that makes all of these manageable is: **the model proposes
 
 ---
 
+> ## 🟢 Beginner track: the safety idea, in functions + dicts
+>
+> The big idea of this phase needs none of the new syntax below. It's this: **before
+> running a tool, ask a function "is this allowed?" and only run it if the answer is
+> yes.** Here's the whole permission check using only dicts, a list, and if/else:
+>
+> ```python
+> # How risky is each tool? (the original calls this its "risk level")
+> TOOL_RISK = {
+>     "read_file": "safe", "glob": "safe", "grep": "safe", "list_dir": "safe",
+>     "write_file": "caution", "edit_file": "caution",
+>     "bash": "dangerous",
+> }
+>
+> # For each mode, which risk levels run without asking the user?
+> AUTO_OK = {
+>     "plan":  ["safe"],
+>     "auto":  ["safe", "caution"],
+>     "yolo":  ["safe", "caution", "dangerous"],
+> }
+>
+> def check_permission(tool_name, command_or_path, mode):
+>     """Return 'allow', 'deny', or 'ask'."""
+>     # 1) Always block a few obviously destructive commands.
+>     if tool_name == "bash":
+>         for bad in ["rm -rf", "sudo ", ":(){"]:
+>             if bad in command_or_path:
+>                 return "deny"
+>     # 2) Auto-approve if this tool's risk is OK for the current mode.
+>     risk = TOOL_RISK.get(tool_name, "dangerous")
+>     if risk in AUTO_OK.get(mode, []):
+>         return "allow"
+>     # 3) Otherwise, ask the user.
+>     return "ask"
+>
+> def ask_user(tool_name):
+>     answer = input(f"Allow {tool_name}? [y/n] ").strip().lower()
+>     return "allow" if answer == "y" else "deny"
+> ```
+>
+> Use it in the loop right before running a tool:
+>
+> ```python
+> decision = check_permission(fc.name, args.get("command", args.get("path", "")), mode)
+> if decision == "ask":
+>     decision = ask_user(fc.name)
+> if decision == "deny":
+>     result = "Permission denied by the harness."   # <- becomes the tool result
+> else:
+>     result = dispatch(fc.name, fc.arguments)        # run it (Phase 2 dispatch)
+> ```
+>
+> That's the entire safety mechanism. The rest of the phase makes it more powerful and
+> uses some new syntax to organize it — here's how to read each piece:
+>
+> | New thing in this phase | What it is, in your terms |
+> |-------------------------|---------------------------|
+> | `@dataclass class Tool:` | A class whose only job is to hold named fields — basically **a dict with fixed keys**. Read `tool.name` as `tool["name"]`. |
+> | `class Mode(str, Enum)` / `Decision` | A fixed set of named text constants. `Mode.PLAN` is really just the string `"plan"`; you can use plain strings like the box above does. |
+> | `set` (e.g. `{"safe", "caution"}`) | Like a **list** but items are unique and `x in myset` is fast. For your purposes, treat it as a list. |
+> | a function that *returns* a function (e.g. `bash_command_matches`, `make_audit_logger`) | A **closure** — a function that builds and hands back another function with some values baked in. You can replace any of these with a single plain function plus an `if`. |
+> | `return (decision, reason)` | Returns **two values at once** as a pair; `a, b = check(...)` unpacks them. |
+> | a "hook" | Just **a function the harness calls** before or after a tool runs (to block, scrub secrets, or log). A list of such functions, called in order. |
+>
+> Everything below is the production-grade version of the small `check_permission`
+> above. Read it for the ideas (risk levels, modes, deny-lists, secret scrubbing); use
+> the simple functions-and-dicts form when you build your own.
+
+---
+
 ## 2. Risk Classification
 
 Start by annotating each tool with a `risk` level. This is structural, not behavioral — it describes the worst the tool can do.
@@ -360,6 +430,23 @@ def _ask_user(tool_name: str, args: dict) -> tuple[Decision, str]:
 ## 6. The Hook System
 
 Permissions are one kind of middleware. You also want to observe, transform, and gate tool calls for other reasons: scrubbing secrets from outputs, logging to an audit file, injecting defaults into arguments. Generalise this with a hook registry.
+
+> 🟢 **A "hook" is just a function the harness runs around your tool.** A *pre-hook*
+> runs before the tool and can block it; a *post-hook* runs after and can change the
+> result (e.g. hide secrets). The "hook registry" is just **a list of these functions**
+> that the harness calls one by one. You can do the same with plain functions:
+> ```python
+> def run_with_hooks(tool_name, args, result_fn):
+>     # pre: block dangerous bash commands
+>     if tool_name == "bash" and "rm -rf" in args.get("command", ""):
+>         return "Error: blocked by safety policy."
+>     result = result_fn()                  # actually run the tool
+>     # post: hide secrets (like an API key) if they show up in the output
+>     result = scrub_secrets(result)
+>     return result
+> ```
+> The `@dataclass PreToolContext`/`PostToolContext` below are just **dicts of
+> information** ("which tool, what args, what result") handed to each hook.
 
 ### Hook context objects
 
