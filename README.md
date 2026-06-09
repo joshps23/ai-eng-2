@@ -1,5 +1,7 @@
 # ai-eng-2
 
+[![CI](https://github.com/joshps23/ai-eng-2/actions/workflows/ci.yml/badge.svg)](https://github.com/joshps23/ai-eng-2/actions/workflows/ci.yml)
+
 **Building a Full-Fledged Agent Harness with the OpenAI Responses API — in Pure Python.**
 
 An exhaustive, phase-by-phase guide to building an agentic coding harness (the kind of

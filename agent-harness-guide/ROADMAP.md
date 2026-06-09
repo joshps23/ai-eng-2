@@ -42,7 +42,7 @@ Status: ☐ todo · ◐ in progress · ☑ done
 | 4 | **Hands-on exercises** ("Your turn") with hidden solutions at the end of each phase | 3 | ☐ |
 | 5 | **A guided learning path / syllabus** ("Day 1 / Day 2 …" or "if you have 2 hours") at the top level | 5 | ☑ |
 | 6 | **Beginner FAQ / troubleshooting** page: API keys, rate limits, common tracebacks, Windows vs. mac/Linux | 1, 4 | ☑ |
-| 7 | **CI** that runs the test suite (and ideally a markdown link/code-block check) on every push | 6 | ☐ |
+| 7 | **CI** that runs the test suite (and ideally a markdown link/code-block check) on every push | 6 | ☑ |
 | 8 | **Verify phase code samples** against the canonical package — flag any drift between snippets and `code/` | 6 | ☐ |
 | 9 | **Visual diagrams**: replace/augment ASCII with clearer flow diagrams where it helps a beginner | 4 | ☐ |
 | 10 | **"What you'll have built" capstone** + a checklist mapping each phase's output to a feature of a real harness | 5 | ☐ |
@@ -51,6 +51,9 @@ Status: ☐ todo · ◐ in progress · ☑ done
 
 Newest first. One line per shipped iteration.
 
+- **2026-06-09** — Shipped **Item 7**: GitHub Actions CI (`.github/workflows/ci.yml`)
+  running `python -m pytest` on a 3.10/3.11/3.12 matrix for every push/PR (offline, no
+  secrets). Added a CI badge to the README. Markdown link-check left as a future add-on.
 - **2026-06-09** — Shipped **Item 6**: `FAQ.md` — beginner troubleshooting grounded in
   the actual code (install/interpreter mismatch, `OPENAI_API_KEY`, model selection &
   `--model`, rate limits, "agent did nothing", reading tracebacks bottom-up, Windows
