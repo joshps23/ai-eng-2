@@ -1,4 +1,10 @@
-"""Base Tool class and @tool decorator."""
+"""Base Tool class and @tool decorator.
+
+Beginner note: a "tool" here is just a function plus a dict describing it. The
+@tool decorator auto-builds that dict from the function's type hints; you can
+instead write the dict by hand. See the "Beginner track" box in
+../../02-tool-system.md for the functions-and-dicts version of this whole file.
+"""
 from __future__ import annotations
 
 import inspect

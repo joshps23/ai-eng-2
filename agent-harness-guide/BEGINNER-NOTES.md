@@ -53,7 +53,13 @@ Status legend: ☐ not started · ◐ in progress · ☑ adapted for beginners
 | `06-context-management.md` | ☑ | Beginner box: one idea (shrink the growing list) + three tactics (clip/drop-oldest/summarize) as plain functions; syntax notes on count_tokens≈len//4, the bare-`*` keyword-only marker, generator comprehensions, isinstance. |
 | `07-subagents-orchestration.md` | ☑ | Beginner track: a sub-agent = calling your run_agent loop again from inside a `task` tool; Agent class→loop+conversation dict; presets→dict; parallel optional. Syntax table for @dataclass/@property/factory-closure/asyncio. |
 | `08-production-harness.md` | ☑ | Beginner track: phase is polish not new ideas; retry shown as plain for-loop+try/except+sleep; table mapping dataclass/@property/@contextmanager/argparse/logging/typed-except/ThreadPool to known concepts. |
-| `09-library-reference.md` | ☐ | |
-| `code/` package | ☐ | Decide per-file: annotate with scaffolding comments or provide functions-only variant. |
+| `09-library-reference.md` | ☑ | Added a "beginner reading order" box: study §1 (openai, in-scope), skim §2–§4 (tiktoken/threads/subprocess) as background. |
+| `code/` package | ☑ | Kept the tested package intact (source of truth); added a "New to Python?" reading-guide box to `code/README.md` mapping every module to its plain-functions phase box, plus beginner-pointer docstrings in `agent.py` and `tools/base.py`. |
+
+**Review complete** — all files adapted for the beginner audience. Approach: in-place
+scaffolding (green 🟢 boxes) + per-phase functions-and-dicts "Beginner track" rewrites
+of anything using classes/decorators/threads, while leaving the original advanced
+material intact for later. The runnable `code/` package was left untouched (so its tests
+still pass) and bridged with a reading guide instead of a risky rewrite.
 
 Each pass: pick the next ☐ file, adapt it, flip it to ☑, and note what was done.
