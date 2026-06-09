@@ -27,6 +27,46 @@ That is already 41 % of a 128 k window — and the session has only begun. Witho
 
 ---
 
+> ## 🟢 Beginner track: one idea, three tactics — all plain functions
+>
+> Good news: this phase adds **no classes and no decorators**. It's all functions that
+> take your `input_items` **list** and return a smaller list. The single idea:
+>
+> > The conversation list keeps growing. The model can only read so much at once. So
+> > before each call, **make the list smaller** if it's getting too big.
+>
+> Three tactics, simplest first:
+>
+> 1. **Clip** — chop down a single huge tool result *before* you add it to the list
+>    (`clip_output`). Just a string slice.
+> 2. **Drop oldest** — when the list is too long, remove the oldest items
+>    (`prune_to_budget`). Like `del items[0]`, with one rule: a `function_call` and its
+>    matching `function_call_output` must be removed *together* (the API rejects a
+>    lonely half). That pairing rule is the only reason this code looks fiddly.
+> 3. **Summarize** — ask the model to write a short summary of the old part, then
+>    replace the old items with that one summary (`compact`). It's a normal
+>    `client.responses.create(...)` call — the same API you already know.
+>
+> A few syntax heads-ups so nothing surprises you:
+>
+> - **`count_tokens(text)`** is basically `len(text) // 4` — a "token" is roughly 4
+>   characters. The `tiktoken` library just makes that estimate exact; if it isn't
+>   installed, the code falls back to the divide-by-4 version. Tokens are the unit the
+>   model's limit is measured in.
+> - **`def f(items, *, keep_last_n=6)`** — the bare `*` only forces `keep_last_n` to be
+>   passed *by name* (`f(items, keep_last_n=10)`). Ignore the `*`; it changes nothing
+>   about what the function does.
+> - **`sum(count_tokens(t) for t in ...)`** and **`" ".join(... for ...)`** are
+>   comprehension-style one-liners (see the [Phase 1 box](./01-bare-harness.md)): a loop
+>   that adds up / joins values. Mentally expand them to a `for` loop if clearer.
+> - **`isinstance(x, list)`** just asks "is `x` a list?" — `True`/`False`.
+>
+> With those, every function here reads as ordinary Python. Focus on the *idea* of each
+> of the three tactics; you don't need to trace the index-juggling in `prune_to_budget`
+> to use it.
+
+---
+
 ## 2. Counting Tokens
 
 The API returns ground-truth token counts in `resp.usage` after each call, but we also need *local* estimates to decide whether to compact *before* the next API call.
