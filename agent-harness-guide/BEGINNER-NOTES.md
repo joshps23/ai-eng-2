@@ -48,7 +48,7 @@ Status legend: ☐ not started · ◐ in progress · ☑ adapted for beginners
 | `01-bare-harness.md` | ☑ | Scaffolding for type hints, `**args`, `try/except`, list comprehension (with plain-loop equivalent), `__main__`. |
 | `02-tool-system.md` | ☑ | Added full functions-only "beginner track" (tool = fn + schema dict; registry = dict; dispatch + for-loop), plus inline boxes translating classes, the `@tool` decorator/introspection, and threads. |
 | `03-conversation-and-streaming.md` | ☑ | Beginner track: `Conversation` as a plain dict + functions (new_conversation/add_user/extend_items/save/load); streaming framed as optional (use non-streaming `create()` + `output_text`). Inline boxes on the class methods and the argument-taking decorator. |
-| `04-real-tools.md` | ☐ | |
+| `04-real-tools.md` | ☑ | One consolidated box: tools are plain functions; `@tool` is optional (hand-write schemas per Phase 2); plus heads-ups on `pathlib.Path`, `lambda`, f-string format specs, and try/except. |
 | `05-permissions-and-safety.md` | ☐ | |
 | `06-context-management.md` | ☐ | |
 | `07-subagents-orchestration.md` | ☐ | |
