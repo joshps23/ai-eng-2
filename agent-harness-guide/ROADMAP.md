@@ -43,7 +43,7 @@ Status: ☐ todo · ◐ in progress · ☑ done
 | 5 | **A guided learning path / syllabus** ("Day 1 / Day 2 …" or "if you have 2 hours") at the top level | 5 | ☑ |
 | 6 | **Beginner FAQ / troubleshooting** page: API keys, rate limits, common tracebacks, Windows vs. mac/Linux | 1, 4 | ☑ |
 | 7 | **CI** that runs the test suite (and ideally a markdown link/code-block check) on every push | 6 | ☑ |
-| 8 | **Verify phase code samples** against the canonical package — flag any drift between snippets and `code/` | 6 | ☐ |
+| 8 | **Verify phase code samples** against the canonical package — flag any drift between snippets and `code/` | 6 | ☑ |
 | 9 | **Visual diagrams**: replace/augment ASCII with clearer flow diagrams where it helps a beginner | 4 | ☐ |
 | 10 | **"What you'll have built" capstone** + a checklist mapping each phase's output to a feature of a real harness | 5 | ☐ |
 
@@ -51,6 +51,13 @@ Status: ☐ todo · ◐ in progress · ☑ done
 
 Newest first. One line per shipped iteration.
 
+- **2026-06-09** — Shipped **Item 8**: audited phase snippets vs the canonical package by
+  extracting every module/symbol and every `*.py` reference. Found real drift — phases
+  name `tools.py`, `agent_loop.py`/`safe_dispatch()`, and `sandbox.py`/`run_sandboxed()`,
+  none of which exist as modules in `code/`. Added a "Phase file names this package
+  consolidates" reconciliation table to `code/README.md` so beginners can always find
+  where a phase's code actually lives. (Two stale phase cross-references were already
+  fixed in the Item 3 passes.)
 - **2026-06-09** — Shipped **Item 4**: `EXERCISES.md` — a warm-up + a stretch task per
   phase (0–8) plus a capstone, each with a collapsible hint that points at the relevant
   phase section and the canonical `code/` answer key. Linked from the README and Learning
