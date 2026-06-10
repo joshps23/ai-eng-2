@@ -825,6 +825,14 @@ The model will now know exactly where it is and what it is allowed to do, withou
 
 The full `cli.py` wires together everything built above. Read it as the final assembly step:
 
+> **Which rung is this?** None — and that is the point. `cli.py` is not a new rung on any
+> ladder; it is the **assembly floor** where the *top rungs you already built* get bolted
+> together. Watch the `main()` function: every object it constructs is a ladder-top from
+> the §0 map — `build_registry` (Phase 2 V4 + Phase 4 V3), `PermissionPolicy` (Phase 5 V3),
+> `Agent` (Phase 1 V3, grown up in §7), plus this phase's `Settings`, `Tracer`, and
+> `SessionAccounting`. If you can name the phase each line comes from, you have absorbed
+> the whole guide.
+
 ```python
 # agent_harness/cli.py
 """
@@ -1107,7 +1115,11 @@ if __name__ == "__main__":
 
 ---
 
-## 2. Reliability (Production Shape)
+## 6. Reliability (Production Shape: `llm.py`)
+
+> **Which rung is this?** Still **V2 — functions**, the same rung as Step 0. This is the
+> "what changed and why" between Step 0 and the package's `llm.py` — a hardening pass,
+> not a climb. No class appears because there is no state to group.
 
 The `create_with_retry` function from Step 0 is the essential idea. The production `llm.py` below is the same idea with three additions:
 
@@ -1300,7 +1312,7 @@ def stream(
 
 Call sites replace bare `client.responses.create(...)` with `llm.create(client, ...)` and the streaming form `client.responses.create(..., stream=True)` with `llm.stream(client, ...)`.
 
-### 2.2 Timeouts and KeyboardInterrupt Handling
+### 6.2 Timeouts and KeyboardInterrupt Handling
 
 A long-running turn should not lock up the REPL. Wrap each turn in a try/except for `KeyboardInterrupt` and let the thread finish cleanly:
 
@@ -1329,7 +1341,7 @@ response = llm.create(
 )
 ```
 
-### 2.3 Idempotency and Crash Resumability
+### 6.3 Idempotency and Crash Resumability
 
 From Phase 3, `Conversation.save(path)` serialises `input_items` to JSON. Call it after every step:
 

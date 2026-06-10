@@ -1072,11 +1072,10 @@ This file is the Version 3 harness in full; Version 4 changes exactly one thing 
 
 ## Version 4 — Streaming: the Same Harness, Live
 
-> **This entire section is optional.** If streaming is not a priority for you right now,
-> skip to Section 6 (Pitfalls) — the non-streaming loop above is complete and correct.
-> Come back here when you specifically want characters to appear as the model types.
-
-### Step 5 — Add Streaming as a Display Enhancement
+> **This entire version is optional.** If streaming is not a priority for you right now,
+> skip ahead to [Pitfalls](#pitfalls) — the non-streaming Version 3 above is complete and
+> correct.  Come back here when you specifically want characters to appear as the model
+> types.
 
 Streaming does not change the loop logic or the transcript.  It changes only *how the
 model's text reaches the terminal*: instead of printing `resp.output_text` after the whole
@@ -1085,7 +1084,63 @@ response arrives, you print each small text chunk (`delta`) as it streams in.
 **Why streaming?** Faster perceived responsiveness, and tool calls become visible as they
 form — useful for debugging.
 
-### 3.1 Why Stream?
+### Step 4.1 — What an Event Stream Is
+
+**Why do we need a new mechanism at all?** The model generates its answer one token at a
+time, but plain `create()` makes the server *buffer* the whole response and hand it to you
+only when generation finishes.  For a long answer that can mean staring at a frozen prompt
+for many seconds.  With `stream=True`, the server instead sends you a sequence of small
+**events** over the same HTTP connection, *as generation happens*:
+
+- Most events are tiny **deltas** — "here are the next few characters of text"
+  (`response.output_text.delta`) or "here are the next few characters of a tool call's
+  JSON arguments" (`response.function_call_arguments.delta`).  Deltas exist because the
+  model produces output incrementally; the stream simply forwards each increment instead
+  of hoarding them.
+- A few events are **markers** — "a new output item just started"
+  (`response.output_item.added`), "this item is finished" (`response.output_item.done`),
+  and finally "the whole response is finished" (`response.completed`), which carries the
+  same fully-assembled `Response` object a non-streamed call would have returned.
+
+So a stream is not a different *kind* of answer — it is the same answer, delivered as a
+play-by-play.  Your code's new job is small: loop over the events, print the text deltas
+as they arrive, and keep the final object from `response.completed`.
+
+Here is the smallest possible streaming program — no tools, no loop, no class:
+
+```python
+# stream_hello.py — the smallest possible streaming program.
+from openai import OpenAI
+
+MODEL = "gpt-4o"
+client = OpenAI()
+
+final = None
+with client.responses.create(
+    model=MODEL,
+    input=[{"role": "user", "content": "Count from 1 to 10, one number per line."}],
+    stream=True,                       # <- the only new ingredient
+) as stream:
+    for event in stream:
+        if event.type == "response.output_text.delta":
+            print(event.delta, end="", flush=True)   # print each chunk as it lands
+        elif event.type == "response.completed":
+            final = event.response                    # the assembled Response
+
+print("\n\n--- after the stream ---")
+print("final.output_text:", final.output_text[:40], "...")
+```
+
+**▶ Run it now.** Watch the numbers appear *as they are generated*, not all at once.  Then
+note the last line: `final` is a normal `Response` object — `.output`, `.output_text`,
+`.usage` all present — recovered from the `response.completed` event.  That object is what
+the V3 loop already consumes, which is why streaming bolts on without touching the loop.
+
+> 🟢 **`flush=True` matters.** `print(..., end="")` without a newline normally sits in
+> Python's output buffer; `flush=True` forces each delta onto the screen immediately.
+> Forget it and your "stream" appears in jerky chunks or all at the end.
+
+### Step 4.2 — Why Stream?
 
 | Without streaming | With streaming |
 |---|---|
@@ -1094,7 +1149,7 @@ form — useful for debugging.
 | Cannot cancel mid-generation | `KeyboardInterrupt` breaks cleanly |
 | No incremental logging | Can log each delta to a trace file |
 
-### 3.2 Event Reference
+### Step 4.3 — Event Reference
 
 The stream emits these event types (in rough order of appearance):
 
@@ -1138,7 +1193,7 @@ across turns:
    reasoning items from the transcript** — doing so breaks the chain (and, for some models,
    the API rejects a `function_call` whose preceding `reasoning` item is missing).
 
-### 3.3 `stream_turn()` — Full Implementation
+### Step 4.4 — `stream_turn()`: Full Implementation
 
 ```python
 import sys
@@ -1270,7 +1325,7 @@ final_resp = stream_turn(conv, tools=[], instructions=conv.instructions)
 print("\nFull response object output_text:", final_resp.output_text)
 ```
 
-### 3.4 A Simpler Renderer (No ANSI)
+### Step 4.5 — A Simpler Renderer (No ANSI)
 
 If you want zero escape codes:
 

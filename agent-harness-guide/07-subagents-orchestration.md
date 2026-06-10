@@ -575,7 +575,7 @@ SUB_AGENT_INSTRUCTIONS = (
 def task(role, prompt):
     """Spawn a sub-agent and return its answer as a plain string."""
     # For now, every role gets the same instructions and tools.
-    # Step 2 will turn this into a proper role/preset lookup.
+    # Version 3 (presets) will turn this into a proper role/preset lookup.
     print(f"  [task] spawning sub-agent for role={role!r} ...")
     result = run_agent(SUB_AGENT_INSTRUCTIONS, prompt, ALL_TOOLS)
     print(f"  [task] sub-agent finished.")
@@ -616,10 +616,10 @@ if __name__ == "__main__":
     print("\nFinal answer:", answer)
 ```
 
-### ▶ Run it now
+#### ▶ Run it now
 
 ```
-python step0_subagent.py
+python v2_subagent.py
 ```
 
 You should see one `[task] spawning sub-agent...` line appear while the orchestrator is running, then `[task] sub-agent finished.`, and finally the orchestrator's synthesised answer. The sub-agent ran a completely separate conversation with its own tool calls, returned plain text, and that text became the tool output the orchestrator reasoned about.
@@ -628,9 +628,37 @@ You should see one `[task] spawning sub-agent...` line appear while the orchestr
 
 ---
 
-## Step 1 — Refactoring the Loop into a Reusable `Agent` Class
+## What changed from V2 → V3
 
-> **Why now?** In Step 0 we passed `instructions`, `task`, and `tools_dict` as separate arguments everywhere. When you want to run many sub-agents — or reuse the same agent for different tasks — it is cleaner to bundle the loop with its conversation into an object. This step does exactly that refactor. No new capability is added; the behavior is identical.
+- `run_agent`'s parameters (`instructions`, the tool set, plus model and client) become
+  **constructor arguments of an `Agent` class**; the local `conversation` list becomes
+  `self._conversation`. `agent.run(task)` is `run_agent(...)` with the configuration
+  pre-bundled.
+- The hand-rolled `tools_dict` is replaced by **Phase 2's `ToolRegistry`**, so schemas,
+  dispatch, and error-catching come for free.
+- The role-string check inside `task` grows into a **preset table** — an `AgentPreset`
+  dataclass mapping each role name to its instructions and *allowed tool names*.
+- The plain `task(role, prompt)` function becomes **`dispatch_subagent` + `make_task_tool`**,
+  a factory that bakes the parent's registry, client, and depth into the tool.
+- One genuinely new safety feature appears: a **`depth` counter** carried from parent to
+  child, so sub-agents spawning sub-agents can't recurse forever.
+- Behavior is unchanged: a sub-agent is still your loop called again — now spelled
+  `Agent(...).run(prompt)` inside a tool.
+
+---
+
+## Version 3 — Classes: the Same Harness, Organized
+
+> **Framing.** Nothing in this version is a new idea — it is Version 2 with its state
+> grouped into objects, in the shape the real package uses
+> (`code/agent_harness/subagents.py`). Three steps: bundle the loop into an `Agent`
+> class, turn roles into presets, and expose spawning as a registered `task` tool. The
+> complete file for this version appears in [§7 — Full Code](#7-full-code--subagentspy);
+> each step below is a replace-this-block increment toward it.
+
+### Step 3.1 — Refactoring the Loop into a Reusable `Agent` Class
+
+> **Why now?** In Version 2 we passed `instructions`, `task`, and `tools_dict` as separate arguments everywhere. When you want to run many sub-agents — or reuse the same agent for different tasks — it is cleaner to bundle the loop with its conversation into an object. This step does exactly that refactor. No new capability is added; the behavior is identical.
 
 Until now the agent loop lived in a standalone function or script. To support sub-agents we need agents to be *values* — objects you can instantiate, configure, and pass around. The refactor is small but important.
 

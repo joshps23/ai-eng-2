@@ -2,6 +2,24 @@
 
 An agent that can write files and run arbitrary shell commands is, in a very real sense, a remote-code-execution endpoint you are handing to a language model. Phase 4 gave you real tools — `bash`, `write_file`, `edit_file`. This phase installs the layer that stands between the model wanting to act and the action actually happening. Without it, a single confused completion can wipe a directory, exfiltrate secrets, or be hijacked by data the model read from an untrusted source.
 
+## The plan: four versions of the same harness
+
+Like every phase in this guide, Phase 5 climbs a ladder. Each rung is a **complete,
+runnable program** — the *same* harness every time, with its safety layer reorganized
+one abstraction at a time:
+
+| Version | The permission layer looks like… | New Python machinery |
+|---|---|---|
+| **V1 — line-by-line** | one inline `if` right before the tool runs | none — just statements |
+| **V2 — functions** | a `check_permission()` function + a `mode` variable | plain `def` |
+| **V3 — policy objects** | `Mode`, `Decision`, `PolicyRule`, `PermissionPolicy` | `Enum`, `@dataclass` |
+| **V4 — hooks** | before/after callbacks that fire around every tool | callbacks + a registry class |
+
+Nothing conceptually new appears after Version 1. V2, V3, and V4 are the same
+"decide before you act" idea, reorganized so it scales. Between versions you'll find a
+short **"What changed"** list, so each rung reads as a reorganization — not a brand-new
+program. But first, name what we're defending against.
+
 ---
 
 ## 1. Threat Model
