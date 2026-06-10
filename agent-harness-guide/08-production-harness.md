@@ -33,10 +33,15 @@ gets its own rung-by-rung treatment below, exactly like the earlier phases:
 
 | New in this phase | Package module |
 |---|---|
-| Retry/backoff around `client.responses.create(...)` (Step 0 → §2) | `llm.py` |
+| Retry/backoff around `client.responses.create(...)` (Step 0 → §6) | `llm.py` |
 | `Settings` — configuration without magic constants (Step 2) | `config.py` |
 | The REPL / CLI entry point (Step 4) | `cli.py` |
 | `FakeClient` — testing the loop offline (§9) | `testing.py` |
+
+Each of these new pieces climbs its own *mini*-ladder inside this phase — first the
+plain-function form (V2 in the vocabulary you know), then, only where state demands it,
+the class form (V3). You will see a **"Which rung is this?"** note next to each
+production listing so you always know where you are on the ladder.
 
 > **A note on file names.** As a teaching device, this phase (like Phases 4, 5, and 7)
 > sometimes shows code under illustrative file names — `tracer.py`, `accounting.py`,

@@ -558,7 +558,23 @@ including extra fields from `model_dump()` is harmless.
 
 ---
 
-## Step 3 — Organize Into the `Conversation` Class
+### What changed from V2 → V3
+
+- **Nothing about behavior.** Version 3 is the same chat-with-memory harness — same API
+  calls, same transcript on disk, same answers.
+- The conversation **dict** plus its seven loose functions become one **class**:
+  `Conversation` bundles the data (`_items`, `instructions`) with the functions that
+  operate on it.
+- Call sites flip from `add_user(conv, text)` to `conv.add_user(text)` — `self` inside a
+  method is exactly the `conv` argument the V2 functions took.
+- `save`/`load` become methods too; `load` is a `@classmethod` "alternate constructor"
+  (`Conversation.load(path)` builds a conversation straight from a file).
+- The class picks up two small conveniences the dict didn't have: `len(conv)` and
+  `last_assistant_text()`.
+- Underneath, it is still the **same plain list** (`self._items`) you appended to in
+  Version 1 — this is the shape the final package's `conversation.py` uses.
+
+## Version 3 — Classes: the `Conversation` Object
 
 You now have five functions (`new_conversation`, `add_user`, `extend_items`,
 `add_tool_result`, `to_input`) and two persistence functions (`save`, `load`).  They work
@@ -569,7 +585,7 @@ with the functions that operate on it, so you cannot accidentally call `add_user
 wrong list.  It also gives you a natural home for the `save`/`load` pair.  The class below
 is *exactly the same logic* — just organized.
 
-### 2.4 The `Conversation` Class
+### Step 3.1 — The `Conversation` Class
 
 > 🟢 **Reading the class.** Each `def ...(self, ...)` below is a **method** — a
 > function attached to the conversation object, where `self` is the object's own data
@@ -692,11 +708,11 @@ conv.extend(resp.output)   # append assistant message + any reasoning items
 conv.save("./sessions/session-001.json")
 ```
 
-**▶ Run it now.** Same result as Step 0.  The only difference is `conv.add_user(...)`
+**▶ Run it now.** Same result as Step 1.1.  The only difference is `conv.add_user(...)`
 instead of `add_user(conv, ...)` and `conv.extend(...)` instead of
 `extend_items(conv, ...)`.  Everything else is identical.
 
-### 2.5 Reasoning Items and `encrypted_content`
+### Step 3.2 — Reasoning Items and `encrypted_content`
 
 When you use a reasoning model (e.g. `o3`) you will see `reasoning` items in `resp.output`.
 **Always append them with `conv.extend(resp.output)`** — including reasoning items — so the
@@ -729,7 +745,7 @@ content to you.
 
 For non-reasoning models or `store=True`, ignore `encrypted_content` entirely.
 
-### 2.6 The `instructions` Field
+### Step 3.3 — The `instructions` Field
 
 `instructions` is **not** part of `input_items`.  It is a top-level parameter on
 `client.responses.create()`.  Pass it on every call:

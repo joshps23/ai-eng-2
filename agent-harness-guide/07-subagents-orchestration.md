@@ -55,9 +55,28 @@ The critical insight is that the orchestrator **decides at runtime** how many wo
 
 ---
 
-## Step 0 — The Key Trick: a Sub-Agent Is Just Your Loop Called Again
+## 2. The Key Trick — and the Plan for This Phase
 
 > **Why now?** Before any classes or config, you need to see the core idea working. Everything else in this phase is just that one idea, better organized.
+
+This phase presents **one harness, four times**, at increasing levels of abstraction.
+Every version is a **complete program you can paste into a file and run**, and every
+version does the same thing: an orchestrator agent delegates work to a sub-agent through
+a `task` tool. Only the *organization* of the code changes:
+
+- **Version 1 — line-by-line.** No `def`, no classes. The agent loop — and, inside its
+  `task` dispatch branch, **a second copy of the exact same loop pasted inline**. The
+  duplication is deliberate: you should *feel* "this is the same code twice."
+- **Version 2 — functions.** The pasted copy collapses into a plain function, and then
+  both loops collapse into one `run_agent` function used by orchestrator and worker alike.
+- **Version 3 — classes.** The loop becomes an `Agent` object, roles become presets, and
+  spawning becomes a `task` tool that constructs an `Agent` inside a tool — the shape of
+  the real package (`code/agent_harness/subagents.py`). Same idea, organized.
+- **Version 4 — threads.** Several sub-agents run *at the same time* via a thread pool —
+  the shape of `code/agent_harness/tools/parallel.py`. Same harness, one new mechanism.
+
+Between versions you'll find a short **"What changed"** list, so you can see each rung as
+a reorganization of the previous one, never a brand-new program.
 
 > ## 🟢 Beginner track: a "sub-agent" is just calling your agent loop again
 >
