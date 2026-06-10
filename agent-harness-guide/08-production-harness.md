@@ -40,30 +40,11 @@ Each section below is a self-contained module. All of them plug into `agent_harn
 > - **CLI** (`cli.py`) — the `You: ` prompt loop and `/help`-style commands.
 > - **Packaging** (`pyproject.toml`) — so you can type `agent` to start it.
 >
-> You can run the agent with **none** of this. Here's the single most useful piece —
-> retry — written with only the things you know (a `for` loop, `try/except`, and
-> `time.sleep`), no exception classes or decorators:
+> You can run the agent with **none** of this. We will add each piece one at a time,
+> starting with the single most useful piece — retry — written with only the things
+> you already know.
 >
-> ```python
-> import time
->
-> def create_with_retry(client, **kwargs):
->     """Call the API; if it fails, wait a bit and try again, up to 5 times."""
->     for attempt in range(5):
->         try:
->             return client.responses.create(**kwargs)
->         except Exception as exc:
->             wait = 2 ** attempt          # 1s, 2s, 4s, 8s, 16s
->             print(f"API error ({exc}); retrying in {wait}s…")
->             time.sleep(wait)
->     raise RuntimeError("API still failing after 5 tries")
-> ```
->
-> Use `create_with_retry(client, model=..., input=..., tools=...)` anywhere the guide
-> calls `client.responses.create(...)`. That captures 90% of the value of the much
-> longer `llm.py`.
->
-> How to read the heavier syntax in this phase:
+> How to read the heavier syntax that appears later in this phase:
 >
 > | In the original | What it is, in your terms |
 > |-----------------|---------------------------|
@@ -80,251 +61,128 @@ Each section below is a self-contained module. All of them plug into `agent_harn
 
 ---
 
-## 2. Reliability
+## Step 0 — The Smallest Reliability Win: Retry with Backoff
 
-### 2.1 The Resilient LLM Wrapper — `llm.py`
+**Why now?** Networks are unreliable. The OpenAI API sometimes returns a 429 (rate limit) or a 500 (server error). Without retry logic, your agent dies on the first hiccup. With it, the agent waits a moment and tries again — the user never notices.
 
-The OpenAI client raises typed exceptions. Map them to a retry policy once, here, so no other file ever sees retry logic.
+Here is the complete retry wrapper using only a `for` loop, `try`/`except`, and `time.sleep` — no new imports beyond `time`:
 
 ```python
-# agent_harness/llm.py
-"""
-Thin resilient wrapper around client.responses.create (including stream=True).
-
-Retryable:
-  - RateLimitError (429)           — honour Retry-After header when present
-  - APIConnectionError             — network blip
-  - InternalServerError (5xx)      — transient backend fault
-  - APIStatusError with status>=500
-
-Fatal (raise immediately):
-  - AuthenticationError (401)
-  - PermissionDeniedError (403)
-  - NotFoundError (404)
-  - UnprocessableEntityError (422) — our payload is wrong
-  - Any other 4xx
-"""
-
-from __future__ import annotations
-
-import logging
-import random
 import time
-from contextlib import contextmanager
-from typing import Any, Generator
 
-import openai
-from openai import (
-    APIConnectionError,
-    APIStatusError,
-    AuthenticationError,
-    InternalServerError,
-    NotFoundError,
-    OpenAI,
-    PermissionDeniedError,
-    RateLimitError,
-    UnprocessableEntityError,
-)
-
-log = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
-# Retry configuration
-# ---------------------------------------------------------------------------
-
-DEFAULT_MAX_ATTEMPTS = 6
-DEFAULT_BASE_DELAY = 1.0      # seconds
-DEFAULT_MAX_DELAY = 60.0      # seconds
-DEFAULT_JITTER = 0.25         # fraction of computed delay added randomly
-
-
-def _is_retryable(exc: Exception) -> bool:
-    if isinstance(exc, (RateLimitError, APIConnectionError, InternalServerError)):
-        return True
-    if isinstance(exc, APIStatusError) and exc.status_code >= 500:
-        return True
-    return False
-
-
-def _retry_after(exc: Exception) -> float | None:
-    """Return the Retry-After value in seconds if present, else None."""
-    if isinstance(exc, RateLimitError):
-        headers = getattr(exc, "response", None)
-        if headers is not None:
-            raw = headers.headers.get("retry-after")
-            if raw is not None:
-                try:
-                    return float(raw)
-                except ValueError:
-                    pass
-    return None
-
-
-def _backoff(attempt: int, base: float, cap: float, jitter: float) -> float:
-    delay = min(base * (2 ** attempt), cap)
-    delay += delay * jitter * random.random()
-    return delay
-
-
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
-
-def create(
-    client: OpenAI,
-    *,
-    max_attempts: int = DEFAULT_MAX_ATTEMPTS,
-    base_delay: float = DEFAULT_BASE_DELAY,
-    max_delay: float = DEFAULT_MAX_DELAY,
-    jitter: float = DEFAULT_JITTER,
-    **kwargs: Any,
-) -> Any:
-    """
-    Call client.responses.create(**kwargs) with retry + backoff.
-
-    Passes **kwargs straight through so callers can set any parameter
-    (model, input, instructions, tools, store, etc.).
-    """
-    last_exc: Exception | None = None
-
-    for attempt in range(max_attempts):
+def create_with_retry(client, **kwargs):
+    """Call the API; if it fails, wait a bit and try again, up to 5 times."""
+    for attempt in range(5):
         try:
             return client.responses.create(**kwargs)
-
-        except (AuthenticationError, PermissionDeniedError,
-                NotFoundError, UnprocessableEntityError) as exc:
-            # Fatal — bad credentials, wrong model name, bad payload
-            log.error("Fatal API error (not retrying): %s", exc)
-            raise
-
         except Exception as exc:
-            last_exc = exc
-            if not _is_retryable(exc):
-                log.error("Non-retryable error: %s", exc)
-                raise
-
-            wait = _retry_after(exc) or _backoff(attempt, base_delay, max_delay, jitter)
-            log.warning(
-                "Retryable error on attempt %d/%d (%s). Sleeping %.1fs.",
-                attempt + 1, max_attempts, type(exc).__name__, wait,
-            )
+            wait = 2 ** attempt          # 1s, 2s, 4s, 8s, 16s
+            print(f"API error ({exc}); retrying in {wait}s…")
             time.sleep(wait)
+    raise RuntimeError("API still failing after 5 tries")
+```
 
-    # Exhausted all attempts
-    raise RuntimeError(
-        f"API call failed after {max_attempts} attempts"
-    ) from last_exc
+That is it. The `2 ** attempt` pattern is called **exponential backoff**: each failure waits twice as long as the last, giving the server time to recover.
+
+Use `create_with_retry(client, model=..., input=..., tools=...)` anywhere the guide calls `client.responses.create(...)`. That one change captures 90% of the value of the much longer `llm.py` shown later.
+
+### ▶ Run it now
+
+You can test retry logic without a real API by using a fake client that fails the first two times:
+
+```python
+import time
+
+class FakeClient:
+    """Fails twice, then succeeds. Simulates a flaky network."""
+    def __init__(self):
+        self.responses = self
+        self._call_count = 0
+
+    def create(self, **kwargs):
+        self._call_count += 1
+        if self._call_count < 3:
+            raise Exception(f"Simulated network error (attempt {self._call_count})")
+        # Third attempt succeeds — return a minimal fake response
+        class FakeResp:
+            output = []
+            class usage:
+                input_tokens = 10
+                output_tokens = 5
+        return FakeResp()
 
 
-@contextmanager
-def stream(
-    client: OpenAI,
-    *,
-    max_attempts: int = DEFAULT_MAX_ATTEMPTS,
-    base_delay: float = DEFAULT_BASE_DELAY,
-    max_delay: float = DEFAULT_MAX_DELAY,
-    jitter: float = DEFAULT_JITTER,
-    **kwargs: Any,
-) -> Generator[Any, None, None]:
-    """
-    Context manager: yields a streaming response with the same retry policy.
-
-    We stay on the low-level primitive: this is just
-    ``client.responses.create(stream=True, **kwargs)``, which returns an
-    iterator of typed events (and is itself a context manager, so the HTTP
-    connection closes cleanly). We deliberately do NOT use the higher-level
-    ``client.responses.stream()`` helper — driving the event loop and
-    assembling the final response is the whole point of the harness.
-
-    Because streaming errors often surface only after the first chunk,
-    we retry at the connection / open stage. Mid-stream errors propagate as-is.
-    """
-    last_exc: Exception | None = None
-
-    for attempt in range(max_attempts):
+def create_with_retry(client, **kwargs):
+    for attempt in range(5):
         try:
-            with client.responses.create(stream=True, **kwargs) as s:
-                yield s
-            return  # clean exit from context manager
-
-        except (AuthenticationError, PermissionDeniedError,
-                NotFoundError, UnprocessableEntityError) as exc:
-            log.error("Fatal API error (stream, not retrying): %s", exc)
-            raise
-
+            return client.responses.create(**kwargs)
         except Exception as exc:
-            last_exc = exc
-            if not _is_retryable(exc):
-                raise
-
-            wait = _retry_after(exc) or _backoff(attempt, base_delay, max_delay, jitter)
-            log.warning(
-                "Stream retryable error attempt %d/%d (%s). Sleeping %.1fs.",
-                attempt + 1, max_attempts, type(exc).__name__, wait,
-            )
+            wait = 2 ** attempt
+            print(f"API error ({exc}); retrying in {wait}s…")
             time.sleep(wait)
+    raise RuntimeError("API still failing after 5 tries")
 
-    raise RuntimeError(
-        f"Streaming API call failed after {max_attempts} attempts"
-    ) from last_exc
+
+fake = FakeClient()
+resp = create_with_retry(fake, model="gpt-5", input=[], tools=[])
+print("Success on attempt", fake._call_count)
 ```
 
-Call sites replace bare `client.responses.create(...)` with `llm.create(client, ...)` and the streaming form `client.responses.create(..., stream=True)` with `llm.stream(client, ...)`.
-
-### 2.2 Timeouts and KeyboardInterrupt Handling
-
-A long-running turn should not lock up the REPL. Wrap each turn in a try/except for `KeyboardInterrupt` and let the thread finish cleanly:
-
-```python
-# Inside the REPL turn handler (see cli.py section)
-try:
-    agent.run_turn(user_text)
-except KeyboardInterrupt:
-    print("\n[Turn cancelled. Transcript preserved. Type your next message.]")
-    # The agent's input_items list is still valid — the partial turn was
-    # never committed because we always append *after* a successful response.
+Expected output (with actual 1s + 2s sleeps):
+```
+API error (Simulated network error (attempt 1)); retrying in 1s…
+API error (Simulated network error (attempt 2)); retrying in 2s…
+Success on attempt 3
 ```
 
-The key invariant: **append to `input_items` only after success**. If we crash mid-turn, the transcript stays at the last clean state and the next turn re-runs cleanly.
-
-For the OpenAI client specifically, you can also set a per-request timeout:
-
-```python
-response = llm.create(
-    client,
-    model=MODEL,
-    instructions=instructions,
-    input=input_items,
-    tools=tool_schemas,
-    timeout=120,          # httpx timeout in seconds, passed through
-)
-```
-
-### 2.3 Idempotency and Crash Resumability
-
-From Phase 3, `Conversation.save(path)` serialises `input_items` to JSON. Call it after every step:
-
-```python
-# At the bottom of each loop iteration, before sleeping/continuing:
-conversation.save(settings.transcript_path)
-```
-
-The CLI exposes `--resume`:
-
-```bash
-agent --resume                      # loads from default transcript path
-agent --resume --transcript foo.json  # loads from explicit path
-```
-
-On resume, the harness loads the transcript and prints a one-line summary (`"Resuming from N messages, last saved at <timestamp>"`), then drops straight back into the REPL. No special bookkeeping required: the transcript _is_ the state.
+Once this works, every call in your loop is retry-safe. The rest of this phase wraps the same loop in progressively more production machinery.
 
 ---
 
-## 3. Observability
+## Step 1 — Observability: Know What Your Agent Is Doing
 
-### 3.1 Structured Logging
+**Why now?** Once retry is in place, the next failure mode is: *the agent runs but does the wrong thing and you have no idea why*. Structured logging turns invisible behaviour into a visible record.
 
-Use stdlib `logging` throughout. Configure it once at startup:
+The simplest upgrade is to add `print()` statements with consistent labels. Replace bare `print()` calls with a tiny helper:
+
+```python
+import time
+
+def log(level, message):
+    """Minimal structured log line — upgrade to stdlib logging later."""
+    ts = time.strftime("%H:%M:%S")
+    print(f"{ts} [{level}] {message}")
+```
+
+Inside your agent loop, add:
+
+```python
+# At turn start:
+t0 = time.monotonic()
+log("INFO", f"turn_start  messages={len(input_items)}")
+
+# After the response arrives:
+elapsed = time.monotonic() - t0
+in_tok  = resp.usage.input_tokens
+out_tok = resp.usage.output_tokens
+log("INFO", f"turn_end  tokens_in={in_tok} tokens_out={out_tok} elapsed={elapsed:.2f}s")
+
+# For each tool call:
+log("INFO", f"tool_call  name={item.name}  call_id={item.call_id}")
+
+# For each tool result:
+log("INFO", f"tool_result  call_id={call_id}  ok={not result.startswith('Error')}")
+```
+
+### ▶ Run it now
+
+Run your existing agent with these log lines added. Ask it something that triggers a tool call. You should now see a structured record of every turn: how many messages were in context, how many tokens were used, how long each call took, and which tools ran.
+
+If something goes wrong, you will know *exactly* which turn failed and what the inputs were — instead of guessing.
+
+### 1b — Graduating to stdlib `logging`
+
+When you are ready for logs that can be silenced or redirected to a file, swap your `log()` helper for stdlib `logging`:
 
 ```python
 # agent_harness/logging_config.py
@@ -352,17 +210,13 @@ def configure_logging(level: str = "WARNING") -> None:
         logging.getLogger("httpcore").setLevel(logging.WARNING)
 ```
 
-Inside `Agent.run_turn` (Phase 7) add structured INFO logs:
+Replace your `log("INFO", ...)` calls with:
 
 ```python
+import logging
 log = logging.getLogger(__name__)
 
-# At turn start:
-t0 = time.monotonic()
 log.info("turn_start input_messages=%d", len(self.input_items))
-
-# After response arrives:
-elapsed = time.monotonic() - t0
 log.info(
     "turn_end tokens_in=%d tokens_out=%d total=%d elapsed=%.2fs",
     resp.usage.input_tokens,
@@ -370,11 +224,7 @@ log.info(
     resp.usage.total_tokens,
     elapsed,
 )
-
-# For each tool call:
 log.info("tool_call name=%s call_id=%s", item.name, item.call_id)
-
-# For each tool result:
 log.info(
     "tool_result call_id=%s ok=%s preview=%.80r",
     call_id,
@@ -383,7 +233,9 @@ log.info(
 )
 ```
 
-### 3.2 The JSONL Tracer
+The `logging` module is just `print()` with on/off levels. When `level="WARNING"`, INFO lines are silenced; turn on `level="DEBUG"` to see everything. You switch it once at startup, not at every call site.
+
+### 1c — The JSONL Tracer
 
 A machine-readable event log is invaluable for post-hoc debugging and cost audits.
 
@@ -508,9 +360,9 @@ class Tracer:
         self._emit("session_end", {"stats": stats})
 ```
 
-### 3.3 Cost and Token Accounting
+### 1d — Cost and Token Accounting
 
-Track usage across turns (and across sub-agents spawned in Phase 7):
+Track usage across turns (and across sub-agents spawned in Phase 7). This is the same idea as the `log()` helper above — just accumulating numbers instead of printing strings:
 
 ```python
 # agent_harness/accounting.py
@@ -593,13 +445,32 @@ class SessionAccounting:
         )
 ```
 
+> **Beginner note on `@dataclass` and `@property`:** A `@dataclass` is just a class where
+> Python auto-generates `__init__` from the field names — read `SessionAccounting.model`
+> exactly as you would read `acc["model"]` in a dict. A `@property` is a method you call
+> without parentheses: `acc.total_tokens` calls the function and returns the result.
+> The function bodies are what matter; skim the decorators.
+
 Pass a single `SessionAccounting` instance into the `Agent` and every sub-agent so all usage rolls up to one object.
 
 ---
 
-## 4. Configuration — `config.py`
+## Step 2 — Configuration: No More Magic Constants
 
-Keep every tunable in one place. Precedence: **defaults < `.agentrc` file < environment variables < CLI flags**.
+**Why now?** After adding retry and logging, you will want to change the model name, the max iterations, or the workspace path without editing source. A single `Settings` object collects every tunable in one place and reads from environment variables, a project file, and CLI flags — in that order of precedence.
+
+The plain-dict equivalent is just:
+
+```python
+settings = {
+    "model": os.environ.get("AGENT_MODEL", "gpt-5"),
+    "max_iterations": int(os.environ.get("AGENT_MAX_ITERATIONS", "100")),
+    "transcript_path": "transcript.json",
+    # … and so on
+}
+```
+
+The production `Settings` dataclass below is exactly that, with nicer access syntax and a loader chain. Read `settings.model` as `settings["model"]`:
 
 ```python
 # agent_harness/config.py
@@ -736,11 +607,26 @@ An example `.agentrc` file at the project root:
 }
 ```
 
+### ▶ Run it now
+
+```python
+import os
+os.environ["AGENT_MODEL"] = "gpt-4.1"
+
+settings = Settings.from_env()
+print(settings.model)          # gpt-4.1
+print(settings.max_iterations) # 100  (default)
+```
+
+Any field you do not set stays at its default. The loop now reads `settings.max_iterations` instead of the magic constant `100`.
+
 ---
 
-## 5. System Prompt Engineering
+## Step 3 — System Prompt Engineering
 
-The instructions string shapes everything. Here is a production-grade prompt for a coding agent, with explanations of each section:
+**Why now?** With retry, logging, and config in place, the next lever is the instructions string. The right system prompt prevents whole classes of model mistakes before they happen: the agent knows its working directory, its permission mode, and whether the project has special conventions.
+
+Here is a production-grade prompt for a coding agent, with explanations of each section:
 
 ````python
 # agent_harness/instructions.py
@@ -838,11 +724,25 @@ commands, search codebases, and delegate work to sub-agents.
 
 The memory file (Phase 6's `CLAUDE.md` or `AGENTS.md`) is injected here so the model always has project-specific context without consuming it as a conversation turn.
 
+### ▶ Run it now
+
+```python
+instructions = build_instructions(
+    workspace_root=".",
+    permission_mode="default",
+)
+print(instructions[:300])   # should show the working directory and OS info
+```
+
+The model will now know exactly where it is and what it is allowed to do, without you having to repeat it in every user message.
+
 ---
 
-## 6. The CLI / REPL — `cli.py`
+## Step 4 — The CLI / REPL: The Face of the Harness
 
-The REPL is the face of the harness. It needs to feel solid.
+**Why now?** With reliability, observability, and config in place, the last piece is a user interface you would actually want to use. The REPL is just a `while True` loop that reads a line, calls `agent.run_turn()`, and handles `/help`-style commands. The argparse layer adds `--model`, `--debug`, and `-p` (one-shot mode for CI).
+
+The full `cli.py` wires together everything built above. Read it as the final assembly step:
 
 ```python
 # agent_harness/cli.py
@@ -1118,6 +1018,253 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 ```
+
+> **Beginner note on `argparse`:** `argparse` is just a way to read flags from the command
+> line. `p.add_argument("--model", ...)` means: if the user types `agent --model gpt-4.1`,
+> then `args.model` will be `"gpt-4.1"`. You can replicate the whole thing with
+> `sys.argv` and a dict; `argparse` just handles the parsing and `--help` for you.
+
+---
+
+## 2. Reliability (Production Shape)
+
+The `create_with_retry` function from Step 0 is the essential idea. The production `llm.py` below is the same idea with three additions:
+
+1. It distinguishes *retryable* errors (rate limits, network blips, server errors) from *fatal* ones (wrong API key, bad model name) — fatal errors are raised immediately without retrying.
+2. It honours the `Retry-After` header that rate-limit responses sometimes include.
+3. It adds jitter (a small random amount) to the backoff delay so that multiple agents do not all retry at exactly the same moment.
+
+```python
+# agent_harness/llm.py
+"""
+Thin resilient wrapper around client.responses.create (including stream=True).
+
+Retryable:
+  - RateLimitError (429)           — honour Retry-After header when present
+  - APIConnectionError             — network blip
+  - InternalServerError (5xx)      — transient backend fault
+  - APIStatusError with status>=500
+
+Fatal (raise immediately):
+  - AuthenticationError (401)
+  - PermissionDeniedError (403)
+  - NotFoundError (404)
+  - UnprocessableEntityError (422) — our payload is wrong
+  - Any other 4xx
+"""
+
+from __future__ import annotations
+
+import logging
+import random
+import time
+from contextlib import contextmanager
+from typing import Any, Generator
+
+import openai
+from openai import (
+    APIConnectionError,
+    APIStatusError,
+    AuthenticationError,
+    InternalServerError,
+    NotFoundError,
+    OpenAI,
+    PermissionDeniedError,
+    RateLimitError,
+    UnprocessableEntityError,
+)
+
+log = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Retry configuration
+# ---------------------------------------------------------------------------
+
+DEFAULT_MAX_ATTEMPTS = 6
+DEFAULT_BASE_DELAY = 1.0      # seconds
+DEFAULT_MAX_DELAY = 60.0      # seconds
+DEFAULT_JITTER = 0.25         # fraction of computed delay added randomly
+
+
+def _is_retryable(exc: Exception) -> bool:
+    if isinstance(exc, (RateLimitError, APIConnectionError, InternalServerError)):
+        return True
+    if isinstance(exc, APIStatusError) and exc.status_code >= 500:
+        return True
+    return False
+
+
+def _retry_after(exc: Exception) -> float | None:
+    """Return the Retry-After value in seconds if present, else None."""
+    if isinstance(exc, RateLimitError):
+        headers = getattr(exc, "response", None)
+        if headers is not None:
+            raw = headers.headers.get("retry-after")
+            if raw is not None:
+                try:
+                    return float(raw)
+                except ValueError:
+                    pass
+    return None
+
+
+def _backoff(attempt: int, base: float, cap: float, jitter: float) -> float:
+    delay = min(base * (2 ** attempt), cap)
+    delay += delay * jitter * random.random()
+    return delay
+
+
+# ---------------------------------------------------------------------------
+# Public API
+# ---------------------------------------------------------------------------
+
+def create(
+    client: OpenAI,
+    *,
+    max_attempts: int = DEFAULT_MAX_ATTEMPTS,
+    base_delay: float = DEFAULT_BASE_DELAY,
+    max_delay: float = DEFAULT_MAX_DELAY,
+    jitter: float = DEFAULT_JITTER,
+    **kwargs: Any,
+) -> Any:
+    """
+    Call client.responses.create(**kwargs) with retry + backoff.
+
+    Passes **kwargs straight through so callers can set any parameter
+    (model, input, instructions, tools, store, etc.).
+    """
+    last_exc: Exception | None = None
+
+    for attempt in range(max_attempts):
+        try:
+            return client.responses.create(**kwargs)
+
+        except (AuthenticationError, PermissionDeniedError,
+                NotFoundError, UnprocessableEntityError) as exc:
+            # Fatal — bad credentials, wrong model name, bad payload
+            log.error("Fatal API error (not retrying): %s", exc)
+            raise
+
+        except Exception as exc:
+            last_exc = exc
+            if not _is_retryable(exc):
+                log.error("Non-retryable error: %s", exc)
+                raise
+
+            wait = _retry_after(exc) or _backoff(attempt, base_delay, max_delay, jitter)
+            log.warning(
+                "Retryable error on attempt %d/%d (%s). Sleeping %.1fs.",
+                attempt + 1, max_attempts, type(exc).__name__, wait,
+            )
+            time.sleep(wait)
+
+    # Exhausted all attempts
+    raise RuntimeError(
+        f"API call failed after {max_attempts} attempts"
+    ) from last_exc
+
+
+@contextmanager
+def stream(
+    client: OpenAI,
+    *,
+    max_attempts: int = DEFAULT_MAX_ATTEMPTS,
+    base_delay: float = DEFAULT_BASE_DELAY,
+    max_delay: float = DEFAULT_MAX_DELAY,
+    jitter: float = DEFAULT_JITTER,
+    **kwargs: Any,
+) -> Generator[Any, None, None]:
+    """
+    Context manager: yields a streaming response with the same retry policy.
+
+    We stay on the low-level primitive: this is just
+    ``client.responses.create(stream=True, **kwargs)``, which returns an
+    iterator of typed events (and is itself a context manager, so the HTTP
+    connection closes cleanly). We deliberately do NOT use the higher-level
+    ``client.responses.stream()`` helper — driving the event loop and
+    assembling the final response is the whole point of the harness.
+
+    Because streaming errors often surface only after the first chunk,
+    we retry at the connection / open stage. Mid-stream errors propagate as-is.
+    """
+    last_exc: Exception | None = None
+
+    for attempt in range(max_attempts):
+        try:
+            with client.responses.create(stream=True, **kwargs) as s:
+                yield s
+            return  # clean exit from context manager
+
+        except (AuthenticationError, PermissionDeniedError,
+                NotFoundError, UnprocessableEntityError) as exc:
+            log.error("Fatal API error (stream, not retrying): %s", exc)
+            raise
+
+        except Exception as exc:
+            last_exc = exc
+            if not _is_retryable(exc):
+                raise
+
+            wait = _retry_after(exc) or _backoff(attempt, base_delay, max_delay, jitter)
+            log.warning(
+                "Stream retryable error attempt %d/%d (%s). Sleeping %.1fs.",
+                attempt + 1, max_attempts, type(exc).__name__, wait,
+            )
+            time.sleep(wait)
+
+    raise RuntimeError(
+        f"Streaming API call failed after {max_attempts} attempts"
+    ) from last_exc
+```
+
+Call sites replace bare `client.responses.create(...)` with `llm.create(client, ...)` and the streaming form `client.responses.create(..., stream=True)` with `llm.stream(client, ...)`.
+
+### 2.2 Timeouts and KeyboardInterrupt Handling
+
+A long-running turn should not lock up the REPL. Wrap each turn in a try/except for `KeyboardInterrupt` and let the thread finish cleanly:
+
+```python
+# Inside the REPL turn handler (see cli.py section)
+try:
+    agent.run_turn(user_text)
+except KeyboardInterrupt:
+    print("\n[Turn cancelled. Transcript preserved. Type your next message.]")
+    # The agent's input_items list is still valid — the partial turn was
+    # never committed because we always append *after* a successful response.
+```
+
+The key invariant: **append to `input_items` only after success**. If we crash mid-turn, the transcript stays at the last clean state and the next turn re-runs cleanly.
+
+For the OpenAI client specifically, you can also set a per-request timeout:
+
+```python
+response = llm.create(
+    client,
+    model=MODEL,
+    instructions=instructions,
+    input=input_items,
+    tools=tool_schemas,
+    timeout=120,          # httpx timeout in seconds, passed through
+)
+```
+
+### 2.3 Idempotency and Crash Resumability
+
+From Phase 3, `Conversation.save(path)` serialises `input_items` to JSON. Call it after every step:
+
+```python
+# At the bottom of each loop iteration, before sleeping/continuing:
+conversation.save(settings.transcript_path)
+```
+
+The CLI exposes `--resume`:
+
+```bash
+agent --resume                      # loads from default transcript path
+agent --resume --transcript foo.json  # loads from explicit path
+```
+
+On resume, the harness loads the transcript and prints a one-line summary (`"Resuming from N messages, last saved at <timestamp>"`), then drops straight back into the REPL. No special bookkeeping required: the transcript _is_ the state.
 
 ---
 

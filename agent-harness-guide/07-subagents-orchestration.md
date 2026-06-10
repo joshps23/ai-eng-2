@@ -55,6 +55,10 @@ The critical insight is that the orchestrator **decides at runtime** how many wo
 
 ---
 
+## Step 0 — The Key Trick: a Sub-Agent Is Just Your Loop Called Again
+
+> **Why now?** Before any classes or config, you need to see the core idea working. Everything else in this phase is just that one idea, better organized.
+
 > ## 🟢 Beginner track: a "sub-agent" is just calling your agent loop again
 >
 > This phase uses an `Agent` **class**, but the whole idea works with the
@@ -131,9 +135,167 @@ The critical insight is that the orchestrator **decides at runtime** how many wo
 > Read the rest of the phase for the ideas (isolated context, depth limits, disjoint
 > file scopes). Build it with the functions above.
 
+Here is the minimal complete version — everything above expressed as runnable code. It uses only the concepts from Phases 1–2: a loop, a conversation list, `client.responses.create`, and plain functions as tools.
+
+```python
+# step0_subagent.py  — minimal sub-agent demo, no classes required
+import json
+from openai import OpenAI
+
+client = OpenAI()
+MODEL = "gpt-4o"
+
+
+# ---------------------------------------------------------------------------
+# Helper: convert a plain-function tool dict to the schema list the API needs
+# ---------------------------------------------------------------------------
+
+def tools_for_api(tools_dict):
+    """Return the JSON-schema list for every tool in tools_dict."""
+    return [t["schema"] for t in tools_dict.values()]
+
+
+def dispatch(tools_dict, name, arguments_json):
+    """Call the tool named `name` with the parsed JSON arguments."""
+    args = json.loads(arguments_json)
+    fn = tools_dict[name]["fn"]
+    try:
+        return str(fn(**args))
+    except Exception as exc:
+        return f"[error] {exc}"
+
+
+# ---------------------------------------------------------------------------
+# The core loop — returns a text answer, owns its own conversation list
+# ---------------------------------------------------------------------------
+
+def run_agent(instructions, task, tools_dict):
+    """Run a fresh agent loop and return the final text answer."""
+    conversation = [{"role": "user", "content": task}]
+    while True:
+        resp = client.responses.create(
+            model=MODEL,
+            instructions=instructions,
+            input=conversation,
+            tools=tools_for_api(tools_dict),
+        )
+        conversation += list(resp.output)
+        calls = [it for it in resp.output if it.type == "function_call"]
+        if not calls:
+            return resp.output_text           # done
+        for fc in calls:
+            conversation.append({
+                "type": "function_call_output",
+                "call_id": fc.call_id,
+                "output": dispatch(tools_dict, fc.name, fc.arguments),
+            })
+
+
+# ---------------------------------------------------------------------------
+# A real tool the sub-agent can use
+# ---------------------------------------------------------------------------
+
+def _read_file(path):
+    try:
+        with open(path) as f:
+            return f.read()
+    except OSError as exc:
+        return f"[error] {exc}"
+
+READ_FILE_TOOL = {
+    "fn": _read_file,
+    "schema": {
+        "type": "function",
+        "name": "read_file",
+        "description": "Read a file and return its contents.",
+        "parameters": {
+            "type": "object",
+            "properties": {"path": {"type": "string", "description": "File path"}},
+            "required": ["path"],
+            "additionalProperties": False,
+        },
+    },
+}
+
+ALL_TOOLS = {"read_file": READ_FILE_TOOL}
+
+
+# ---------------------------------------------------------------------------
+# The `task` tool — THIS is the key trick
+# ---------------------------------------------------------------------------
+# When the orchestrator calls task(role, prompt), we just call run_agent again.
+# The sub-agent gets its own fresh conversation and a limited tool set.
+
+ORCHESTRATOR_INSTRUCTIONS = (
+    "You are a helpful orchestrator. When given a task, use the `task` tool "
+    "to delegate work to a specialist sub-agent and report back what it found."
+)
+
+SUB_AGENT_INSTRUCTIONS = (
+    "You are a careful reviewer. Read the requested file and summarise any "
+    "issues you find. Return a short bullet list."
+)
+
+
+def task(role, prompt):
+    """Spawn a sub-agent and return its answer as a plain string."""
+    # For now, every role gets the same instructions and tools.
+    # Step 2 will turn this into a proper role/preset lookup.
+    print(f"  [task] spawning sub-agent for role={role!r} ...")
+    result = run_agent(SUB_AGENT_INSTRUCTIONS, prompt, ALL_TOOLS)
+    print(f"  [task] sub-agent finished.")
+    return result
+
+
+TASK_TOOL = {
+    "fn": task,
+    "schema": {
+        "type": "function",
+        "name": "task",
+        "description": "Spawn a sub-agent to complete an independent task.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "role":   {"type": "string", "description": "Sub-agent role (e.g. 'reviewer')."},
+                "prompt": {"type": "string", "description": "Full task prompt for the sub-agent."},
+            },
+            "required": ["role", "prompt"],
+            "additionalProperties": False,
+        },
+    },
+}
+
+ORCHESTRATOR_TOOLS = {"task": TASK_TOOL}
+
+
+# ---------------------------------------------------------------------------
+# Run the orchestrator
+# ---------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    answer = run_agent(
+        ORCHESTRATOR_INSTRUCTIONS,
+        "Use the task tool to ask a reviewer sub-agent to check README.md for clarity.",
+        ORCHESTRATOR_TOOLS,
+    )
+    print("\nFinal answer:", answer)
+```
+
+### ▶ Run it now
+
+```
+python step0_subagent.py
+```
+
+You should see one `[task] spawning sub-agent...` line appear while the orchestrator is running, then `[task] sub-agent finished.`, and finally the orchestrator's synthesised answer. The sub-agent ran a completely separate conversation with its own tool calls, returned plain text, and that text became the tool output the orchestrator reasoned about.
+
+**What you've just seen:** one call to `run_agent` (the orchestrator) caused another call to `run_agent` (the sub-agent) through the `task` tool. That's the entire mechanism. Everything that follows is making this more organized and capable.
+
 ---
 
-## 2. Refactoring the Loop into a Reusable `Agent` Class
+## Step 1 — Refactoring the Loop into a Reusable `Agent` Class
+
+> **Why now?** In Step 0 we passed `instructions`, `task`, and `tools_dict` as separate arguments everywhere. When you want to run many sub-agents — or reuse the same agent for different tasks — it is cleaner to bundle the loop with its conversation into an object. This step does exactly that refactor. No new capability is added; the behavior is identical.
 
 Until now the agent loop lived in a standalone function or script. To support sub-agents we need agents to be *values* — objects you can instantiate, configure, and pass around. The refactor is small but important.
 
@@ -305,15 +467,50 @@ Key design decisions:
 - **`depth` is carried from parent to child.** When the orchestrator spawns a sub-agent it passes `depth=self.depth + 1`, allowing the guard to trigger before a recursion goes too deep.
 - **`registry.dispatch_parallel` is the Phase 2 machinery.** Phase 2 already handles running multiple tool calls concurrently; nothing new is needed here.
 
+### ▶ Run it now
+
+After putting the `Agent` class in `agent.py`, rewrite Step 0's orchestrator using it:
+
+```python
+# step1_agent_class.py  — same behavior as step0, using the Agent class
+from agent import Agent
+from tools.registry import ToolRegistry
+
+# Register the same read_file tool via ToolRegistry (Phase 2 style)
+# ... (setup identical to your Phase 2 harness) ...
+
+sub_registry = ToolRegistry()
+sub_registry.register(read_file)   # @tool-decorated function from Phase 2
+
+def task_fn(role: str, prompt: str) -> str:
+    """Spawn a fresh sub-agent and return its answer."""
+    print(f"  [task] spawning {role!r} ...")
+    worker = Agent(
+        name=role,
+        instructions="Read the file and return a short bullet list of issues.",
+        registry=sub_registry,
+    )
+    return worker.run(prompt)
+
+# Register task_fn as a tool in the orchestrator's registry
+orchestrator_registry = ToolRegistry()
+# ... register task_fn as a tool ...
+
+orchestrator = Agent(
+    name="orchestrator",
+    instructions="Delegate to sub-agents via the task tool. Report what they find.",
+    registry=orchestrator_registry,
+)
+print(orchestrator.run("Check README.md for clarity issues."))
+```
+
+The behavior is identical to Step 0. The `Agent` class is just `run_agent` with its conversation stored as `self._conversation` and its configuration as constructor arguments.
+
 ---
 
-## 3. Sub-Agents as a Tool — The Key Trick
+## Step 2 — Agent Presets: Named Roles with Fixed Instructions and Tools
 
-The elegance of this architecture is that from the orchestrator's perspective, spawning a sub-agent is just another tool call. The model emits a `function_call` item with `name="task"`, the harness intercepts it, instantiates and runs a worker `Agent`, and returns its final text as the `function_call_output`. The model never knows it talked to another model; it just sees a tool result.
-
-This means the orchestrator needs no special awareness of sub-agents in its loop. The existing Phase 2 dispatch machinery handles everything — including parallelism.
-
-### 3.1 Agent presets
+> **Why now?** In Step 1 you hardcoded the sub-agent's instructions and tool set inside `task_fn`. Once you have more than one role (researcher, coder, reviewer …) you want a lookup table so the orchestrator can ask for a role by name and get the right configuration automatically. That table is all a "preset" is.
 
 Define a small registry of named roles, each with a system prompt and a list of allowed tool names.
 
@@ -392,7 +589,49 @@ AGENT_PRESETS: dict[str, AgentPreset] = {
 | `analyst` | Metric extraction from data/logs | `read_file`, `run_command` |
 | `generic` | Fallback; caller supplies tools | (none by default) |
 
-### 3.2 The `dispatch_subagent` function
+Now update `task_fn` to do a preset lookup:
+
+```python
+def task_fn(role: str, prompt: str) -> str:
+    """Look up the preset for `role`, build a restricted registry, run a sub-agent."""
+    preset = AGENT_PRESETS.get(role, AGENT_PRESETS["generic"])
+
+    # Give the worker only the tools its role allows
+    worker_registry = ToolRegistry()
+    for tool_name in preset.allowed_tools:
+        t = full_registry.get(tool_name)   # full_registry has everything
+        if t is not None:
+            worker_registry.register(t)
+
+    worker = Agent(
+        name=f"{role}-worker",
+        instructions=preset.instructions,
+        registry=worker_registry,
+    )
+    return worker.run(prompt)
+```
+
+### ▶ Run it now
+
+```python
+# Quick test: ask a reviewer sub-agent to check a file
+result = task_fn("reviewer", "Check auth.py for security issues.")
+print(result)
+```
+
+The reviewer agent receives only `read_file` and `list_directory` — it literally cannot call `write_file` even if you wanted it to. That restricted view comes directly from `preset.allowed_tools`.
+
+---
+
+## Step 3 — Sub-Agents as a Tool: Wiring It to the Orchestrator
+
+> **Why now?** So far `task_fn` is a plain Python function. To let the orchestrator *model* decide when to delegate, you need to expose it as a tool the model can call — exactly the same way you exposed `read_file` in Phase 2.
+
+The elegance of this architecture is that from the orchestrator's perspective, spawning a sub-agent is just another tool call. The model emits a `function_call` item with `name="task"`, the harness intercepts it, instantiates and runs a worker `Agent`, and returns its final text as the `function_call_output`. The model never knows it talked to another model; it just sees a tool result.
+
+This means the orchestrator needs no special awareness of sub-agents in its loop. The existing Phase 2 dispatch machinery handles everything — including parallelism.
+
+### 3.1 The `dispatch_subagent` function
 
 ```python
 # subagents.py (continued)
@@ -474,7 +713,7 @@ Three things are worth emphasising here.
 
 **Errors as strings.** The `except` block returns a descriptive string rather than re-raising. This is the same contract Phase 2 established for tools: errors are information the model can reason about, not exceptions that kill the loop.
 
-### 3.3 The `task` tool
+### 3.2 The `task` tool
 
 Now expose `dispatch_subagent` as a tool the orchestrator can call.
 
@@ -546,9 +785,49 @@ def make_task_tool(
 
 Register this tool in the orchestrator's registry and the model gains the ability to spawn workers. The schema's `enum` for `role` tells the model exactly which values are valid, which reduces hallucination significantly.
 
+### ▶ Run it now
+
+```python
+# step3_task_tool.py  — orchestrator with a real task tool
+from openai import OpenAI
+from agent import Agent
+from tools.registry import ToolRegistry
+from subagents import make_task_tool, AGENT_PRESETS
+
+client = OpenAI()
+
+# Full tool registry that sub-agents may draw from
+full_registry = ToolRegistry()
+full_registry.register(read_file)        # your @tool-decorated functions
+full_registry.register(list_directory)
+
+# Orchestrator only has the task tool — it delegates everything
+orchestrator_registry = ToolRegistry()
+orchestrator_registry.register(
+    make_task_tool(full_registry, client, parent_depth=0)
+)
+
+orchestrator = Agent(
+    name="orchestrator",
+    instructions=(
+        "You are a senior engineer. Break complex tasks into subtasks and "
+        "delegate each one to a specialist sub-agent using the 'task' tool. "
+        "After receiving results, synthesise a final answer."
+    ),
+    registry=orchestrator_registry,
+    client=client,
+)
+
+print(orchestrator.run("Review auth.py and list any security concerns."))
+```
+
+The orchestrator will call `task("reviewer", ..., "Check auth.py ...")`. Your harness intercepts that, runs a reviewer sub-agent with only `read_file` and `list_directory`, and returns the text. The model then synthesises the final report.
+
 ---
 
-## 4. Parallel Sub-Agents — The Centrepiece
+## Step 4 — Parallel Sub-Agents (Optional Speed-Up)
+
+> **Why now?** Everything so far works serially — sub-agents run one at a time. If the orchestrator issues multiple `task` calls in a single response, Phase 2's `dispatch_parallel` already runs them concurrently via `ThreadPoolExecutor`. This step makes that visible, adds per-worker timing, and explains when it helps. **You can skip this step** and everything still works; you just wait longer.
 
 When the orchestrator emits **multiple `task` tool calls in a single response**, Phase 2's `dispatch_parallel` runs them concurrently via `ThreadPoolExecutor`. Each sub-agent makes its own independent OpenAI HTTP calls and maintains its own transcript, so there is zero interference between workers.
 
@@ -680,6 +959,54 @@ Each sub-agent is an independent Python object in its own thread. There is no sh
 - A worker crash is caught by the `except` in `as_completed` and becomes an error string, not a propagated exception.
 
 The pattern is identical to Phase 2's parallel tool execution. The only difference is that each "tool" is itself an LLM call — potentially spawning further tool calls internally.
+
+### 4.3 Making the parallelism visible — timestamps
+
+Add a thin wrapper around `dispatch_subagent` for debugging:
+
+```python
+def timed_dispatch(role: str, description: str, task: str, **kwargs) -> tuple[float, str]:
+    """Run a sub-agent and time it. Returns (elapsed_seconds, result)."""
+    t0 = time.perf_counter()
+    result = dispatch_subagent(role=role, task=task, **kwargs)
+    elapsed = time.perf_counter() - t0
+    return elapsed, result
+
+
+# In run_subagents_parallel, replace the submit call:
+future_to_meta = {
+    pool.submit(
+        timed_dispatch,
+        role=t["role"],
+        description=t["description"],
+        task=t["prompt"],
+        parent_registry=parent_registry,
+        client=client,
+        depth=parent_depth + 1,
+    ): t
+    for t in tasks
+}
+
+for future in as_completed(future_to_meta):
+    meta = future_to_meta[future]
+    elapsed, result = future.result()
+    print(f"    [done] {meta['role']!r} finished in {elapsed:.1f}s")
+    results[meta["call_id"]] = result
+```
+
+Sample output:
+```text
+  [orchestrator] running 3 sub-agent(s) in parallel (max_workers=3) …
+    [task] spawning 'researcher': summarise architecture
+    [task] spawning 'analyst': TODO inventory
+    [task] spawning 'reviewer': security concerns
+    [done] 'analyst' finished in 4.1s
+    [done] 'reviewer' finished in 5.8s
+    [done] 'researcher' finished in 6.2s
+  [orchestrator] all sub-agents done in 6.2s
+```
+
+The wall time equals the slowest worker (researcher at 6.2 s), not their sum (16.1 s).
 
 ---
 
@@ -896,54 +1223,6 @@ Token usage: UsageSummary(in=14823, out=2341, total=17164)
 ```
 
 The three workers ran concurrently (6.2 s wall time vs. ~18 s serial) and the orchestrator spent 2.5 s synthesising the final report. The parent's transcript contains only three tool outputs — the summaries — rather than the raw file contents each worker processed.
-
-### 5.3 Making the parallelism visible — timestamps
-
-Add a thin wrapper around `dispatch_subagent` for debugging:
-
-```python
-def timed_dispatch(role: str, description: str, task: str, **kwargs) -> tuple[float, str]:
-    """Run a sub-agent and time it. Returns (elapsed_seconds, result)."""
-    t0 = time.perf_counter()
-    result = dispatch_subagent(role=role, task=task, **kwargs)
-    elapsed = time.perf_counter() - t0
-    return elapsed, result
-
-
-# In run_subagents_parallel, replace the submit call:
-future_to_meta = {
-    pool.submit(
-        timed_dispatch,
-        role=t["role"],
-        description=t["description"],
-        task=t["prompt"],
-        parent_registry=parent_registry,
-        client=client,
-        depth=parent_depth + 1,
-    ): t
-    for t in tasks
-}
-
-for future in as_completed(future_to_meta):
-    meta = future_to_meta[future]
-    elapsed, result = future.result()
-    print(f"    [done] {meta['role']!r} finished in {elapsed:.1f}s")
-    results[meta["call_id"]] = result
-```
-
-Sample output:
-```text
-  [orchestrator] running 3 sub-agent(s) in parallel (max_workers=3) …
-    [task] spawning 'researcher': summarise architecture
-    [task] spawning 'analyst': TODO inventory
-    [task] spawning 'reviewer': security concerns
-    [done] 'analyst' finished in 4.1s
-    [done] 'reviewer' finished in 5.8s
-    [done] 'researcher' finished in 6.2s
-  [orchestrator] all sub-agents done in 6.2s
-```
-
-The wall time equals the slowest worker (researcher at 6.2 s), not their sum (16.1 s).
 
 ---
 
