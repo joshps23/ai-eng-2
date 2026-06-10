@@ -23,7 +23,9 @@ sub-agents.
 > `client.responses.create(...)`**, read **[`BEGINNER-NOTES.md`](./BEGINNER-NOTES.md)**
 > first. It explains every other concept the guide uses — classes, `json.loads`,
 > JSON Schema, `with`, threads — in those terms, and green 🟢 boxes throughout the
-> phases bridge each gap exactly where it appears.
+> phases bridge each gap exactly where it appears. Keep the
+> **[`GLOSSARY.md`](./GLOSSARY.md)** open in a tab: it defines every harness and
+> Python term used here, so you never have to leave to look something up.
 
 ## How the guide is structured
 
@@ -43,10 +45,14 @@ Claude-Code-shaped harness.
 | **7** | [`07-subagents-orchestration.md`](./07-subagents-orchestration.md) | Multi-agent orchestration | Spawning **parallel** sub-agents dynamically |
 | **8** | [`08-production-harness.md`](./08-production-harness.md) | The full assembled harness | Retries, observability, persistence, the CLI |
 | **A** | [`09-library-reference.md`](./09-library-reference.md) | Reference appendix | Every external library (`openai`, `tiktoken`) + key stdlib, with methods, parameters, return types, and examples |
+| **G** | [`GLOSSARY.md`](./GLOSSARY.md) | Plain-language glossary | Every harness/Python term used in the guide, defined for beginners |
 
-> **Start with [Phase 0](./00-foundations.md).** It establishes the API contract and
-> conventions (naming, data shapes, project layout) that every later phase depends on.
-> If a later code sample looks unfamiliar, Phase 0 is your reference.
+> **New and want a plan?** The **[Learning Path](./LEARNING-PATH.md)** turns these
+> phases into a step-by-step route with time-budgeted tracks and per-phase
+> checkpoints. Otherwise, **start with [Phase 0](./00-foundations.md).** It
+> establishes the API contract and conventions (naming, data shapes, project layout)
+> that every later phase depends on. If a later code sample looks unfamiliar, Phase 0
+> is your reference.
 
 ## The canonical, runnable code
 
@@ -63,7 +69,7 @@ suite** that runs entirely offline (a `FakeClient` stands in for the API):
 ```bash
 cd code
 pip install -e ".[dev]"
-pytest -q          # all tests pass, no API key or network needed
+python -m pytest -q   # all tests pass, no API key or network needed
 ```
 
 If a per-phase snippet and the package ever seem to disagree, the package is correct —

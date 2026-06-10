@@ -40,6 +40,22 @@ No LangChain, no other frameworks. Requires Python 3.10+.
 > functions-and-dicts versions in the phase boxes run on their own. This package is here
 > for when you're ready to see how the production shape fits together.
 
+> ### 🟢 Phase file names this package consolidates
+>
+> A few phases name files **as a teaching device** that don't exist as separate modules
+> here — the canonical package merges them. If you went looking for one of these in
+> `code/` and couldn't find it, here's where it actually lives:
+>
+> | Named in a phase | Where it is in this package |
+> |------------------|------------------------------|
+> | `tools.py` (single file, Phases 4 & 7) | the **`tools/` package** — split into `base.py`, `registry.py`, `parallel.py`, `files.py`, `shell.py` |
+> | `agent_loop.py` / `safe_dispatch()` (Phase 5) | folded into **`agent.py`** (the loop) and **`tools/registry.py`** (`dispatch()` catches tool errors into strings) |
+> | `sandbox.py` / `run_sandboxed()` (Phase 5) | the package keeps shell execution **workspace-confined in `tools/shell.py`** (`bash` + `set_workspace`); the elaborate `sandbox.py` in Phase 5 is an illustrative deep-dive, not a separate module here |
+>
+> This is the teaching arc working as intended: the phases show ideas *as they grow*;
+> the package is the consolidated result. **When a phase and the package disagree, the
+> package is correct** (it's the one with the passing tests).
+
 ---
 
 ## Installation

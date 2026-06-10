@@ -91,48 +91,299 @@ the path and asserts it stays within `WORKSPACE_ROOT`.
 
 ---
 
-## 2. Module Layout and Shared Utilities
+## Step 0 — One Tool Wired In, Right Now
 
-All tools live in a single module `tools.py`. At the top of the module we establish the
-workspace root, the two shared helpers, and the imports.
+Before adding all seven tools, shared helpers, and the registry factory, let's get **one
+tool working end-to-end** so you can see the whole circuit light up.
+
+We will start with `read_file` — the simplest, safest tool. It reads a file and returns
+its text. No writing, no shell commands, nothing destructive.
+
+### Step 0.1 — `read_file` as a plain function
+
+No decorator, no `pathlib`, no path guard yet. Just `open()`, a `try/except`, and a
+`return`. If the file exists you get its text; if not, you get an error string.
 
 ```python
-# tools.py
-"""
-Phase 4 — Real-world tools for a coding agent.
-
-All tools use the @tool decorator and Registry from Phase 2.
-All I/O is pure stdlib. No third-party packages.
-"""
-
-from __future__ import annotations
+# step0_read_file.py
+"""Minimal read_file tool wired into the harness."""
 
 import json
-import os
-import pathlib
-import re
-import subprocess
-import sys
-from typing import Optional
+from openai import OpenAI
 
-from registry import tool, Registry   # Phase 2 artefacts
+client = OpenAI()   # reads OPENAI_API_KEY from the environment
 
-# ---------------------------------------------------------------------------
-# Workspace root
-# ---------------------------------------------------------------------------
-# Every path argument is resolved relative to WORKSPACE_ROOT.  Set this to
-# the project directory the agent is allowed to operate in.  It defaults to
-# the current working directory at import time.
-#
-# Override before calling make_default_registry():
-#   import tools; tools.WORKSPACE_ROOT = pathlib.Path("/my/project")
+# ── 1. The tool function ──────────────────────────────────────────────────────
 
-WORKSPACE_ROOT: pathlib.Path = pathlib.Path(os.getcwd()).resolve()
+def read_file(path: str) -> str:
+    """Read a text file and return its contents, or an error string."""
+    try:
+        with open(path, "r", encoding="utf-8", errors="replace") as f:
+            return f.read()
+    except FileNotFoundError:
+        return f"ERROR: File not found: {path}"
+    except OSError as exc:
+        return f"ERROR: Cannot read file: {exc}"
+
+# ── 2. The tool schema ────────────────────────────────────────────────────────
+# This is just a dict that tells the model: "there is a function called
+# read_file; here is what it does and what arguments it takes."
+
+READ_FILE_SCHEMA = {
+    "type": "function",
+    "name": "read_file",
+    "description": (
+        "Read a text file and return its contents. "
+        "Returns an ERROR string if the file does not exist or cannot be read."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "path": {
+                "type": "string",
+                "description": "Path to the file to read.",
+            },
+        },
+        "required": ["path"],
+    },
+}
+
+# ── 3. The harness ────────────────────────────────────────────────────────────
+
+def run(task: str) -> None:
+    """Run a one-shot agent that can call read_file."""
+    input_items = [{"role": "user", "content": task}]
+
+    while True:
+        resp = client.responses.create(
+            model="gpt-4o",
+            input=input_items,
+            tools=[READ_FILE_SCHEMA],
+        )
+
+        # Append every output item to the transcript.
+        for item in resp.output:
+            input_items.append(
+                item.model_dump() if hasattr(item, "model_dump") else item
+            )
+
+        # Collect any tool calls in this turn.
+        tool_calls = [
+            item for item in resp.output
+            if getattr(item, "type", None) == "function_call"
+        ]
+
+        if not tool_calls:
+            # No tool calls → the model produced its final answer.
+            for item in resp.output:
+                if getattr(item, "type", None) == "message":
+                    for block in item.content:
+                        if getattr(block, "type", None) == "output_text":
+                            print("ANSWER:", block.text)
+            return
+
+        # Execute each tool call and feed the result back.
+        for tc in tool_calls:
+            args = json.loads(tc.arguments) if isinstance(tc.arguments, str) else tc.arguments
+            print(f"[tool] {tc.name}({args})")
+            result = read_file(**args)   # call our plain function
+            print(f"[result] {result[:120]}{'...' if len(result) > 120 else ''}\n")
+
+            input_items.append({
+                "type": "function_call_output",
+                "call_id": tc.call_id,
+                "output": result,
+            })
+
+
+if __name__ == "__main__":
+    # Create a small test file so there is something to read.
+    with open("hello.txt", "w") as f:
+        f.write("Hello from Phase 4!\nThis is line 2.\n")
+
+    run("What is in the file hello.txt?")
 ```
 
-### 2.1 `_safe_path` — the Path Guard
+### ▶ Run it now
+
+```
+export OPENAI_API_KEY=sk-...
+python step0_read_file.py
+```
+
+You should see something like:
+
+```
+[tool] read_file({'path': 'hello.txt'})
+[result] Hello from Phase 4!
+This is line 2.
+
+ANSWER: The file hello.txt contains two lines:
+1. "Hello from Phase 4!"
+2. "This is line 2."
+```
+
+One tool, one schema dict, a plain function — that is the whole circuit. Everything in
+the rest of this phase is this same pattern, scaled up with more tools, better safety
+guards, and the `@tool` / `Registry` machinery from Phase 2.
+
+---
+
+## Step 1 — Add `list_dir` and `glob` (read-only, low risk)
+
+**Why now?** `read_file` is powerful, but the agent needs to *discover* files before it
+can read them. `list_dir` answers "what is in this directory?" and `glob` answers "which
+files match this pattern?" Both are read-only, so they carry no risk of data loss.
+
+Add these two functions and their schemas alongside `read_file`. Then wire them in.
+
+### `list_dir`
 
 ```python
+import pathlib
+
+def list_dir(path: str = ".") -> str:
+    """List the contents of a directory."""
+    try:
+        p = pathlib.Path(path)
+        if not p.exists():
+            return f"ERROR: Directory not found: {path}"
+        if not p.is_dir():
+            return f"ERROR: '{path}' is a file, not a directory."
+        entries = sorted(p.iterdir(), key=lambda e: (e.is_file(), e.name.lower()))
+        lines = []
+        for e in entries:
+            if e.is_dir():
+                lines.append(f"D  {e.name}/")
+            else:
+                lines.append(f"F  {e.name}  ({e.stat().st_size} bytes)")
+        return f"Directory: {path}\n" + "\n".join(lines)
+    except OSError as exc:
+        return f"ERROR: {exc}"
+```
+
+### `glob`
+
+```python
+def glob(pattern: str, path: str = ".") -> str:
+    """Find files matching a glob pattern."""
+    try:
+        base = pathlib.Path(path)
+        if not base.is_dir():
+            return f"ERROR: Directory not found: {path}"
+        if "**" in pattern:
+            matches = list(base.rglob(pattern.lstrip("**/").lstrip("/")))
+        else:
+            matches = list(base.glob(pattern))
+        files = sorted([str(m) for m in matches if m.is_file()])
+        if not files:
+            return f"No files match '{pattern}' under '{path}'."
+        return "\n".join(files)
+    except (OSError, ValueError) as exc:
+        return f"ERROR: {exc}"
+```
+
+Wire both into the harness by adding their schemas to the `tools=[...]` list and
+dispatching them in the same `for tc in tool_calls:` loop:
+
+```python
+# Inside the tool-call loop, replace the single read_file call with:
+tool_fns = {
+    "read_file": read_file,
+    "list_dir": list_dir,
+    "glob": glob,
+}
+result = tool_fns[tc.name](**args)
+```
+
+### ▶ Run it now
+
+Change the task string to:
+
+```python
+run("List the files in the current directory, then read hello.txt.")
+```
+
+You should see the model call `list_dir(".")` first, then `read_file("hello.txt")`.
+
+---
+
+## Step 2 — Add `grep` (still read-only, slightly more complex)
+
+**Why now?** Once the agent can list and glob files, the natural next step is to search
+*inside* them. `grep` replaces dozens of `read_file` calls with one targeted search.
+It is still read-only — no risk of data loss.
+
+```python
+import re
+
+def grep(pattern: str, path: str = ".", glob_filter: str = None) -> str:
+    """Search file contents for a regular expression."""
+    try:
+        compiled = re.compile(pattern)
+    except re.error as exc:
+        return f"ERROR: Invalid regex: {exc}"
+
+    base = pathlib.Path(path)
+    if not base.exists():
+        return f"ERROR: Path not found: {path}"
+
+    files_to_search = [base] if base.is_file() else sorted(
+        [f for f in base.rglob("*") if f.is_file()], key=str
+    )
+    if glob_filter:
+        import fnmatch
+        files_to_search = [f for f in files_to_search if fnmatch.fnmatch(f.name, glob_filter)]
+
+    results = []
+    for filepath in files_to_search:
+        try:
+            text = filepath.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        for lineno, line in enumerate(text.splitlines(), 1):
+            if compiled.search(line):
+                results.append(f"{filepath}:{lineno}: {line[:200]}")
+            if len(results) >= 200:
+                break
+        if len(results) >= 200:
+            break
+
+    if not results:
+        return f"No matches for '{pattern}' under '{path}'."
+    return "\n".join(results)
+```
+
+Add it to the `tools=[...]` list and the dispatch dict, then:
+
+### ▶ Run it now
+
+```python
+# Create a file with a TODO first
+with open("notes.py", "w") as f:
+    f.write("# TODO: finish this\nx = 1\n# TODO: add tests\n")
+
+run("Find every TODO comment in the current directory's Python files.")
+```
+
+The model should call `grep("TODO", ".", "*.py")` and return the two matches.
+
+---
+
+## Step 3 — Safety First: add `_safe_path` and `_truncate` before writing anything
+
+**Why now?** So far all our tools are read-only — if they misbehave the worst case is
+the model sees garbled text. We are about to add `write_file` and `edit_file`, which can
+destroy data. Before we do that, let's add two small safety helpers that every
+subsequent tool will use.
+
+### 3.1 `_safe_path` — the Path Guard
+
+```python
+import os
+
+WORKSPACE_ROOT = pathlib.Path(os.getcwd()).resolve()
+
 def _safe_path(user_path: str) -> pathlib.Path:
     """
     Resolve *user_path* relative to WORKSPACE_ROOT and verify it does not
@@ -175,7 +426,7 @@ def _safe_path(user_path: str) -> pathlib.Path:
 > actually walks the filesystem, so a symlink pointing outside the workspace is caught.
 > The cost is an extra syscall per path; that is entirely acceptable.
 
-### 2.2 `_truncate` — the Output Size Guard
+### 3.2 `_truncate` — the Output Size Guard
 
 ```python
 _DEFAULT_MAX_CHARS = 40_000    # ~10 k tokens at 4 chars/token — generous but bounded
@@ -212,9 +463,422 @@ forget its own plan. Phase 6 covers context compaction in depth; for now, `_trun
 is the first and cheapest line of defence. The truncation notice is intentionally visible
 to the model so it can request a slice rather than silently operating on incomplete data.
 
+Now update `read_file`, `list_dir`, `grep`, and `glob` to call `_safe_path(path)` at the
+top and `_truncate(result)` before returning. The bodies stay the same — you are just
+adding two lines per function. For example, `read_file` becomes:
+
+```python
+def read_file(path: str) -> str:
+    try:
+        p = _safe_path(path)        # NEW: resolve and guard the path
+    except ValueError as exc:
+        return f"ERROR: {exc}"
+    try:
+        with open(p, "r", encoding="utf-8", errors="replace") as f:
+            text = f.read()
+    except FileNotFoundError:
+        return f"ERROR: File not found: {path}"
+    except OSError as exc:
+        return f"ERROR: Cannot read file: {exc}"
+    return _truncate(text, label=f"read_file({path})")   # NEW: cap the output
+```
+
+### ▶ Quick smoke test
+
+```python
+# Should succeed
+print(read_file("hello.txt"))
+
+# Should return ERROR, not read the file
+print(read_file("../../etc/passwd"))
+```
+
 ---
 
-## 3. The Tools
+## Step 4 — Add `write_file` (medium risk — destructive)
+
+**Why now?** The agent can now explore a codebase safely. Adding write capability means
+it can create new files. We add `write_file` before `edit_file` because creating files
+is easier to reason about — you are not changing something that already exists.
+
+```python
+def write_file(path: str, content: str) -> str:
+    """Write content to a file, creating it (and parent dirs) if needed."""
+    try:
+        p = _safe_path(path)
+    except ValueError as exc:
+        return f"ERROR: {exc}"
+    try:
+        p.parent.mkdir(parents=True, exist_ok=True)
+        encoded = content.encode("utf-8")
+        p.write_bytes(encoded)
+    except OSError as exc:
+        return f"ERROR: Cannot write file: {exc}"
+    lines = content.count("\n")
+    return f"Wrote {len(encoded)} bytes ({lines} lines) to '{path}'."
+```
+
+**Design note — destructiveness and Phase 5 permissions.**
+`write_file` will silently destroy whatever was in the file before. This is correct
+behaviour for creating new files but dangerous for existing ones. Phase 5 introduces
+a **permissions layer** that intercepts write operations on files the user has not
+explicitly approved, surfacing a confirmation prompt before any bytes are written.
+For now, the tool is intentionally raw so we can focus on its mechanics without
+conflating it with the permission system.
+
+### ▶ Run it now
+
+Add `write_file` to the dispatch dict, then:
+
+```python
+run("Create a file called output.txt containing the text 'Hello from the agent!'")
+```
+
+Then verify it worked:
+
+```python
+run("Read output.txt and tell me what is in it.")
+```
+
+---
+
+## Step 5 — Add `edit_file` — the Surgical Edit Tool (medium risk)
+
+**Why now?** `write_file` overwrites a file completely. For modifying existing files the
+safer approach is to replace only the part that needs changing — which is exactly what
+`edit_file` does.
+
+```python
+def edit_file(
+    path: str,
+    old_string: str,
+    new_string: str,
+    replace_all: bool = False,
+) -> str:
+    """
+    Replace an exact string in a file with a new string.
+
+    The tool reads the file, verifies that old_string appears in the content,
+    and writes the file back with old_string replaced by new_string.
+
+    Args:
+        path:        Path to the file, relative to the workspace root.
+        old_string:  The exact text to find and replace.  Must match the file
+                     contents character-for-character, including whitespace and
+                     indentation.  Include enough surrounding context (e.g. the
+                     full function signature plus a few lines) to make the match
+                     unique.
+        new_string:  The text to substitute in place of old_string.
+        replace_all: If False (default), the tool returns an error if old_string
+                     appears more than once in the file — ambiguous edits are
+                     rejected.  If True, all occurrences are replaced.
+
+    Returns:
+        A confirmation string, or one of:
+          ERROR: File not found          — path does not exist
+          ERROR: old_string not found    — no match; check whitespace/indentation
+          ERROR: old_string is ambiguous — N matches found, replace_all=False
+    """
+    try:
+        p = _safe_path(path)
+    except ValueError as exc:
+        return f"ERROR: {exc}"
+
+    if not p.exists():
+        return f"ERROR: File not found: {path}"
+    if not p.is_file():
+        return f"ERROR: Not a regular file: {path}"
+
+    try:
+        original = p.read_text(encoding="utf-8", errors="replace")
+    except OSError as exc:
+        return f"ERROR: Cannot read file: {exc}"
+
+    count = original.count(old_string)
+
+    if count == 0:
+        # Give the model actionable guidance.
+        snippet = repr(old_string[:120]) + ("..." if len(old_string) > 120 else "")
+        return (
+            f"ERROR: old_string not found in '{path}'.\n"
+            f"Searched for: {snippet}\n"
+            "Check that whitespace and indentation exactly match the file contents. "
+            "Use read_file() to inspect the exact bytes."
+        )
+
+    if count > 1 and not replace_all:
+        return (
+            f"ERROR: old_string is ambiguous — found {count} occurrences in '{path}'. "
+            "Provide more surrounding context to make old_string unique, "
+            "or pass replace_all=True to replace every occurrence."
+        )
+
+    updated = original.replace(old_string, new_string)
+
+    try:
+        p.write_text(updated, encoding="utf-8")
+    except OSError as exc:
+        return f"ERROR: Cannot write file: {exc}"
+
+    replacements = count if replace_all else 1
+    lines_before = original.count("\n")
+    lines_after = updated.count("\n")
+    delta = lines_after - lines_before
+    delta_str = f"+{delta}" if delta >= 0 else str(delta)
+    return (
+        f"Edited '{path}': replaced {replacements} occurrence(s). "
+        f"File now has {lines_after + 1} lines ({delta_str} from before)."
+    )
+```
+
+**Why exact-match string replacement beats line-number patches.**
+
+Line-number patches (`diff` / `patch` format) seem natural — you say "replace lines
+42–55 with this block". But they are fragile in an agentic context:
+
+- The model's mental model of line numbers can drift between tool calls (an earlier
+  edit shifts every subsequent line number by N).
+- If two tool calls run close together and both reference the same region, one can
+  silently corrupt the other's target.
+- The model often miscounts lines when composing a patch over a long context.
+
+Exact-match string replacement anchors the edit to *content*, not *position*. As long
+as the old string is present and unique, the edit is correct regardless of what other
+edits ran before it. The uniqueness check is load-bearing: if `old_string` matches in
+two places, we do not know which one the model intended, so we reject the operation and
+ask for more context. This is a conservative, correct default.
+
+Claude Code uses this exact approach. The technique is sometimes called
+**positional-free patching** or **semantic patching**.
+
+### ▶ Run it now
+
+```python
+# Create a file to edit
+with open("greeting.py", "w") as f:
+    f.write('def greet(name):\n    return "Hello, " + name\n')
+
+run('In greeting.py, change the greeting from "Hello" to "Hi".')
+```
+
+Then verify:
+
+```python
+run("Show me the current contents of greeting.py.")
+```
+
+---
+
+## Step 6 — Add `bash` (high risk — arbitrary execution)
+
+**Why now?** You have all the safe, targeted tools. `bash` is the escape hatch — it lets
+the agent run any shell command, including tests, package installs, and build scripts.
+We add it last because it carries the highest risk. Once you understand its power and
+danger, the Phase 5 permission layer (coming next) will make sense.
+
+```python
+import subprocess
+
+def bash(command: str, timeout: int = 120) -> str:
+    """
+    Run a shell command and return its output (stdout and stderr combined).
+
+    Args:
+        command: The shell command to execute.  Runs under /bin/sh so shell
+                 features (pipes, redirects, &&, subshells) work normally.
+        timeout: Maximum seconds to wait for the command to finish.  Default
+                 120.  Commands that exceed this are killed and an error is
+                 returned.
+
+    Returns:
+        A string of the form:
+            Exit code: 0
+            ---
+            <combined stdout + stderr>
+
+        On timeout:
+            ERROR: Command timed out after N seconds: <command>
+
+    IMPORTANT — SECURITY:
+        This tool executes arbitrary shell commands with the permissions of the
+        agent process.  Do not expose it to untrusted input without a permission
+        layer (Phase 5).  It runs with shell=True so shell injection is possible
+        if user-supplied data is interpolated into the command string.
+
+    IMPORTANT — BLOCKING:
+        Interactive commands (e.g. 'python3 -i', 'vim') will hang until the
+        timeout fires because stdin is closed.  Use non-interactive invocations:
+        'python3 script.py' not 'python3 -i'.
+
+    Working directory:
+        Commands run with cwd=WORKSPACE_ROOT so relative paths in the command
+        work as expected within the project.
+    """
+    try:
+        result = subprocess.run(
+            command,
+            shell=True,                   # We want a real shell for pipes etc.
+            cwd=str(WORKSPACE_ROOT),
+            stdin=subprocess.DEVNULL,     # Never block waiting for input.
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,     # Merge stderr into stdout.
+            timeout=timeout,
+            # Do NOT use text=True here; some commands emit binary (e.g. xxd).
+            # Decode ourselves with errors='replace'.
+        )
+        output = result.stdout.decode("utf-8", errors="replace")
+        output = _truncate(output, label=f"bash({command[:60]})")
+        return f"Exit code: {result.returncode}\n---\n{output}"
+
+    except subprocess.TimeoutExpired:
+        return f"ERROR: Command timed out after {timeout} seconds: {command}"
+    except OSError as exc:
+        return f"ERROR: Failed to start command: {exc}"
+```
+
+**The big danger: `shell=True`.**
+
+`subprocess.run(..., shell=True)` passes the command string to `/bin/sh -c`. This is
+exactly what we want — shell pipelines, redirection, variable expansion, and compound
+commands all work. But it means **every character of `command` is interpreted by the
+shell**. If the model ever constructs a command by interpolating untrusted user input,
+shell injection is trivially possible:
+
+```python
+# DANGEROUS if user_input comes from outside the agent:
+bash(f"grep {user_input} /src/main.py")
+# A user_input of '; rm -rf /' becomes a catastrophe.
+```
+
+In a coding agent the model constructs the commands, and the model is (mostly) trusted.
+But Phase 5 introduces a permission system that shows the user every `bash` call before
+it runs. That second pair of eyes is the real safety net — `shell=True` vs `shell=False`
+is a secondary concern. Document the risk loudly; do not paper over it.
+
+**Interactive commands and stdin.**
+
+`stdin=subprocess.DEVNULL` closes stdin immediately. Any command that tries to read
+from stdin will see EOF and exit (or error). This is correct: an interactive Python
+REPL waiting for input would block until the `timeout` fires, burning 120 seconds and
+returning nothing useful. The model should know to use `python3 script.py` not
+`python3 -i`, and the docstring says so.
+
+**Working directory.**
+
+Setting `cwd=WORKSPACE_ROOT` means the model can write `bash("ls src/")` and get the
+right listing without needing to know the absolute path. It mirrors how a developer
+would open a terminal in the project root.
+
+### ▶ Run it now
+
+```python
+run("Run 'echo Hello from bash' as a shell command and tell me what it printed.")
+```
+
+You should see `bash` called with that command and the output echoed back.
+
+---
+
+## Step 7 — Wire Everything Up: `make_default_registry`
+
+**Why now?** You have all seven tools working individually. The last step is to assemble
+them into a registry once so the rest of the program can use them by name, without
+knowing which function each name maps to.
+
+This is just the Phase 2 `Registry` pattern applied to the full toolset. If you skipped
+Phase 2, think of the registry as a dict from tool name → function, plus a method that
+produces the `tools=[...]` list for the API call.
+
+### Step 7.1 — Upgrade tools to use `@tool` and `Registry`
+
+In the full `tools.py` module (Section 9 below), every tool function carries the
+`@tool` decorator from Phase 2. The decorator reads the function's type hints and
+docstring and automatically writes the schema dict — so you do not have to maintain
+`READ_FILE_SCHEMA` by hand any more.
+
+### Step 7.2 — `make_default_registry`
+
+```python
+def make_default_registry(workspace: pathlib.Path = None) -> Registry:
+    """
+    Return a Registry pre-loaded with all coding-agent tools.
+
+    Args:
+        workspace: Override WORKSPACE_ROOT for this session.  If None, the
+                   module-level WORKSPACE_ROOT (defaulting to cwd) is used.
+
+    Usage:
+        from tools import make_default_registry
+        registry = make_default_registry(pathlib.Path("/my/project"))
+        # Pass registry.tools_list() to client.responses.create(tools=...)
+        # Pass registry.dispatch(name, args) to handle tool calls.
+    """
+    global WORKSPACE_ROOT
+    if workspace is not None:
+        WORKSPACE_ROOT = workspace.resolve()
+
+    registry = Registry()
+    for fn in (read_file, write_file, edit_file, bash, glob, grep, list_dir):
+        registry.register(fn)
+    return registry
+```
+
+The `Registry` class from Phase 2 already knows how to produce the flat tool-schema
+list and dispatch by name. All we do here is register every `@tool`-decorated function.
+The `@tool` decorator extracted the JSON schema from type hints and the docstring when
+the function was defined, so there is nothing more to do.
+
+---
+
+## 2. Module Layout and Shared Utilities
+
+*This section describes the production-ready `tools.py` layout. You have already met all
+the pieces above; here they are explained in their final assembled form.*
+
+All tools live in a single module `tools.py`. At the top of the module we establish the
+workspace root, the two shared helpers, and the imports.
+
+```python
+# tools.py
+"""
+Phase 4 — Real-world tools for a coding agent.
+
+All tools use the @tool decorator and Registry from Phase 2.
+All I/O is pure stdlib. No third-party packages.
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import pathlib
+import re
+import subprocess
+import sys
+from typing import Optional
+
+from registry import tool, Registry   # Phase 2 artefacts
+
+# ---------------------------------------------------------------------------
+# Workspace root
+# ---------------------------------------------------------------------------
+# Every path argument is resolved relative to WORKSPACE_ROOT.  Set this to
+# the project directory the agent is allowed to operate in.  It defaults to
+# the current working directory at import time.
+#
+# Override before calling make_default_registry():
+#   import tools; tools.WORKSPACE_ROOT = pathlib.Path("/my/project")
+
+WORKSPACE_ROOT: pathlib.Path = pathlib.Path(os.getcwd()).resolve()
+```
+
+---
+
+## 3. The Tools (production versions)
+
+*These are the same functions you built in Steps 0–6, now using `@tool`, `_safe_path`,
+and `_truncate`. The logic is identical; only the decorators and shared helpers have been
+added.*
 
 ### 3.1 `read_file`
 
@@ -342,14 +1006,6 @@ def write_file(path: str, content: str) -> str:
     )
 ```
 
-**Design note — destructiveness and Phase 5 permissions.**
-`write_file` will silently destroy whatever was in the file before. This is correct
-behaviour for creating new files but dangerous for existing ones. Phase 5 introduces
-a **permissions layer** that intercepts write operations on files the user has not
-explicitly approved, surfacing a confirmation prompt before any bytes are written.
-For now, the tool is intentionally raw so we can focus on its mechanics without
-conflating it with the permission system.
-
 ---
 
 ### 3.3 `edit_file` — the Surgical Edit Tool
@@ -438,26 +1094,6 @@ def edit_file(
     )
 ```
 
-**Why exact-match string replacement beats line-number patches.**
-
-Line-number patches (`diff` / `patch` format) seem natural — you say "replace lines
-42–55 with this block". But they are fragile in an agentic context:
-
-- The model's mental model of line numbers can drift between tool calls (an earlier
-  edit shifts every subsequent line number by N).
-- If two tool calls run close together and both reference the same region, one can
-  silently corrupt the other's target.
-- The model often miscounts lines when composing a patch over a long context.
-
-Exact-match string replacement anchors the edit to *content*, not *position*. As long
-as the old string is present and unique, the edit is correct regardless of what other
-edits ran before it. The uniqueness check is load-bearing: if `old_string` matches in
-two places, we do not know which one the model intended, so we reject the operation and
-ask for more context. This is a conservative, correct default.
-
-Claude Code uses this exact approach. The technique is sometimes called
-**positional-free patching** or **semantic patching**.
-
 ---
 
 ### 3.4 `bash` — Shell Command Execution
@@ -520,39 +1156,6 @@ def bash(command: str, timeout: int = 120) -> str:
     except OSError as exc:
         return f"ERROR: Failed to start command: {exc}"
 ```
-
-**The big danger: `shell=True`.**
-
-`subprocess.run(..., shell=True)` passes the command string to `/bin/sh -c`. This is
-exactly what we want — shell pipelines, redirection, variable expansion, and compound
-commands all work. But it means **every character of `command` is interpreted by the
-shell**. If the model ever constructs a command by interpolating untrusted user input,
-shell injection is trivially possible:
-
-```python
-# DANGEROUS if user_input comes from outside the agent:
-bash(f"grep {user_input} /src/main.py")
-# A user_input of '; rm -rf /' becomes a catastrophe.
-```
-
-In a coding agent the model constructs the commands, and the model is (mostly) trusted.
-But Phase 5 introduces a permission system that shows the user every `bash` call before
-it runs. That second pair of eyes is the real safety net — `shell=True` vs `shell=False`
-is a secondary concern. Document the risk loudly; do not paper over it.
-
-**Interactive commands and stdin.**
-
-`stdin=subprocess.DEVNULL` closes stdin immediately. Any command that tries to read
-from stdin will see EOF and exit (or error). This is correct: an interactive Python
-REPL waiting for input would block until the `timeout` fires, burning 120 seconds and
-returning nothing useful. The model should know to use `python3 script.py` not
-`python3 -i`, and the docstring says so.
-
-**Working directory.**
-
-Setting `cwd=WORKSPACE_ROOT` means the model can write `bash("ls src/")` and get the
-right listing without needing to know the absolute path. It mirrors how a developer
-would open a terminal in the project root.
 
 ---
 
@@ -1654,3 +2257,34 @@ a thin wrapper around `registry.dispatch`.
 fills the context window: how to summarize stale tool results, implement a sliding
 window over the transcript, and use `max_output_tokens` budgeting to keep the model
 reasoning clearly across hundreds of tool calls.
+
+---
+
+## Key takeaways
+
+- **Tools define the agent's power.** `read_file`, `edit_file`, `bash`, `grep`, and
+  `glob` are what turn the bare loop into a coding agent.
+- Every tool shares the same **discipline**: keep paths inside the workspace, return
+  **error strings** instead of raising, and practice **output-size discipline** —
+  truncate/paginate so one big result can't swamp the context window.
+- **`make_default_registry()`** wires the whole toolset together in one place, so the
+  loop just dispatches by name.
+- The genuinely **risky** tools (writing files, running shell) are exactly where
+  Phase 5's permission layer plugs in — the harness itself stays unchanged.
+
+## Check yourself
+
+1. Name three tools that turn the loop into a coding agent.
+2. Why is truncating/paginating tool output a correctness concern, not just cosmetics?
+3. What should a tool do when it's handed a missing file or a path outside the workspace?
+4. Where is the full toolset assembled for the agent to use?
+
+<details><summary>Answers</summary>
+
+1. Any three of `read_file`, `edit_file`, `bash`, `grep`, `glob`.
+2. Oversized output **crowds out conversation history** in the context window, degrading
+   the model's reasoning — so bounded output keeps long sessions coherent.
+3. Return a **clear error string** (not raise) and refuse paths that escape the
+   workspace root — so the model can see the problem and the harness stays safe.
+4. In **`make_default_registry()`**.
+</details>
