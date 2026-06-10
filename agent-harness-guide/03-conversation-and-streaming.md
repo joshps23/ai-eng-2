@@ -12,6 +12,22 @@ By the end you will have:
 - An updated `run_agent_streaming()` loop that combines the Phase 2 tool registry with the
   above two pieces
 
+As in the other phases, you will build the **same harness four times**, each version a
+complete program you can run, each one rung more organized than the last:
+
+- **Version 1 — line-by-line.** A multi-turn chat where the transcript is a plain list you
+  append to inline. No `def`, no classes — just statements and a `while` loop.
+- **Version 2 — functions.** The same chat, with the repeated moves named as plain
+  functions (`add_user`, `extend_items`, `run_turn`, `save`/`load`).
+- **Version 3 — classes.** The same chat, with the transcript owned by a `Conversation`
+  class — the shape the final package uses.
+- **Version 4 — streaming.** The same harness, with one new *mechanism*: the model's
+  answer arrives as a stream of events instead of one finished response.
+
+Nothing the harness *does* changes between versions; only how the code is organized (V1→V3)
+and how the answer is displayed (V4). If a version ever feels confusing, drop back one rung
+— the previous version is always still correct.
+
 ---
 
 > ## 🟢 Beginner track: two things to know before you start
@@ -89,7 +105,13 @@ approach.
 
 ---
 
-## Step 0 — The Simplest Version That Works
+## Version 1 — Line-by-Line: the Transcript Is Just a List
+
+The first rung is the whole idea of this phase with **no `def` and no classes** — just
+statements, a list, and (in Step 1.2) a `while` loop. If you understand Version 1 you
+already understand the whole phase; every later version is this code, reorganized.
+
+### Step 1.1 — Two turns, fully inline
 
 Before introducing any classes or helpers, let's see the core idea in the most direct form:
 a plain Python list that grows with every turn and gets passed back to the model so it
@@ -156,9 +178,93 @@ exchange. That list *is* the memory.
 > `dict`.  Plain dicts are JSON-serializable, easy to print, and accepted by the API
 > as input on the next call.  You will use this pattern everywhere.
 
+### Step 1.2 — A chat REPL: the same two-turn script, in a `while` loop
+
+The script above hard-codes exactly two turns. A real chat keeps going until *you* decide
+to stop. The fix is purely mechanical: put the per-turn statements inside a `while True:`
+loop and read the user's message with `input()`. Still no `def`, still no classes — the
+loop body is exactly the turn you already wrote.
+
+**Why this matters:** this is the key teaching moment of the whole phase. `input_items` is
+created **once, before the loop**, and only ever appended to **inside** the loop. That is
+the entire mechanism of "memory": the list outlives each turn, so every new API call sees
+everything that came before. The model itself remembers nothing — the list does.
+
+Here is the complete Version 1 program — paste it into `chat_v1.py` and run it:
+
+```python
+# chat_v1.py — Version 1: a multi-turn chat, line by line.
+# No def, no classes. The transcript is the plain list `input_items`.
+from openai import OpenAI
+
+MODEL = "gpt-4o"
+client = OpenAI()
+
+input_items = []   # created ONCE — this list IS the conversation's memory
+
+print("Chat started. Type 'quit' to exit.")
+while True:
+    user_text = input("\nYou: ")
+    if user_text.strip().lower() in ("quit", "exit"):
+        break
+
+    # 1. Remember what the user said.
+    input_items.append({"role": "user", "content": user_text})
+
+    # 2. Send the WHOLE transcript so far.
+    resp = client.responses.create(
+        model=MODEL,
+        input=input_items,
+    )
+
+    # 3. Remember what the model said (SDK objects -> plain dicts).
+    for item in resp.output:
+        input_items.append(item.model_dump())
+
+    print("Assistant:", resp.output_text)
+
+print(f"\nGoodbye — the transcript held {len(input_items)} items.")
+```
+
+**▶ Run it now.** Tell it your name on the first turn, then ask `What is my name?` on the
+second. It answers correctly — not because the model remembers, but because the turn-1
+exchange is still sitting in `input_items` and gets re-sent on turn 2:
+
+```text
+Chat started. Type 'quit' to exit.
+
+You: My name is Alex. Remember that.
+Assistant: Got it! I'll remember your name is Alex.
+
+You: What is my name?
+Assistant: Your name is Alex.
+
+You: quit
+
+Goodbye — the transcript held 4 items.
+```
+
+As an experiment, move `input_items = []` to the top of the loop body (so the list is
+recreated every turn) and run it again — the model instantly "forgets" your name. Memory
+lives in that one line's placement.
+
 ---
 
-## Step 1 — Add Small Helper Functions
+### What changed from V1 → V2
+
+- **Nothing about behavior.** Version 2 is the exact same chat — same API calls, same
+  transcript, same output.
+- The three inline moves of the loop body — append a user message, call the API, append
+  the output — get **names**: `add_user`, `run_turn`, `extend_items`.
+- The bare `input_items` list becomes a small **dict** (`{"instructions": ..., "items":
+  [...]}`) so the system instructions travel with the transcript.
+- Because the conversation is now one plain dict, **save/load** becomes a one-line
+  `json.dump`/`json.load` — Version 2's one genuinely new capability.
+- Still **no classes** — only plain functions taking `conv` as their first argument.
+
+## Version 2 — Functions: Name the Moves
+
+### Step 2.1 — Add Small Helper Functions
 
 The four operations you just did inline — add user message, extend with model output, add a
 tool result, return the list to pass as `input=` — will repeat every turn.  Naming them
@@ -227,12 +333,12 @@ print("Turn 2:", resp2.output_text)
 print(f"Transcript has {len(conv['items'])} items.")
 ```
 
-**▶ Run it now.** Output should be the same as Step 0.  Nothing changed externally —
+**▶ Run it now.** Output should be the same as Step 1.1.  Nothing changed externally —
 only the code is cleaner.
 
 ---
 
-## Step 2 — Save and Load the Transcript
+### Step 2.2 — Save and Load the Transcript
 
 Right now, if the program restarts, the conversation is lost.  Because `conv` is just a
 dict with a list, saving it is one `json.dump()` call.
@@ -290,9 +396,104 @@ in a text editor — you will see the full transcript as plain JSON.
 
 ---
 
-## 2. Transcript Management Deep-Dive
+### Step 2.3 — Version 2, complete: `chat_v2.py`
 
-### 2.1 Own vs. Delegate — Which Should You Choose?
+You have now seen every Version 2 piece on its own. Here they are assembled into one
+complete file — the same chat REPL as `chat_v1.py`, reorganized into functions, with one
+genuinely new capability: the transcript autosaves after every turn, and if a saved
+session exists the chat **resumes** it on startup.
+
+```python
+# chat_v2.py — Version 2: the same multi-turn chat, organized into functions.
+# Still no classes. New capability: the conversation survives a restart.
+import json
+import os
+from openai import OpenAI
+
+MODEL = "gpt-4o"
+SESSION_PATH = "/tmp/chat_v2_session.json"
+client = OpenAI()
+
+
+def new_conversation(instructions=""):
+    """Create a fresh conversation dict."""
+    return {"instructions": instructions, "items": []}
+
+
+def add_user(conv, text):
+    """Append a user turn."""
+    conv["items"].append({"role": "user", "content": text})
+
+
+def extend_items(conv, output_items):
+    """Append all items from resp.output, converting SDK objects to dicts."""
+    for item in output_items:
+        if hasattr(item, "model_dump"):
+            item = item.model_dump()
+        conv["items"].append(dict(item))
+
+
+def to_input(conv):
+    """Return the items list ready to pass as input=."""
+    return list(conv["items"])
+
+
+def save(conv, path):
+    """Write the conversation to a JSON file."""
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(conv, f, indent=2, ensure_ascii=False)
+
+
+def load(path):
+    """Read a conversation back from a JSON file."""
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def run_turn(conv, user_text):
+    """One full turn: remember the user, call the API, remember the model."""
+    add_user(conv, user_text)
+    resp = client.responses.create(
+        model=MODEL,
+        instructions=conv["instructions"],
+        input=to_input(conv),
+    )
+    extend_items(conv, resp.output)
+    return resp.output_text
+
+
+# --- the REPL: identical in behavior to chat_v1.py ---
+if os.path.exists(SESSION_PATH):
+    conv = load(SESSION_PATH)
+    print(f"Resumed session with {len(conv['items'])} items.")
+else:
+    conv = new_conversation(instructions="You are a helpful assistant.")
+    print("Started a new session.")
+
+print("Type 'quit' to exit.")
+while True:
+    user_text = input("\nYou: ")
+    if user_text.strip().lower() in ("quit", "exit"):
+        break
+    print("Assistant:", run_turn(conv, user_text))
+    save(conv, SESSION_PATH)   # persist after every turn
+
+print(f"\nGoodbye — transcript saved to {SESSION_PATH}.")
+```
+
+**▶ Run it now.** Tell it your name, type `quit`, then **run the program again** and ask
+`What is my name?`. It remembers — across a full process restart — because the transcript
+was sitting in `/tmp/chat_v2_session.json` the whole time. (Delete that file to start
+fresh.) Compare the `while` loop body to `chat_v1.py`: the same three moves, now named.
+
+---
+
+## Interlude — Transcript Management Deep-Dive
+
+Before climbing to Version 3, a short detour into the design decisions behind what you
+just built. No new code to run here — this is the "why" behind owning the list.
+
+### Own vs. Delegate — Which Should You Choose?
 
 The two-turn example above used **owning the list** (`input_items` / `conv["items"]`).
 The alternative is passing `previous_response_id=resp.id` and letting the server stitch
@@ -315,7 +516,7 @@ sees.
 `previous_response_id` is worth revisiting when conversations are very long and you trust
 the server to retain history — Phase 8 covers it as an optimization.
 
-### 2.2 Serializing SDK Objects
+### Serializing SDK Objects
 
 `resp.output` is a list of typed SDK objects, not plain dicts.  If you put them straight
 back into `input` on the next call, that works for the current process.  But if you want to
@@ -331,7 +532,7 @@ full_dump = resp.model_dump()          # whole response including usage
 The `input` field of `client.responses.create()` accepts either SDK objects or plain dicts,
 so normalizing to dicts is safe.
 
-### 2.3 The `to_input()` Helper
+### The `to_input()` Helper
 
 Before sending items back you need to strip any fields that are output-only and not accepted
 in `input`.  The simplest approach: let each item carry its `type` and the fields that matter

@@ -103,11 +103,32 @@ agent loop:
 
 ---
 
-## 0.3 The Responses API contract (build it up step by step)
+## 0.3 Version 1 — the whole handshake, line by line
 
 This section is the **single source of truth** every later phase relies on. We
 introduce each piece one at a time, with a working checkpoint after each new idea.
 If a code sample in a later phase looks unfamiliar, come back here.
+
+It is also the first rung of a **version ladder** this guide climbs in every
+phase: you will see the *same* program more than once, reorganized at increasing
+levels of abstraction, never with new behavior smuggled in.
+
+- **Version 1 (this section)** — a **straight-line script**: no `def`, no
+  classes, just statements running top to bottom (loops are fine). Every moving
+  part is visible at once, which is exactly what you want while the *concepts*
+  are still new.
+- **Version 2 (§0.4)** — the **identical program reorganized into a few tiny
+  functions**, so each part has a name you can point at. Same behavior, same
+  output.
+- **There is no Version 3 in Phase 0.** This phase stays conceptual on purpose:
+  classes are deferred until you've run the plain versions yourself (Phase 1
+  previews a minimal `Agent` class; Phase 2 introduces the `Tool` abstraction
+  and the `@tool` decorator).
+
+Within Version 1 we still take one idea per step: first plain text in/out, then
+`input` as a list, then the two output item types you must recognize (`message`
+vs `function_call`), and finally the `function_call_output` echo that completes
+the handshake. Each step ends with a **▶ Run it now** checkpoint.
 
 ### 0.3.1 Installation & client
 
@@ -373,11 +394,14 @@ result — **echoing it back exactly is mandatory**.
 > items. We use (a) by default because it's transparent and survives process
 > restarts; we cover (b) in Phase 8.
 
-Now let's run the complete two-turn exchange. This is the **complete handshake** in
-under 30 lines:
+Now let's run the complete two-turn exchange. This is **Version 1, complete** —
+the whole handshake in under 30 lines of straight-line code. Notice there is no
+`def` anywhere: the "tool" is just one f-string, inlined right where the tool
+call is handled. That's deliberate. With zero user-defined abstractions, every
+single thing this program does is visible on one screen, in the order it happens:
 
 ```python
-# step4_handshake.py
+# version1_handshake.py — the complete handshake, straight-line, no def
 import json
 from openai import OpenAI
 
@@ -398,21 +422,18 @@ tools = [{
     },
 }]
 
-def get_weather(city):
-    # Stub: in a real harness this would call a weather API
-    return f"Sunny, 21°C in {city}"
-
 input_items = [{"role": "user", "content": "What's the weather like in Tokyo?"}]
 
 # Turn 1: model should ask to call get_weather
 resp = client.responses.create(model=MODEL, input=input_items, tools=tools)
 input_items += resp.output   # carry all output items forward
 
-# Execute any tool calls
+# Execute any tool calls — the "tool" is inlined right here
 for item in resp.output:
     if item.type == "function_call":
         args = json.loads(item.arguments)
-        result = get_weather(**args)
+        # Stub: a real harness would call a weather API here
+        result = f"Sunny, 21°C in {args['city']}"
         input_items.append({
             "type": "function_call_output",
             "call_id": item.call_id,   # echo back the same call_id
@@ -427,7 +448,7 @@ print(resp.output_text)
 **▶ Run it now.**
 
 ```
-python step4_handshake.py
+python version1_handshake.py
 ```
 
 Expected output:
@@ -458,12 +479,220 @@ you ever need plain dicts (e.g. to persist to disk), use
 `item.model_dump()` / `resp.model_dump()`. We'll formalize a `to_input()` helper in
 Phase 3.
 
-You already saw this pattern in `step4_handshake.py` — `input_items += resp.output`
+You already saw this pattern in `version1_handshake.py` — `input_items += resp.output`
 is the key line that makes the conversation grow correctly.
+
+That completes **Version 1**: every concept of this phase, in one straight-line
+file. Next we climb one rung of the ladder — the *same* program, reorganized into
+functions.
 
 ---
 
-## 0.3.8 Preview: streaming (full treatment in Phase 3)
+## 0.4 Version 2 — the same handshake, organized into functions
+
+Version 1 works, and you should keep it — it is the version where nothing is
+hidden. But it has a cost you'll feel the moment the program grows: everything is
+one anonymous blob. If a friend asked *"which lines are the tool?"* you'd have to
+point at the middle of a `for` loop. If you wanted a second tool, you'd be
+editing inside that loop. And the `client.responses.create(...)` call — the
+single most important line in the whole guide — appears **twice**, copy-pasted.
+
+Version 2 fixes exactly that, and *only* that. We take the identical program and
+give each of its three jobs a **name**:
+
+1. *talking to the model* → `call_model`
+2. *doing what a tool does* → `run_tool`
+3. *the handshake bookkeeping* (parse `arguments`, echo `call_id`, append the
+   `function_call_output`) → `handle_tool_calls`
+
+Same behavior. Same two API calls. Same output. If you run Version 1 and
+Version 2 side by side, the model cannot tell them apart — because on the wire
+they are the same program.
+
+### What changed from Version 1 → Version 2
+
+- **Behavior: nothing.** Same two turns, same handshake, same printed answer.
+- The `client.responses.create(...)` call, previously pasted twice, now lives in
+  **one** function, `call_model`, called once per turn.
+- The tool's body (the weather f-string) moved into `run_tool`, separating *what
+  the tool does* from *how its result is delivered*.
+- The handshake bookkeeping — `json.loads(item.arguments)`, echoing `call_id`,
+  appending the `function_call_output` dict — lives in `handle_tool_calls`, so
+  the top of the file now reads like the loop diagram in §0.1.
+- Still **no classes, no decorators**: just three plain `def`s and the same
+  `input_items` list and `tools` schema as Version 1.
+
+> 🟢 **Why bother, if the behavior is identical?** Because names are how programs
+> scale. In Version 1 you understood the handshake by reading every line; in
+> Version 2 you can understand the *program* by reading three function names —
+> and dive into a body only when you care. Every later phase repeats this move:
+> first the flat version, then the same thing with names.
+
+### 0.4.1 Step 1 — name the model call: `call_model`
+
+The round trip to the model is one line, but it's the line every phase of this
+guide revolves around, and Version 1 repeats it. Give it a name:
+
+```python
+def call_model(input_items):
+    """One turn: send the whole transcript, get back the model's output items."""
+    return client.responses.create(model=MODEL, input=input_items, tools=tools)
+```
+
+Nothing else changes — `call_model(input_items)` returns the exact same `resp`
+object you've been using, with the same `resp.output` list and
+`resp.output_text` convenience.
+
+**▶ Run it now (a 30-second check).** Open your `version1_handshake.py`, paste
+this `def` near the top (after `tools` is defined), and replace both
+`client.responses.create(model=MODEL, input=input_items, tools=tools)` lines
+with `call_model(input_items)`. Run it — the output is unchanged. You have just
+performed your first *refactor*: same program, one new name.
+
+### 0.4.2 Step 2 — name the tool's work: `run_tool`
+
+In Version 1 the "tool" was an f-string inlined in the dispatch loop. Pull just
+that — the part that *is* the tool, not the bookkeeping around it — into its own
+function:
+
+```python
+def run_tool(name, args):
+    """Execute one tool call and return its result as a STRING."""
+    if name == "get_weather":
+        # Stub: a real harness would call a weather API here
+        return f"Sunny, 21°C in {args['city']}"
+    return f"Error: unknown tool '{name}'"
+```
+
+Two things to notice:
+
+- It returns a **string**, because that's what `function_call_output.output`
+  must be (§0.3.6).
+- The `if name == ...` chain is the seed of something bigger: in Phase 1 it
+  grows an `elif`, and in Phase 2 it becomes a **registry** (a dict mapping tool
+  names to functions). The `"Error: unknown tool"` fallback previews the
+  error-handling stance in §0.7.4 — tools report failures as strings, they
+  don't crash the program.
+
+### 0.4.3 Step 3 — name the handshake bookkeeping: `handle_tool_calls`
+
+What's left in Version 1's `for` loop is pure protocol: find each
+`function_call` item, decode its `arguments`, run the tool, and append a
+`function_call_output` with the **same `call_id`**. That ritual never changes,
+no matter what tools you add — which makes it perfect to name once and stop
+thinking about:
+
+```python
+def handle_tool_calls(output_items, input_items):
+    """For every function_call in output_items, run the tool and append its result."""
+    for item in output_items:
+        if item.type == "function_call":
+            args = json.loads(item.arguments)
+            result = run_tool(item.name, args)
+            input_items.append({
+                "type": "function_call_output",
+                "call_id": item.call_id,   # echo back the same call_id
+                "output": result,          # a string
+            })
+```
+
+This function *mutates* the `input_items` list you pass in — it appends the
+tool results directly, the same way Version 1 did with the list at top level.
+
+### 0.4.4 The complete Version 2 program
+
+Here is the whole file. Compare it to `version1_handshake.py` — every line of
+Version 1 is still here, just sorted into named drawers, and the top-level
+script at the bottom now tells the story in four lines:
+
+```python
+# version2_functions.py — the identical handshake, reorganized into functions
+import json
+from openai import OpenAI
+
+MODEL = "gpt-4o"
+client = OpenAI()
+
+tools = [{
+    "type": "function",
+    "name": "get_weather",
+    "description": "Get the current weather for a city.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "city": {"type": "string", "description": "City name, e.g. 'Paris'"},
+        },
+        "required": ["city"],
+        "additionalProperties": False,
+    },
+}]
+
+
+def call_model(input_items):
+    """One turn: send the whole transcript, get back the model's output items."""
+    return client.responses.create(model=MODEL, input=input_items, tools=tools)
+
+
+def run_tool(name, args):
+    """Execute one tool call and return its result as a STRING."""
+    if name == "get_weather":
+        # Stub: a real harness would call a weather API here
+        return f"Sunny, 21°C in {args['city']}"
+    return f"Error: unknown tool '{name}'"
+
+
+def handle_tool_calls(output_items, input_items):
+    """For every function_call in output_items, run the tool and append its result."""
+    for item in output_items:
+        if item.type == "function_call":
+            args = json.loads(item.arguments)
+            result = run_tool(item.name, args)
+            input_items.append({
+                "type": "function_call_output",
+                "call_id": item.call_id,   # echo back the same call_id
+                "output": result,          # a string
+            })
+
+
+input_items = [{"role": "user", "content": "What's the weather like in Tokyo?"}]
+
+resp = call_model(input_items)              # Turn 1: model asks for the tool
+input_items += resp.output                  # carry all output items forward
+handle_tool_calls(resp.output, input_items) # run tools, append their results
+resp = call_model(input_items)              # Turn 2: model answers in words
+print(resp.output_text)
+```
+
+**▶ Run it now.**
+
+```
+python version2_functions.py
+```
+
+Expected output:
+
+```
+The weather in Tokyo is sunny and 21°C.
+```
+
+Exactly the wording class of Version 1 — because it *is* Version 1, reorganized.
+If both versions print a sentence quoting the stub data, you've confirmed the
+key claim of this guide's ladder: **abstraction changes how code is arranged,
+never what it does.**
+
+### 0.4.5 Where is Version 3?
+
+There deliberately isn't one in Phase 0. This phase stays conceptual: its job is
+the API contract, and two rungs of the ladder are enough to show the
+contract from both altitudes. Classes arrive only after you've run the plain
+versions yourself — **Phase 1** previews a minimal `Agent` class at the end of
+its own ladder, and **Phase 2** introduces the `Tool` abstraction, the
+`ToolRegistry`, and (as its Version 4) the `@tool` decorator. When you meet
+them, remember they are this same handshake, climbing the same ladder.
+
+---
+
+## 0.5 Preview: streaming (full treatment in Phase 3)
 
 > **This section is optional for now.** Skip it on your first pass. Come back after
 > you have Phase 1 working. Streaming is a UI enhancement — it does not change the
@@ -502,7 +731,7 @@ purpose — the harness drives the event loop itself.) Key event types you'll us
 
 ---
 
-## 0.3.9 Preview: usage & cost (full treatment in Phase 6)
+## 0.6 Preview: usage & cost (full treatment in Phase 6)
 
 > **This section is optional for now.** Skip it on your first pass. Token accounting
 > matters a lot once your conversations grow long — but first get the handshake
@@ -520,11 +749,11 @@ We track these in Phase 6 (context budgeting) and Phase 8 (observability).
 
 ---
 
-## 0.4 Project conventions (used by every phase)
+## 0.7 Project conventions (used by every phase)
 
 To keep eight phases coherent, we fix these conventions now.
 
-### 0.4.1 Repository layout
+### 0.7.1 Repository layout
 
 By the end of the guide the consolidated package lives in `code/` and looks like:
 
@@ -549,7 +778,7 @@ agent_harness/
 Each phase introduces the file(s) it needs; later phases extend them. You can build
 the whole thing incrementally in one folder and watch it grow.
 
-### 0.4.2 The vocabulary we use consistently
+### 0.7.2 The vocabulary we use consistently
 
 - **item** — one element of `input`/`output` (a message, function_call, reasoning…).
 - **turn** — one round trip to the model (`responses.create` → its `output`).
@@ -560,7 +789,7 @@ the whole thing incrementally in one folder and watch it grow.
 - **transcript / history** — our owned `input_items` list, the full conversation.
 - **harness / agent** — the loop object that drives all of the above.
 
-### 0.4.3 Data shapes we standardize on
+### 0.7.3 Data shapes we standardize on
 
 A **tool result** that the harness produces internally is always:
 
@@ -575,7 +804,7 @@ A **tool definition** the harness registers is always a Python object exposing:
 `name`, `description`, `parameters` (JSON Schema dict), and a `run(**kwargs)` method.
 We formalize this `Tool` abstraction in Phase 2.
 
-### 0.4.4 Error-handling stance
+### 0.7.4 Error-handling stance
 
 Tools **never raise into the loop**. A tool that fails returns its error *as a
 string result* so the model can read it and recover (retry, try another path, or
@@ -583,7 +812,7 @@ report). A raised exception kills the agent; a returned error string makes the a
 self-correct. This single rule is responsible for a huge fraction of an agent's
 apparent "intelligence."
 
-### 0.4.5 Async vs sync
+### 0.7.5 Async vs sync
 
 Phases 1–5 use the **synchronous** client for clarity. Phase 7 (sub-agents) and
 Phase 8 (production) introduce concurrency for parallel tool calls and parallel
@@ -601,12 +830,15 @@ subprocess).
 
 ---
 
-## 0.5 Sanity-check script
+## 0.8 Sanity-check script
 
 Before moving to Phase 1, confirm your environment works end to end. This script is
-a variant of `step4_handshake.py` that uses the integer `add` tool from
-§0.3.5 — it exercises the exact handshake you just learned, with a tool that has
-completely deterministic output so you can easily verify correctness.
+a variant of `version1_handshake.py` (§0.3.6) that swaps the weather stub for an
+integer `add` tool — it exercises the exact handshake you just learned, with a tool
+whose output is completely deterministic so you can easily verify correctness. It's
+written in the Version 1 straight-line style on purpose; reorganizing it into the
+Version 2 function shape (and adding a `multiply` tool) is the Phase 0 exercise in
+[`EXERCISES.md`](./EXERCISES.md).
 
 ```python
 # check_setup.py

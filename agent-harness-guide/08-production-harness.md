@@ -6,6 +6,51 @@ This phase wires all of that into a harness you could ship: reliable under netwo
 
 ---
 
+## 0. You've Already Built All of This — the Ladder-to-Package Map
+
+Every previous phase climbed the same **version ladder**: V1 line-by-line (no `def`, no
+classes), V2 functions, V3 classes, and — where the phase taught it — V4 decorators or
+threads. Phase 8 is where the ladders meet. There is no V1 here, because *you already
+climbed it seven times*: this phase takes the **top rung of each earlier ladder** and
+shows how those rungs snap together into the single tested package,
+[`code/agent_harness/`](code/agent_harness/).
+
+Here is the map. Each row is a top rung you have already built, and the package module
+it became:
+
+| Phase, top rung you built | Package module it became |
+|---|---|
+| Phase 1 — **V3**: the minimal `Agent` class around the loop | `agent.py` |
+| Phase 2 — **V4**: `@tool` decorator + `ToolRegistry` | `tools/base.py` + `tools/registry.py` |
+| Phase 3 — **V3**: the `Conversation` class owning the transcript | `conversation.py` |
+| Phase 4 — **V3**: the workspace-confined file & shell tools | `tools/files.py` + `tools/shell.py` |
+| Phase 5 — **V3/V4**: permission policy objects + hooks | `permissions.py` + `hooks.py` |
+| Phase 6 — **V2–V4**: `count_tokens`, `prune_to_budget`, `compact` | `context.py` |
+| Phase 7 — **V3/V4**: the `task` tool reusing `Agent` + threaded dispatch | `subagents.py` + `tools/parallel.py` |
+
+What is genuinely *new* in Phase 8 is only the production wrapping — and each new piece
+gets its own rung-by-rung treatment below, exactly like the earlier phases:
+
+| New in this phase | Package module |
+|---|---|
+| Retry/backoff around `client.responses.create(...)` (Step 0 → §2) | `llm.py` |
+| `Settings` — configuration without magic constants (Step 2) | `config.py` |
+| The REPL / CLI entry point (Step 4) | `cli.py` |
+| `FakeClient` — testing the loop offline (§9) | `testing.py` |
+
+> **A note on file names.** As a teaching device, this phase (like Phases 4, 5, and 7)
+> sometimes shows code under illustrative file names — `tracer.py`, `accounting.py`,
+> `tools.py`, `sub_agents.py` — that the consolidated package merges or renames. When
+> you go looking in `code/agent_harness/`, use the tables above (and the mapping table
+> in [`code/README.md`](code/README.md)) as your index. When a snippet here and the
+> package disagree, **the package is the source of truth** — it has the passing tests.
+
+If you can read each row of the first table and picture the code you wrote for it, you
+are ready. The rest of this phase adds the second table's modules one step at a time,
+then shows the fully assembled `Agent.run_turn` where every row plugs in.
+
+---
+
 ## 1. What Separates a Demo from a Production Harness
 
 A demo works when the network is fast, the model cooperates on the first try, no file is large, and you are watching. A production harness must handle:
