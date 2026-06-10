@@ -952,24 +952,293 @@ You should see `bash` called with that command and the output echoed back.
 
 ---
 
-## Step 7 — Wire Everything Up: `make_default_registry`
+## Step 2.7 — Version 2, complete: the whole harness in one file
 
-**Why now?** You have all seven tools working individually. The last step is to assemble
-them into a registry once so the rest of the program can use them by name, without
-knowing which function each name maps to.
+You have built every piece across Steps 2.0–2.6. Here is **Version 2 as one complete,
+runnable program** — the harness, the two safety helpers, and the four core tools
+(`read_file`, `write_file`, `list_dir`, `bash`) with their hand-written schema dicts and
+the dispatch dict. Still no classes, no decorators.
+
+```python
+# harness_v2.py
+"""Version 2 — the same harness, tools as plain functions.
+
+Four core tools (read_file, write_file, list_dir, bash), two shared
+safety helpers, one dispatch dict.  No classes, no decorators.
+"""
+
+import json
+import os
+import pathlib
+import subprocess
+
+from openai import OpenAI
+
+client = OpenAI()   # reads OPENAI_API_KEY from the environment
+
+# ── Safety helpers (Step 2.3) ────────────────────────────────────────────────
+
+WORKSPACE_ROOT = pathlib.Path(os.getcwd()).resolve()
+
+def _safe_path(user_path: str) -> pathlib.Path:
+    """Resolve user_path inside WORKSPACE_ROOT or raise ValueError."""
+    p = pathlib.Path(user_path)
+    if p.is_absolute():
+        p = WORKSPACE_ROOT / pathlib.Path(*p.parts[1:])
+    else:
+        p = WORKSPACE_ROOT / p
+    resolved = p.resolve()
+    try:
+        resolved.relative_to(WORKSPACE_ROOT)
+    except ValueError:
+        raise ValueError(
+            f"Path '{user_path}' resolves outside the workspace root '{WORKSPACE_ROOT}'."
+        )
+    return resolved
+
+def _truncate(text: str, max_chars: int = 40_000, max_lines: int = 2_000,
+              label: str = "output") -> str:
+    """Cap text at max_lines / max_chars with a visible notice."""
+    lines = text.splitlines(keepends=True)
+    if len(lines) > max_lines:
+        text = "".join(lines[:max_lines])
+        text += f"\n[... {label} truncated at {max_lines} lines ...]"
+    if len(text) > max_chars:
+        text = text[:max_chars] + f"\n[... {label} truncated at {max_chars} chars ...]"
+    return text
+
+# ── Tools (Steps 2.0, 2.1, 2.4, 2.6) ─────────────────────────────────────────
+
+def read_file(path: str) -> str:
+    """Read a text file and return its contents, or an ERROR string."""
+    try:
+        p = _safe_path(path)
+    except ValueError as exc:
+        return f"ERROR: {exc}"
+    try:
+        with open(p, "r", encoding="utf-8", errors="replace") as f:
+            text = f.read()
+    except FileNotFoundError:
+        return f"ERROR: File not found: {path}"
+    except OSError as exc:
+        return f"ERROR: Cannot read file: {exc}"
+    return _truncate(text, label=f"read_file({path})")
+
+def write_file(path: str, content: str) -> str:
+    """Write content to a file, creating it (and parent dirs) if needed."""
+    try:
+        p = _safe_path(path)
+    except ValueError as exc:
+        return f"ERROR: {exc}"
+    try:
+        p.parent.mkdir(parents=True, exist_ok=True)
+        encoded = content.encode("utf-8")
+        p.write_bytes(encoded)
+    except OSError as exc:
+        return f"ERROR: Cannot write file: {exc}"
+    return f"Wrote {len(encoded)} bytes ({content.count(chr(10))} lines) to '{path}'."
+
+def list_dir(path: str = ".") -> str:
+    """List the contents of a directory."""
+    try:
+        p = _safe_path(path)
+    except ValueError as exc:
+        return f"ERROR: {exc}"
+    if not p.exists():
+        return f"ERROR: Directory not found: {path}"
+    if not p.is_dir():
+        return f"ERROR: '{path}' is a file, not a directory."
+    entries = sorted(p.iterdir(), key=lambda e: (e.is_file(), e.name.lower()))
+    lines = []
+    for e in entries:
+        if e.is_dir():
+            lines.append(f"D  {e.name}/")
+        else:
+            lines.append(f"F  {e.name}  ({e.stat().st_size} bytes)")
+    return _truncate(f"Directory: {path}\n" + "\n".join(lines), label="list_dir")
+
+def bash(command: str, timeout: int = 120) -> str:
+    """Run a shell command; return exit code plus combined stdout/stderr."""
+    try:
+        result = subprocess.run(
+            command,
+            shell=True,
+            cwd=str(WORKSPACE_ROOT),
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            timeout=timeout,
+        )
+        output = result.stdout.decode("utf-8", errors="replace")
+        output = _truncate(output, label=f"bash({command[:60]})")
+        return f"Exit code: {result.returncode}\n---\n{output}"
+    except subprocess.TimeoutExpired:
+        return f"ERROR: Command timed out after {timeout} seconds: {command}"
+    except OSError as exc:
+        return f"ERROR: Failed to start command: {exc}"
+
+# ── Schemas: one hand-written dict per tool ──────────────────────────────────
+
+SCHEMAS = [
+    {
+        "type": "function",
+        "name": "read_file",
+        "description": "Read a text file and return its contents. Returns an ERROR string on failure.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string", "description": "Path relative to the workspace root."},
+            },
+            "required": ["path"],
+        },
+    },
+    {
+        "type": "function",
+        "name": "write_file",
+        "description": (
+            "Write content to a file, creating it (and parent directories) if needed. "
+            "Overwrites existing files completely."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string", "description": "Path relative to the workspace root."},
+                "content": {"type": "string", "description": "Full text content to write."},
+            },
+            "required": ["path", "content"],
+        },
+    },
+    {
+        "type": "function",
+        "name": "list_dir",
+        "description": "List the files and directories at a path, one entry per line.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string", "description": "Directory path. Default '.'."},
+            },
+            "required": [],
+        },
+    },
+    {
+        "type": "function",
+        "name": "bash",
+        "description": (
+            "Run a shell command in the workspace and return its exit code and combined "
+            "output. stdin is closed, so interactive commands will not work."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "command": {"type": "string", "description": "Shell command to execute."},
+                "timeout": {"type": "integer", "description": "Seconds before the command is killed. Default 120."},
+            },
+            "required": ["command"],
+        },
+    },
+]
+
+TOOL_FNS = {
+    "read_file": read_file,
+    "write_file": write_file,
+    "list_dir": list_dir,
+    "bash": bash,
+}
+
+# ── The harness (unchanged from Version 1, except dict dispatch) ─────────────
+
+def run(task: str) -> None:
+    input_items = [{"role": "user", "content": task}]
+    while True:
+        resp = client.responses.create(
+            model="gpt-4o",
+            input=input_items,
+            tools=SCHEMAS,
+        )
+        for item in resp.output:
+            input_items.append(
+                item.model_dump() if hasattr(item, "model_dump") else item
+            )
+        tool_calls = [item for item in resp.output
+                      if getattr(item, "type", None) == "function_call"]
+        if not tool_calls:
+            for item in resp.output:
+                if getattr(item, "type", None) == "message":
+                    for block in item.content:
+                        if getattr(block, "type", None) == "output_text":
+                            print("ANSWER:", block.text)
+            return
+        for tc in tool_calls:
+            args = json.loads(tc.arguments) if isinstance(tc.arguments, str) else tc.arguments
+            print(f"[tool] {tc.name}({args})")
+            fn = TOOL_FNS.get(tc.name)
+            result = fn(**args) if fn else f"ERROR: Unknown tool: {tc.name}"
+            input_items.append({
+                "type": "function_call_output",
+                "call_id": tc.call_id,
+                "output": result,
+            })
+
+if __name__ == "__main__":
+    run("List the files here, create notes.txt containing the word 'hello', "
+        "then run 'cat notes.txt' with bash and confirm the file says hello.")
+```
+
+The other three tools you built — `glob` (Step 2.1), `grep` (Step 2.2), and `edit_file`
+(Step 2.5) — slot in identically: paste each function above the schemas, write its schema
+dict, add one `TOOL_FNS` entry. Nothing else moves.
+
+### ▶ Run it now
+
+```
+python harness_v2.py
+```
+
+You should see a short tool-call chain — `list_dir`, then `write_file`, then `bash` —
+ending with an answer confirming `notes.txt` contains `hello`. Also re-try the Version 1
+escape: ask it to read `/etc/hostname` and watch `_safe_path` turn the attempt into an
+`ERROR:` string the model can see and explain.
+
+---
+
+### What changed from Version 2 → Version 3
+
+- The tool functions and helpers move out of the harness script into **one module**
+  (`tools.py`) with the workspace root defined once at the top.
+- The hand-written schema dicts disappear: the **`@tool` decorator from Phase 2** derives
+  each schema from the function's type hints and docstring, making registration one line
+  per tool.
+- The `TOOL_FNS` dict becomes the Phase 2 **`Registry`**: `registry.tools_list()` feeds
+  the API call and `registry.dispatch(name, args)` replaces the manual lookup.
+- Confinement is enforced **centrally**: every path-taking tool funnels through
+  `_safe_path`, and the workspace root is set in exactly one place
+  (`make_default_registry(workspace=...)`, or `set_workspace()` in the package).
+- The tools gain production polish: line numbers and `offset`/`limit` paging in
+  `read_file`, result caps in `glob`/`grep`/`list_dir`, binary-file detection.
+- The harness loop **still does not change** — it consumes `registry.tools_list()` and
+  `registry.dispatch()`, and the `call_id` handshake is identical.
+
+---
+
+## Version 3 — the organized toolset: the same idea, organized
+
+**Why now?** You have all seven tools working individually as plain functions. Version 3
+assembles them the way the consolidated package does: one module, central confinement,
+and the Phase 2 `@tool` / `Registry` machinery doing the bookkeeping — so the rest of
+the program can use tools by name without knowing which function each name maps to.
 
 This is just the Phase 2 `Registry` pattern applied to the full toolset. If you skipped
 Phase 2, think of the registry as a dict from tool name → function, plus a method that
 produces the `tools=[...]` list for the API call.
 
-### Step 7.1 — Upgrade tools to use `@tool` and `Registry`
+### Step 3.1 — Upgrade tools to use `@tool` and `Registry`
 
 In the full `tools.py` module (Section 9 below), every tool function carries the
 `@tool` decorator from Phase 2. The decorator reads the function's type hints and
 docstring and automatically writes the schema dict — so you do not have to maintain
 `READ_FILE_SCHEMA` by hand any more.
 
-### Step 7.2 — `make_default_registry`
+### Step 3.2 — `make_default_registry`
 
 ```python
 def make_default_registry(workspace: pathlib.Path = None) -> Registry:
@@ -1005,8 +1274,9 @@ the function was defined, so there is nothing more to do.
 
 ## 2. Module Layout and Shared Utilities
 
-*This section describes the production-ready `tools.py` layout. You have already met all
-the pieces above; here they are explained in their final assembled form.*
+*This section describes the production-ready `tools.py` layout — the rest of Version 3.
+You have already met all the pieces above; here they are explained in their final
+assembled form.*
 
 All tools live in a single module `tools.py`. At the top of the module we establish the
 workspace root, the two shared helpers, and the imports.

@@ -469,7 +469,7 @@ DEFAULT_RULES = [
     # Hard denials — checked before mode logic
     {"decision": "deny",  "tool": "bash", "arg_contains": "rm -rf"},
     {"decision": "deny",  "tool": "bash", "arg_contains": "sudo "},
-    {"decision": "deny",  "tool": "bash", "arg_contains": ":(}{"},
+    {"decision": "deny",  "tool": "bash", "arg_contains": ":(){"},
     # Explicit allows — safe git read commands
     {"decision": "allow", "tool": "bash", "arg_contains": "git status"},
     {"decision": "allow", "tool": "bash", "arg_contains": "git log"},
@@ -531,7 +531,30 @@ Run the agent and ask it to `git status`. With the rule in place it should run w
 
 ---
 
-## 3. Risk Classification (production shape)
+### What changed from Version 2 → Version 3
+
+- The `"safe"`/`"caution"`/`"dangerous"` strings move from a standalone `TOOL_RISK`
+  dict onto the tool itself (`Tool.risk`), so risk can't drift out of sync with the tool list.
+- The mode string becomes `class Mode(str, Enum)` — same values, but a typo like
+  `Mode.PLAM` fails at import time instead of silently never matching.
+- Each rule dict `{"decision": ..., "tool": ..., "arg_contains": ...}` becomes a
+  `PolicyRule` dataclass with named fields and a `matches()` method.
+- The rule list and its evaluation loop move together into `PermissionPolicy.evaluate()`
+  — still first-match-wins, exactly like `apply_rules()`.
+- `check_permission` now returns `(Decision, reason)` instead of a bare string, so
+  denials carry an explanation the model and your logs can read.
+- One genuinely new capability: **session memory** — answering `a`/`d` at the prompt
+  remembers your choice for the rest of the run.
+
+---
+
+## Version 3 — classes: the same gate as policy objects
+
+This is Version 2, organized. Each of the four steps below upgrades one of the plain
+dicts/functions you already have into its production-shaped form; at the end, the whole
+thing is assembled into one runnable file.
+
+### Step 3.1 — Risk Classification (production shape)
 
 The plain `TOOL_RISK` dict works, but in a larger codebase you want risk declared *on the tool itself*, so it can't drift out of sync. Attach it to the `Tool` dataclass from Phase 2.
 
@@ -619,7 +642,7 @@ The risk table for Phase 4 tools:
 
 ---
 
-## 4. Permission Modes (production shape)
+### Step 3.2 — Permission Modes (production shape)
 
 > **Why `class Mode(str, Enum)` instead of a plain string?** Your editor can autocomplete `Mode.PLAN` and will catch `Mode.PLAM` at import time. The plain-string version from Step 1 works identically at runtime; the Enum just catches typos early.
 
@@ -670,7 +693,7 @@ BYPASS_WARNING = """\
 
 ---
 
-## 5. The Policy Engine (production shape)
+### Step 3.3 — The Policy Engine (production shape)
 
 > **Why a `PermissionPolicy` class?** Your Step 2 `DEFAULT_RULES` list works fine for a few rules. When rules multiply, you want: (a) richer matching (regex, not just `in`), (b) a predicate function for complex logic, (c) the `evaluate()` method to live next to the data. This is exactly what the dataclass + class approach provides — it is the Step 2 list, organized.
 
@@ -782,7 +805,7 @@ def default_policy() -> PermissionPolicy:
 
 ---
 
-## 6. The Approval Gate (production shape)
+### Step 3.4 — The Approval Gate (production shape)
 
 > **Why upgrade from the Step 0/1 gate?** The simple gate returned just `"allow"/"deny"/"ask"`. The production gate also returns a *reason string*, remembers per-session y/a/d/n answers across loop iterations (so it does not ask twice about the same tool), and integrates with the `Tool` dataclass's `.risk` field and the `PermissionPolicy` rules.
 

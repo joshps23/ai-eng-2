@@ -1822,6 +1822,13 @@ The harness does not enforce sandboxing itself; that is an infrastructure concer
 
 ### 9.2 A Fake Client
 
+> **Which rung is this?** You met the V1 of this idea back in Step 0's ▶ Run it now — a
+> fake client that fails twice then succeeds, written inline to test retry. This is its
+> **V3**: the same trick (an object with a `.responses.create(...)` that returns scripted
+> answers instead of calling the network) organized into reusable dataclasses. The tested
+> package ships this as `testing.py`, and it only works because the client is *injectable*
+> — the `Agent` takes a `client` argument rather than constructing `OpenAI()` itself.
+
 ```python
 # tests/fake_client.py
 """
@@ -2040,8 +2047,16 @@ def test_tool_error_does_not_crash_loop():
 Run with:
 
 ```bash
-pytest tests/ -v
+python -m pytest tests/ -v
 ```
+
+(The `python -m` form guarantees pytest runs under the same interpreter you installed the
+package into — a bare `pytest` on your PATH might belong to a different Python.)
+
+This is also exactly how the consolidated package is verified: from
+[`code/`](code/), `python -m pytest -q` runs the full suite offline — no API key needed,
+because every test drives the real `Agent` through the scripted `FakeClient` in
+`testing.py`. Your seven ladders, assembled and proven, without a single network call.
 
 ---
 
@@ -2074,6 +2089,39 @@ pytest tests/ -v
 Every abstraction introduced in earlier phases was chosen so it would slot cleanly into this final assembly. The `Conversation` owns the transcript as a plain list. The `ToolRegistry` produces JSON schemas on demand. The `PermissionPolicy` is a pure function of tool name and args. The `Agent` is a thin coordinator that calls each collaborator in a fixed order.
 
 The result is a harness where each concern is isolated, each component is testable independently, and the whole thing behaves predictably under the conditions that actually matter in production: slow networks, large files, adversarial model outputs, and impatient users who press Ctrl-C.
+
+### What you'll have built — the final checklist
+
+Tick these off. Each line is a capability of the finished harness, the phase whose ladder
+taught it, and the module of the tested package
+([`code/agent_harness/`](code/agent_harness/)) where its top rung now lives:
+
+- [ ] **An agent loop** — call the model, run the tools it asks for, feed results back
+      with matching `call_id`s, repeat until done — *Phase 1* → `agent.py`
+- [ ] **A tool system** — plain functions promoted to schema-bearing tools with `@tool`,
+      dispatched through a registry that returns `"Error: ..."` strings instead of
+      crashing the loop — *Phase 2* → `tools/base.py`, `tools/registry.py`
+- [ ] **Memory** — a transcript the model never has (it's stateless!), owned as a plain
+      list you can save, load, and resume — *Phase 3* → `conversation.py`
+- [ ] **Hands** — real file and shell tools, confined to a workspace root — *Phase 4* →
+      `tools/files.py`, `tools/shell.py`
+- [ ] **Judgment** — a permission gate before every tool call, and hooks that observe
+      without touching the loop — *Phase 5* → `permissions.py`, `hooks.py`
+- [ ] **Endurance** — token counting, budget-aware pruning that never orphans a
+      `function_call`/`function_call_output` pair, and model-written compaction —
+      *Phase 6* → `context.py`
+- [ ] **Delegation** — sub-agents that are just the same `Agent` run inside a `task`
+      tool, plus threaded parallel dispatch — *Phase 7* → `subagents.py`,
+      `tools/parallel.py`
+- [ ] **Production fitness** — retry/backoff, settings from env/file/flags, a REPL with
+      slash-commands, and offline tests against a scripted fake — *Phase 8* → `llm.py`,
+      `config.py`, `cli.py`, `testing.py`
+
+If every box is honest, you have built, from scratch, the kind of harness that powers
+Claude Code — and you understand every line of it.
+
+**Practice:** the [Phase 8 exercises](EXERCISES.md#phase-8--the-production-harness)
+(plus the capstone) walk you through hardening and extending this assembly yourself.
 
 ---
 

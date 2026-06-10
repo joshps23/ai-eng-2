@@ -1898,6 +1898,10 @@ which is appended as item 7.  The loop then terminates because `function_calls` 
 - Because you own the transcript, you can **save and reload** a conversation — that's
   what makes resuming a session possible.
 
+**Practice:** see [`EXERCISES.md` — Phase 3](./EXERCISES.md#phase-3--conversation--streaming)
+for hands-on exercises (session persistence, replay, and streaming renderers) before
+moving on.
+
 ## Check yourself
 
 1. What are the two orthogonal concerns this phase pulls apart?

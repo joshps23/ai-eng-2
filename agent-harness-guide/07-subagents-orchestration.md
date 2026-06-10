@@ -1317,7 +1317,7 @@ def run_subagents_parallel(
     ]
 ```
 
-### 4.1 Integrating parallel dispatch into `ToolRegistry`
+### Step 4.3 — Integrating parallel dispatch into `ToolRegistry`
 
 Phase 2's `ToolRegistry.dispatch_parallel` already uses `ThreadPoolExecutor`. The only addition needed is separating `task` tool calls from regular tool calls so that `run_subagents_parallel` handles the former.
 
@@ -1372,7 +1372,7 @@ def _dispatch_step(
     return outputs
 ```
 
-### 4.2 Why this is safe
+### Step 4.4 — Why this is safe
 
 Each sub-agent is an independent Python object in its own thread. There is no shared mutable state between workers because:
 
@@ -1383,7 +1383,7 @@ Each sub-agent is an independent Python object in its own thread. There is no sh
 
 The pattern is identical to Phase 2's parallel tool execution. The only difference is that each "tool" is itself an LLM call — potentially spawning further tool calls internally.
 
-### 4.3 Making the parallelism visible — timestamps
+### Step 4.5 — Making the parallelism visible — timestamps
 
 Add a thin wrapper around `dispatch_subagent` for debugging:
 
@@ -1431,11 +1431,22 @@ Sample output:
 
 The wall time equals the slowest worker (researcher at 6.2 s), not their sum (16.1 s).
 
+#### ▶ Run it now
+
+Version 4's complete runnable program is the worked example in §5 below
+(`example_orchestrator.py`), driven by the full `subagents.py` listing in §7 — together
+with `agent.py` from Step 3.1, those three files are the whole Version 4 harness. Save
+them side by side, point `REPO_PATH` at a real repository, and run:
+
+```
+python example_orchestrator.py
+```
+
 ---
 
 ## 5. A Complete Worked Example — Dynamic Fan-Out
 
-This example demonstrates the full pattern end-to-end. The orchestrator receives a repository audit task and autonomously decides to fan it out into three parallel workers.
+This example demonstrates the full pattern end-to-end — it is **Version 4 running for real**. The orchestrator receives a repository audit task and autonomously decides to fan it out into three parallel workers.
 
 ### 5.1 Setup
 
@@ -1796,6 +1807,12 @@ Parallel coder agents editing the same files will produce last-write-wins confli
 ---
 
 ## 7. Full Code — `subagents.py`
+
+This is the consolidated file the version ladder was building toward: the Version 3
+machinery (presets, `dispatch_subagent`, `make_task_tool`) and the Version 4 parallel
+runner in one place. It mirrors the shape of the tested package
+(`code/agent_harness/subagents.py` plus `tools/parallel.py`); when this listing and the
+package disagree, the package is correct.
 
 ```python
 # subagents.py
