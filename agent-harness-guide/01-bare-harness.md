@@ -475,3 +475,70 @@ Agent ready. Type your message (Ctrl-C or empty line to quit).
 
 You: What time is it in Tokyo right now?
   [tool] get_current_time({"timezone": "Asia/Tokyo"}) → 2026-06-06T22:47:13+09:00
+Assistant: The current time in Tokyo is 10:47 PM on Saturday, June 6, 2026 (JST).
+[tokens used: 312 in / 45 out / 357 total]
+
+You: What is 2 + 2?
+
+Assistant: 2 + 2 = 4.
+[tokens used: 298 in / 12 out / 310 total]
+
+You:
+Bye.
+```
+
+The second question does not call `get_current_time` at all — the model answers directly from its own knowledge. Notice that `tool_calls` was empty, so the loop broke immediately after the first `responses.create` call.
+
+---
+
+## 6. Common Pitfalls
+
+| Pitfall | What happens | How to avoid |
+|---------|--------------|---------------|
+| **Appending tool outputs *before* `resp.output`** | The API rejects the request with a validation error: it sees `function_call_output` items with no preceding `function_call`. | Always do `input_items += resp.output` *first*, then append your tool outputs. |
+| **Using `tc.id` instead of `tc.call_id`** | The API cannot correlate the output to the call; you get a validation error on the next `create()`. | Use `tc.call_id` verbatim. If in doubt, print both and compare — they look similar but are different strings. |
+| **Returning a non-string from a tool** | The `output` field of `function_call_output` must be a string. Returning an `int`, `dict`, or `None` causes a type error. | Always `return str(...)` or `return json.dumps(...)` from your tool functions. |
+| **No `MAX_ITERATIONS` cap** | A buggy tool that always errors will loop forever, consuming API quota until you kill the process. | Replace `while True` with `for _ in range(MAX_ITERATIONS)` and print a warning when the cap fires. |
+| **Raising an exception from a tool** | Without `try/except`, an unhandled exception kills the whole program with no answer for the user. | Wrap all tool logic in `try/except Exception` and return the error as a string; let the model decide what to do with it. |
+| **Forgetting to export `OPENAI_API_KEY`** | `openai.AuthenticationError` on the first `responses.create` call. | Run `export OPENAI_API_KEY=sk-...` in the same terminal session before running the script. |
+| **Using Python < 3.9** | `zoneinfo` is not available; you get `ModuleNotFoundError`. | Run `python --version`. If you see < 3.9, install `backports.zoneinfo` and import from there, or upgrade Python. |
+
+---
+
+## Key takeaways
+
+- The agent loop is **three lines of logic**: call `responses.create`, check for tool calls, execute them and append results — then repeat. Everything else is convenience.
+- The transcript is **append-only**: always carry `resp.output` forward before appending tool outputs. The order matters; the API enforces it.
+- The `function_call_output` handshake needs exactly two fields beyond `type`: the **same `call_id`** from the call, and a **string** `output`. Always return one output per call, even on error.
+- A `dispatch` helper that **catches all exceptions** and returns error strings keeps the loop alive — the model can read the error and try again or explain the failure.
+- A **`MAX_ITERATIONS` cap** is not optional for production code. Always include one.
+
+## Check yourself
+
+Before moving on, can you answer these?
+
+1. What two things must you append to `input_items` each iteration, and which must come first?
+2. A tool raises a `ValueError`. What should your `dispatch` function return, and why?
+3. Why is `tc.call_id` the right field to use — not `tc.id`?
+4. What happens if you remove `MAX_ITERATIONS` and a tool always returns an error?
+
+<details><summary>Answers</summary>
+
+1. **`resp.output` first**, then your `function_call_output` items. The API requires that every `function_call_output` follow its matching `function_call` in the input list.
+2. Return a **string** like `f"ERROR: ValueError: {exc}"`. Raising lets the exception kill the loop; returning the string gives the model a chance to self-correct and keeps every `call_id` matched.
+3. `call_id` is the **correlation key** the API uses to match outputs to calls. `id` is the item's own identity in the response list — a different field that happens to look similar.
+4. The model keeps requesting the tool, the loop never breaks, and you burn API quota indefinitely until you manually kill the process.
+</details>
+
+---
+
+## Exercises
+
+See [`EXERCISES.md` — Phase 1](./EXERCISES.md) for hands-on practice:
+
+- **1.1 (warm-up):** Add a second tool (e.g. `get_weather(city)` returning a fixed string). Ask a question that should use it, and one that shouldn't. Did the model choose correctly?
+- **1.2 (stretch):** Make a tool that *always* returns an error string. Watch the loop retry — then confirm your `MAX_ITERATIONS` cap stops it.
+
+---
+
+Proceed to **[Phase 2 — The tool system](./02-tool-system.md)**, where you'll replace the `if/elif` dispatch with a registry and auto-generate schemas from type hints.

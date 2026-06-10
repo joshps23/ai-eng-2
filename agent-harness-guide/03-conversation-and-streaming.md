@@ -1346,3 +1346,114 @@ The sum of 1234 and 5678 is 6912, and the sentence
 --- Saved transcript: ./sessions/phase3-demo.json ---
 Transcript has 6 items.
 ```
+
+The six items in the saved transcript are:
+
+1. `{"role": "user", "content": "Please do two things..."}` — the initial user message
+2. A `reasoning` item (if using a reasoning model; absent with standard GPT models)
+3. A `function_call` item for `add` (with its `call_id` and `arguments`)
+4. A `function_call` item for `count_words`
+5. A `function_call_output` item for `add` (result: `"6912"`)
+6. A `function_call_output` item for `count_words` (result: `"9"`)
+
+After the second API call the model produces a `message` item containing the final text,
+which is appended as item 7.  The loop then terminates because `function_calls` is empty.
+
+---
+
+## 6. Pitfalls
+
+> **Pitfall 1 — Losing the final structured response**
+>
+> If you break out of the stream loop early, or never handle the `response.completed`
+> event, you keep only the raw event deltas — no `.output` list, no `.usage`.  When you
+> stream with `client.responses.create(stream=True)` there is no `get_final_response()`
+> helper: the fully-assembled `Response` arrives exactly once, on the `response.completed`
+> event's `event.response`.  Capture it there, or you lose it.
+
+> **Pitfall 2 — Mixing streamed text handling with tool-call ordering**
+>
+> Do not assume text ends before tool calls begin.  A model may emit text, then start a
+> function_call, then emit more text.  Drive your rendering purely from events; never
+> assume a particular interleaving.  The `response.output_item.added` event tells you a
+> new item type has started — use it to switch rendering mode.
+
+> **Pitfall 3 — Appending tool results before the function_call items**
+>
+> `conv.extend(resp.output)` must run **before** `conv.add_tool_result(...)`.  The API
+> validates that every `function_call_output` item is preceded by a matching
+> `function_call` item with the same `call_id`.  If you append tool results first, the
+> next API call will return a 400 error.
+
+> **Pitfall 4 — Assuming `output_text` exists mid-stream**
+>
+> During streaming, a `response.output_item.added` event for a `message` item does not
+> mean any text is available yet.  Text arrives only via `response.output_text.delta`
+> events.  Do not try to read `.content` or `.text` from a partial item object; use the
+> delta events exclusively for live rendering.
+
+> **Pitfall 5 — Using SDK objects in `input` across process boundaries**
+>
+> SDK output objects are not JSON-serializable by default.  If you serialize with
+> `json.dumps(conv.to_input())` and one of the items is still an SDK object (not yet
+> normalized via `.model_dump()`), you will get a `TypeError`.  `Conversation.extend()`
+> normalizes to dicts immediately, so this is only a risk if you bypass `extend()` and
+> push SDK objects directly into `_items`.
+
+> **Pitfall 6 — Ignoring `response.error` events**
+>
+> If the server encounters an error mid-stream it emits a `response.error` event and
+> closes the stream.  If your loop only handles text and function-call events, the error
+> is silently swallowed.  Always handle `response.error` — at minimum print it to stderr
+> and break, or raise an exception.
+
+---
+
+## Summary
+
+| Concept | Key takeaway |
+|---|---|
+| Transcript ownership | Own `input_items`; use `previous_response_id` only as an optimization |
+| Serialization | Call `.model_dump()` immediately; store dicts, not SDK objects |
+| `Conversation` class | Single source of truth; handles add/extend/tool-result/save/load |
+| Reasoning items | Append them like any other output; use `encrypted_content` with `store=False` |
+| `instructions` | Top-level parameter, not in `input_items`; pass on every call |
+| Streaming | Use `client.responses.create(..., stream=True)`; drive UI from events; capture the final `Response` from the `response.completed` event |
+| Append order | `conv.extend(resp.output)` before `conv.add_tool_result(...)` — always |
+| Cancellation | `KeyboardInterrupt` inside `with stream:` is safe; context manager cleans up |
+
+---
+
+## Key takeaways
+
+- This phase separates **two orthogonal concerns**: *owning the transcript* (state) and
+  *streaming* (presentation). Each works without the other.
+- The transcript is **yours to manage**. Every turn, append the model's output items
+  **first**, then the tool results — `conv.extend(resp.output)` before
+  `conv.add_tool_result(...)`, always.
+- **Streaming is optional.** `create(..., stream=True)` yields events you drive the UI
+  from; grab the final complete `Response` from the `response.completed` event. Plain
+  `create()` + `output_text` is simpler and behaves identically to the model.
+- Because you own the transcript, you can **save and reload** a conversation — that's
+  what makes resuming a session possible.
+
+## Check yourself
+
+1. What are the two orthogonal concerns this phase pulls apart?
+2. In what order must you append the model's items and the tool results each turn, and why?
+3. With streaming, where do you obtain the final, complete `Response` object?
+4. Do you need streaming for a *correct* agent?
+
+<details><summary>Answers</summary>
+
+1. **Transcript/state** (what the model remembers) vs **streaming/presentation** (how
+   output reaches the user).
+2. **Model output items first, then tool results.** The tool results refer back to the
+   model's `function_call` items by `call_id`, so those must already be in the transcript.
+3. From the **`response.completed`** event emitted at the end of the stream.
+4. **No** — streaming only changes *how* text is displayed, not what the model computes.
+   It's a UX feature.
+</details>
+
+**Next:** Phase 4 — Real Tools (the `read_file`, `edit_file`, `bash`, `grep`, `glob`
+toolset that turns the loop into a genuine coding agent).
