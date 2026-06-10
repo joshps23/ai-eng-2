@@ -10,12 +10,13 @@
 > check it off, and log it at the bottom. Keep the backlog honest — add new items
 > as gaps surface, remove ones that stop mattering.
 
-> **⚑ Current focus (2026-06-09):** the standing goal has sharpened to **making every
-> phase radically more incremental for a Python beginner** — a basic harness with basic
-> functions and basic tools *first*, then one concept at a time. That work is specified
-> in **[`REVISION-BRIEF.md`](./REVISION-BRIEF.md)** and driven by a capped evaluator
-> loop (≤10 iterations). Backlog items 9 and 10 below are deferred until the
-> incrementality pass is done.
+> **⚑ Current focus (2026-06-10):** the incrementality goal has sharpened again — each
+> phase must now present its harness as a **ladder of complete runnable versions**
+> (V1 line-by-line with no functions → V2 functions → V3 classes → V4 decorators/threads
+> where the phase teaches them), each framed as "the same harness, reorganized." The spec
+> lives in **[`REVISION-BRIEF.md`](./REVISION-BRIEF.md)** (per-phase ladder table +
+> rubric) and is driven by a capped evaluator loop (≤10 iterations). Backlog items 9
+> and 10 below remain deferred until this pass is done.
 
 ## The rubric — what "best beginner resource" means
 
