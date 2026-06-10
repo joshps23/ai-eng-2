@@ -830,12 +830,12 @@ Key design decisions:
 - **`depth` is carried from parent to child.** When the orchestrator spawns a sub-agent it passes `depth=self.depth + 1`, allowing the guard to trigger before a recursion goes too deep.
 - **`registry.dispatch_parallel` is the Phase 2 machinery.** Phase 2 already handles running multiple tool calls concurrently; nothing new is needed here.
 
-### ▶ Run it now
+#### ▶ Run it now
 
-After putting the `Agent` class in `agent.py`, rewrite Step 0's orchestrator using it:
+After putting the `Agent` class in `agent.py`, rewrite Version 2's orchestrator using it:
 
 ```python
-# step1_agent_class.py  — same behavior as step0, using the Agent class
+# v3_agent_class.py  — same behavior as v2_subagent.py, using the Agent class
 from agent import Agent
 from tools.registry import ToolRegistry
 
@@ -867,13 +867,11 @@ orchestrator = Agent(
 print(orchestrator.run("Check README.md for clarity issues."))
 ```
 
-The behavior is identical to Step 0. The `Agent` class is just `run_agent` with its conversation stored as `self._conversation` and its configuration as constructor arguments.
+The behavior is identical to Version 2. The `Agent` class is just `run_agent` with its conversation stored as `self._conversation` and its configuration as constructor arguments.
 
----
+### Step 3.2 — Agent Presets: Named Roles with Fixed Instructions and Tools
 
-## Step 2 — Agent Presets: Named Roles with Fixed Instructions and Tools
-
-> **Why now?** In Step 1 you hardcoded the sub-agent's instructions and tool set inside `task_fn`. Once you have more than one role (researcher, coder, reviewer …) you want a lookup table so the orchestrator can ask for a role by name and get the right configuration automatically. That table is all a "preset" is.
+> **Why now?** In Step 3.1 you hardcoded the sub-agent's instructions and tool set inside `task_fn`. Once you have more than one role (researcher, coder, reviewer …) you want a lookup table so the orchestrator can ask for a role by name and get the right configuration automatically. That table is all a "preset" is.
 
 Define a small registry of named roles, each with a system prompt and a list of allowed tool names.
 
@@ -974,7 +972,7 @@ def task_fn(role: str, prompt: str) -> str:
     return worker.run(prompt)
 ```
 
-### ▶ Run it now
+#### ▶ Run it now
 
 ```python
 # Quick test: ask a reviewer sub-agent to check a file
@@ -984,9 +982,7 @@ print(result)
 
 The reviewer agent receives only `read_file` and `list_directory` — it literally cannot call `write_file` even if you wanted it to. That restricted view comes directly from `preset.allowed_tools`.
 
----
-
-## Step 3 — Sub-Agents as a Tool: Wiring It to the Orchestrator
+### Step 3.3 — Sub-Agents as a Tool: Wiring It to the Orchestrator
 
 > **Why now?** So far `task_fn` is a plain Python function. To let the orchestrator *model* decide when to delegate, you need to expose it as a tool the model can call — exactly the same way you exposed `read_file` in Phase 2.
 
@@ -994,7 +990,7 @@ The elegance of this architecture is that from the orchestrator's perspective, s
 
 This means the orchestrator needs no special awareness of sub-agents in its loop. The existing Phase 2 dispatch machinery handles everything — including parallelism.
 
-### 3.1 The `dispatch_subagent` function
+#### The `dispatch_subagent` function
 
 ```python
 # subagents.py (continued)
@@ -1076,7 +1072,7 @@ Three things are worth emphasising here.
 
 **Errors as strings.** The `except` block returns a descriptive string rather than re-raising. This is the same contract Phase 2 established for tools: errors are information the model can reason about, not exceptions that kill the loop.
 
-### 3.2 The `task` tool
+#### The `task` tool
 
 Now expose `dispatch_subagent` as a tool the orchestrator can call.
 
@@ -1148,10 +1144,10 @@ def make_task_tool(
 
 Register this tool in the orchestrator's registry and the model gains the ability to spawn workers. The schema's `enum` for `role` tells the model exactly which values are valid, which reduces hallucination significantly.
 
-### ▶ Run it now
+#### ▶ Run it now
 
 ```python
-# step3_task_tool.py  — orchestrator with a real task tool
+# v3_task_tool.py  — orchestrator with a real task tool
 from openai import OpenAI
 from agent import Agent
 from tools.registry import ToolRegistry

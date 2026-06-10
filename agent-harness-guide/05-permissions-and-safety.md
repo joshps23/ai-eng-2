@@ -39,9 +39,170 @@ The design principle that makes all of these manageable is: **the model proposes
 
 ---
 
-## Step 0 — A minimal permission gate (plain functions + dicts)
+## Version 1 — line-by-line: one inline `if` before the tool runs
 
-The big idea of this entire phase is just: **before running a tool, ask a function "is this allowed?" and only run it if the answer is yes.** You can build a useful safety layer with nothing more than a dict, a list, and `if`/`else`.
+The big idea of this entire phase fits in one sentence: **before running a tool, decide
+"is this allowed?" — and if the answer is no, the tool result becomes an error string
+instead of the tool actually running.**
+
+Version 1 expresses that idea with zero abstractions. No `def`, no classes — a
+straight-line script you read top to bottom. It is the loop you built in Phases 1–4
+with two tools wired in (`read_file` and `bash`) and a permission check that is
+literally an `if` statement sitting between "the model asked" and "the OS acted."
+
+Three things to notice as you read it:
+
+1. `read_file` is read-only, so it runs without asking.
+2. `bash` is dangerous, so it pauses and asks you `Allow it? [y/n]` — and two obviously
+   destructive patterns (`rm -rf`, `sudo`) are refused without even asking.
+3. **A denial is not a crash.** Whether you allow or deny, the same `call_id` gets a
+   `function_call_output`. A denial just makes that output an error string the model
+   can read and react to.
+
+```python
+# agent_v1.py — Phase 5, Version 1: the permission check is one inline `if`.
+# No functions, no classes — just statements, a loop, and input().
+
+import json
+import subprocess
+from openai import OpenAI
+
+client = OpenAI()   # reads OPENAI_API_KEY from the environment
+
+TOOLS = [
+    {
+        "type": "function",
+        "name": "read_file",
+        "description": "Read a text file and return its contents.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string", "description": "Path to the file to read."},
+            },
+            "required": ["path"],
+        },
+    },
+    {
+        "type": "function",
+        "name": "bash",
+        "description": "Run a shell command and return its combined stdout/stderr.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "command": {"type": "string", "description": "Shell command to run."},
+            },
+            "required": ["command"],
+        },
+    },
+]
+
+input_items = [
+    {"role": "user", "content": "List the files in the current directory, then read hello.txt."}
+]
+
+while True:
+    resp = client.responses.create(model="gpt-4o", input=input_items, tools=TOOLS)
+
+    # Append every output item to the transcript (the agent's memory).
+    for item in resp.output:
+        input_items.append(item.model_dump())
+
+    tool_calls = [item for item in resp.output if item.type == "function_call"]
+
+    if not tool_calls:
+        # No tool calls -> the model produced its final answer.
+        for item in resp.output:
+            if item.type == "message":
+                for block in item.content:
+                    if block.type == "output_text":
+                        print("ANSWER:", block.text)
+        break
+
+    for tc in tool_calls:
+        args = json.loads(tc.arguments)
+
+        if tc.name == "read_file":
+            # Safe, read-only: runs without asking anyone.
+            try:
+                with open(args["path"], "r", encoding="utf-8", errors="replace") as f:
+                    result = f.read()
+            except OSError as exc:
+                result = f"Error: cannot read file: {exc}"
+
+        elif tc.name == "bash":
+            command = args["command"]
+            # ── THE ENTIRE SAFETY LAYER OF VERSION 1 ─────────────────────────
+            if "rm -rf" in command or "sudo " in command:
+                # Hard deny: never run, never even ask.
+                result = "Error: permission denied by the harness (blocked command)."
+            else:
+                print(f"\nThe model wants to run: {command}")
+                answer = input("Allow it? [y/n] ").strip().lower()
+                if answer == "y":
+                    try:
+                        proc = subprocess.run(
+                            command, shell=True, capture_output=True,
+                            text=True, timeout=30,
+                        )
+                        result = (proc.stdout + proc.stderr) or "(no output)"
+                    except subprocess.TimeoutExpired:
+                        result = "Error: command timed out after 30s."
+                else:
+                    result = "Error: permission denied by the user."
+            # ─────────────────────────────────────────────────────────────────
+
+        else:
+            result = f"Error: unknown tool '{tc.name}'"
+
+        # Denied or not, the call_id ALWAYS gets an answer.
+        input_items.append({
+            "type": "function_call_output",
+            "call_id": tc.call_id,
+            "output": result,
+        })
+```
+
+### ▶ Run it now
+
+```
+export OPENAI_API_KEY=sk-...
+echo "Hello from Phase 5" > hello.txt
+python agent_v1.py
+```
+
+You should see the model call `bash` (probably `ls`), the harness pause with
+`Allow it? [y/n]`, and — after you type `y` — the model go on to read `hello.txt`
+silently (it's a safe tool) and produce a final answer. Run it again and type `n`
+at the prompt: nothing crashes. The model receives the denial string as its tool
+result and either explains itself or tries another approach. That graceful
+degradation is the core contract of this entire phase.
+
+This eleven-line `if`/`else` block *is* the permission system. Everything that
+follows — modes, policies, hooks — is this block growing up.
+
+### What changed from Version 1 → Version 2
+
+- The inline `if "rm -rf" in command` check moves into a named function,
+  `check_permission(tool_name, arg)`, that returns `"allow"`, `"deny"`, or `"ask"` —
+  you can now test the *decision* in isolation, without an API call or a real shell.
+- The knowledge of "which tools are risky" moves out of the dispatch branches into one
+  `TOOL_RISK` dict, so adding a tool means adding a dict entry, not another `elif`.
+- The `input()` prompt moves into its own `ask_user()` function, keeping the decision
+  logic pure (no I/O mixed into it).
+- The tool bodies and the loop become functions too (`read_file`, `bash`, `dispatch`,
+  `run_agent`) — the same statements, now with names.
+- Behavior is identical: safe tools pass, blocked patterns are denied, everything else asks.
+
+---
+
+## Version 2 — functions: a `check_permission` you can call and test
+
+The same harness, reorganized. The idea is still: **before running a tool, ask
+"is this allowed?" and only run it if the answer is yes** — but now the asking is a
+function, so you can build a useful safety layer with nothing more than a dict, a
+list, and `if`/`else`.
+
+### Step 2.1 — The gate as a function
 
 Here is the simplest version that actually works:
 

@@ -115,7 +115,7 @@ the path and asserts it stays within `WORKSPACE_ROOT`.
 
 ---
 
-## Step 0 — One Tool Wired In, Right Now
+## Version 1 — line-by-line: the agent touches your disk (no `def`, no classes)
 
 Before adding all seven tools, shared helpers, and the registry factory, let's get **one
 tool working end-to-end** so you can see the whole circuit light up.
@@ -123,14 +123,162 @@ tool working end-to-end** so you can see the whole circuit light up.
 We will start with `read_file` — the simplest, safest tool. It reads a file and returns
 its text. No writing, no shell commands, nothing destructive.
 
-### Step 0.1 — `read_file` as a plain function
+And we will write it the most primitive way possible: **no `def`, no classes** — the
+tool's logic lives *directly inside the dispatch branch* of the loop, as a bare
+`try`/`except` around `open()`. This is deliberate. When you can point at the exact line
+where the model's JSON arguments become a real `open()` call on your real filesystem,
+the phrase *"the agent can now touch your disk"* stops being abstract.
+
+This is the entire program — paste it into one file:
+
+```python
+# v1_inline_read.py
+"""Version 1 — the harness with one real tool, line by line.
+
+No def, no classes.  The read_file logic sits inline in the dispatch
+branch, so you can see the exact moment the model touches your disk.
+"""
+
+import json
+from openai import OpenAI
+
+client = OpenAI()   # reads OPENAI_API_KEY from the environment
+
+# Create a small test file so there is something to read.
+with open("hello.txt", "w") as f:
+    f.write("Hello from Phase 4!\nThis is line 2.\n")
+
+# The schema: a plain dict telling the model a read_file tool exists.
+tools = [{
+    "type": "function",
+    "name": "read_file",
+    "description": (
+        "Read a text file and return its contents. "
+        "Returns an ERROR string if the file does not exist or cannot be read."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "path": {"type": "string", "description": "Path to the file to read."},
+        },
+        "required": ["path"],
+    },
+}]
+
+input_items = [{"role": "user", "content": "What is in the file hello.txt?"}]
+
+while True:
+    resp = client.responses.create(
+        model="gpt-4o",
+        input=input_items,
+        tools=tools,
+    )
+
+    # Append every output item to the transcript.
+    for item in resp.output:
+        input_items.append(
+            item.model_dump() if hasattr(item, "model_dump") else item
+        )
+
+    # Collect any tool calls in this turn.
+    tool_calls = [item for item in resp.output
+                  if getattr(item, "type", None) == "function_call"]
+
+    if not tool_calls:
+        # No tool calls → the model produced its final answer.
+        for item in resp.output:
+            if getattr(item, "type", None) == "message":
+                for block in item.content:
+                    if getattr(block, "type", None) == "output_text":
+                        print("ANSWER:", block.text)
+        break
+
+    # Answer each tool call.
+    for tc in tool_calls:
+        args = json.loads(tc.arguments) if isinstance(tc.arguments, str) else tc.arguments
+        print(f"[tool] {tc.name}({args})")
+
+        if tc.name == "read_file":
+            # ── The tool logic, inlined right here. ─────────────────────
+            # This is the line where the model touches your disk.
+            try:
+                with open(args["path"], "r", encoding="utf-8", errors="replace") as f:
+                    result = f.read()
+            except FileNotFoundError:
+                result = "ERROR: File not found: " + args["path"]
+            except OSError as exc:
+                result = "ERROR: Cannot read file: " + str(exc)
+        else:
+            result = "ERROR: Unknown tool: " + tc.name
+
+        print(f"[result] {result[:120]}")
+
+        input_items.append({
+            "type": "function_call_output",
+            "call_id": tc.call_id,
+            "output": result,
+        })
+```
+
+### ▶ Run it now
+
+```
+export OPENAI_API_KEY=sk-...
+python v1_inline_read.py
+```
+
+You should see the model call `read_file({'path': 'hello.txt'})`, your inline
+`open()` execute, and the answer come back describing the file's two lines.
+
+**Let it sink in.** That `open(args["path"], ...)` call ran with a path that *the model
+chose*, on *your* machine. Nothing in this program stops it from choosing
+`"../../etc/passwd"` or `"~/.ssh/id_rsa"` — try changing the task string to
+`"What is in the file /etc/hostname?"` and watch it happily read outside your project.
+That is exactly the visceral lesson Version 1 exists to teach: **a real tool is real
+power, and right now there is zero safety machinery.** Versions 2 and 3 are largely
+about earning back control: workspace confinement, output caps, and (in Phase 5) human
+approval for the dangerous calls.
+
+One tool, one schema dict, an inline `try`/`except` — that is the whole circuit. The
+rest of this phase is the same circuit, scaled up and reorganized.
+
+---
+
+### What changed from Version 1 → Version 2
+
+- The inline `try`/`except open(...)` block moves out of the dispatch branch into a
+  named function, `read_file(path)` — the loop just calls `read_file(**args)`.
+- A plain dict, `tool_fns = {"read_file": read_file, ...}`, replaces the
+  `if tc.name == ...:` chain, so adding a tool means: write a function, write its schema
+  dict, add one dict entry. The loop never changes again.
+- Six more tools join, safest first: `list_dir`, `glob`, `grep` (read-only), then
+  `write_file`, `edit_file` (destructive), then `bash` (arbitrary execution).
+- Two shared helper functions appear — `_safe_path` (workspace confinement) and
+  `_truncate` (output caps) — and every tool routes through them.
+- The harness loop itself is **unchanged**: same transcript list, same
+  `call_id`/`function_call_output` handshake, same exit condition.
+
+---
+
+## Version 2 — functions: the toolset grows, one tool at a time
+
+The same harness, reorganized: each tool becomes a plain function, and a dispatch dict
+maps tool names to functions. No classes, no decorators — everything here is `def`,
+`if`/`else`, lists, dicts, and `return`. We build the toolset one tool per step, each
+with its own run checkpoint, ordered from safest (read-only) to most dangerous (`bash`).
+
+## Step 2.0 — `read_file` becomes a named function
+
+In Version 1 the file-reading logic lived inside the dispatch branch. The first move of
+Version 2 is to lift it out into a function with a name, so the loop reads as *what*
+happens (call the tool) rather than *how* (open, read, catch errors).
 
 No decorator, no `pathlib`, no path guard yet. Just `open()`, a `try/except`, and a
 `return`. If the file exists you get its text; if not, you get an error string.
 
 ```python
-# step0_read_file.py
-"""Minimal read_file tool wired into the harness."""
+# v2_read_file.py
+"""Version 2, first step: read_file as a named function wired into the harness."""
 
 import json
 from openai import OpenAI
@@ -232,7 +380,7 @@ if __name__ == "__main__":
 
 ```
 export OPENAI_API_KEY=sk-...
-python step0_read_file.py
+python v2_read_file.py
 ```
 
 You should see something like:
@@ -247,13 +395,14 @@ ANSWER: The file hello.txt contains two lines:
 2. "This is line 2."
 ```
 
-One tool, one schema dict, a plain function — that is the whole circuit. Everything in
-the rest of this phase is this same pattern, scaled up with more tools, better safety
-guards, and the `@tool` / `Registry` machinery from Phase 2.
+One tool, one schema dict, a plain function — the same circuit as Version 1, but now the
+tool has a name and the loop body stays short. Everything in the rest of this phase is
+this same pattern, scaled up with more tools, better safety guards, and (in Version 3)
+the `@tool` / `Registry` machinery from Phase 2.
 
 ---
 
-## Step 1 — Add `list_dir` and `glob` (read-only, low risk)
+## Step 2.1 — Add `list_dir` and `glob` (read-only, low risk)
 
 **Why now?** `read_file` is powerful, but the agent needs to *discover* files before it
 can read them. `list_dir` answers "what is in this directory?" and `glob` answers "which

@@ -137,9 +137,10 @@ That is it. The `2 ** attempt` pattern is called **exponential backoff**: each f
 Use `create_with_retry(client, model=..., input=..., tools=...)` anywhere the guide calls `client.responses.create(...)`. That one change captures 90% of the value of the much longer `llm.py` shown later.
 
 > **Which rung is this?** This is the **V2 — functions** rung of `llm.py`'s ladder: one
-> plain function, no classes, no decorators. Notably, `llm.py` *never climbs higher* —
-> retry has no state worth grouping into a class, so the production module (§6) stays on
-> this rung and just hardens the error handling. Not every ladder needs a V3.
+> plain function, no classes, no decorators. §6 shows the hardened V2 form (smarter error
+> sorting, jitter, `Retry-After`), and the tested package takes one final small step to
+> **V3**: a tiny `LLMClient` class whose only state is *which client to wrap* — that
+> injectability is exactly what makes the offline `FakeClient` testing in §9 possible.
 
 ### ▶ Run it now
 
@@ -1117,9 +1118,11 @@ if __name__ == "__main__":
 
 ## 6. Reliability (Production Shape: `llm.py`)
 
-> **Which rung is this?** Still **V2 — functions**, the same rung as Step 0. This is the
-> "what changed and why" between Step 0 and the package's `llm.py` — a hardening pass,
-> not a climb. No class appears because there is no state to group.
+> **Which rung is this?** The listing below is the **hardened V2 — functions** form: the
+> same rung as Step 0, with better error sorting. It is a hardening pass, not a climb.
+> The consolidated package then makes one last short climb to **V3**: it wraps these
+> functions in an `LLMClient` class whose only state is the OpenAI client it holds —
+> so tests can hand it a `FakeClient` instead (§9). Same retry logic either way.
 
 The `create_with_retry` function from Step 0 is the essential idea. The production `llm.py` below is the same idea with three additions:
 

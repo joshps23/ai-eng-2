@@ -1175,7 +1175,8 @@ no separate "get the final response" call, so you assemble it yourself from this
 
 #### Reasoning and the reason → act → observe chain
 
-With a reasoning model (the guide standardizes on `gpt-5`), each turn can begin with a
+With a reasoning model (e.g. `gpt-5` or `o3` — note the runnable examples in this phase
+use `gpt-4o`, which is *not* one), each turn can begin with a
 `reasoning` output item — the model's private chain-of-thought — *before* it emits any text
 or tool calls.  Two things are needed to make that chain visible and to keep it working
 across turns:
@@ -1197,6 +1198,7 @@ across turns:
 
 ```python
 import sys
+from typing import Any
 from openai import OpenAI
 
 MODEL = "gpt-4o"
@@ -1233,9 +1235,10 @@ def stream_turn(
         instructions=instructions,
         input=conversation.to_input(),
         tools=tools,
-        reasoning={"summary": "auto"},  # surface the chain-of-thought (reasoning
-                                        # models only); streams via the
-                                        # response.reasoning_summary_text.* events
+        # reasoning={"summary": "auto"},  # uncomment when MODEL is a reasoning
+        #   model (e.g. gpt-5/o3) to stream a chain-of-thought summary via the
+        #   response.reasoning_summary_text.* events. On gpt-4o this parameter
+        #   is rejected with a 400 error, so it stays off here.
         stream=True,
     ) as stream:
         try:
@@ -1339,7 +1342,7 @@ def stream_turn_plain(conversation, tools, instructions):
         instructions=instructions,
         input=conversation.to_input(),
         tools=tools,
-        reasoning={"summary": "auto"},
+        # reasoning={"summary": "auto"},  # reasoning models only (400 on gpt-4o)
         stream=True,
     ) as stream:
         for event in stream:
@@ -1364,10 +1367,12 @@ def stream_turn_plain(conversation, tools, instructions):
 
 ---
 
-## 4. The Integrated `run_agent_streaming` Loop
+### Step 4.6 — The Integrated `run_agent_streaming` Loop
 
 This function wires together the `Conversation` class, `stream_turn()`, and the Phase 2
-parallel tool dispatcher.
+parallel tool dispatcher.  Compare it line by line with Version 3's `run_agent`: the only
+structural difference is that `stream_turn(...)` replaces the bare
+`client.responses.create(...)` call.
 
 > 🟢 **The `register(schema)` here is a "decorator that takes an argument," which is
 > why there's a function inside a function.** You can ignore that machinery. It does
@@ -1497,7 +1502,12 @@ the sequence.
 
 ---
 
-## 5. Complete Runnable Example
+### Step 4.7 — Version 4, complete: the Full Streaming Harness
+
+Everything from this phase in one pasteable file: the `Conversation` class (Version 3),
+the Phase 2 registry, `stream_turn()`, and the integrated loop.  This is the phase's
+final form — and structurally it is still `chat_v1.py`: a list that grows, re-sent every
+call.
 
 ```python
 #!/usr/bin/env python3
@@ -1648,7 +1658,8 @@ def stream_turn(conversation: Conversation, tools: list[dict], instructions: str
         instructions=instructions,
         input=conversation.to_input(),
         tools=tools,
-        reasoning={"summary": "auto"},  # stream the chain-of-thought too
+        # reasoning={"summary": "auto"},  # uncomment on a reasoning model
+        #   (e.g. gpt-5/o3) to stream a thought summary; 400 error on gpt-4o
         stream=True,
     ) as stream:
         try:
@@ -1808,7 +1819,7 @@ which is appended as item 7.  The loop then terminates because `function_calls` 
 
 ---
 
-## 6. Pitfalls
+## Pitfalls
 
 > **Pitfall 1 — Losing the final structured response**
 >
