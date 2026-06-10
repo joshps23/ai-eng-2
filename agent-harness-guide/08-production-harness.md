@@ -210,6 +210,10 @@ def log(level, message):
     print(f"{ts} [{level}] {message}")
 ```
 
+> **Which rung is this?** **V2 — functions**: one helper wrapped around `print`. (The V1
+> form is what you have been doing all guide long — bare `print()` calls sprinkled in the
+> loop.) Steps 1b–1d climb this ladder one rung at a time.
+
 Inside your agent loop, add:
 
 ```python
@@ -1753,6 +1757,16 @@ CLAUDE.md                # optional memory file
 transcript.json          # auto-saved transcript (gitignore this)
 trace.jsonl              # auto-saved event log (gitignore this)
 ```
+
+> **Mapping note.** The layout above is the *teaching* layout, using this phase's
+> illustrative file names. The consolidated, tested package consolidates further:
+> `tools.py`/`filesystem.py` became the `tools/` subpackage (`base.py`, `registry.py`,
+> `files.py`, `shell.py`, `parallel.py`), `sub_agents.py` became `subagents.py`,
+> `accounting.py`/`tracer.py`/`compaction.py` were folded into their consumers
+> (`config.py`, `context.py`, `agent.py`), and `testing.py` ships the fake client from
+> §9. Compare for yourself: the real tree is in
+> [`code/agent_harness/`](code/agent_harness/) and the full name-by-name mapping table
+> is in [`code/README.md`](code/README.md).
 
 ### `pyproject.toml`
 

@@ -12,24 +12,216 @@ def dispatch(name: str, arguments: str) -> str:
     return f"ERROR: unknown tool '{name}'"   # returns a string, never raises
 ```
 
-That works for a demo. It does not scale. Every new tool requires editing the dispatch function, the hand-written schema, and the tool list passed to the API. By the end of this phase you will have replaced that approach entirely — but we will do it in small, runnable steps, starting from ordinary functions and dicts.
+That works for a demo. It does not scale. Every new tool requires editing the dispatch function, the hand-written schema, and the tool list passed to the API. By the end of this phase you will have replaced that approach entirely — but we will do it as a **ladder of complete, runnable versions** of the *same* harness, each one a reorganization of the last, starting even lower than Phase 1 did: a script with no functions at all.
 
-**What we will build, step by step:**
+**The version ladder for this phase:**
 
-- **Step 0** — two plain functions registered in a dict, hand-written schemas, dispatched with a lookup. Runnable right now.
-- **Step 1** — the `@tool` decorator that generates schemas automatically from type hints. "The grown-up convenience."
-- **Step 2** — the `ToolRegistry` class: the same dict-plus-functions idea, wrapped for larger projects.
-- **Step 3 (optional)** — parallel tool execution with threads.
+- **Version 1 — line by line.** The harness with two tools dispatched by an inline `if/elif` chain. No `def`, no classes — just statements top to bottom. Runnable right now, and deliberately painful: you will *feel* why every later version exists.
+- **Version 2 — functions and a dict registry.** The same harness where each tool is a plain function and dispatch is a dict lookup. No classes, no decorators.
+- **Version 3 — classes.** The same harness with `Tool` and `ToolRegistry` classes — the same dict-plus-functions idea, organized for larger projects.
+- **Version 4 — the `@tool` decorator.** The same harness, with schemas generated automatically from type hints and docstrings. "The grown-up convenience."
+- **Going further (optional)** — parallel tool execution with threads.
 
-You can stop at any step; each one is a complete, working tool system.
+You can stop at any version; each one is a complete, working tool system that produces the same answers. Each later version changes *how the code is organized*, never *what the agent does*.
+
+> 🟢 **Beginner track.** If classes and decorators are still new to you, Versions 1 and 2
+> are a perfectly legitimate stopping point — hand-written schema dicts plus a dict
+> registry is a complete tool system, and it is exactly what the later versions automate.
+> Read Versions 3 and 4 for the *ideas* and come back to the syntax when you are ready.
 
 ---
 
-## Step 0 — Two Functions, a Dict, and a Lookup
+## Version 1 — Line by Line: Inline `if/elif` Dispatch
+
+**Why start here?** Before we build any machinery, we should see the harness in its rawest possible form: every tool's schema written out, every tool's *logic* pasted directly into the dispatch branch, no functions of our own at all. This version works — and the moment you try to add a third tool, you will see exactly which pain each later version removes.
+
+### 1.1 The schema dicts and the tools list
+
+A "tool", from the API's point of view, is just a dict describing a function the model may call. We write two of them by hand and collect them in a list. Note the **flat** format the Responses API requires: `type`, `name`, `description`, `parameters` all at the top level — no nested `"function"` wrapper.
+
+```python
+add_schema = {
+    "type": "function",
+    "name": "add",
+    "description": "Add two numbers and return the result.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "a": {"type": "number", "description": "First number."},
+            "b": {"type": "number", "description": "Second number."},
+        },
+        "required": ["a", "b"],
+        "additionalProperties": False,
+    },
+}
+
+word_count_schema = {
+    "type": "function",
+    "name": "word_count",
+    "description": "Count the number of words in a string.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "text": {"type": "string", "description": "The text to count."},
+        },
+        "required": ["text"],
+        "additionalProperties": False,
+    },
+}
+
+TOOLS = [add_schema, word_count_schema]
+```
+
+**▶ Check it now.** Paste just this much into a file, add `import json` and `print(json.dumps(TOOLS, indent=2))` at the bottom, and run it. What prints is *exactly* what the model will see — there is no magic between your dict and the API.
+
+### 1.2 The loop, with the tool logic inlined
+
+Now the agent loop from Phase 1, but with the tool *implementations* written directly inside the dispatch branches — `str(args["a"] + args["b"])` lives right there in the `if`. No `def` anywhere.
+
+### The full file: `agent_v1.py`
+
+```python
+# agent_v1.py — complete. No def, no classes: statements top to bottom.
+import json
+import re
+from openai import OpenAI
+
+client = OpenAI()
+MODEL = "gpt-4o"
+
+# ── Tool schemas (what the model sees) ─────────────────────────────────
+
+add_schema = {
+    "type": "function",
+    "name": "add",
+    "description": "Add two numbers and return the result.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "a": {"type": "number", "description": "First number."},
+            "b": {"type": "number", "description": "Second number."},
+        },
+        "required": ["a", "b"],
+        "additionalProperties": False,
+    },
+}
+
+word_count_schema = {
+    "type": "function",
+    "name": "word_count",
+    "description": "Count the number of words in a string.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "text": {"type": "string", "description": "The text to count."},
+        },
+        "required": ["text"],
+        "additionalProperties": False,
+    },
+}
+
+TOOLS = [add_schema, word_count_schema]
+
+# ── The agent loop, everything inline ──────────────────────────────────
+
+input_items = [{
+    "role": "user",
+    "content": (
+        "What is 1234 + 5678? "
+        "Also, how many words are in: 'The quick brown fox jumps over the lazy dog'?"
+    ),
+}]
+
+final_answer = None
+MAX_TURNS = 10
+
+for turn in range(MAX_TURNS):
+    resp = client.responses.create(
+        model=MODEL,
+        input=input_items,
+        tools=TOOLS,
+    )
+
+    input_items += resp.output
+
+    function_calls = [item for item in resp.output if item.type == "function_call"]
+
+    if not function_calls:
+        # No tool calls — the model is done. Pull out the text and stop.
+        for item in resp.output:
+            if item.type == "message":
+                for part in item.content:
+                    if part.type == "output_text":
+                        final_answer = part.text
+        break
+
+    for fc in function_calls:
+        args = json.loads(fc.arguments)
+
+        # ---- inline dispatch: one branch per tool, logic pasted in ----
+        if fc.name == "add":
+            output = str(args["a"] + args["b"])
+        elif fc.name == "word_count":
+            output = str(len(re.findall(r"\S+", args["text"])))
+        else:
+            output = f"Error: unknown tool '{fc.name}'."
+
+        input_items.append({
+            "type": "function_call_output",
+            "call_id": fc.call_id,   # echo this back exactly
+            "output": output,
+        })
+
+    print(f"[turn {turn + 1}] tools called: {[fc.name for fc in function_calls]}")
+
+print("\nFinal answer:")
+print(final_answer)
+```
+
+### ▶ Run it now
+
+```bash
+python agent_v1.py
+```
+
+You should see something like:
+
+```text
+[turn 1] tools called: ['add', 'word_count']
+
+Final answer:
+1234 + 5678 = 6912. The sentence has 9 words.
+```
+
+A complete multi-tool agent — no `def`, no classes, no decorators.
+
+### The pain point: every new tool means edits in three places
+
+Now imagine adding a third tool, `get_time`. You must:
+
+1. **Write a new schema dict** (`get_time_schema = {...}`) — and get every key right.
+2. **Add it to the `TOOLS` list** — forget this and the model never learns the tool exists.
+3. **Add an `elif` branch** to the dispatch chain — forget this and the model calls a tool that silently falls into the `else` error branch.
+
+Three places, in different parts of the file, that must stay in sync by hand. And there are quieter problems: if `args["a"]` is missing or the tool logic raises, the whole script crashes — the model never gets to see an error and recover. Every version that follows is an answer to this paragraph.
+
+---
+
+## Version 2 — Functions and a Dict Registry
+
+**What changed from V1 → V2**
+
+- Each tool's logic moves out of the `elif` branch into a **named function** (`add`, `word_count`).
+- The `if/elif` chain becomes a **dict lookup**: `TOOLS[name]` finds both the function and its schema in one place.
+- The tools list for the API is now **generated from the registry** (`tools_for_api()`), so the schema list can no longer drift out of sync with dispatch.
+- Dispatch gains **error handling**: unknown tools, bad JSON, and tool exceptions all become `"Error: ..."` strings instead of crashes.
+- The loop itself is wrapped in `run_agent()`, so you can ask different questions without editing the file's middle.
+
+Same harness, same two tools, same answers — reorganized.
 
 The whole idea in one sentence: a "tool" is just *a function plus a dict that describes it*, and a "registry" is just *a dict that maps a tool's name to those two things*.
 
-### 0a. Write the functions and their schema dicts
+### 2.1 Write the functions and their schema dicts
 
 ```python
 import json
@@ -76,7 +268,7 @@ word_count_schema = {
 }
 ```
 
-### 0b. Register them in a plain dict
+### 2.2 Register them in a plain dict
 
 ```python
 # The registry maps a tool name -> {"fn": the function, "schema": the dict}.
@@ -90,7 +282,7 @@ register("add", add, add_schema)
 register("word_count", word_count, word_count_schema)
 ```
 
-### 0c. Build the list the API needs
+### 2.3 Build the list the API needs
 
 ```python
 def tools_for_api():
@@ -101,7 +293,7 @@ def tools_for_api():
     return result
 ```
 
-### 0d. Dispatch: look up a tool and call it
+### 2.4 Dispatch: look up a tool and call it
 
 ```python
 def dispatch(name, arguments_str):
@@ -122,7 +314,17 @@ def dispatch(name, arguments_str):
         return f"Error ({type(exc).__name__}): {exc}"
 ```
 
-### 0e. Handle multiple tool calls — a plain `for` loop
+**▶ Check it now.** With everything above in one file, no API key is needed to test dispatch itself. Add and run:
+
+```python
+print(dispatch("add", '{"a": 2, "b": 3}'))      # 5
+print(dispatch("add", '{"a": 2}'))              # Error (TypeError): ...
+print(dispatch("nope", '{}'))                   # Error: unknown tool 'nope'.
+```
+
+Notice the last two: the bad calls produce *readable error strings*, not crashes. In Version 1 they would have killed the script.
+
+### 2.5 Handle multiple tool calls — a plain `for` loop
 
 The Responses API can return several `function_call` items in one response. A `for` loop handles them all:
 
@@ -140,12 +342,12 @@ def run_tool_calls(function_calls):
     return outputs
 ```
 
-### 0f. The full agent loop using only functions and dicts
+### 2.6 The full agent loop using only functions and dicts
 
-Put it all together in a single file `agent_v0.py`:
+Put it all together in a single file `agent_v2.py`:
 
 ```python
-# agent_v0.py  — complete, no classes, no decorators, no threads
+# agent_v2.py  — complete, no classes, no decorators, no threads
 import json
 import re
 from openai import OpenAI
@@ -281,7 +483,7 @@ if __name__ == "__main__":
 ### ▶ Run it now
 
 ```bash
-python agent_v0.py
+python agent_v2.py
 ```
 
 You should see one or two turn lines followed by:
@@ -293,153 +495,25 @@ Final answer:
 1234 + 5678 = 6912. The sentence has 9 words.
 ```
 
-That is the complete tool system — no classes, no decorators, no threads. Everything from here is a convenience upgrade.
+The same output as Version 1 — that is the point. That is the complete tool system — no classes, no decorators, no threads. Everything from here is a convenience upgrade. Adding a tool now means: write a function, write its schema, call `register(...)` once. The dispatch code never changes again.
 
 > 🟢 **Checkpoint.** If the script ran and gave sensible answers, you have a fully working
-> multi-tool agent. The remaining steps show how to remove repetitive boilerplate, not how
+> multi-tool agent. The remaining versions show how to remove repetitive boilerplate, not how
 > to make the agent *work* — it already works.
 
 ---
 
-## Step 1 — Auto-Generate Schemas with `@tool`
+## Version 3 — Classes: `Tool` and `ToolRegistry`
 
-**Why now?** Writing schema dicts by hand is tedious and error-prone. If you rename a parameter in the function but forget to update the dict, the model gets a stale description. The `@tool` decorator reads the function's type hints and docstring and builds the dict for you — it's just automating the dict you already know how to write.
+**What changed from V2 → V3**
 
-> 🟢 **Decorator + "introspection" — what's really happening.** A **decorator** is the
-> `@tool` line written directly above a function. It means "after defining this
-> function, pass it through `tool()` and keep the result under the same name." The
-> `tool()` function here uses **introspection** (`inspect`, `get_type_hints`) — code
-> that *reads other code* — to look at the function's parameter names, type hints, and
-> docstring and **build the schema dict for you**. It's convenient, but it's just
-> automating the dict you can write by hand. **If this feels like too much, don't use
-> it:** the Step 0 code above writes the same schema dict directly, which is fewer
-> moving parts and shows you exactly what the model receives. You can read this section
-> for interest and skip straight to using hand-written schema dicts.
+- Each *function + schema dict* pair becomes a single **`Tool` object** — the data and the behavior now live in one place.
+- The module-level `TOOLS` dict and its three loose helpers (`register`, `tools_for_api`, `dispatch`) become one **`ToolRegistry` object** with methods `register()`, `to_openai_schema()`, and `dispatch()`.
+- Duplicate registration now **raises a clear `ValueError`** instead of silently overwriting a tool.
+- `dispatch()` gains lightweight **argument validation** before the tool runs.
+- Behavior is identical: same prompts, same tool calls, same answers.
 
-### 1a. Write a function with type hints and a docstring
-
-```python
-@tool
-def add(a: float, b: float) -> str:
-    """Add two numbers and return the result.
-
-    Args:
-        a: First number.
-        b: Second number.
-    """
-    return str(a + b)
-```
-
-No schema dict. The decorator inspects the hints (`float`) and the docstring (`Args:` block) and produces the same dict you would write by hand.
-
-### 1b. Verify what the decorator produced
-
-```python
-import json
-print(json.dumps(add.parameters, indent=2))
-```
-
-Output:
-
-```json
-{
-  "type": "object",
-  "properties": {
-    "a": {"type": "number", "description": "First number."},
-    "b": {"type": "number", "description": "Second number."}
-  },
-  "required": ["a", "b"],
-  "additionalProperties": false
-}
-```
-
-Identical to the hand-written dict from Step 0. `add.name` is `"add"`, `add.description` is `"Add two numbers and return the result."`. Nothing was written by hand.
-
-### 1c. The decorated object still has `.parameters`, `.name`, `.description`
-
-After `@tool`, `add` is no longer a plain function — it is a `FunctionTool` object with those three attributes, plus a `.run(**kwargs)` method. You can still call `add.run(a=2, b=3)` and get `"5"`.
-
-### Seeing the Generated Schema for a More Complex Function
-
-```python
-@tool
-def word_count(text: str, strip_punctuation: bool = False) -> str:
-    """Count the number of words in a string.
-
-    Args:
-        text: The text to count words in.
-        strip_punctuation: If true, punctuation is removed before counting.
-    """
-    import re
-    if strip_punctuation:
-        text = re.sub(r"[^\w\s]", "", text)
-    return str(len(text.split()))
-
-
-import json
-print(json.dumps(word_count.parameters, indent=2))
-```
-
-Output:
-
-```text
-{
-  "type": "object",
-  "properties": {
-    "text": {
-      "type": "string",
-      "description": "The text to count words in."
-    },
-    "strip_punctuation": {
-      "type": "boolean",
-      "description": "If true, punctuation is removed before counting."
-    }
-  },
-  "required": [
-    "text"
-  ],
-  "additionalProperties": false
-}
-```
-
-`text` is required because it has no default. `strip_punctuation` is optional because it defaults to `False`. The descriptions came from the docstring. Nothing was written by hand.
-
-### Python-to-JSON Schema Type Mapping
-
-| Python type | JSON Schema `"type"` | Notes |
-|-------------|----------------------|-------|
-| `str`       | `"string"`           |       |
-| `int`       | `"integer"`          | Excludes floats |
-| `float`     | `"number"`           | Includes integers |
-| `bool`      | `"boolean"`          | Must come before `int` in lookup since `bool` is a subclass of `int` |
-| `list`      | `"array"`            | No item type enforcement at schema level |
-| `dict`      | `"object"`           | No property type enforcement at schema level |
-| anything else | `"string"`         | Conservative fallback |
-
-> **Warning — `bool` before `int`.** In Python, `bool` is a subclass of `int`. If your lookup table iterates in the wrong order you will map `bool` parameters to `"integer"`. The `_PY_TO_JSON` dict above is ordered correctly in Python 3.7+ because dict preserves insertion order, and `bool` appears before `int` in the literal. If you ever switch to `isinstance` checks, test `bool` first.
-
-> **Warning — mutable defaults.** If a function parameter has a mutable default like `def fn(items: list = [])`, `_build_schema` will still mark it optional correctly. But at call time, Python's mutable default trap still applies. Tools should use `None` as the default and construct the mutable object inside the function body. The decorator does not fix this for you.
-
-### 1d. Using `@tool` objects with the Step 0 registry
-
-A `FunctionTool` produced by `@tool` has `.name`, `.parameters`, and `.run()`. You can slot it into the Step 0 TOOLS dict:
-
-```python
-TOOLS["add"]        = {"fn": add.run,        "schema": {"type": "function", "name": add.name,        "description": add.description,        "parameters": add.parameters}}
-TOOLS["word_count"] = {"fn": word_count.run, "schema": {"type": "function", "name": word_count.name, "description": word_count.description, "parameters": word_count.parameters}}
-```
-
-That works, but it is getting wordy. The next step introduces a helper object that handles this wrapping for you.
-
-### ▶ Run it now
-
-Replace the two function definitions and schema dicts in `agent_v0.py` with `@tool`-decorated versions. Everything else (the `TOOLS` dict, `register`, `dispatch`, the loop) stays the same. Run the script and confirm the output is identical.
-
----
-
-## Step 2 — The `Tool` Abstraction and `ToolRegistry` Class
-
-**Why now?** The `TOOLS` dict plus standalone functions is fine for two or three tools. As the project grows, you want: a type (`Tool`) so editors and type-checkers understand what goes in the dict; a `ToolRegistry` class that bundles registration, schema export, and dispatch in one place; and duplicate-registration protection. These are the same ideas as Step 0, organized for real use.
+**Why now?** The `TOOLS` dict plus standalone functions is fine for two or three tools. As the project grows, you want: a type (`Tool`) so editors and type-checkers understand what goes in the dict; a `ToolRegistry` class that bundles registration, schema export, and dispatch in one place; and duplicate-registration protection. These are the same ideas as Version 2, organized for real use.
 
 > 🟢 **What a `class` is, in one box.** A `class` bundles some data with the functions
 > that work on it. A function defined inside a class is called a **method**, and its
@@ -447,12 +521,12 @@ Replace the two function definitions and schema dicts in `agent_v0.py` with `@to
 > `class Tool: ... def run(self, **kwargs): ...` defines a blueprint, and writing
 > `AddTool().run(a=2, b=3)` *makes* an `AddTool` object and calls its `run`. "Subclass
 > and override `run`" means: make a new blueprint based on `Tool` and supply your own
-> `run`. The Step 0 beginner track replaces this whole class with *a function plus a
+> `run`. The Version 2 beginner track replaces this whole class with *a function plus a
 > `schema` dict* — same information, no new syntax.
 
-### The mapping: class version ↔ Step 0 plain-function version
+### The mapping: class/decorator version ↔ Version 2 plain-function version
 
-| Class/decorator version | Step 0 plain-function version |
+| Class/decorator version (V3/V4) | Version 2 plain-function version |
 |-------------------------|-------------------------------|
 | `class Tool` / `class FunctionTool` | a function + its `schema` dict |
 | `@tool` decorator (auto-builds schema) | you write the `schema` dict by hand |
@@ -461,7 +535,7 @@ Replace the two function definitions and schema dicts in `agent_v0.py` with `@to
 | `registry.dispatch()` | `dispatch()` |
 | `dispatch_parallel()` (threads) | `run_tool_calls()` (a `for` loop) |
 
-### 2a. The `Tool` base class
+### 3.1 The `Tool` base class
 
 Start with a clear interface. Every tool is an object with a name, a description, a JSON Schema for its parameters, and a `run` method that accepts keyword arguments and returns a string.
 
@@ -506,9 +580,420 @@ class AddTool(Tool):
         return str(a + b)
 ```
 
-This works but it is verbose. For every tool you must write the JSON Schema by hand, which means the schema and the Python signature can drift again. That is why the `@tool` decorator (Step 1) is more practical for most tools.
+**▶ Check it now.** In a Python REPL with the class pasted in, run `AddTool().run(a=2, b=3)` — you should get `"5"`. The object also carries its own schema: `AddTool().parameters` is the dict you used to keep in a separate variable.
 
-### 2b. `FunctionTool` — wrapping a decorated function
+This works but it is verbose. For every tool you must write the JSON Schema by hand, which means the schema and the Python signature can drift again. That is why the `@tool` decorator (Version 4) is more practical for most tools.
+
+### 3.2 The `ToolRegistry` class
+
+The registry is the single object that knows about all tools. It owns three responsibilities: registering tools, exporting the API schema, and dispatching calls. It is the same idea as the Version 2 `TOOLS` dict plus `register()`, `tools_for_api()`, and `dispatch()` — bundled into one object.
+
+```python
+# tools/registry.py
+from __future__ import annotations
+
+import json
+import traceback
+from typing import Any
+
+from .base import Tool
+
+
+class ToolRegistry:
+    def __init__(self) -> None:
+        self._tools: dict[str, Tool] = {}
+
+    # ------------------------------------------------------------------ #
+    # Registration                                                         #
+    # ------------------------------------------------------------------ #
+
+    def register(self, tool: Tool) -> None:
+        """Add a tool to the registry."""
+        if tool.name in self._tools:
+            raise ValueError(f"Tool '{tool.name}' is already registered.")
+        self._tools[tool.name] = tool
+
+    def __contains__(self, name: str) -> bool:
+        return name in self._tools
+
+    # ------------------------------------------------------------------ #
+    # Schema export                                                        #
+    # ------------------------------------------------------------------ #
+
+    def to_openai_schema(self, strict: bool = False) -> list[dict]:
+        """
+        Return the tools list suitable for the `tools=` parameter of
+        client.responses.create().
+
+        Each entry is the FLAT format required by the Responses API:
+            {
+                "type": "function",
+                "name": ...,
+                "description": ...,
+                "parameters": <JSON Schema>,
+            }
+
+        We default to strict=False. Strict mode (strict=True) makes the API
+        enforce that the model's arguments validate against the schema, but it
+        requires every property to be listed in `required` AND
+        `additionalProperties: false`. That is incompatible with ordinary
+        optional parameters (to make a param optional under strict mode you'd
+        promote it to required with a nullable type:
+        `"type": ["<type>", "null"]`). Since @tool leaves optional parameters
+        out of `required`, we keep strict off so they work without
+        modification.
+        """
+        result = []
+        for t in self._tools.values():
+            entry: dict[str, Any] = {
+                "type":        "function",
+                "name":        t.name,
+                "description": t.description,
+                "parameters":  t.parameters,
+            }
+            if strict:
+                entry["strict"] = True
+            result.append(entry)
+        return result
+
+    # ------------------------------------------------------------------ #
+    # Dispatch                                                             #
+    # ------------------------------------------------------------------ #
+
+    def dispatch(self, name: str, arguments_str: str) -> str:
+        """
+        Parse arguments_str as JSON, validate, call the tool, return result.
+
+        NEVER raises. On any failure, returns an error string that the model
+        can read and reason about.
+        """
+        # 1. Look up the tool
+        if name not in self._tools:
+            return f"Error: no tool named '{name}' is registered."
+
+        tool = self._tools[name]
+
+        # 2. Parse the arguments JSON
+        try:
+            args: dict = json.loads(arguments_str)
+        except json.JSONDecodeError as exc:
+            return f"Error: arguments are not valid JSON: {exc}"
+
+        if not isinstance(args, dict):
+            return "Error: arguments must be a JSON object."
+
+        # 3. Validate (lightweight — see the "Argument Validation" section below)
+        validation_error = _validate_args(tool, args)
+        if validation_error:
+            return f"Error: {validation_error}"
+
+        # 4. Run the tool
+        try:
+            return tool.run(**args)
+        except Exception as exc:
+            return _format_exception(exc)
+
+
+def _validate_args(tool: Tool, args: dict) -> str | None:
+    """
+    Lightweight argument validation. Returns an error message string or None.
+    See the "Argument Validation" section below for a full explanation.
+    """
+    schema     = tool.parameters
+    required   = schema.get("required", [])
+    properties = schema.get("properties", {})
+
+    # Check required keys are present
+    for key in required:
+        if key not in args:
+            return f"missing required argument '{key}'"
+
+    # Check no extra keys (mirrors additionalProperties: false)
+    if schema.get("additionalProperties") is False:
+        for key in args:
+            if key not in properties:
+                return f"unexpected argument '{key}'"
+
+    # Basic type checks
+    _JSON_TYPE_CHECK = {
+        "string":  str,
+        "integer": int,
+        "number":  (int, float),
+        "boolean": bool,
+        "array":   list,
+        "object":  dict,
+    }
+    for key, value in args.items():
+        if key not in properties:
+            continue
+        expected_json_type = properties[key].get("type")
+        if expected_json_type and expected_json_type in _JSON_TYPE_CHECK:
+            expected_py = _JSON_TYPE_CHECK[expected_json_type]
+            # bool is a subclass of int; reject bool where int is expected
+            if expected_json_type == "integer" and isinstance(value, bool):
+                return f"argument '{key}' must be integer, got boolean"
+            if not isinstance(value, expected_py):
+                return (
+                    f"argument '{key}' must be {expected_json_type}, "
+                    f"got {type(value).__name__}"
+                )
+
+    return None
+
+
+def _format_exception(exc: Exception, include_traceback: bool = False) -> str:
+    """
+    Convert an exception into a model-readable error string.
+    Never re-raises.
+    """
+    lines = [f"Error ({type(exc).__name__}): {exc}"]
+    if include_traceback:
+        tb = traceback.format_exc()
+        # Truncate very long tracebacks so they do not flood the context window
+        if len(tb) > 1000:
+            tb = tb[:1000] + "\n... (truncated)"
+        lines.append(tb)
+    return "\n".join(lines)
+```
+
+(That is the full production-shaped module, the form that ends up in the package. For the single-file version below we use a compact registry with the same three methods.)
+
+### 3.3 The full file: `agent_v3.py`
+
+The same harness as `agent_v2.py`, in one pasteable file. Compare them side by side: the loop is character-for-character the same except that it asks `registry` instead of calling loose functions.
+
+```python
+# agent_v3.py — same harness; tools are objects, the registry is a class
+import json
+import re
+from openai import OpenAI
+
+client = OpenAI()
+MODEL  = "gpt-4o"
+
+
+# ── Tools as classes ───────────────────────────────────────────────────
+
+class Tool:
+    """Base class for all tools. Subclass and override `run`."""
+    name: str
+    description: str
+    parameters: dict
+
+    def run(self, **kwargs) -> str:
+        raise NotImplementedError
+
+
+class AddTool(Tool):
+    name = "add"
+    description = "Add two numbers and return the result."
+    parameters = {
+        "type": "object",
+        "properties": {
+            "a": {"type": "number", "description": "First number."},
+            "b": {"type": "number", "description": "Second number."},
+        },
+        "required": ["a", "b"],
+        "additionalProperties": False,
+    }
+
+    def run(self, a, b) -> str:
+        return str(a + b)
+
+
+class WordCountTool(Tool):
+    name = "word_count"
+    description = "Count the number of words in a string."
+    parameters = {
+        "type": "object",
+        "properties": {
+            "text": {"type": "string", "description": "The text to count."},
+        },
+        "required": ["text"],
+        "additionalProperties": False,
+    }
+
+    def run(self, text) -> str:
+        return str(len(re.findall(r"\S+", text)))
+
+
+# ── The registry as a class (compact form) ─────────────────────────────
+
+class ToolRegistry:
+    def __init__(self):
+        self._tools = {}                       # name -> Tool object
+
+    def register(self, tool):
+        if tool.name in self._tools:
+            raise ValueError(f"Tool '{tool.name}' is already registered.")
+        self._tools[tool.name] = tool
+
+    def to_openai_schema(self):
+        return [
+            {
+                "type": "function",
+                "name": t.name,
+                "description": t.description,
+                "parameters": t.parameters,
+            }
+            for t in self._tools.values()
+        ]
+
+    def dispatch(self, name, arguments_str):
+        if name not in self._tools:
+            return f"Error: unknown tool '{name}'."
+        try:
+            args = json.loads(arguments_str)
+        except json.JSONDecodeError as exc:
+            return f"Error: invalid JSON arguments: {exc}"
+        try:
+            result = self._tools[name].run(**args)
+            return result if isinstance(result, str) else json.dumps(result)
+        except Exception as exc:
+            return f"Error ({type(exc).__name__}): {exc}"
+
+
+registry = ToolRegistry()
+registry.register(AddTool())
+registry.register(WordCountTool())
+
+
+# ── Agent loop — unchanged except for who it asks ──────────────────────
+
+def run_agent(user_message, max_turns=10):
+    input_items = [{"role": "user", "content": user_message}]
+    tools_schema = registry.to_openai_schema()
+
+    for turn in range(max_turns):
+        resp = client.responses.create(
+            model=MODEL,
+            input=input_items,
+            tools=tools_schema,
+        )
+        input_items += resp.output
+        function_calls = [item for item in resp.output if item.type == "function_call"]
+        if not function_calls:
+            for item in resp.output:
+                if item.type == "message":
+                    for part in item.content:
+                        if part.type == "output_text":
+                            return part.text
+            return ""
+        for fc in function_calls:
+            input_items.append({
+                "type": "function_call_output",
+                "call_id": fc.call_id,
+                "output": registry.dispatch(fc.name, fc.arguments),
+            })
+        print(f"[turn {turn + 1}] tools called: {[fc.name for fc in function_calls]}")
+
+    raise RuntimeError(f"Agent did not finish within {max_turns} turns.")
+
+
+if __name__ == "__main__":
+    answer = run_agent(
+        "What is 1234 + 5678? "
+        "Also, how many words are in: 'The quick brown fox jumps over the lazy dog'?"
+    )
+    print("\nFinal answer:")
+    print(answer)
+```
+
+### ▶ Run it now
+
+```bash
+python agent_v3.py
+```
+
+You should see the same output as Versions 1 and 2. The tool *behavior* is identical — you have only reorganized who owns the registry. The same idea, organized.
+
+---
+
+## Version 4 — The `@tool` Decorator
+
+**What changed from V3 → V4**
+
+- The hand-written schema dicts **disappear**: `@tool` builds each one automatically from the function's **type hints** and **docstring**.
+- A new `Tool` subclass, **`FunctionTool`**, wraps a plain function — so a decorated function *is* an ordinary `Tool` object that the V3 registry already accepts, unchanged.
+- `required` vs. optional parameters are inferred from **defaults**; per-parameter descriptions come from the docstring's `Args:` block.
+- Nothing else changes: the registry, dispatch, and the agent loop are untouched.
+
+**Why now?** Writing schema dicts by hand is tedious and error-prone. If you rename a parameter in the function but forget to update the dict, the model gets a stale description. The `@tool` decorator reads the function's type hints and docstring and builds the dict for you — it's just automating the dict you already know how to write.
+
+### 4.1 Decorators in 60 seconds
+
+A decorator is **just a function that takes a function**. There is no other magic. Watch:
+
+```python
+def shout(fn):                        # takes a function...
+    def wrapper(*args, **kwargs):
+        return fn(*args, **kwargs).upper()
+    return wrapper                    # ...returns a replacement for it
+
+@shout
+def greet(name):
+    return f"hello, {name}"
+
+print(greet("ada"))   # HELLO, ADA
+```
+
+The line `@shout` means exactly `greet = shout(greet)`: define `greet`, pass it through `shout`, and keep whatever comes back under the same name. A decorator doesn't have to return a function, either — ours will return a `FunctionTool` *object* built from the function. Run the snippet above before continuing; once `@shout` makes sense, `@tool` is the same move with a fancier factory.
+
+> 🟢 **Decorator + "introspection" — what's really happening.** A **decorator** is the
+> `@tool` line written directly above a function. It means "after defining this
+> function, pass it through `tool()` and keep the result under the same name." The
+> `tool()` function here uses **introspection** (`inspect`, `get_type_hints`) — code
+> that *reads other code* — to look at the function's parameter names, type hints, and
+> docstring and **build the schema dict for you**. It's convenient, but it's just
+> automating the dict you can write by hand. **If this feels like too much, don't use
+> it:** the Version 1–3 code above writes the same schema dict directly, which is fewer
+> moving parts and shows you exactly what the model receives. You can read this section
+> for interest and skip straight to using hand-written schema dicts.
+
+### 4.2 Write a function with type hints and a docstring
+
+```python
+@tool
+def add(a: float, b: float) -> str:
+    """Add two numbers and return the result.
+
+    Args:
+        a: First number.
+        b: Second number.
+    """
+    return str(a + b)
+```
+
+No schema dict. The decorator inspects the hints (`float`) and the docstring (`Args:` block) and produces the same dict you would write by hand.
+
+### 4.3 Verify what the decorator produced
+
+```python
+import json
+print(json.dumps(add.parameters, indent=2))
+```
+
+Output:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "a": {"type": "number", "description": "First number."},
+    "b": {"type": "number", "description": "Second number."}
+  },
+  "required": ["a", "b"],
+  "additionalProperties": false
+}
+```
+
+Identical to the hand-written dict from Versions 1–3. `add.name` is `"add"`, `add.description` is `"Add two numbers and return the result."`. Nothing was written by hand.
+
+### 4.4 The decorated object still has `.parameters`, `.name`, `.description`
+
+After `@tool`, `add` is no longer a plain function — it is a `FunctionTool` object with those three attributes, plus a `.run(**kwargs)` method. You can still call `add.run(a=2, b=3)` and get `"5"`.
+
+### 4.5 `FunctionTool` — wrapping a decorated function
 
 The `@tool` decorator produces a `FunctionTool`, which is a `Tool` subclass that delegates `run` to the original function:
 
@@ -536,7 +1021,9 @@ class FunctionTool(Tool):
         return result
 ```
 
-### 2c. The `@tool` decorator's internals
+Because `FunctionTool` *is a* `Tool`, the Version 3 registry accepts it with no changes: `registry.register(add)` — done.
+
+### 4.6 The `@tool` decorator's internals
 
 ```python
 # Maps Python types to JSON Schema type strings
@@ -648,191 +1135,234 @@ def tool(fn: Callable) -> "FunctionTool":
     )
 ```
 
-### 2d. The `ToolRegistry` class
-
-The registry is the single object that knows about all tools. It owns three responsibilities: registering tools, exporting the API schema, and dispatching calls. It is the same idea as the Step 0 `TOOLS` dict plus `register()`, `tools_for_api()`, and `dispatch()` — bundled into one object.
+### Seeing the Generated Schema for a More Complex Function
 
 ```python
-# tools/registry.py
-from __future__ import annotations
+@tool
+def word_count(text: str, strip_punctuation: bool = False) -> str:
+    """Count the number of words in a string.
+
+    Args:
+        text: The text to count words in.
+        strip_punctuation: If true, punctuation is removed before counting.
+    """
+    import re
+    if strip_punctuation:
+        text = re.sub(r"[^\w\s]", "", text)
+    return str(len(text.split()))
+
 
 import json
-import traceback
-from typing import Any
+print(json.dumps(word_count.parameters, indent=2))
+```
 
-from .base import Tool
+Output:
+
+```text
+{
+  "type": "object",
+  "properties": {
+    "text": {
+      "type": "string",
+      "description": "The text to count words in."
+    },
+    "strip_punctuation": {
+      "type": "boolean",
+      "description": "If true, punctuation is removed before counting."
+    }
+  },
+  "required": [
+    "text"
+  ],
+  "additionalProperties": false
+}
+```
+
+`text` is required because it has no default. `strip_punctuation` is optional because it defaults to `False`. The descriptions came from the docstring. Nothing was written by hand.
+
+### Python-to-JSON Schema Type Mapping
+
+| Python type | JSON Schema `"type"` | Notes |
+|-------------|----------------------|-------|
+| `str`       | `"string"`           |       |
+| `int`       | `"integer"`          | Excludes floats |
+| `float`     | `"number"`           | Includes integers |
+| `bool`      | `"boolean"`          | Must come before `int` in lookup since `bool` is a subclass of `int` |
+| `list`      | `"array"`            | No item type enforcement at schema level |
+| `dict`      | `"object"`           | No property type enforcement at schema level |
+| anything else | `"string"`         | Conservative fallback |
+
+> **Warning — `bool` before `int`.** In Python, `bool` is a subclass of `int`. If your lookup table iterates in the wrong order you will map `bool` parameters to `"integer"`. The `_PY_TO_JSON` dict above is ordered correctly in Python 3.7+ because dict preserves insertion order, and `bool` appears before `int` in the literal. If you ever switch to `isinstance` checks, test `bool` first.
+
+> **Warning — mutable defaults.** If a function parameter has a mutable default like `def fn(items: list = [])`, `_build_schema` will still mark it optional correctly. But at call time, Python's mutable default trap still applies. Tools should use `None` as the default and construct the mutable object inside the function body. The decorator does not fix this for you.
+
+### 4.7 Using `@tool` objects with the Version 2 dict registry
+
+The decorator does not *require* the class-based registry. A `FunctionTool` produced by `@tool` has `.name`, `.parameters`, and `.run()`, so you can even slot it into the Version 2 `TOOLS` dict:
+
+```python
+TOOLS["add"]        = {"fn": add.run,        "schema": {"type": "function", "name": add.name,        "description": add.description,        "parameters": add.parameters}}
+TOOLS["word_count"] = {"fn": word_count.run, "schema": {"type": "function", "name": word_count.name, "description": word_count.description, "parameters": word_count.parameters}}
+```
+
+That works, but it is getting wordy — which is exactly what the Version 3 `ToolRegistry` removes: it accepts `Tool` objects directly, so registration is just `registry.register(add)`.
+
+### The full file: `agent_v4.py`
+
+The whole ladder in one pasteable file: the V3 classes, the new decorator, and the unchanged loop. It is longer than `agent_v3.py` only because the decorator machinery lives inside it — once it moves into a `tools/` package (next section), the agent file shrinks dramatically.
+
+```python
+# agent_v4.py — same harness; @tool builds the schemas for us
+import inspect
+import json
+import re
+from typing import Any, Callable, get_type_hints
+
+from openai import OpenAI
+
+client = OpenAI()
+MODEL  = "gpt-4o"
+
+
+# ── Tool machinery: the V3 classes plus the decorator ──────────────────
+
+class Tool:
+    """Base class for all tools."""
+    name: str
+    description: str
+    parameters: dict
+
+    def run(self, **kwargs: Any) -> str:
+        raise NotImplementedError
+
+
+class FunctionTool(Tool):
+    """A Tool wrapping a plain callable, produced by the @tool decorator."""
+
+    def __init__(self, name: str, description: str, parameters: dict, fn: Callable) -> None:
+        self.name        = name
+        self.description = description
+        self.parameters  = parameters
+        self._fn         = fn
+
+    def run(self, **kwargs: Any) -> str:
+        result = self._fn(**kwargs)
+        if not isinstance(result, str):
+            return json.dumps(result)
+        return result
+
+
+_PY_TO_JSON = {
+    str:   "string",
+    int:   "integer",
+    float: "number",
+    bool:  "boolean",
+    list:  "array",
+    dict:  "object",
+}
+
+
+def _build_schema(fn: Callable) -> dict:
+    """Derive a JSON Schema from a function's signature, hints, and docstring."""
+    hints = get_type_hints(fn)
+    sig   = inspect.signature(fn)
+    doc   = inspect.getdoc(fn) or ""
+
+    # Per-parameter descriptions from the Google-style "Args:" block
+    param_docs: dict[str, str] = {}
+    in_args = False
+    for line in doc.splitlines():
+        stripped = line.strip()
+        if stripped.lower() in ("args:", "arguments:", "parameters:"):
+            in_args = True
+            continue
+        if in_args:
+            if stripped and not stripped[0].isspace() and stripped.endswith(":"):
+                in_args = False
+            elif ":" in stripped:
+                pname, _, pdesc = stripped.partition(":")
+                param_docs[pname.strip()] = pdesc.strip()
+
+    # The first non-empty line before "Args:" is the function description
+    fn_description = ""
+    for line in doc.splitlines():
+        stripped = line.strip()
+        if stripped.lower() in ("args:", "arguments:", "parameters:"):
+            break
+        if stripped:
+            fn_description = stripped
+            break
+
+    properties: dict[str, dict] = {}
+    required:   list[str]       = []
+
+    for pname, param in sig.parameters.items():
+        if param.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
+            continue
+        py_type   = hints.get(pname, str)
+        json_type = _PY_TO_JSON.get(py_type, "string")
+        prop: dict[str, Any] = {"type": json_type}
+        if pname in param_docs:
+            prop["description"] = param_docs[pname]
+        properties[pname] = prop
+        if param.default is inspect.Parameter.empty:
+            required.append(pname)
+
+    return {
+        "type": "object",
+        "properties": properties,
+        "required": required,
+        "additionalProperties": False,
+        "description": fn_description,
+    }
+
+
+def tool(fn: Callable) -> FunctionTool:
+    """Decorator: convert a plain function into a FunctionTool."""
+    schema = _build_schema(fn)
+    return FunctionTool(
+        name=fn.__name__,
+        description=schema.pop("description", fn.__doc__ or ""),
+        parameters=schema,
+        fn=fn,
+    )
 
 
 class ToolRegistry:
-    def __init__(self) -> None:
-        self._tools: dict[str, Tool] = {}
+    def __init__(self):
+        self._tools = {}                       # name -> Tool object
 
-    # ------------------------------------------------------------------ #
-    # Registration                                                         #
-    # ------------------------------------------------------------------ #
-
-    def register(self, tool: Tool) -> None:
-        """Add a tool to the registry."""
+    def register(self, tool):
         if tool.name in self._tools:
             raise ValueError(f"Tool '{tool.name}' is already registered.")
         self._tools[tool.name] = tool
 
-    def __contains__(self, name: str) -> bool:
-        return name in self._tools
-
-    # ------------------------------------------------------------------ #
-    # Schema export                                                        #
-    # ------------------------------------------------------------------ #
-
-    def to_openai_schema(self, strict: bool = False) -> list[dict]:
-        """
-        Return the tools list suitable for the `tools=` parameter of
-        client.responses.create().
-
-        Each entry is the FLAT format required by the Responses API:
+    def to_openai_schema(self):
+        return [
             {
                 "type": "function",
-                "name": ...,
-                "description": ...,
-                "parameters": <JSON Schema>,
-            }
-
-        We default to strict=False. Strict mode (strict=True) makes the API
-        enforce that the model's arguments validate against the schema, but it
-        requires every property to be listed in `required` AND
-        `additionalProperties: false`. That is incompatible with ordinary
-        optional parameters (to make a param optional under strict mode you'd
-        promote it to required with a nullable type:
-        `"type": ["<type>", "null"]`). Since @tool leaves optional parameters
-        out of `required`, we keep strict off so they work without
-        modification.
-        """
-        result = []
-        for t in self._tools.values():
-            entry: dict[str, Any] = {
-                "type":        "function",
-                "name":        t.name,
+                "name": t.name,
                 "description": t.description,
-                "parameters":  t.parameters,
+                "parameters": t.parameters,
             }
-            if strict:
-                entry["strict"] = True
-            result.append(entry)
-        return result
+            for t in self._tools.values()
+        ]
 
-    # ------------------------------------------------------------------ #
-    # Dispatch                                                             #
-    # ------------------------------------------------------------------ #
-
-    def dispatch(self, name: str, arguments_str: str) -> str:
-        """
-        Parse arguments_str as JSON, validate, call the tool, return result.
-
-        NEVER raises. On any failure, returns an error string that the model
-        can read and reason about.
-        """
-        # 1. Look up the tool
+    def dispatch(self, name, arguments_str):
         if name not in self._tools:
-            return f"Error: no tool named '{name}' is registered."
-
-        tool = self._tools[name]
-
-        # 2. Parse the arguments JSON
+            return f"Error: unknown tool '{name}'."
         try:
-            args: dict = json.loads(arguments_str)
+            args = json.loads(arguments_str)
         except json.JSONDecodeError as exc:
-            return f"Error: arguments are not valid JSON: {exc}"
-
-        if not isinstance(args, dict):
-            return "Error: arguments must be a JSON object."
-
-        # 3. Validate (lightweight — see Section 4 for details)
-        validation_error = _validate_args(tool, args)
-        if validation_error:
-            return f"Error: {validation_error}"
-
-        # 4. Run the tool
+            return f"Error: invalid JSON arguments: {exc}"
         try:
-            return tool.run(**args)
+            result = self._tools[name].run(**args)
+            return result if isinstance(result, str) else json.dumps(result)
         except Exception as exc:
-            return _format_exception(exc)
+            return f"Error ({type(exc).__name__}): {exc}"
 
 
-def _validate_args(tool: Tool, args: dict) -> str | None:
-    """
-    Lightweight argument validation. Returns an error message string or None.
-    See Section 4 for a full explanation.
-    """
-    schema     = tool.parameters
-    required   = schema.get("required", [])
-    properties = schema.get("properties", {})
-
-    # Check required keys are present
-    for key in required:
-        if key not in args:
-            return f"missing required argument '{key}'"
-
-    # Check no extra keys (mirrors additionalProperties: false)
-    if schema.get("additionalProperties") is False:
-        for key in args:
-            if key not in properties:
-                return f"unexpected argument '{key}'"
-
-    # Basic type checks
-    _JSON_TYPE_CHECK = {
-        "string":  str,
-        "integer": int,
-        "number":  (int, float),
-        "boolean": bool,
-        "array":   list,
-        "object":  dict,
-    }
-    for key, value in args.items():
-        if key not in properties:
-            continue
-        expected_json_type = properties[key].get("type")
-        if expected_json_type and expected_json_type in _JSON_TYPE_CHECK:
-            expected_py = _JSON_TYPE_CHECK[expected_json_type]
-            # bool is a subclass of int; reject bool where int is expected
-            if expected_json_type == "integer" and isinstance(value, bool):
-                return f"argument '{key}' must be integer, got boolean"
-            if not isinstance(value, expected_py):
-                return (
-                    f"argument '{key}' must be {expected_json_type}, "
-                    f"got {type(value).__name__}"
-                )
-
-    return None
-
-
-def _format_exception(exc: Exception, include_traceback: bool = False) -> str:
-    """
-    Convert an exception into a model-readable error string.
-    Never re-raises.
-    """
-    lines = [f"Error ({type(exc).__name__}): {exc}"]
-    if include_traceback:
-        tb = traceback.format_exc()
-        # Truncate very long tracebacks so they do not flood the context window
-        if len(tb) > 1000:
-            tb = tb[:1000] + "\n... (truncated)"
-        lines.append(tb)
-    return "\n".join(lines)
-```
-
-### ▶ Run it now — using the registry
-
-Create `agent_v2.py` with the registry approach:
-
-```python
-# agent_v2.py — same tools, now using ToolRegistry
-import json
-import re
-from openai import OpenAI
-from tools import tool, ToolRegistry
-
-client = OpenAI()
-MODEL  = "gpt-4o"
+# ── Tools: plain functions, schemas auto-generated ─────────────────────
 
 @tool
 def add(a: float, b: float) -> str:
@@ -844,6 +1374,7 @@ def add(a: float, b: float) -> str:
     """
     return str(a + b)
 
+
 @tool
 def word_count(text: str) -> str:
     """Count the number of words in a string.
@@ -853,9 +1384,13 @@ def word_count(text: str) -> str:
     """
     return str(len(re.findall(r"\S+", text)))
 
+
 registry = ToolRegistry()
 registry.register(add)
 registry.register(word_count)
+
+
+# ── Agent loop — identical to agent_v3.py ──────────────────────────────
 
 def run_agent(user_message, max_turns=10):
     input_items = [{"role": "user", "content": user_message}]
@@ -876,18 +1411,16 @@ def run_agent(user_message, max_turns=10):
                         if part.type == "output_text":
                             return part.text
             return ""
-        tool_outputs = []
         for fc in function_calls:
-            output = registry.dispatch(fc.name, fc.arguments)
-            tool_outputs.append({
+            input_items.append({
                 "type": "function_call_output",
                 "call_id": fc.call_id,
-                "output": output,
+                "output": registry.dispatch(fc.name, fc.arguments),
             })
-        input_items.extend(tool_outputs)
         print(f"[turn {turn + 1}] tools called: {[fc.name for fc in function_calls]}")
 
     raise RuntimeError(f"Agent did not finish within {max_turns} turns.")
+
 
 if __name__ == "__main__":
     answer = run_agent(
@@ -898,17 +1431,19 @@ if __name__ == "__main__":
     print(answer)
 ```
 
+### ▶ Run it now
+
 ```bash
-python agent_v2.py
+python agent_v4.py
 ```
 
-You should see the same output as Step 0. The tool *behavior* is identical — you have only reorganized who owns the registry.
+Same output as Versions 1, 2, and 3 — confirm it for yourself. Then notice what *writing a new tool* costs now: a function with type hints and a docstring, plus one `registry.register(...)` line. No schema dict, no `elif` branch, no list to update. Alternatively, take your `agent_v2.py`, replace its two function definitions and schema dicts with the `@tool`-decorated versions (plus the machinery), and confirm the output is identical there too.
 
 ---
 
-## Step 3 (Optional) — Parallel Tool Execution
+## Going Further (Optional) — Parallel Tool Execution
 
-**Why now?** The `for` loop in Steps 0 and 2 runs tool calls one at a time. If the model asks for weather in Paris and weather in Tokyo simultaneously, you wait for Paris to finish before starting Tokyo. Threads fix this. This is a speed optimization only — it does not change the results.
+**Why now?** The `for` loop over tool calls in Versions 1–4 runs them one at a time. If the model asks for weather in Paris and weather in Tokyo simultaneously, you wait for Paris to finish before starting Tokyo. Threads fix this. This is a speed optimization only — it does not change the results.
 
 > 🟢 **Parallel tools are an optimization, not a requirement.** The code below uses
 > **threads** (`ThreadPoolExecutor`) to run several tool calls at the same time so the
@@ -1035,7 +1570,7 @@ The safe default for unknown tools is sequential. Switch to parallel only when y
 
 ---
 
-## 4. Argument Validation: Strict Mode vs. Manual Checks
+## Argument Validation: Strict Mode vs. Manual Checks
 
 The Responses API supports a `"strict": True` field on each tool definition. When strict mode is active, the API guarantees:
 
@@ -1084,7 +1619,7 @@ The `@tool` decorator does not currently generate this form automatically; it ou
 
 ---
 
-## 5. Structured Results and Errors
+## Structured Results and Errors
 
 ### The String Contract
 
@@ -1135,7 +1670,7 @@ This string is the tool output. The model reads it, understands something went w
 
 ---
 
-## 6. The Updated Agent Loop
+## The Updated Agent Loop — the Production Shape
 
 With the registry and parallel dispatch in place, the agent loop becomes completely decoupled from individual tools.
 
@@ -1234,9 +1769,9 @@ Key points in this loop:
 
 ---
 
-## 7. Full Runnable Example
+## Full Runnable Example — the `tools/` Package
 
-Here is the complete file layout and a runnable script.
+Here is the complete file layout and a runnable script — the Version 4 harness split into modules, the way the consolidated package organizes it.
 
 ### File Layout
 
@@ -1674,9 +2209,9 @@ In turn 1 the model issued two `function_call` items simultaneously. Both ran in
 
 ---
 
-## 8. Why We Built It in Steps: The Problems with Ad-Hoc Dispatch
+## Why We Built It in Versions: The Problems with Ad-Hoc Dispatch
 
-You now have a full tool system. This section names the five failure modes of the original Phase 1 one-branch-per-tool approach — useful when you need to explain *why* the registry matters:
+You now have a full tool system. This section names the five failure modes of the Version 1 / Phase 1 one-branch-per-tool approach — useful when you need to explain *why* the registry matters:
 
 **No single source of truth.** The tool's schema (sent to the model) and the tool's implementation (called at runtime) are defined in separate places. They drift.
 
@@ -1696,9 +2231,11 @@ Good tooling infrastructure requires:
 - **Parallel execution**: running independent tool calls concurrently
 - **Structured errors**: returning error information as strings so the model can reason about failures
 
+Track each requirement back through the ladder: registration arrived in V2, classes organized it in V3, schema generation arrived in V4, and validation and parallelism came as add-ons to the registry. Same harness all the way up.
+
 ---
 
-## 9. Pitfalls
+## Pitfalls
 
 | Pitfall | What happens | How to avoid |
 |---------|--------------|--------------|
@@ -1714,10 +2251,13 @@ Good tooling infrastructure requires:
 
 ## Key takeaways
 
+- The same harness climbed a **ladder of versions**: inline `if/elif` (V1) → functions +
+  dict registry (V2) → `Tool`/`ToolRegistry` classes (V3) → the `@tool` decorator (V4).
+  Every rung produced the same answers; only the organization changed.
 - A **registry** (a name → tool lookup) replaces ad-hoc `if/elif` dispatch, so adding a
   tool no longer means editing the loop.
 - `@tool` **auto-generates the JSON schema** from the function's type hints and
-  docstring — or hand-write the schema yourself (the Step 0 approach from this
+  docstring — or hand-write the schema yourself (the Version 1–2 approach from this
   phase). Either way the model gets the same dict.
 - Tool results are always **strings**: return an **error string** instead of raising, and
   return exactly **one output per `call_id`** — even for a failed call.
@@ -1741,3 +2281,16 @@ Good tooling infrastructure requires:
 4. An **error string**. The model can then *see* what went wrong and adapt, and every
    `call_id` still gets its required matching output so the next `create()` is valid.
 </details>
+
+---
+
+## Exercises
+
+See [`EXERCISES.md` — Phase 2](./EXERCISES.md) for hands-on practice:
+
+- **2.1 (warm-up):** Register a new `calculator(expression: str)` tool through the registry (use `@tool`, or hand-write the schema per the beginner track). Call it from the agent without editing the loop.
+- **2.2 (stretch):** Give two tools an artificial `time.sleep(2)`. Run them in the same turn once with parallel dispatch and once sequentially; time both. Then describe a case where parallel would be **unsafe**.
+
+---
+
+Proceed to **[Phase 3 — Conversation and Streaming](./03-conversation-and-streaming.md)**, where the transcript you have been growing by hand gets an owner (a `Conversation` class) and the model's answers start arriving token by token.

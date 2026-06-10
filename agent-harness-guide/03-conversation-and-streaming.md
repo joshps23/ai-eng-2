@@ -1029,7 +1029,7 @@ def run_agent(user_message, instructions, tools_list, registry, max_turns=10):
         if not function_calls:
             break                          # model is done
 
-        for output in run_tool_calls(function_calls, REGISTRY):
+        for output in run_tool_calls(function_calls, registry):
             conv.add_tool_result(output["call_id"], output["output"])
 
     return conv

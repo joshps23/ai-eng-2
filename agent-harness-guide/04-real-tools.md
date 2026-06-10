@@ -1315,11 +1315,32 @@ from registry import tool, Registry   # Phase 2 artefacts
 WORKSPACE_ROOT: pathlib.Path = pathlib.Path(os.getcwd()).resolve()
 ```
 
+**This mirrors the consolidated package.** `code/agent_harness/tools/files.py` and
+`shell.py` organize confinement exactly this way: a module-level `_WORKSPACE_ROOT`, a
+small `set_workspace(path)` setter, and a `_safe_path` that every path-taking tool
+funnels through — so the boundary is enforced **centrally, in one place**, not
+re-implemented inside each tool. The guide's equivalent of the package's setter is two
+lines:
+
+```python
+def set_workspace(path: pathlib.Path) -> None:
+    """Point every tool at a new workspace root (the package's files.py/shell.py pattern)."""
+    global WORKSPACE_ROOT
+    WORKSPACE_ROOT = pathlib.Path(path).resolve()
+```
+
+`make_default_registry(workspace=...)` (Section 4) calls the same idea inline. One
+subtlety worth stealing from the package: its `_safe_path` rejects escapes with
+`Path.is_relative_to()`, **not** a string `startswith` check — a plain prefix
+comparison would let a sibling directory like `/ws-evil` slip through for workspace
+`/ws`. Our `resolved.relative_to(WORKSPACE_ROOT)` + `except ValueError` form is the
+pre-3.9-friendly spelling of the same test.
+
 ---
 
 ## 3. The Tools (production versions)
 
-*These are the same functions you built in Steps 0–6, now using `@tool`, `_safe_path`,
+*These are the same functions you built in Steps 2.0–2.6, now using `@tool`, `_safe_path`,
 and `_truncate`. The logic is identical; only the decorators and shared helpers have been
 added.*
 
@@ -1945,8 +1966,9 @@ the function was defined, so there is nothing more to do.
 
 ## 6. End-to-End Demo
 
-The following demo wires the tool registry into the Phase 3 streaming loop and sends
-the agent a real task: find all TODO comments in a small project and summarize them.
+The following demo is **Version 3 running end-to-end**: it wires the tool registry into
+the Phase 3 streaming loop and sends the agent a real task — find all TODO comments in a
+small project and summarize them.
 
 ### 6.1 Setup
 
@@ -2263,9 +2285,11 @@ a tool; always return something the model can reason about.
 
 ---
 
-## 9. Complete `tools.py`
+## 9. Complete `tools.py` (Version 3, complete)
 
-For reference, here is the full module with all pieces assembled in dependency order:
+For reference, here is the full Version 3 module with all pieces assembled in dependency
+order. Together with `registry.py` from Phase 2 and the `demo_phase4.py` harness from
+Section 6, this is the complete runnable Version 3 program:
 
 ```python
 # tools.py  — Phase 4: Real-world coding-agent tools
@@ -2700,6 +2724,11 @@ a thin wrapper around `registry.dispatch`.
 fills the context window: how to summarize stale tool results, implement a sliding
 window over the transcript, and use `max_output_tokens` budgeting to keep the model
 reasoning clearly across hundreds of tool calls.
+
+**Practice first:** before moving on, try the
+[Phase 4 exercises](./EXERCISES.md#phase-4--real-tools) — they extend the toolset you
+just built (and you can start from your `harness_v2.py` or the Version 3 module,
+whichever feels more comfortable).
 
 ---
 

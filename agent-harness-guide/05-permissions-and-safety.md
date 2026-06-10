@@ -896,9 +896,309 @@ def _ask_user(tool_name: str, args: dict) -> tuple[Decision, str]:
 
 **Critical design point:** a DENY does not raise an exception. It returns a `(Decision.DENY, reason)` tuple. The caller converts this into a tool result string and appends it to `input_items`. The model sees "Permission denied by policy: ..." and can adapt — ask for a safer alternative, explain what it was trying to do, or give up gracefully. Crashing or silently skipping would make the loop incoherent.
 
+### Version 3, assembled — one paste-able file
+
+Here is Version 3 as a single runnable program: the pieces from Steps 3.1–3.4 plus the
+loop from Version 2, which is **unchanged except for the gate call** (it now unpacks a
+`(decision, reason)` tuple). The rule list and mode set are trimmed slightly to keep the
+file readable — the full-fat versions you just read drop in without any other change,
+and the consolidated multi-file form appears at the end of the phase.
+
+```python
+# agent_v3.py — Phase 5, Version 3 assembled: the same harness with policy objects.
+from __future__ import annotations
+
+import fnmatch
+import json
+import subprocess
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any, Callable
+
+from openai import OpenAI
+
+client = OpenAI()   # reads OPENAI_API_KEY from the environment
+
+# ── Risk levels & modes (Steps 3.1 / 3.2) ─────────────────────────────────────
+
+RISK_SAFE      = "safe"
+RISK_CAUTION   = "caution"
+RISK_DANGEROUS = "dangerous"
+
+class Mode(str, Enum):
+    PLAN         = "plan"
+    AUTO         = "auto"
+    ALWAYS_ALLOW = "always-allow"
+
+_AUTO_APPROVED: dict[Mode, set[str]] = {
+    Mode.PLAN:         {RISK_SAFE},
+    Mode.AUTO:         {RISK_SAFE, RISK_CAUTION},
+    Mode.ALWAYS_ALLOW: {RISK_SAFE, RISK_CAUTION, RISK_DANGEROUS},
+}
+_HARD_DENY_IN_MODE: dict[Mode, set[str]] = {
+    Mode.PLAN: {RISK_CAUTION, RISK_DANGEROUS},
+}
+
+class Decision(str, Enum):
+    ALLOW = "allow"
+    DENY  = "deny"
+    ASK   = "ask"
+
+# ── Policy objects (Step 3.3) ─────────────────────────────────────────────────
+
+def _render_summary(tool_name: str, args: dict) -> str:
+    if tool_name == "bash" and "command" in args:
+        arg_part = args["command"]
+    elif "path" in args:
+        arg_part = args["path"]
+    elif args:
+        arg_part = str(next(iter(args.values())))[:80]
+    else:
+        arg_part = ""
+    return f"{tool_name}({arg_part})"
+
+@dataclass
+class PolicyRule:
+    decision: Decision
+    pattern: str    # fnmatch glob against "tool_name(arg_summary)"
+
+    def matches(self, tool_name: str, args: dict) -> bool:
+        return fnmatch.fnmatch(_render_summary(tool_name, args), self.pattern)
+
+@dataclass
+class PermissionPolicy:
+    rules: list[PolicyRule] = field(default_factory=list)
+
+    def evaluate(self, tool_name: str, args: dict) -> Decision:
+        for rule in self.rules:
+            if rule.matches(tool_name, args):
+                return rule.decision
+        return Decision.ASK
+
+POLICY = PermissionPolicy(rules=[
+    # Hard denials first — first match wins.
+    PolicyRule(Decision.DENY,  "bash(*rm -rf*)"),
+    PolicyRule(Decision.DENY,  "bash(sudo *)"),
+    # Explicit allows for safe git reads.
+    PolicyRule(Decision.ALLOW, "bash(git status*)"),
+    PolicyRule(Decision.ALLOW, "bash(git diff*)"),
+])
+
+# ── The approval gate (Step 3.4) ──────────────────────────────────────────────
+
+_session_always_allow: set[str] = set()
+_session_always_deny:  set[str] = set()
+
+def check_permission(
+    tool: "Tool", args: dict, policy: PermissionPolicy, mode: Mode,
+) -> tuple[Decision, str]:
+    if tool.name in _session_always_deny:
+        return Decision.DENY, f"Denied for this session (you denied '{tool.name}' earlier)."
+    if tool.name in _session_always_allow:
+        return Decision.ALLOW, "Allowed by session memory."
+    if tool.risk in _HARD_DENY_IN_MODE.get(mode, set()):
+        return Decision.DENY, f"Mode '{mode.value}' does not allow '{tool.risk}' tools."
+    decision = policy.evaluate(tool.name, args)
+    if decision == Decision.DENY:
+        return Decision.DENY, f"Blocked by policy: '{_render_summary(tool.name, args)}'."
+    if decision == Decision.ALLOW:
+        return Decision.ALLOW, "Explicitly allowed by policy."
+    if tool.risk in _AUTO_APPROVED.get(mode, set()):
+        return Decision.ALLOW, f"Auto-approved (mode='{mode.value}', risk='{tool.risk}')."
+    # Must ask the user.
+    print(f"\n[Permission required]  {_render_summary(tool.name, args)}")
+    print("  y = allow once   n = deny once   a/d = always allow/deny this session")
+    while True:
+        try:
+            answer = input("  Allow? [y/n/a/d] > ").strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            return Decision.DENY, "Denied: non-interactive environment."
+        if answer == "y":
+            return Decision.ALLOW, "Allowed by user (once)."
+        if answer == "n":
+            return Decision.DENY, "Denied by user."
+        if answer == "a":
+            _session_always_allow.add(tool.name)
+            return Decision.ALLOW, "Allowed by user (session)."
+        if answer == "d":
+            _session_always_deny.add(tool.name)
+            return Decision.DENY, "Denied by user (session)."
+        print("  Please type y, n, a, or d.")
+
+# ── Tools with risk attached (Step 3.1) ───────────────────────────────────────
+
+@dataclass
+class Tool:
+    name: str
+    description: str
+    parameters: dict[str, Any]
+    run: Callable[..., str]
+    risk: str = RISK_SAFE
+
+    def to_api_dict(self) -> dict[str, Any]:
+        return {
+            "type": "function",
+            "name": self.name,
+            "description": self.description,
+            "parameters": self.parameters,
+        }
+
+def _read_file(path: str) -> str:
+    try:
+        with open(path, "r", encoding="utf-8", errors="replace") as f:
+            return f.read()
+    except OSError as exc:
+        return f"Error: cannot read file: {exc}"
+
+def _write_file(path: str, content: str) -> str:
+    try:
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(content)
+        return f"Wrote {len(content)} characters to {path}."
+    except OSError as exc:
+        return f"Error: cannot write file: {exc}"
+
+def _bash(command: str) -> str:
+    try:
+        proc = subprocess.run(
+            command, shell=True, capture_output=True, text=True, timeout=30,
+        )
+        return (proc.stdout + proc.stderr) or "(no output)"
+    except subprocess.TimeoutExpired:
+        return "Error: command timed out after 30s."
+
+_STR = {"type": "string"}
+REGISTRY: dict[str, Tool] = {t.name: t for t in [
+    Tool("read_file", "Read a text file and return its contents.",
+         {"type": "object", "properties": {"path": _STR}, "required": ["path"]},
+         _read_file, RISK_SAFE),
+    Tool("write_file", "Write content to a file, overwriting it.",
+         {"type": "object", "properties": {"path": _STR, "content": _STR},
+          "required": ["path", "content"]},
+         _write_file, RISK_CAUTION),
+    Tool("bash", "Run a shell command and return its combined stdout/stderr.",
+         {"type": "object", "properties": {"command": _STR}, "required": ["command"]},
+         _bash, RISK_DANGEROUS),
+]}
+
+# ── The loop (unchanged from Version 2, except the gate call) ─────────────────
+
+def run_agent(task: str, mode: Mode = Mode.AUTO) -> None:
+    input_items = [{"role": "user", "content": task}]
+    while True:
+        resp = client.responses.create(
+            model="gpt-4o",
+            input=input_items,
+            tools=[t.to_api_dict() for t in REGISTRY.values()],
+        )
+        for item in resp.output:
+            input_items.append(item.model_dump())
+
+        tool_calls = [item for item in resp.output if item.type == "function_call"]
+        if not tool_calls:
+            for item in resp.output:
+                if item.type == "message":
+                    for block in item.content:
+                        if block.type == "output_text":
+                            print("ANSWER:", block.text)
+            return
+
+        for tc in tool_calls:
+            args = json.loads(tc.arguments)
+            tool = REGISTRY.get(tc.name)
+            if tool is None:
+                result = f"Error: unknown tool '{tc.name}'"
+            else:
+                decision, reason = check_permission(tool, args, POLICY, mode)
+                if decision == Decision.DENY:
+                    result = f"Permission denied: {reason}"
+                else:
+                    try:
+                        result = tool.run(**args)
+                    except Exception as exc:
+                        result = f"Error: tool raised unexpectedly: {exc}"
+
+            input_items.append({
+                "type": "function_call_output",
+                "call_id": tc.call_id,
+                "output": result,
+            })
+
+if __name__ == "__main__":
+    run_agent("Run `git status`, then read README.md and summarize it.", mode=Mode.AUTO)
+```
+
+### ▶ Run it now
+
+```
+python agent_v3.py
+```
+
+`git status` should run **without any prompt** — the explicit `ALLOW` policy rule
+matches even though `bash` is a dangerous tool. When the model reads `README.md`,
+nothing is asked either (safe tool, auto-approved). Now edit the `__main__` task to
+something like `"Run git push"` — no rule matches, `bash` isn't auto-approved in
+`auto` mode, so you get the `[y/n/a/d]` prompt. Answer `d`, then watch any further
+`bash` attempt in the same run get denied instantly by session memory.
+
 ---
 
-## 7. The Hook System
+### What changed from Version 3 → Version 4
+
+- Nothing about *permissions* changes — V4 adds a second, more general mechanism
+  *around* the same gate.
+- Cross-cutting concerns (audit logging, secret scrubbing, output truncation) move out
+  of the loop body into small standalone functions called **hooks**.
+- The harness gains two well-defined extension points: **pre-hooks** (run before the
+  tool, may block it) and **post-hooks** (run after, may rewrite the result).
+- A `HookRegistry` holds ordered lists of those functions; the loop just calls
+  `run_pre`/`run_post` and otherwise stays untouched.
+- A new `safe_dispatch()` becomes the single funnel every tool call flows through:
+  pre-hooks → permission check → `tool.run` → post-hooks.
+
+---
+
+## Version 4 — hooks: functions you hand to the harness
+
+### Step 4.0 — First, the callback idea (sixty seconds, no API key needed)
+
+Version 4 rests on one Python fact you may not have used yet: **a function is a value.**
+You can put one in a variable, in a list, or pass it as an argument — all *without
+calling it*. The receiver decides when (and whether) to call it. A function passed
+around like this is called a **callback**, and a *hook* is just a callback the harness
+promises to call at a specific moment.
+
+```python
+# callback_demo.py — a "hook" is just a function you hand over to be called later.
+
+def shout(text):
+    print(text.upper() + "!")
+
+def politely(text):
+    print("Please note: " + text)
+
+def announce(message, hook):
+    hook(message)        # the harness decides WHEN; you decided WHAT
+
+announce("the build passed", shout)      # THE BUILD PASSED!
+announce("the build passed", politely)   # Please note: the build passed
+```
+
+Note `announce("...", shout)` — no parentheses after `shout`. We hand over the function
+itself, not its result. `announce` calls it later. That single trick is the entire hook
+system: the harness keeps a list of functions you gave it and calls them before and
+after every tool.
+
+### ▶ Run it now
+
+```
+python callback_demo.py
+```
+
+No API key needed. Try writing a third style function and passing it in — if you can do
+that, you already understand hooks.
+
+### Step 4.1 — Why hooks, and what they look like in the harness
 
 > **Why hooks, and why now?** You now have permission checking wired in. But you also want to: log every tool call, scrub secrets from outputs, and inject warnings when a file looks like it contains prompt-injection text. You *could* add all of that logic directly to the dispatch block — but it would become a tangled mess. **Hooks** separate those cross-cutting concerns from the loop structure itself.
 
