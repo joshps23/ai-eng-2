@@ -54,6 +54,27 @@ Claude-Code-shaped harness.
 > that every later phase depends on. If a later code sample looks unfamiliar, Phase 0
 > is your reference.
 
+## What you'll have built
+
+Every phase produces a capability you have already *used* in a real coding agent.
+This is the map from the guide to the product:
+
+| Phase | You build | In Claude Code / Cursor, this is… |
+|------:|-----------|------------------------------------|
+| **1** | The agent loop | The moment the assistant *does things* instead of just chatting |
+| **2** | The tool system | The tool palette the model sees — every `Read`/`Edit`/`Bash` definition |
+| **3** | Conversation + streaming | Memory across turns, and tokens appearing live as the agent "types" |
+| **4** | Real file & shell tools | The agent actually editing your files and running your tests |
+| **5** | Permissions & hooks | The `Allow this command? [y/n]` prompt, allowlists, and plan mode |
+| **6** | Context management | Long sessions that don't die — the "compacting conversation…" moment |
+| **7** | Sub-agents | Task agents fanning out in parallel to explore a codebase |
+| **8** | Production hardening | Retries on API blips, config files, the CLI itself, an offline test suite |
+
+When you finish, tick yourself off against the
+[final checklist in Phase 8](./08-production-harness.md#what-youll-have-built--the-final-checklist),
+then prove it with the [capstone exercise](./EXERCISES.md) — extending the harness
+you now understand line by line.
+
 ## The canonical, runnable code
 
 Each phase's markdown shows code **as it grows** — a Phase 3 snippet is deliberately

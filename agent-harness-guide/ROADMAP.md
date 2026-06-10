@@ -53,12 +53,17 @@ Status: ☐ todo · ◐ in progress · ☑ done
 | 7 | **CI** that runs the test suite (and ideally a markdown link/code-block check) on every push | 6 | ☑ |
 | 8 | **Verify phase code samples** against the canonical package — flag any drift between snippets and `code/` | 6 | ☑ |
 | 9 | **Visual diagrams**: replace/augment ASCII with clearer flow diagrams where it helps a beginner | 4 | ☑ |
-| 10 | **"What you'll have built" capstone** + a checklist mapping each phase's output to a feature of a real harness | 5 | ☐ |
+| 10 | **"What you'll have built" capstone** + a checklist mapping each phase's output to a feature of a real harness | 5 | ☑ |
 
 ## Iteration log
 
 Newest first. One line per shipped iteration.
 
+- **2026-06-10** — Shipped **Item 10**: a top-level "What you'll have built" section in
+  the README mapping each phase's output to the real-product feature the reader already
+  knows (the y/n permission prompt, the "compacting conversation…" moment, parallel task
+  agents, …), linking to Phase 8's per-module final checklist and the EXERCISES capstone.
+  **All ten backlog items are now done.**
 - **2026-06-10** — Shipped **Item 9**: converted the five most central flow diagrams to
   Mermaid (renders natively on GitHub): the core agent loop (Phase 0), the `call_id`
   handshake as a new sequence diagram (Phase 0), the bare-harness loop (Phase 1), the
