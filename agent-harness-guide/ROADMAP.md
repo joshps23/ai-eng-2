@@ -10,13 +10,13 @@
 > check it off, and log it at the bottom. Keep the backlog honest — add new items
 > as gaps surface, remove ones that stop mattering.
 
-> **⚑ Current focus (2026-06-10):** the incrementality goal has sharpened again — each
-> phase must now present its harness as a **ladder of complete runnable versions**
+> **⚑ Current focus (2026-06-10, updated):** the **version-ladder pass is complete** —
+> every phase now presents its harness as a ladder of complete runnable versions
 > (V1 line-by-line with no functions → V2 functions → V3 classes → V4 decorators/threads
-> where the phase teaches them), each framed as "the same harness, reorganized." The spec
-> lives in **[`REVISION-BRIEF.md`](./REVISION-BRIEF.md)** (per-phase ladder table +
-> rubric) and is driven by a capped evaluator loop (≤10 iterations). Backlog items 9
-> and 10 below remain deferred until this pass is done.
+> where taught), and the evaluator loop closed at 4/10 iterations with every phase ≥4 on
+> all six rubric axes (see **[`REVISION-BRIEF.md`](./REVISION-BRIEF.md)** for the spec
+> and full revision log). Backlog items **9** (visual diagrams) and **10** (capstone
+> checklist) are now unblocked and are the next-highest-value work.
 
 ## The rubric — what "best beginner resource" means
 

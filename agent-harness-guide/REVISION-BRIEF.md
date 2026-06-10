@@ -111,7 +111,9 @@ Score each phase 1–5 on each axis; the loop revises the lowest-scoring phase n
 
 The evaluator-reviser loop runs **at most 10 times**, then stops on its own.
 
-- Iterations used: **4 / 10** *(reset 2026-06-10 for the version-ladder pass)*
+- Iterations used: **4 / 10** *(reset 2026-06-10 for the version-ladder pass)* —
+  **LOOP CLOSED 2026-06-10: stop condition met** (every phase ≥4 on all six axes;
+  confirmation re-grade found no new below-4 evidence).
 - Per iteration: score all phases on the rubric, pick the weakest, revise it one notch
   more incremental, increment the counter here, log it below, commit, push. Stop when the
   counter hits 10 **or** every phase scores ≥4 on every axis.
@@ -128,6 +130,16 @@ The evaluator-reviser loop runs **at most 10 times**, then stops on its own.
 
 ## Revision log (newest first)
 
+- **2026-06-10 — Loop closed after confirmation re-grade.** Final sweep verified the
+  two remaining 4s hold (Phase 2 step-size: 7 run-checkpoints, V3 graded passable;
+  Phase 6: fragments carry explicit elision pointers) and the cross-phase import sweep
+  is clean (P7→P2 `from tools import tool, ToolRegistry` ✓; P6→P3 `Conversation` /
+  `to_input()` ✓). One touch-up shipped with closure: Phase 6's integrated-loop sketch
+  used an undefined `_is_done(resp)` helper — replaced with the standard
+  no-tool-calls stop rule used by every other phase. Stop condition met at 4/10
+  iterations: every phase ≥4 on all six axes; P0/P1/P3 at 30, P4/P5/P7/P8 repaired to
+  30, P2 at 29, P6 at 28. Per ROADMAP, deferred backlog items 9 (visual diagrams) and
+  10 (capstone checklist) are now unblocked for future iterations.
 - **2026-06-10 — Eval-loop iteration 4: Phase 8 permission-API drift repaired (27 →
   30/30).** Phase 8 used an invented permission API matching neither Phase 5 nor the
   package: `PermissionPolicy(mode=...)` constructor (the real one holds *rules*; mode

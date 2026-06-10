@@ -1364,7 +1364,11 @@ def run_agent(
         # … process resp.output, append items, handle tool calls …
         # (see Phase 2 / Phase 3 for the full turn-processing code)
 
-        if _is_done(resp):
+        # Done when the model produces no tool calls — the same stop rule
+        # every previous phase used.
+        tool_calls = [item for item in resp.output if item.type == "function_call"]
+        if not tool_calls:
+            print("Assistant:", resp.output_text)
             break
 ```
 
