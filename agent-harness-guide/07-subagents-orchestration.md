@@ -1184,9 +1184,73 @@ The orchestrator will call `task("reviewer", ..., "Check auth.py ...")`. Your ha
 
 ---
 
-## Step 4 — Parallel Sub-Agents (Optional Speed-Up)
+## What changed from V3 → V4
 
-> **Why now?** Everything so far works serially — sub-agents run one at a time. If the orchestrator issues multiple `task` calls in a single response, Phase 2's `dispatch_parallel` already runs them concurrently via `ThreadPoolExecutor`. This step makes that visible, adds per-worker timing, and explains when it helps. **You can skip this step** and everything still works; you just wait longer.
+- Nothing about a *single* sub-agent changes — same `Agent`, same presets, same
+  `dispatch_subagent`. What changes is **how a batch of `task` calls is executed**:
+  simultaneously instead of one after another.
+- A `ThreadPoolExecutor` runs each `dispatch_subagent` call **in its own thread**;
+  `as_completed` collects results as workers finish.
+- Results are gathered into a dict keyed by `call_id`, then emitted as the usual
+  `function_call_output` items **in the original order** — the API contract is untouched;
+  the model can't even tell the workers ran in parallel.
+- A crashed worker becomes an `[error] ...` string for *its* `call_id`; siblings keep
+  running (failure isolation).
+- A cap, `MAX_CONCURRENT_SUBAGENTS`, bounds the pool so a fan-out of 50 doesn't fire 50
+  simultaneous agents.
+
+---
+
+## Version 4 — Threads: Parallel Sub-Agents (Optional Speed-Up)
+
+> **Why now?** Everything so far works serially — sub-agents run one at a time. If the orchestrator issues multiple `task` calls in a single response, Phase 2's `dispatch_parallel` already runs them concurrently via `ThreadPoolExecutor`. This version makes that visible, adds per-worker timing, and explains when it helps. **You can skip this version** and everything still works; you just wait longer.
+
+### Step 4.1 — Why threads, and what a thread even is
+
+First, why bother. A sub-agent spends almost all of its wall-clock time **waiting for the
+network** — the request is sent, and your Python process sits idle until OpenAI's servers
+respond. If three workers each take four seconds and you run them one after another,
+you wait twelve seconds while your CPU does essentially nothing. Running them *at the
+same time* means you wait only as long as the slowest one: four seconds.
+
+> ## 🟢 Beginner track: what a thread is
+>
+> A **thread** is a second line of execution inside your one Python program. Your script
+> normally runs one statement at a time, top to bottom — that's the *main thread*. When
+> you create more threads, the operating system interleaves them: while thread A is
+> blocked waiting on a network reply, thread B gets to run. For I/O-heavy work like LLM
+> calls, this overlap is nearly free speed.
+>
+> You rarely manage threads by hand. The standard library's
+> `concurrent.futures.ThreadPoolExecutor` does it for you:
+>
+> ```python
+> from concurrent.futures import ThreadPoolExecutor, as_completed
+>
+> with ThreadPoolExecutor(max_workers=3) as pool:
+>     futures = [pool.submit(some_function, arg) for arg in args]
+>     for future in as_completed(futures):
+>         print(future.result())     # results arrive as each thread finishes
+> ```
+>
+> - `pool.submit(fn, x)` says "run `fn(x)` on a spare thread" and immediately returns a
+>   **future** — a receipt you can later redeem for the result.
+> - `as_completed(futures)` yields each future *as its thread finishes* — fastest first,
+>   not submission order.
+> - `future.result()` gives you the return value (or re-raises the exception the thread
+>   hit — which is why the code below wraps it in `try/except`).
+>
+> Two rules keep threaded code safe here: **threads must not share mutable state** (each
+> sub-agent owns its own transcript, so they don't), and **every `call_id` must still get
+> exactly one string answer** — whichever thread finishes first, results are stored in a
+> dict keyed by `call_id` and appended to the transcript in the original order. Parallelism
+> changes *when* the work happens, never *what* the model sees.
+
+One more reassurance before the code: a plain `for` loop over the same `task` calls gives
+**identical results** — threads only change the wall-clock time. If threading ever
+confuses you, fall back to sequential dispatch and nothing breaks.
+
+### Step 4.2 — A parallel batch runner
 
 When the orchestrator emits **multiple `task` tool calls in a single response**, Phase 2's `dispatch_parallel` runs them concurrently via `ThreadPoolExecutor`. Each sub-agent makes its own independent OpenAI HTTP calls and maintains its own transcript, so there is zero interference between workers.
 

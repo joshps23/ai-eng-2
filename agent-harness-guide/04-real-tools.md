@@ -481,7 +481,7 @@ You should see the model call `list_dir(".")` first, then `read_file("hello.txt"
 
 ---
 
-## Step 2 — Add `grep` (still read-only, slightly more complex)
+## Step 2.2 — Add `grep` (still read-only, slightly more complex)
 
 **Why now?** Once the agent can list and glob files, the natural next step is to search
 *inside* them. `grep` replaces dozens of `read_file` calls with one targeted search.
@@ -543,14 +543,14 @@ The model should call `grep("TODO", ".", "*.py")` and return the two matches.
 
 ---
 
-## Step 3 — Safety First: add `_safe_path` and `_truncate` before writing anything
+## Step 2.3 — Safety First: add `_safe_path` and `_truncate` before writing anything
 
 **Why now?** So far all our tools are read-only — if they misbehave the worst case is
 the model sees garbled text. We are about to add `write_file` and `edit_file`, which can
 destroy data. Before we do that, let's add two small safety helpers that every
 subsequent tool will use.
 
-### 3.1 `_safe_path` — the Path Guard
+### `_safe_path` — the Path Guard
 
 ```python
 import os
@@ -599,7 +599,7 @@ def _safe_path(user_path: str) -> pathlib.Path:
 > actually walks the filesystem, so a symlink pointing outside the workspace is caught.
 > The cost is an extra syscall per path; that is entirely acceptable.
 
-### 3.2 `_truncate` — the Output Size Guard
+### `_truncate` — the Output Size Guard
 
 ```python
 _DEFAULT_MAX_CHARS = 40_000    # ~10 k tokens at 4 chars/token — generous but bounded
@@ -668,7 +668,7 @@ print(read_file("../../etc/passwd"))
 
 ---
 
-## Step 4 — Add `write_file` (medium risk — destructive)
+## Step 2.4 — Add `write_file` (medium risk — destructive)
 
 **Why now?** The agent can now explore a codebase safely. Adding write capability means
 it can create new files. We add `write_file` before `edit_file` because creating files
@@ -715,7 +715,7 @@ run("Read output.txt and tell me what is in it.")
 
 ---
 
-## Step 5 — Add `edit_file` — the Surgical Edit Tool (medium risk)
+## Step 2.5 — Add `edit_file` — the Surgical Edit Tool (medium risk)
 
 **Why now?** `write_file` overwrites a file completely. For modifying existing files the
 safer approach is to replace only the part that needs changing — which is exactly what
@@ -842,7 +842,7 @@ run("Show me the current contents of greeting.py.")
 
 ---
 
-## Step 6 — Add `bash` (high risk — arbitrary execution)
+## Step 2.6 — Add `bash` (high risk — arbitrary execution)
 
 **Why now?** You have all the safe, targeted tools. `bash` is the escape hatch — it lets
 the agent run any shell command, including tests, package installs, and build scripts.

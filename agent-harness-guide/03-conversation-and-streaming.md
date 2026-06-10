@@ -90,7 +90,7 @@ and how the answer is displayed (V4). If a version ever feels confusing, drop ba
 
 ---
 
-## 1. Two Orthogonal Concerns
+## Two Orthogonal Concerns
 
 **Transcript management** determines what you send in `input` on each call.  You have two
 options:
@@ -1778,7 +1778,10 @@ if __name__ == "__main__":
 ### Expected terminal output (conceptual)
 
 The deltas stream in character-by-character; the tool-call lines appear as the model
-generates arguments.  The session is saved to disk after each turn.
+generates arguments.  The session is saved to disk after each turn.  (The `🤔 thinking:`
+lines below appear only if you run a reasoning model with the
+`reasoning={"summary": "auto"}` line uncommented; with plain `gpt-4o` you will see the
+tool calls and the final text, but no thinking lines.)
 
 ```text
 User: Please do two things: first, add 1234 and 5678; second, count the words in the

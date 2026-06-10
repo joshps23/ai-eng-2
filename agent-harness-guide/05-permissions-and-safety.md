@@ -249,9 +249,161 @@ else:
 
 That is the entire safety mechanism. A safe tool (`read_file`, `grep`) passes straight through. A dangerous command like `bash("rm -rf .")` is blocked before the shell ever sees it. Anything in between stops to ask you.
 
+Here is Version 2 in full — one paste-able file. It is `agent_v1.py` with names: the
+tool bodies became functions, the dispatch `elif` chain became `dispatch()`, the loop
+became `run_agent()`, and the safety layer is the three pieces you just read. A
+`write_file` tool is added so the `"caution"` risk level has something to gate.
+
+```python
+# agent_v2.py — Phase 5, Version 2: the same harness, reorganized into functions.
+
+import json
+import subprocess
+from openai import OpenAI
+
+client = OpenAI()   # reads OPENAI_API_KEY from the environment
+
+# ── Tools: plain functions (as in Phase 4) ────────────────────────────────────
+
+def read_file(path: str) -> str:
+    try:
+        with open(path, "r", encoding="utf-8", errors="replace") as f:
+            return f.read()
+    except OSError as exc:
+        return f"Error: cannot read file: {exc}"
+
+def write_file(path: str, content: str) -> str:
+    try:
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(content)
+        return f"Wrote {len(content)} characters to {path}."
+    except OSError as exc:
+        return f"Error: cannot write file: {exc}"
+
+def bash(command: str) -> str:
+    try:
+        proc = subprocess.run(
+            command, shell=True, capture_output=True, text=True, timeout=30,
+        )
+        return (proc.stdout + proc.stderr) or "(no output)"
+    except subprocess.TimeoutExpired:
+        return "Error: command timed out after 30s."
+
+TOOLS = [
+    {
+        "type": "function",
+        "name": "read_file",
+        "description": "Read a text file and return its contents.",
+        "parameters": {
+            "type": "object",
+            "properties": {"path": {"type": "string"}},
+            "required": ["path"],
+        },
+    },
+    {
+        "type": "function",
+        "name": "write_file",
+        "description": "Write content to a file, overwriting it.",
+        "parameters": {
+            "type": "object",
+            "properties": {"path": {"type": "string"}, "content": {"type": "string"}},
+            "required": ["path", "content"],
+        },
+    },
+    {
+        "type": "function",
+        "name": "bash",
+        "description": "Run a shell command and return its combined stdout/stderr.",
+        "parameters": {
+            "type": "object",
+            "properties": {"command": {"type": "string"}},
+            "required": ["command"],
+        },
+    },
+]
+
+# ── The permission layer (this phase's new code, from above) ──────────────────
+
+TOOL_RISK = {
+    "read_file": "safe", "glob": "safe", "grep": "safe", "list_dir": "safe",
+    "write_file": "caution", "edit_file": "caution",
+    "bash": "dangerous",
+}
+
+def check_permission(tool_name, arg):
+    """Return 'allow', 'deny', or 'ask'."""
+    if tool_name == "bash":
+        for bad in ["rm -rf", "sudo ", ":(){"]:
+            if bad in arg:
+                return "deny"
+    risk = TOOL_RISK.get(tool_name, "dangerous")
+    if risk == "safe":
+        return "allow"
+    return "ask"
+
+def ask_user(tool_name):
+    answer = input(f"Allow {tool_name}? [y/n] ").strip().lower()
+    return "allow" if answer == "y" else "deny"
+
+# ── Dispatch: the V1 elif-chain, named ────────────────────────────────────────
+
+def dispatch(name: str, args: dict) -> str:
+    if name == "read_file":
+        return read_file(**args)
+    if name == "write_file":
+        return write_file(**args)
+    if name == "bash":
+        return bash(**args)
+    return f"Error: unknown tool '{name}'"
+
+# ── The loop: the V1 while-loop, named ────────────────────────────────────────
+
+def run_agent(task: str) -> None:
+    input_items = [{"role": "user", "content": task}]
+    while True:
+        resp = client.responses.create(model="gpt-4o", input=input_items, tools=TOOLS)
+
+        for item in resp.output:
+            input_items.append(item.model_dump())
+
+        tool_calls = [item for item in resp.output if item.type == "function_call"]
+        if not tool_calls:
+            for item in resp.output:
+                if item.type == "message":
+                    for block in item.content:
+                        if block.type == "output_text":
+                            print("ANSWER:", block.text)
+            return
+
+        for tc in tool_calls:
+            args = json.loads(tc.arguments)
+            # The permission gate — the four lines from above:
+            arg = args.get("command", args.get("path", ""))
+            decision = check_permission(tc.name, arg)
+            if decision == "ask":
+                decision = ask_user(tc.name)
+            if decision == "deny":
+                result = "Permission denied by the harness."
+            else:
+                result = dispatch(tc.name, args)
+
+            input_items.append({
+                "type": "function_call_output",
+                "call_id": tc.call_id,
+                "output": result,
+            })
+
+if __name__ == "__main__":
+    run_agent("List the files in the current directory, then read hello.txt.")
+```
+
+(The `TOOL_RISK` dict already labels tools like `grep` and `edit_file` that this file
+doesn't wire in — that's harmless. Keys for tools you don't have are simply never
+looked up, and you won't need to touch the permission layer when you add them later.)
+
 ### ▶ Run it now
 
-Add `TOOL_RISK`, `check_permission`, and `ask_user` to your `agent_loop.py`, then replace your dispatch call with the four-line block above. Run the agent and ask it to read a file — you should see no prompt. Then ask it to run a shell command: you should be asked `Allow bash? [y/n]`. Type `n` — confirm the model receives "Permission denied by the harness." and continues gracefully.
+Run `python agent_v2.py` (or add `TOOL_RISK`, `check_permission`, and `ask_user` to your own `agent_loop.py` and replace your dispatch call with the four-line block above). Ask the agent to read a file — you should see no prompt. Then ask it to run a shell command: you should be asked `Allow bash? [y/n]`. Type `n` — confirm the model receives "Permission denied by the harness." and continues gracefully.
 
 > **What you should see:**
 > - Read-only tools run silently.
@@ -260,7 +412,7 @@ Add `TOOL_RISK`, `check_permission`, and `ask_user` to your `agent_loop.py`, the
 
 ---
 
-## Step 1 — Add permission modes (one new idea: a mode controls what's auto-allowed)
+### Step 2.2 — Add permission modes (one new idea: a mode controls what's auto-allowed)
 
 The gate above always asks about `caution`-level tools even if you are in the middle of a trusted editing session. **Why now?** You want to say "for this run, auto-approve file writes too" without changing your code — just pick a mode.
 
@@ -292,19 +444,22 @@ def check_permission(tool_name, arg, mode="auto"):
     return "ask"
 ```
 
-Update the call site to pass `mode`:
+Update the call site to pass `mode` — give `run_agent` a `mode` parameter and thread it through:
 
 ```python
-decision = check_permission(fc.name, arg, mode=mode)
+def run_agent(task: str, mode: str = "auto") -> None:
+    ...
+            decision = check_permission(tc.name, arg, mode=mode)
+    ...
 ```
 
 ### ▶ Run it now
 
-Start the agent twice: once with `mode="plan"` and once with `mode="auto"`. In plan mode, ask the agent to edit a file — you should see "Permission denied" without being asked. In auto mode, the same edit goes through silently.
+Start the agent twice: once with `run_agent(task, mode="plan")` and once with `mode="auto"`. In plan mode, ask the agent to edit a file — you should see "Permission denied" without being asked. In auto mode, the same edit goes through silently.
 
 ---
 
-## Step 2 — Add structured rules (one new idea: a list of rules, first match wins)
+### Step 2.3 — Add structured rules (one new idea: a list of rules, first match wins)
 
 The mode approach works well, but you want to say "always allow `git status` without asking, even though `bash` is dangerous." **Why now?** Hard-coded `if` checks for every special case will pile up. A small list of rules, evaluated top-to-bottom, scales much better.
 

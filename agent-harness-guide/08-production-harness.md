@@ -707,8 +707,8 @@ Here is a production-grade prompt for a coding agent, with explanations of each 
 
 > **Which rung is this?** **V2 — functions**, and it stays there: building a string needs
 > no state, so `build_instructions` and its two helpers never become a class. (In the
-> consolidated package this logic lives inside `agent.py` and `config.py` rather than a
-> separate `instructions.py` — remember the file-name note in §0.)
+> consolidated package there is no separate `instructions.py`; the instructions string is
+> built in `cli.py` and handed to `Agent` — remember the file-name note in §0.)
 
 ````python
 # agent_harness/instructions.py
@@ -1367,6 +1367,22 @@ On resume, the harness loads the transcript and prints a one-line summary (`"Res
 ## 7. The Definitive `Agent.run_turn` Loop
 
 This is the fully-annotated reference implementation. It wires every middleware component in the correct order. Read it as the canonical specification.
+
+> **Which rung is this?** The **top rung of the entire guide**. The skeleton is Phase 1's
+> V3 — an `Agent` class wrapped around the call-model → run-tools → feed-results loop —
+> and every collaborator it touches is the top rung of another phase's ladder:
+>
+> | Line in `run_turn` you'll see below | Whose ladder-top it is |
+> |---|---|
+> | `self.conversation.items.append(...)` / `.save(...)` | Phase 3 V3 (`Conversation`) |
+> | `self.registry.schemas()` / `self.registry.call(...)` | Phase 2 V4 (`@tool` + `ToolRegistry`) |
+> | `self.policy.check(...)`, `run_pre_hooks` / `run_post_hooks` | Phase 5 V3/V4 (policy + hooks) |
+> | `self.estimate_tokens()` / `self.compact()` | Phase 6 (`count_tokens` → `compact`) |
+> | `ThreadPoolExecutor(...)` over approved calls | Phase 7 V4 (threaded dispatch) |
+> | `llm.create(...)` / `llm.stream(...)` | this phase, Step 0 → §6 |
+>
+> Nothing in the body is new. If any line feels foreign, the table tells you which phase
+> to revisit — climb that ladder again and come back.
 
 ```python
 # agent_harness/agent.py  (run_turn — full implementation)
