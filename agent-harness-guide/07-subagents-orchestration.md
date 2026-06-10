@@ -55,9 +55,28 @@ The critical insight is that the orchestrator **decides at runtime** how many wo
 
 ---
 
-## Step 0 — The Key Trick: a Sub-Agent Is Just Your Loop Called Again
+## 2. The Key Trick — and the Plan for This Phase
 
 > **Why now?** Before any classes or config, you need to see the core idea working. Everything else in this phase is just that one idea, better organized.
+
+This phase presents **one harness, four times**, at increasing levels of abstraction.
+Every version is a **complete program you can paste into a file and run**, and every
+version does the same thing: an orchestrator agent delegates work to a sub-agent through
+a `task` tool. Only the *organization* of the code changes:
+
+- **Version 1 — line-by-line.** No `def`, no classes. The agent loop — and, inside its
+  `task` dispatch branch, **a second copy of the exact same loop pasted inline**. The
+  duplication is deliberate: you should *feel* "this is the same code twice."
+- **Version 2 — functions.** The pasted copy collapses into a plain function, and then
+  both loops collapse into one `run_agent` function used by orchestrator and worker alike.
+- **Version 3 — classes.** The loop becomes an `Agent` object, roles become presets, and
+  spawning becomes a `task` tool that constructs an `Agent` inside a tool — the shape of
+  the real package (`code/agent_harness/subagents.py`). Same idea, organized.
+- **Version 4 — threads.** Several sub-agents run *at the same time* via a thread pool —
+  the shape of `code/agent_harness/tools/parallel.py`. Same harness, one new mechanism.
+
+Between versions you'll find a short **"What changed"** list, so you can see each rung as
+a reorganization of the previous one, never a brand-new program.
 
 > ## 🟢 Beginner track: a "sub-agent" is just calling your agent loop again
 >
@@ -135,10 +154,326 @@ The critical insight is that the orchestrator **decides at runtime** how many wo
 > Read the rest of the phase for the ideas (isolated context, depth limits, disjoint
 > file scopes). Build it with the functions above.
 
-Here is the minimal complete version — everything above expressed as runnable code. It uses only the concepts from Phases 1–2: a loop, a conversation list, `client.responses.create`, and plain functions as tools.
+---
+
+## Version 1 — Line-by-Line: the Same Loop, Pasted Twice
+
+> **Why this version first?** Because the entire phase rests on one claim — *a sub-agent
+> is just the same loop run again* — and the most convincing proof is to literally paste
+> the loop a second time, inside the dispatch branch of a `task` tool, and watch it work.
+> No `def`, no classes: just statements, two `while` loops, and the Responses-API
+> handshake you already know from Phase 1.
+
+### Step 1.1 — The outer loop with a *stub* `task` tool
+
+First, build only the **orchestrator**: a straight-line script whose single tool, `task`,
+doesn't spawn anything yet — it returns a placeholder string. This proves the outer half
+of the handshake (the model calls `task`, we answer with a `function_call_output`
+carrying the same `call_id`) before any sub-agent exists.
 
 ```python
-# step0_subagent.py  — minimal sub-agent demo, no classes required
+# v1_subagent_inline.py — Step 1.1: orchestrator with a stub task tool
+import json
+from openai import OpenAI
+
+client = OpenAI()
+MODEL = "gpt-4o"
+
+# The one tool the orchestrator has: delegate work to a sub-agent.
+TASK_TOOL_SCHEMA = {
+    "type": "function",
+    "name": "task",
+    "description": "Spawn a sub-agent to complete an independent task.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "prompt": {
+                "type": "string",
+                "description": "Full task prompt for the sub-agent.",
+            },
+        },
+        "required": ["prompt"],
+        "additionalProperties": False,
+    },
+}
+
+# ---- THE OUTER LOOP: the orchestrator --------------------------------------
+outer_items = [{
+    "role": "user",
+    "content": (
+        "Use the task tool to ask a sub-agent to read README.md and "
+        "summarize it in two sentences."
+    ),
+}]
+
+while True:
+    outer_resp = client.responses.create(
+        model=MODEL,
+        instructions=(
+            "You are an orchestrator. Delegate work with the task tool, "
+            "then report back what the sub-agent found."
+        ),
+        input=outer_items,
+        tools=[TASK_TOOL_SCHEMA],
+    )
+    outer_items += list(outer_resp.output)
+    outer_calls = [it for it in outer_resp.output if it.type == "function_call"]
+    if not outer_calls:
+        break                          # no tool calls -> the model is done
+
+    for outer_call in outer_calls:
+        print(f"[outer] model called {outer_call.name!r}")
+        # STUB: no sub-agent yet — just answer the call with a placeholder.
+        outer_items.append({
+            "type": "function_call_output",
+            "call_id": outer_call.call_id,
+            "output": "[stub] Sub-agents are not built yet. Report that "
+                      "delegation is not implemented.",
+        })
+
+print("\nFinal answer:", outer_resp.output_text)
+```
+
+#### ▶ Run it now
+
+```
+python v1_subagent_inline.py
+```
+
+You should see `[outer] model called 'task'` once, then a final answer in which the
+orchestrator relays that delegation isn't implemented yet. Nothing new happened here —
+this is exactly the Phase 1 loop with one tool. The interesting part is next.
+
+### Step 1.2 — Paste the loop *again* inside the `task` branch
+
+Now replace the stub. What goes in its place? **The same loop, copy-pasted**, with three
+renames: its own transcript list (`inner_items` instead of `outer_items`), its own
+instructions, and its own tool (`read_file` instead of `task`). The inner loop's final
+text becomes the string we hand back as the outer call's `function_call_output`.
+
+Here is the complete file. Read the two `while True:` blocks side by side — they are the
+same code. That *is* the lesson.
+
+```python
+# v1_subagent_inline.py — Step 1.2: the inner loop pasted inline. No def, no classes.
+import json
+from openai import OpenAI
+
+client = OpenAI()
+MODEL = "gpt-4o"
+
+# The orchestrator's only tool: delegate to a sub-agent.
+TASK_TOOL_SCHEMA = {
+    "type": "function",
+    "name": "task",
+    "description": "Spawn a sub-agent to complete an independent task.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "prompt": {
+                "type": "string",
+                "description": "Full task prompt for the sub-agent.",
+            },
+        },
+        "required": ["prompt"],
+        "additionalProperties": False,
+    },
+}
+
+# The sub-agent's only tool: read a file.
+READ_FILE_SCHEMA = {
+    "type": "function",
+    "name": "read_file",
+    "description": "Read a file and return its contents.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "path": {"type": "string", "description": "File path"},
+        },
+        "required": ["path"],
+        "additionalProperties": False,
+    },
+}
+
+# ---- THE OUTER LOOP: the orchestrator --------------------------------------
+outer_items = [{
+    "role": "user",
+    "content": (
+        "Use the task tool to ask a sub-agent to read README.md and "
+        "summarize it in two sentences."
+    ),
+}]
+
+while True:
+    outer_resp = client.responses.create(
+        model=MODEL,
+        instructions=(
+            "You are an orchestrator. Delegate work with the task tool, "
+            "then report back what the sub-agent found."
+        ),
+        input=outer_items,
+        tools=[TASK_TOOL_SCHEMA],
+    )
+    outer_items += list(outer_resp.output)
+    outer_calls = [it for it in outer_resp.output if it.type == "function_call"]
+    if not outer_calls:
+        break                          # orchestrator is done
+
+    for outer_call in outer_calls:
+        args = json.loads(outer_call.arguments)
+        print(f"[outer] spawning a sub-agent for: {args['prompt'][:60]}...")
+
+        # ==== THE INNER LOOP: the sub-agent — the SAME loop, pasted again ====
+        inner_items = [{"role": "user", "content": args["prompt"]}]
+        inner_answer = ""
+        while True:
+            inner_resp = client.responses.create(
+                model=MODEL,
+                instructions=(
+                    "You are a careful assistant. Use read_file if needed, "
+                    "then answer concisely."
+                ),
+                input=inner_items,
+                tools=[READ_FILE_SCHEMA],
+            )
+            inner_items += list(inner_resp.output)
+            inner_calls = [it for it in inner_resp.output
+                           if it.type == "function_call"]
+            if not inner_calls:
+                inner_answer = inner_resp.output_text   # sub-agent is done
+                break
+            for inner_call in inner_calls:
+                inner_args = json.loads(inner_call.arguments)
+                print(f"  [inner] model called {inner_call.name!r}")
+                try:
+                    with open(inner_args["path"]) as f:
+                        tool_result = f.read()
+                except OSError as exc:
+                    tool_result = f"[error] {exc}"
+                inner_items.append({
+                    "type": "function_call_output",
+                    "call_id": inner_call.call_id,
+                    "output": tool_result,
+                })
+        # ==== inner loop finished ============================================
+
+        print("[outer] sub-agent finished.")
+        # The sub-agent's final text is the task tool's output — a plain string.
+        outer_items.append({
+            "type": "function_call_output",
+            "call_id": outer_call.call_id,
+            "output": inner_answer,
+        })
+
+print("\nFinal answer:", outer_resp.output_text)
+```
+
+Notice what the two loops do and don't share. They share the *client* and the *model id*
+— nothing else. `inner_items` is a **fresh list**: the sub-agent never sees the
+orchestrator's conversation, and the orchestrator never sees the sub-agent's. The only
+thing that crosses the boundary is `inner_answer`, a plain string, handed back under the
+outer call's `call_id` exactly like any other tool result.
+
+#### ▶ Run it now
+
+```
+python v1_subagent_inline.py
+```
+
+You should see `[outer] spawning a sub-agent...`, then one or more
+`  [inner] model called 'read_file'` lines (the sub-agent doing its own tool calls in its
+own conversation), then `[outer] sub-agent finished.`, and finally the orchestrator's
+synthesised answer. Two complete agent loops ran — one inside the other's dispatch branch.
+
+The pasted copy works, but it should also bother you: if you wanted the orchestrator to
+have *two* tools, or sub-agents that can spawn sub-sub-agents, you'd be pasting loops
+inside loops inside loops. That itch is exactly what Version 2 scratches.
+
+---
+
+## What changed from V1 → V2
+
+- The **inner pasted loop becomes a plain function**, `run_subagent(task_description) -> str`,
+  and the `task` dispatch branch shrinks to a single call.
+- Then comes the punchline: the outer loop is the *same code too*, so both collapse into
+  **one function, `run_agent(instructions, task, tools_dict)`** — called once at top level
+  for the orchestrator and once, from inside the `task` tool, for the worker.
+- Tools move from hardcoded `if` branches into a **`tools_dict`** of
+  `{name: {"fn": ..., "schema": ...}}`, with tiny `dispatch` / `tools_for_api` helpers, so
+  the loop body no longer names any tool.
+- Nothing else changes: same model, same Responses-API handshake, same `call_id`
+  discipline, same isolated transcripts. Run both versions on the same prompt and you get
+  the same behavior.
+
+---
+
+## Version 2 — Functions: the Duplication Collapses
+
+> **Why now?** Version 1 proved the idea by brute force — two copies of the loop. Version
+> 2 keeps the behavior and deletes the duplication, in two small moves.
+
+### Step 2.1 — Extract the inner loop into `run_subagent`
+
+Take the pasted inner loop from Step 1.2, wrap it in a `def`, and return the final text.
+The `task` branch in the outer loop becomes one line:
+
+```python
+def run_subagent(task_description):
+    """The inner loop from Version 1, wrapped in a function. Returns final text."""
+    inner_items = [{"role": "user", "content": task_description}]
+    while True:
+        inner_resp = client.responses.create(
+            model=MODEL,
+            instructions=("You are a careful assistant. Use read_file if "
+                          "needed, then answer concisely."),
+            input=inner_items,
+            tools=[READ_FILE_SCHEMA],
+        )
+        inner_items += list(inner_resp.output)
+        inner_calls = [it for it in inner_resp.output
+                       if it.type == "function_call"]
+        if not inner_calls:
+            return inner_resp.output_text
+        for inner_call in inner_calls:
+            inner_args = json.loads(inner_call.arguments)
+            try:
+                with open(inner_args["path"]) as f:
+                    tool_result = f.read()
+            except OSError as exc:
+                tool_result = f"[error] {exc}"
+            inner_items.append({
+                "type": "function_call_output",
+                "call_id": inner_call.call_id,
+                "output": tool_result,
+            })
+```
+
+…and in the outer loop, the whole `==== THE INNER LOOP ====` block becomes:
+
+```python
+        outer_items.append({
+            "type": "function_call_output",
+            "call_id": outer_call.call_id,
+            "output": run_subagent(args["prompt"]),
+        })
+```
+
+#### ▶ Run it now
+
+Replace the inner-loop block in `v1_subagent_inline.py` with the function above (put the
+`def` near the top of the file) and run it again. Same output as Step 1.2 — the program
+didn't change, only its shape did.
+
+### Step 2.2 — One loop function for both: `run_agent`
+
+Look at `run_subagent` and the outer loop again. They differ only in their
+*configuration*: which instructions, which tools, which starting prompt. So generalize
+once — `run_agent(instructions, task, tools_dict)` — and call it twice.
+
+Here is the complete Version 2 file — everything above expressed as runnable code. It uses only the concepts from Phases 1–2: a loop, a conversation list, `client.responses.create`, and plain functions as tools.
+
+```python
+# v2_subagent.py  — minimal sub-agent demo, plain functions, no classes
 import json
 from openai import OpenAI
 
@@ -240,7 +575,7 @@ SUB_AGENT_INSTRUCTIONS = (
 def task(role, prompt):
     """Spawn a sub-agent and return its answer as a plain string."""
     # For now, every role gets the same instructions and tools.
-    # Step 2 will turn this into a proper role/preset lookup.
+    # Version 3 (presets) will turn this into a proper role/preset lookup.
     print(f"  [task] spawning sub-agent for role={role!r} ...")
     result = run_agent(SUB_AGENT_INSTRUCTIONS, prompt, ALL_TOOLS)
     print(f"  [task] sub-agent finished.")
@@ -281,10 +616,10 @@ if __name__ == "__main__":
     print("\nFinal answer:", answer)
 ```
 
-### ▶ Run it now
+#### ▶ Run it now
 
 ```
-python step0_subagent.py
+python v2_subagent.py
 ```
 
 You should see one `[task] spawning sub-agent...` line appear while the orchestrator is running, then `[task] sub-agent finished.`, and finally the orchestrator's synthesised answer. The sub-agent ran a completely separate conversation with its own tool calls, returned plain text, and that text became the tool output the orchestrator reasoned about.
@@ -293,9 +628,95 @@ You should see one `[task] spawning sub-agent...` line appear while the orchestr
 
 ---
 
-## Step 1 — Refactoring the Loop into a Reusable `Agent` Class
+## What changed from V2 → V3
 
-> **Why now?** In Step 0 we passed `instructions`, `task`, and `tools_dict` as separate arguments everywhere. When you want to run many sub-agents — or reuse the same agent for different tasks — it is cleaner to bundle the loop with its conversation into an object. This step does exactly that refactor. No new capability is added; the behavior is identical.
+- `run_agent`'s parameters (`instructions`, the tool set, plus model and client) become
+  **constructor arguments of an `Agent` class**; the local `conversation` list becomes
+  `self._conversation`. `agent.run(task)` is `run_agent(...)` with the configuration
+  pre-bundled.
+- The hand-rolled `tools_dict` is replaced by **Phase 2's `ToolRegistry`**, so schemas,
+  dispatch, and error-catching come for free.
+- The role-string check inside `task` grows into a **preset table** — an `AgentPreset`
+  dataclass mapping each role name to its instructions and *allowed tool names*.
+- The plain `task(role, prompt)` function becomes **`dispatch_subagent` + `make_task_tool`**,
+  a factory that bakes the parent's registry, client, and depth into the tool.
+- One genuinely new safety feature appears: a **`depth` counter** carried from parent to
+  child, so sub-agents spawning sub-agents can't recurse forever.
+- Behavior is unchanged: a sub-agent is still your loop called again — now spelled
+  `Agent(...).run(prompt)` inside a tool.
+
+---
+
+## Version 3 — Classes: the Same Harness, Organized
+
+> **Framing.** Nothing in this version is a new idea — it is Version 2 with its state
+> grouped into objects, in the shape the real package uses
+> (`code/agent_harness/subagents.py`). Three steps: bundle the loop into an `Agent`
+> class, turn roles into presets, and expose spawning as a registered `task` tool. The
+> complete file for this version appears in [§7 — Full Code](#7-full-code--subagentspy);
+> each step below is a replace-this-block increment toward it.
+
+### Step 3.0 — A two-minute bridge: teach Phase 2's registry three new names
+
+> **Why now?** The `Agent` class in the next step calls `registry.schemas()` and
+> `registry.dispatch_parallel(...)`, and the preset code in Step 3.2 calls
+> `registry.get(...)`. Phase 2's `ToolRegistry` already has all three
+> *capabilities*, just under different spellings: the schema list is
+> `to_openai_schema()`, the parallel runner is the free function
+> `dispatch_parallel(registry, calls)` in `tools/parallel.py`, and lookup is a
+> plain dict access. Rather than rewrite anything, paste these three one-line
+> bridge methods **inside** the `ToolRegistry` class in your `tools/registry.py`:
+
+```python
+# tools/registry.py — add these three methods INSIDE the Phase 2 ToolRegistry class
+
+    def get(self, name):
+        """Look up a tool by name; returns None if not registered."""
+        return self._tools.get(name)
+
+    def schemas(self):
+        """The tools= list for the API — an alias for to_openai_schema()."""
+        return self.to_openai_schema()
+
+    def dispatch_parallel(self, function_calls):
+        """Run a batch of function_call items concurrently (tools/parallel.py)."""
+        from .parallel import dispatch_parallel
+        return dispatch_parallel(self, function_calls)
+```
+
+Each method is a single line of delegation — nothing about the registry's behavior
+changes; it just answers to the names the rest of this phase (and the consolidated
+package) uses.
+
+#### ▶ Check it now (no API key needed)
+
+In a Python REPL with your Phase 2 `tools/` package on the path:
+
+```python
+from tools import tool, ToolRegistry
+
+@tool
+def add(a: float, b: float) -> str:
+    """Add two numbers.
+
+    Args:
+        a: First number.
+        b: Second number.
+    """
+    return str(a + b)
+
+registry = ToolRegistry()
+registry.register(add)
+print(registry.get("add").run(a=2, b=3))   # 5
+print(len(registry.schemas()))             # 1
+```
+
+If both lines print, the bridge is in place and every listing in this phase runs
+against the registry you already built.
+
+### Step 3.1 — Refactoring the Loop into a Reusable `Agent` Class
+
+> **Why now?** In Version 2 we passed `instructions`, `task`, and `tools_dict` as separate arguments everywhere. When you want to run many sub-agents — or reuse the same agent for different tasks — it is cleaner to bundle the loop with its conversation into an object. This step does exactly that refactor. No new capability is added; the behavior is identical.
 
 Until now the agent loop lived in a standalone function or script. To support sub-agents we need agents to be *values* — objects you can instantiate, configure, and pass around. The refactor is small but important.
 
@@ -467,23 +888,49 @@ Key design decisions:
 - **`depth` is carried from parent to child.** When the orchestrator spawns a sub-agent it passes `depth=self.depth + 1`, allowing the guard to trigger before a recursion goes too deep.
 - **`registry.dispatch_parallel` is the Phase 2 machinery.** Phase 2 already handles running multiple tool calls concurrently; nothing new is needed here.
 
-### ▶ Run it now
+#### ▶ Run it now
 
-After putting the `Agent` class in `agent.py`, rewrite Step 0's orchestrator using it:
+After putting the `Agent` class in `agent.py`, rewrite Version 2's orchestrator using
+it. This is a **complete** file — it needs only `agent.py` (from this step) and your
+Phase 2 `tools/` package with the Step 3.0 bridge methods pasted in. Note how Phase 2's
+`@tool` decorator does double duty here: it turns `read_file` into a tool, and it turns
+`task` — the function that *spawns a sub-agent* — into a tool exactly the same way.
 
 ```python
-# step1_agent_class.py  — same behavior as step0, using the Agent class
+# v3_agent_class.py — same behavior as v2_subagent.py, using the Agent class.
+# Needs: agent.py (Step 3.1) + the Phase 2 tools/ package (with Step 3.0's bridge).
 from agent import Agent
-from tools.registry import ToolRegistry
+from tools import tool, ToolRegistry
 
-# Register the same read_file tool via ToolRegistry (Phase 2 style)
-# ... (setup identical to your Phase 2 harness) ...
+
+# ── The sub-agent's tool: @tool builds the schema from hints + docstring ──
+@tool
+def read_file(path: str) -> str:
+    """Read a file and return its contents.
+
+    Args:
+        path: Path of the file to read.
+    """
+    try:
+        with open(path) as f:
+            return f.read()
+    except OSError as exc:
+        return f"[error] {exc}"
+
 
 sub_registry = ToolRegistry()
-sub_registry.register(read_file)   # @tool-decorated function from Phase 2
+sub_registry.register(read_file)
 
-def task_fn(role: str, prompt: str) -> str:
-    """Spawn a fresh sub-agent and return its answer."""
+
+# ── The orchestrator's tool: spawning a sub-agent is just Agent().run() ──
+@tool
+def task(role: str, prompt: str) -> str:
+    """Spawn a sub-agent to complete an independent task.
+
+    Args:
+        role: Sub-agent role label (e.g. 'reviewer').
+        prompt: Full task prompt for the sub-agent.
+    """
     print(f"  [task] spawning {role!r} ...")
     worker = Agent(
         name=role,
@@ -492,9 +939,9 @@ def task_fn(role: str, prompt: str) -> str:
     )
     return worker.run(prompt)
 
-# Register task_fn as a tool in the orchestrator's registry
+
 orchestrator_registry = ToolRegistry()
-# ... register task_fn as a tool ...
+orchestrator_registry.register(task)
 
 orchestrator = Agent(
     name="orchestrator",
@@ -504,13 +951,19 @@ orchestrator = Agent(
 print(orchestrator.run("Check README.md for clarity issues."))
 ```
 
-The behavior is identical to Step 0. The `Agent` class is just `run_agent` with its conversation stored as `self._conversation` and its configuration as constructor arguments.
+```
+python v3_agent_class.py
+```
 
----
+You should see the same `[task] spawning 'reviewer' ...` line as Version 2, then the
+orchestrator's synthesised answer. The behavior is identical to Version 2. The `Agent`
+class is just `run_agent` with its conversation stored as `self._conversation` and its
+configuration as constructor arguments — and the `task` tool is the same one-call-spawns-
+a-loop trick, now spelled `Agent(...).run(prompt)`.
 
-## Step 2 — Agent Presets: Named Roles with Fixed Instructions and Tools
+### Step 3.2 — Agent Presets: Named Roles with Fixed Instructions and Tools
 
-> **Why now?** In Step 1 you hardcoded the sub-agent's instructions and tool set inside `task_fn`. Once you have more than one role (researcher, coder, reviewer …) you want a lookup table so the orchestrator can ask for a role by name and get the right configuration automatically. That table is all a "preset" is.
+> **Why now?** In Step 3.1 you hardcoded the sub-agent's instructions and tool set inside `task_fn`. Once you have more than one role (researcher, coder, reviewer …) you want a lookup table so the orchestrator can ask for a role by name and get the right configuration automatically. That table is all a "preset" is.
 
 Define a small registry of named roles, each with a system prompt and a list of allowed tool names.
 
@@ -611,19 +1064,20 @@ def task_fn(role: str, prompt: str) -> str:
     return worker.run(prompt)
 ```
 
-### ▶ Run it now
+#### ▶ Run it now
 
 ```python
-# Quick test: ask a reviewer sub-agent to check a file
+# Quick test: ask a reviewer sub-agent to check a file.
+# `full_registry` is a ToolRegistry holding every tool workers may draw from —
+# build it exactly like sub_registry in Step 3.1's v3_agent_class.py (register
+# read_file there for now; Step 3.3's complete file adds list_directory).
 result = task_fn("reviewer", "Check auth.py for security issues.")
 print(result)
 ```
 
 The reviewer agent receives only `read_file` and `list_directory` — it literally cannot call `write_file` even if you wanted it to. That restricted view comes directly from `preset.allowed_tools`.
 
----
-
-## Step 3 — Sub-Agents as a Tool: Wiring It to the Orchestrator
+### Step 3.3 — Sub-Agents as a Tool: Wiring It to the Orchestrator
 
 > **Why now?** So far `task_fn` is a plain Python function. To let the orchestrator *model* decide when to delegate, you need to expose it as a tool the model can call — exactly the same way you exposed `read_file` in Phase 2.
 
@@ -631,7 +1085,7 @@ The elegance of this architecture is that from the orchestrator's perspective, s
 
 This means the orchestrator needs no special awareness of sub-agents in its loop. The existing Phase 2 dispatch machinery handles everything — including parallelism.
 
-### 3.1 The `dispatch_subagent` function
+#### The `dispatch_subagent` function
 
 ```python
 # subagents.py (continued)
@@ -713,7 +1167,7 @@ Three things are worth emphasising here.
 
 **Errors as strings.** The `except` block returns a descriptive string rather than re-raising. This is the same contract Phase 2 established for tools: errors are information the model can reason about, not exceptions that kill the loop.
 
-### 3.2 The `task` tool
+#### The `task` tool
 
 Now expose `dispatch_subagent` as a tool the orchestrator can call.
 
@@ -785,20 +1239,53 @@ def make_task_tool(
 
 Register this tool in the orchestrator's registry and the model gains the ability to spawn workers. The schema's `enum` for `role` tells the model exactly which values are valid, which reduces hallucination significantly.
 
-### ▶ Run it now
+#### ▶ Run it now
 
 ```python
-# step3_task_tool.py  — orchestrator with a real task tool
+# v3_task_tool.py  — orchestrator with a real task tool.
+# Needs: agent.py (Step 3.1), the Phase 2 tools/ package (with the Step 3.0
+# bridge), and subagents.py as built so far (AGENT_PRESETS from Step 3.2,
+# dispatch_subagent + make_task_tool from this step).
 from openai import OpenAI
 from agent import Agent
-from tools.registry import ToolRegistry
+from tools import tool, ToolRegistry
 from subagents import make_task_tool, AGENT_PRESETS
 
 client = OpenAI()
 
+
+# The tools sub-agents may draw from — @tool builds each schema (Phase 2).
+@tool
+def read_file(path: str) -> str:
+    """Read a file and return its contents.
+
+    Args:
+        path: Path of the file to read.
+    """
+    try:
+        with open(path) as f:
+            return f.read()
+    except OSError as exc:
+        return f"[error] {exc}"
+
+
+@tool
+def list_directory(path: str = ".") -> str:
+    """List the contents of a directory.
+
+    Args:
+        path: Directory path to list.
+    """
+    import os
+    try:
+        return "\n".join(sorted(os.listdir(path)))
+    except OSError as exc:
+        return f"[error] {exc}"
+
+
 # Full tool registry that sub-agents may draw from
 full_registry = ToolRegistry()
-full_registry.register(read_file)        # your @tool-decorated functions
+full_registry.register(read_file)
 full_registry.register(list_directory)
 
 # Orchestrator only has the task tool — it delegates everything
@@ -825,9 +1312,73 @@ The orchestrator will call `task("reviewer", ..., "Check auth.py ...")`. Your ha
 
 ---
 
-## Step 4 — Parallel Sub-Agents (Optional Speed-Up)
+## What changed from V3 → V4
 
-> **Why now?** Everything so far works serially — sub-agents run one at a time. If the orchestrator issues multiple `task` calls in a single response, Phase 2's `dispatch_parallel` already runs them concurrently via `ThreadPoolExecutor`. This step makes that visible, adds per-worker timing, and explains when it helps. **You can skip this step** and everything still works; you just wait longer.
+- Nothing about a *single* sub-agent changes — same `Agent`, same presets, same
+  `dispatch_subagent`. What changes is **how a batch of `task` calls is executed**:
+  simultaneously instead of one after another.
+- A `ThreadPoolExecutor` runs each `dispatch_subagent` call **in its own thread**;
+  `as_completed` collects results as workers finish.
+- Results are gathered into a dict keyed by `call_id`, then emitted as the usual
+  `function_call_output` items **in the original order** — the API contract is untouched;
+  the model can't even tell the workers ran in parallel.
+- A crashed worker becomes an `[error] ...` string for *its* `call_id`; siblings keep
+  running (failure isolation).
+- A cap, `MAX_CONCURRENT_SUBAGENTS`, bounds the pool so a fan-out of 50 doesn't fire 50
+  simultaneous agents.
+
+---
+
+## Version 4 — Threads: Parallel Sub-Agents (Optional Speed-Up)
+
+> **Why now?** Everything so far works serially — sub-agents run one at a time. If the orchestrator issues multiple `task` calls in a single response, Phase 2's `dispatch_parallel` already runs them concurrently via `ThreadPoolExecutor`. This version makes that visible, adds per-worker timing, and explains when it helps. **You can skip this version** and everything still works; you just wait longer.
+
+### Step 4.1 — Why threads, and what a thread even is
+
+First, why bother. A sub-agent spends almost all of its wall-clock time **waiting for the
+network** — the request is sent, and your Python process sits idle until OpenAI's servers
+respond. If three workers each take four seconds and you run them one after another,
+you wait twelve seconds while your CPU does essentially nothing. Running them *at the
+same time* means you wait only as long as the slowest one: four seconds.
+
+> ## 🟢 Beginner track: what a thread is
+>
+> A **thread** is a second line of execution inside your one Python program. Your script
+> normally runs one statement at a time, top to bottom — that's the *main thread*. When
+> you create more threads, the operating system interleaves them: while thread A is
+> blocked waiting on a network reply, thread B gets to run. For I/O-heavy work like LLM
+> calls, this overlap is nearly free speed.
+>
+> You rarely manage threads by hand. The standard library's
+> `concurrent.futures.ThreadPoolExecutor` does it for you:
+>
+> ```python
+> from concurrent.futures import ThreadPoolExecutor, as_completed
+>
+> with ThreadPoolExecutor(max_workers=3) as pool:
+>     futures = [pool.submit(some_function, arg) for arg in args]
+>     for future in as_completed(futures):
+>         print(future.result())     # results arrive as each thread finishes
+> ```
+>
+> - `pool.submit(fn, x)` says "run `fn(x)` on a spare thread" and immediately returns a
+>   **future** — a receipt you can later redeem for the result.
+> - `as_completed(futures)` yields each future *as its thread finishes* — fastest first,
+>   not submission order.
+> - `future.result()` gives you the return value (or re-raises the exception the thread
+>   hit — which is why the code below wraps it in `try/except`).
+>
+> Two rules keep threaded code safe here: **threads must not share mutable state** (each
+> sub-agent owns its own transcript, so they don't), and **every `call_id` must still get
+> exactly one string answer** — whichever thread finishes first, results are stored in a
+> dict keyed by `call_id` and appended to the transcript in the original order. Parallelism
+> changes *when* the work happens, never *what* the model sees.
+
+One more reassurance before the code: a plain `for` loop over the same `task` calls gives
+**identical results** — threads only change the wall-clock time. If threading ever
+confuses you, fall back to sequential dispatch and nothing breaks.
+
+### Step 4.2 — A parallel batch runner
 
 When the orchestrator emits **multiple `task` tool calls in a single response**, Phase 2's `dispatch_parallel` runs them concurrently via `ThreadPoolExecutor`. Each sub-agent makes its own independent OpenAI HTTP calls and maintains its own transcript, so there is zero interference between workers.
 
@@ -894,7 +1445,7 @@ def run_subagents_parallel(
     ]
 ```
 
-### 4.1 Integrating parallel dispatch into `ToolRegistry`
+### Step 4.3 — Integrating parallel dispatch into `ToolRegistry`
 
 Phase 2's `ToolRegistry.dispatch_parallel` already uses `ThreadPoolExecutor`. The only addition needed is separating `task` tool calls from regular tool calls so that `run_subagents_parallel` handles the former.
 
@@ -949,7 +1500,7 @@ def _dispatch_step(
     return outputs
 ```
 
-### 4.2 Why this is safe
+### Step 4.4 — Why this is safe
 
 Each sub-agent is an independent Python object in its own thread. There is no shared mutable state between workers because:
 
@@ -960,7 +1511,7 @@ Each sub-agent is an independent Python object in its own thread. There is no sh
 
 The pattern is identical to Phase 2's parallel tool execution. The only difference is that each "tool" is itself an LLM call — potentially spawning further tool calls internally.
 
-### 4.3 Making the parallelism visible — timestamps
+### Step 4.5 — Making the parallelism visible — timestamps
 
 Add a thin wrapper around `dispatch_subagent` for debugging:
 
@@ -1008,11 +1559,23 @@ Sample output:
 
 The wall time equals the slowest worker (researcher at 6.2 s), not their sum (16.1 s).
 
+#### ▶ Run it now
+
+Version 4's complete runnable program is the worked example in §5 below
+(`example_orchestrator.py`), driven by the full `subagents.py` listing in §7 — together
+with `agent.py` from Step 3.1 (and your Phase 2 `tools/` package carrying the Step 3.0
+bridge methods), those three files are the whole Version 4 harness. Save
+them side by side, point `REPO_PATH` at a real repository, and run:
+
+```
+python example_orchestrator.py
+```
+
 ---
 
 ## 5. A Complete Worked Example — Dynamic Fan-Out
 
-This example demonstrates the full pattern end-to-end. The orchestrator receives a repository audit task and autonomously decides to fan it out into three parallel workers.
+This example demonstrates the full pattern end-to-end — it is **Version 4 running for real**. The orchestrator receives a repository audit task and autonomously decides to fan it out into three parallel workers.
 
 ### 5.1 Setup
 
@@ -1373,6 +1936,12 @@ Parallel coder agents editing the same files will produce last-write-wins confli
 ---
 
 ## 7. Full Code — `subagents.py`
+
+This is the consolidated file the version ladder was building toward: the Version 3
+machinery (presets, `dispatch_subagent`, `make_task_tool`) and the Version 4 parallel
+runner in one place. It mirrors the shape of the tested package
+(`code/agent_harness/subagents.py` plus `tools/parallel.py`); when this listing and the
+package disagree, the package is correct.
 
 ```python
 # subagents.py
@@ -1853,3 +2422,24 @@ packages, and ships it.
 4. Focus improves quality, a small toolset limits what can go wrong, and a short brief
    keeps each sub-agent's **context small** (cheaper, clearer reasoning).
 </details>
+
+---
+
+## Exercises
+
+See [`EXERCISES.md` — Phase 7](./EXERCISES.md#phase-7--sub-agents--orchestration) for
+hands-on practice:
+
+- **7.1 (warm-up):** Add a `task` tool that spawns a sub-agent (your `run_agent` loop,
+  called again) to handle a focused search, and have the main agent call it. Version 2's
+  `v2_subagent.py` is the natural starting point.
+- **7.2 (stretch):** Fan out **two** sub-agents in parallel on independent subtasks and
+  combine their results in the main agent's answer. Measure the wall-clock saving vs
+  running them in series.
+
+---
+
+Proceed to **[Phase 8 — The production harness](./08-production-harness.md)**, where the
+ladders from every phase — this one included — are assembled into the single tested
+package: retries, observability, configuration, and a real CLI around the loop you have
+been building since Phase 1.

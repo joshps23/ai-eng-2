@@ -12,6 +12,22 @@ By the end you will have:
 - An updated `run_agent_streaming()` loop that combines the Phase 2 tool registry with the
   above two pieces
 
+As in the other phases, you will build the **same harness four times**, each version a
+complete program you can run, each one rung more organized than the last:
+
+- **Version 1 — line-by-line.** A multi-turn chat where the transcript is a plain list you
+  append to inline. No `def`, no classes — just statements and a `while` loop.
+- **Version 2 — functions.** The same chat, with the repeated moves named as plain
+  functions (`add_user`, `extend_items`, `run_turn`, `save`/`load`).
+- **Version 3 — classes.** The same chat, with the transcript owned by a `Conversation`
+  class — the shape the final package uses.
+- **Version 4 — streaming.** The same harness, with one new *mechanism*: the model's
+  answer arrives as a stream of events instead of one finished response.
+
+Nothing the harness *does* changes between versions; only how the code is organized (V1→V3)
+and how the answer is displayed (V4). If a version ever feels confusing, drop back one rung
+— the previous version is always still correct.
+
 ---
 
 > ## 🟢 Beginner track: two things to know before you start
@@ -74,7 +90,7 @@ By the end you will have:
 
 ---
 
-## 1. Two Orthogonal Concerns
+## Two Orthogonal Concerns
 
 **Transcript management** determines what you send in `input` on each call.  You have two
 options:
@@ -89,7 +105,13 @@ approach.
 
 ---
 
-## Step 0 — The Simplest Version That Works
+## Version 1 — Line-by-Line: the Transcript Is Just a List
+
+The first rung is the whole idea of this phase with **no `def` and no classes** — just
+statements, a list, and (in Step 1.2) a `while` loop. If you understand Version 1 you
+already understand the whole phase; every later version is this code, reorganized.
+
+### Step 1.1 — Two turns, fully inline
 
 Before introducing any classes or helpers, let's see the core idea in the most direct form:
 a plain Python list that grows with every turn and gets passed back to the model so it
@@ -156,9 +178,93 @@ exchange. That list *is* the memory.
 > `dict`.  Plain dicts are JSON-serializable, easy to print, and accepted by the API
 > as input on the next call.  You will use this pattern everywhere.
 
+### Step 1.2 — A chat REPL: the same two-turn script, in a `while` loop
+
+The script above hard-codes exactly two turns. A real chat keeps going until *you* decide
+to stop. The fix is purely mechanical: put the per-turn statements inside a `while True:`
+loop and read the user's message with `input()`. Still no `def`, still no classes — the
+loop body is exactly the turn you already wrote.
+
+**Why this matters:** this is the key teaching moment of the whole phase. `input_items` is
+created **once, before the loop**, and only ever appended to **inside** the loop. That is
+the entire mechanism of "memory": the list outlives each turn, so every new API call sees
+everything that came before. The model itself remembers nothing — the list does.
+
+Here is the complete Version 1 program — paste it into `chat_v1.py` and run it:
+
+```python
+# chat_v1.py — Version 1: a multi-turn chat, line by line.
+# No def, no classes. The transcript is the plain list `input_items`.
+from openai import OpenAI
+
+MODEL = "gpt-4o"
+client = OpenAI()
+
+input_items = []   # created ONCE — this list IS the conversation's memory
+
+print("Chat started. Type 'quit' to exit.")
+while True:
+    user_text = input("\nYou: ")
+    if user_text.strip().lower() in ("quit", "exit"):
+        break
+
+    # 1. Remember what the user said.
+    input_items.append({"role": "user", "content": user_text})
+
+    # 2. Send the WHOLE transcript so far.
+    resp = client.responses.create(
+        model=MODEL,
+        input=input_items,
+    )
+
+    # 3. Remember what the model said (SDK objects -> plain dicts).
+    for item in resp.output:
+        input_items.append(item.model_dump())
+
+    print("Assistant:", resp.output_text)
+
+print(f"\nGoodbye — the transcript held {len(input_items)} items.")
+```
+
+**▶ Run it now.** Tell it your name on the first turn, then ask `What is my name?` on the
+second. It answers correctly — not because the model remembers, but because the turn-1
+exchange is still sitting in `input_items` and gets re-sent on turn 2:
+
+```text
+Chat started. Type 'quit' to exit.
+
+You: My name is Alex. Remember that.
+Assistant: Got it! I'll remember your name is Alex.
+
+You: What is my name?
+Assistant: Your name is Alex.
+
+You: quit
+
+Goodbye — the transcript held 4 items.
+```
+
+As an experiment, move `input_items = []` to the top of the loop body (so the list is
+recreated every turn) and run it again — the model instantly "forgets" your name. Memory
+lives in that one line's placement.
+
 ---
 
-## Step 1 — Add Small Helper Functions
+### What changed from V1 → V2
+
+- **Nothing about behavior.** Version 2 is the exact same chat — same API calls, same
+  transcript, same output.
+- The three inline moves of the loop body — append a user message, call the API, append
+  the output — get **names**: `add_user`, `run_turn`, `extend_items`.
+- The bare `input_items` list becomes a small **dict** (`{"instructions": ..., "items":
+  [...]}`) so the system instructions travel with the transcript.
+- Because the conversation is now one plain dict, **save/load** becomes a one-line
+  `json.dump`/`json.load` — Version 2's one genuinely new capability.
+- Still **no classes** — only plain functions taking `conv` as their first argument.
+
+## Version 2 — Functions: Name the Moves
+
+### Step 2.1 — Add Small Helper Functions
 
 The four operations you just did inline — add user message, extend with model output, add a
 tool result, return the list to pass as `input=` — will repeat every turn.  Naming them
@@ -227,12 +333,12 @@ print("Turn 2:", resp2.output_text)
 print(f"Transcript has {len(conv['items'])} items.")
 ```
 
-**▶ Run it now.** Output should be the same as Step 0.  Nothing changed externally —
+**▶ Run it now.** Output should be the same as Step 1.1.  Nothing changed externally —
 only the code is cleaner.
 
 ---
 
-## Step 2 — Save and Load the Transcript
+### Step 2.2 — Save and Load the Transcript
 
 Right now, if the program restarts, the conversation is lost.  Because `conv` is just a
 dict with a list, saving it is one `json.dump()` call.
@@ -290,9 +396,104 @@ in a text editor — you will see the full transcript as plain JSON.
 
 ---
 
-## 2. Transcript Management Deep-Dive
+### Step 2.3 — Version 2, complete: `chat_v2.py`
 
-### 2.1 Own vs. Delegate — Which Should You Choose?
+You have now seen every Version 2 piece on its own. Here they are assembled into one
+complete file — the same chat REPL as `chat_v1.py`, reorganized into functions, with one
+genuinely new capability: the transcript autosaves after every turn, and if a saved
+session exists the chat **resumes** it on startup.
+
+```python
+# chat_v2.py — Version 2: the same multi-turn chat, organized into functions.
+# Still no classes. New capability: the conversation survives a restart.
+import json
+import os
+from openai import OpenAI
+
+MODEL = "gpt-4o"
+SESSION_PATH = "/tmp/chat_v2_session.json"
+client = OpenAI()
+
+
+def new_conversation(instructions=""):
+    """Create a fresh conversation dict."""
+    return {"instructions": instructions, "items": []}
+
+
+def add_user(conv, text):
+    """Append a user turn."""
+    conv["items"].append({"role": "user", "content": text})
+
+
+def extend_items(conv, output_items):
+    """Append all items from resp.output, converting SDK objects to dicts."""
+    for item in output_items:
+        if hasattr(item, "model_dump"):
+            item = item.model_dump()
+        conv["items"].append(dict(item))
+
+
+def to_input(conv):
+    """Return the items list ready to pass as input=."""
+    return list(conv["items"])
+
+
+def save(conv, path):
+    """Write the conversation to a JSON file."""
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(conv, f, indent=2, ensure_ascii=False)
+
+
+def load(path):
+    """Read a conversation back from a JSON file."""
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def run_turn(conv, user_text):
+    """One full turn: remember the user, call the API, remember the model."""
+    add_user(conv, user_text)
+    resp = client.responses.create(
+        model=MODEL,
+        instructions=conv["instructions"],
+        input=to_input(conv),
+    )
+    extend_items(conv, resp.output)
+    return resp.output_text
+
+
+# --- the REPL: identical in behavior to chat_v1.py ---
+if os.path.exists(SESSION_PATH):
+    conv = load(SESSION_PATH)
+    print(f"Resumed session with {len(conv['items'])} items.")
+else:
+    conv = new_conversation(instructions="You are a helpful assistant.")
+    print("Started a new session.")
+
+print("Type 'quit' to exit.")
+while True:
+    user_text = input("\nYou: ")
+    if user_text.strip().lower() in ("quit", "exit"):
+        break
+    print("Assistant:", run_turn(conv, user_text))
+    save(conv, SESSION_PATH)   # persist after every turn
+
+print(f"\nGoodbye — transcript saved to {SESSION_PATH}.")
+```
+
+**▶ Run it now.** Tell it your name, type `quit`, then **run the program again** and ask
+`What is my name?`. It remembers — across a full process restart — because the transcript
+was sitting in `/tmp/chat_v2_session.json` the whole time. (Delete that file to start
+fresh.) Compare the `while` loop body to `chat_v1.py`: the same three moves, now named.
+
+---
+
+## Interlude — Transcript Management Deep-Dive
+
+Before climbing to Version 3, a short detour into the design decisions behind what you
+just built. No new code to run here — this is the "why" behind owning the list.
+
+### Own vs. Delegate — Which Should You Choose?
 
 The two-turn example above used **owning the list** (`input_items` / `conv["items"]`).
 The alternative is passing `previous_response_id=resp.id` and letting the server stitch
@@ -315,7 +516,7 @@ sees.
 `previous_response_id` is worth revisiting when conversations are very long and you trust
 the server to retain history — Phase 8 covers it as an optimization.
 
-### 2.2 Serializing SDK Objects
+### Serializing SDK Objects
 
 `resp.output` is a list of typed SDK objects, not plain dicts.  If you put them straight
 back into `input` on the next call, that works for the current process.  But if you want to
@@ -331,7 +532,7 @@ full_dump = resp.model_dump()          # whole response including usage
 The `input` field of `client.responses.create()` accepts either SDK objects or plain dicts,
 so normalizing to dicts is safe.
 
-### 2.3 The `to_input()` Helper
+### The `to_input()` Helper
 
 Before sending items back you need to strip any fields that are output-only and not accepted
 in `input`.  The simplest approach: let each item carry its `type` and the fields that matter
@@ -357,7 +558,23 @@ including extra fields from `model_dump()` is harmless.
 
 ---
 
-## Step 3 — Organize Into the `Conversation` Class
+### What changed from V2 → V3
+
+- **Nothing about behavior.** Version 3 is the same chat-with-memory harness — same API
+  calls, same transcript on disk, same answers.
+- The conversation **dict** plus its seven loose functions become one **class**:
+  `Conversation` bundles the data (`_items`, `instructions`) with the functions that
+  operate on it.
+- Call sites flip from `add_user(conv, text)` to `conv.add_user(text)` — `self` inside a
+  method is exactly the `conv` argument the V2 functions took.
+- `save`/`load` become methods too; `load` is a `@classmethod` "alternate constructor"
+  (`Conversation.load(path)` builds a conversation straight from a file).
+- The class picks up two small conveniences the dict didn't have: `len(conv)` and
+  `last_assistant_text()`.
+- Underneath, it is still the **same plain list** (`self._items`) you appended to in
+  Version 1 — this is the shape the final package's `conversation.py` uses.
+
+## Version 3 — Classes: the `Conversation` Object
 
 You now have five functions (`new_conversation`, `add_user`, `extend_items`,
 `add_tool_result`, `to_input`) and two persistence functions (`save`, `load`).  They work
@@ -368,7 +585,7 @@ with the functions that operate on it, so you cannot accidentally call `add_user
 wrong list.  It also gives you a natural home for the `save`/`load` pair.  The class below
 is *exactly the same logic* — just organized.
 
-### 2.4 The `Conversation` Class
+### Step 3.1 — The `Conversation` Class
 
 > 🟢 **Reading the class.** Each `def ...(self, ...)` below is a **method** — a
 > function attached to the conversation object, where `self` is the object's own data
@@ -491,11 +708,11 @@ conv.extend(resp.output)   # append assistant message + any reasoning items
 conv.save("./sessions/session-001.json")
 ```
 
-**▶ Run it now.** Same result as Step 0.  The only difference is `conv.add_user(...)`
+**▶ Run it now.** Same result as Step 1.1.  The only difference is `conv.add_user(...)`
 instead of `add_user(conv, ...)` and `conv.extend(...)` instead of
 `extend_items(conv, ...)`.  Everything else is identical.
 
-### 2.5 Reasoning Items and `encrypted_content`
+### Step 3.2 — Reasoning Items and `encrypted_content`
 
 When you use a reasoning model (e.g. `o3`) you will see `reasoning` items in `resp.output`.
 **Always append them with `conv.extend(resp.output)`** — including reasoning items — so the
@@ -528,7 +745,7 @@ content to you.
 
 For non-reasoning models or `store=True`, ignore `encrypted_content` entirely.
 
-### 2.6 The `instructions` Field
+### Step 3.3 — The `instructions` Field
 
 `instructions` is **not** part of `input_items`.  It is a top-level parameter on
 `client.responses.create()`.  Pass it on every call:
@@ -547,11 +764,12 @@ any entry in the input list.
 
 ---
 
-## Step 4 — A Non-Streaming Agent Loop (Primary Path)
+### Step 3.4 — A Non-Streaming Agent Loop (Primary Path)
 
-Before streaming, build the complete agent loop using plain `create()`.  This is the version
-you should understand first — streaming (Step 5) only changes how text is *displayed*, not
-how the loop works.
+So far Versions 1–3 have been pure chat — no tools.  Now bring back the Phase 2 tool loop,
+with the `Conversation` class managing the transcript.  This is the version you should
+understand first — streaming (Version 4) only changes how text is *displayed*, not how the
+loop works.
 
 **Why non-streaming first?** It is simpler, has fewer moving parts, and produces identical
 results.  Once you have this running you can add streaming as a display-layer enhancement
@@ -676,15 +894,188 @@ item, and the final assistant message.
 > is all you need.  When you want to inspect individual items (e.g. to find tool calls),
 > iterate `resp.output` directly.
 
+### Step 3.5 — Version 3, complete: `agent_v3.py`
+
+The snippets above introduced the class and the loop separately.  Here is Version 3 as one
+complete file you can paste and run — the `Conversation` class plus the non-streaming agent
+loop plus a tool, nothing else:
+
+```python
+#!/usr/bin/env python3
+# agent_v3.py — Version 3, complete: the Conversation class + the tool loop.
+# Same harness as chat_v2.py, organized into a class — and tools are back.
+import json
+import pathlib
+from openai import OpenAI
+
+MODEL = "gpt-4o"
+client = OpenAI()
+
+
+# ── The Conversation class (Step 3.1, verbatim essentials) ───────────
+
+class Conversation:
+    """Owns the input_items list for a single conversation thread."""
+
+    def __init__(self, instructions: str = ""):
+        self._items: list[dict] = []
+        self.instructions = instructions
+
+    def add_user(self, text: str) -> None:
+        self._items.append({"role": "user", "content": text})
+
+    def extend(self, output_items) -> None:
+        for item in output_items:
+            d = item.model_dump() if hasattr(item, "model_dump") else dict(item)
+            self._items.append(d)
+
+    def add_tool_result(self, call_id: str, output: str) -> None:
+        self._items.append({
+            "type": "function_call_output",
+            "call_id": call_id,
+            "output": output,
+        })
+
+    def to_input(self) -> list[dict]:
+        return list(self._items)
+
+    def save(self, path) -> None:
+        path = pathlib.Path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("w", encoding="utf-8") as f:
+            json.dump(
+                {"instructions": self.instructions, "items": self._items},
+                f, indent=2, ensure_ascii=False,
+            )
+
+    @classmethod
+    def load(cls, path) -> "Conversation":
+        with pathlib.Path(path).open(encoding="utf-8") as f:
+            data = json.load(f)
+        conv = cls(instructions=data.get("instructions", ""))
+        conv._items = data["items"]
+        return conv
+
+    def __len__(self) -> int:
+        return len(self._items)
+
+
+# ── Tools (a plain dict registry, as in Phase 2) ─────────────────────
+
+REGISTRY = {
+    "add": lambda a, b: a + b,
+}
+
+TOOLS_LIST = [{
+    "type": "function",
+    "name": "add",
+    "description": "Add two numbers.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "a": {"type": "number"},
+            "b": {"type": "number"},
+        },
+        "required": ["a", "b"],
+    },
+}]
+
+
+# ── The loop (Step 3.4, verbatim) ────────────────────────────────────
+
+def run_tool_calls(function_calls, registry):
+    """Execute each tool call in order and return output items."""
+    results = []
+    for fc in function_calls:
+        fn = registry.get(fc["name"])
+        if fn is None:
+            output = f"Error: unknown tool '{fc['name']}'"
+        else:
+            try:
+                kwargs = json.loads(fc["arguments"])
+                output = str(fn(**kwargs))
+            except Exception as exc:
+                output = f"Error: {exc}"
+        results.append({
+            "type": "function_call_output",
+            "call_id": fc["call_id"],
+            "output": output,
+        })
+    return results
+
+
+def run_agent(user_message, instructions, tools_list, registry, max_turns=10):
+    """Non-streaming agent loop.  Returns the Conversation when done."""
+    conv = Conversation(instructions=instructions)
+    conv.add_user(user_message)
+
+    for turn in range(max_turns):
+        resp = client.responses.create(
+            model=MODEL,
+            instructions=conv.instructions,
+            input=conv.to_input(),
+            tools=tools_list,
+        )
+        conv.extend(resp.output)          # output items FIRST (see Pitfall 3)
+
+        if resp.output_text:
+            print(f"Assistant: {resp.output_text}")
+
+        function_calls = [
+            item.model_dump() if hasattr(item, "model_dump") else item
+            for item in resp.output
+            if (getattr(item, "type", None) or item.get("type")) == "function_call"
+        ]
+        if not function_calls:
+            break                          # model is done
+
+        for output in run_tool_calls(function_calls, registry):
+            conv.add_tool_result(output["call_id"], output["output"])
+
+    return conv
+
+
+if __name__ == "__main__":
+    conv = run_agent(
+        user_message="What is 1234 + 5678?",
+        instructions="You are a helpful math assistant. Use the add tool.",
+        tools_list=TOOLS_LIST,
+        registry=REGISTRY,
+    )
+    print(f"\nTranscript has {len(conv)} items.")
+    conv.save("/tmp/phase3-agent-v3.json")
+    print("Saved to /tmp/phase3-agent-v3.json")
+```
+
+**▶ Run it now.** Same expected output as the Step 3.4 check (the answer 6912, then a
+4-item transcript).  Open `/tmp/phase3-agent-v3.json` — you can read the entire tool
+handshake (`function_call` → `function_call_output`, matched by `call_id`) in plain JSON.
+This file is the Version 3 harness in full; Version 4 changes exactly one thing about it.
+
 ---
 
-## 3. Streaming Deep-Dive
+### What changed from V3 → V4
 
-> **This entire section is optional.** If streaming is not a priority for you right now,
-> skip to Section 6 (Pitfalls) — the non-streaming loop above is complete and correct.
-> Come back here when you specifically want characters to appear as the model types.
+- **The loop, the `Conversation` class, the tools, and the transcript are untouched.**
+  Version 4 changes *presentation*, not logic — run V3 and V4 with the same prompt and
+  the saved transcripts are equivalent.
+- `client.responses.create(...)` gains one argument, `stream=True` — and instead of one
+  finished `Response`, it now returns an **iterator of typed events**.
+- Text is printed **delta by delta** as it streams in, instead of `resp.output_text`
+  once at the end.
+- Tool calls become *visible as they form*: a `response.output_item.added` event announces
+  the call, then `response.function_call_arguments.delta` events stream its JSON arguments.
+- The final structured `Response` (the thing V3's loop already uses) arrives on the
+  **`response.completed`** event — capture it there, and everything after that line is
+  exactly the V3 loop.
+- One new helper, `stream_turn()`, replaces the bare `create()` call inside the loop.
 
-### Step 5 — Add Streaming as a Display Enhancement
+## Version 4 — Streaming: the Same Harness, Live
+
+> **This entire version is optional.** If streaming is not a priority for you right now,
+> skip ahead to [Pitfalls](#pitfalls) — the non-streaming Version 3 above is complete and
+> correct.  Come back here when you specifically want characters to appear as the model
+> types.
 
 Streaming does not change the loop logic or the transcript.  It changes only *how the
 model's text reaches the terminal*: instead of printing `resp.output_text` after the whole
@@ -693,7 +1084,63 @@ response arrives, you print each small text chunk (`delta`) as it streams in.
 **Why streaming?** Faster perceived responsiveness, and tool calls become visible as they
 form — useful for debugging.
 
-### 3.1 Why Stream?
+### Step 4.1 — What an Event Stream Is
+
+**Why do we need a new mechanism at all?** The model generates its answer one token at a
+time, but plain `create()` makes the server *buffer* the whole response and hand it to you
+only when generation finishes.  For a long answer that can mean staring at a frozen prompt
+for many seconds.  With `stream=True`, the server instead sends you a sequence of small
+**events** over the same HTTP connection, *as generation happens*:
+
+- Most events are tiny **deltas** — "here are the next few characters of text"
+  (`response.output_text.delta`) or "here are the next few characters of a tool call's
+  JSON arguments" (`response.function_call_arguments.delta`).  Deltas exist because the
+  model produces output incrementally; the stream simply forwards each increment instead
+  of hoarding them.
+- A few events are **markers** — "a new output item just started"
+  (`response.output_item.added`), "this item is finished" (`response.output_item.done`),
+  and finally "the whole response is finished" (`response.completed`), which carries the
+  same fully-assembled `Response` object a non-streamed call would have returned.
+
+So a stream is not a different *kind* of answer — it is the same answer, delivered as a
+play-by-play.  Your code's new job is small: loop over the events, print the text deltas
+as they arrive, and keep the final object from `response.completed`.
+
+Here is the smallest possible streaming program — no tools, no loop, no class:
+
+```python
+# stream_hello.py — the smallest possible streaming program.
+from openai import OpenAI
+
+MODEL = "gpt-4o"
+client = OpenAI()
+
+final = None
+with client.responses.create(
+    model=MODEL,
+    input=[{"role": "user", "content": "Count from 1 to 10, one number per line."}],
+    stream=True,                       # <- the only new ingredient
+) as stream:
+    for event in stream:
+        if event.type == "response.output_text.delta":
+            print(event.delta, end="", flush=True)   # print each chunk as it lands
+        elif event.type == "response.completed":
+            final = event.response                    # the assembled Response
+
+print("\n\n--- after the stream ---")
+print("final.output_text:", final.output_text[:40], "...")
+```
+
+**▶ Run it now.** Watch the numbers appear *as they are generated*, not all at once.  Then
+note the last line: `final` is a normal `Response` object — `.output`, `.output_text`,
+`.usage` all present — recovered from the `response.completed` event.  That object is what
+the V3 loop already consumes, which is why streaming bolts on without touching the loop.
+
+> 🟢 **`flush=True` matters.** `print(..., end="")` without a newline normally sits in
+> Python's output buffer; `flush=True` forces each delta onto the screen immediately.
+> Forget it and your "stream" appears in jerky chunks or all at the end.
+
+### Step 4.2 — Why Stream?
 
 | Without streaming | With streaming |
 |---|---|
@@ -702,7 +1149,7 @@ form — useful for debugging.
 | Cannot cancel mid-generation | `KeyboardInterrupt` breaks cleanly |
 | No incremental logging | Can log each delta to a trace file |
 
-### 3.2 Event Reference
+### Step 4.3 — Event Reference
 
 The stream emits these event types (in rough order of appearance):
 
@@ -728,7 +1175,8 @@ no separate "get the final response" call, so you assemble it yourself from this
 
 #### Reasoning and the reason → act → observe chain
 
-With a reasoning model (the guide standardizes on `gpt-5`), each turn can begin with a
+With a reasoning model (e.g. `gpt-5` or `o3` — note the runnable examples in this phase
+use `gpt-4o`, which is *not* one), each turn can begin with a
 `reasoning` output item — the model's private chain-of-thought — *before* it emits any text
 or tool calls.  Two things are needed to make that chain visible and to keep it working
 across turns:
@@ -746,10 +1194,11 @@ across turns:
    reasoning items from the transcript** — doing so breaks the chain (and, for some models,
    the API rejects a `function_call` whose preceding `reasoning` item is missing).
 
-### 3.3 `stream_turn()` — Full Implementation
+### Step 4.4 — `stream_turn()`: Full Implementation
 
 ```python
 import sys
+from typing import Any
 from openai import OpenAI
 
 MODEL = "gpt-4o"
@@ -786,9 +1235,10 @@ def stream_turn(
         instructions=instructions,
         input=conversation.to_input(),
         tools=tools,
-        reasoning={"summary": "auto"},  # surface the chain-of-thought (reasoning
-                                        # models only); streams via the
-                                        # response.reasoning_summary_text.* events
+        # reasoning={"summary": "auto"},  # uncomment when MODEL is a reasoning
+        #   model (e.g. gpt-5/o3) to stream a chain-of-thought summary via the
+        #   response.reasoning_summary_text.* events. On gpt-4o this parameter
+        #   is rejected with a 400 error, so it stays off here.
         stream=True,
     ) as stream:
         try:
@@ -878,7 +1328,7 @@ final_resp = stream_turn(conv, tools=[], instructions=conv.instructions)
 print("\nFull response object output_text:", final_resp.output_text)
 ```
 
-### 3.4 A Simpler Renderer (No ANSI)
+### Step 4.5 — A Simpler Renderer (No ANSI)
 
 If you want zero escape codes:
 
@@ -892,7 +1342,7 @@ def stream_turn_plain(conversation, tools, instructions):
         instructions=instructions,
         input=conversation.to_input(),
         tools=tools,
-        reasoning={"summary": "auto"},
+        # reasoning={"summary": "auto"},  # reasoning models only (400 on gpt-4o)
         stream=True,
     ) as stream:
         for event in stream:
@@ -917,10 +1367,12 @@ def stream_turn_plain(conversation, tools, instructions):
 
 ---
 
-## 4. The Integrated `run_agent_streaming` Loop
+### Step 4.6 — The Integrated `run_agent_streaming` Loop
 
 This function wires together the `Conversation` class, `stream_turn()`, and the Phase 2
-parallel tool dispatcher.
+parallel tool dispatcher.  Compare it line by line with Version 3's `run_agent`: the only
+structural difference is that `stream_turn(...)` replaces the bare
+`client.responses.create(...)` call.
 
 > 🟢 **The `register(schema)` here is a "decorator that takes an argument," which is
 > why there's a function inside a function.** You can ignore that machinery. It does
@@ -1050,7 +1502,12 @@ the sequence.
 
 ---
 
-## 5. Complete Runnable Example
+### Step 4.7 — Version 4, complete: the Full Streaming Harness
+
+Everything from this phase in one pasteable file: the `Conversation` class (Version 3),
+the Phase 2 registry, `stream_turn()`, and the integrated loop.  This is the phase's
+final form — and structurally it is still `chat_v1.py`: a list that grows, re-sent every
+call.
 
 ```python
 #!/usr/bin/env python3
@@ -1201,7 +1658,8 @@ def stream_turn(conversation: Conversation, tools: list[dict], instructions: str
         instructions=instructions,
         input=conversation.to_input(),
         tools=tools,
-        reasoning={"summary": "auto"},  # stream the chain-of-thought too
+        # reasoning={"summary": "auto"},  # uncomment on a reasoning model
+        #   (e.g. gpt-5/o3) to stream a thought summary; 400 error on gpt-4o
         stream=True,
     ) as stream:
         try:
@@ -1320,7 +1778,10 @@ if __name__ == "__main__":
 ### Expected terminal output (conceptual)
 
 The deltas stream in character-by-character; the tool-call lines appear as the model
-generates arguments.  The session is saved to disk after each turn.
+generates arguments.  The session is saved to disk after each turn.  (The `🤔 thinking:`
+lines below appear only if you run a reasoning model with the
+`reasoning={"summary": "auto"}` line uncommented; with plain `gpt-4o` you will see the
+tool calls and the final text, but no thinking lines.)
 
 ```text
 User: Please do two things: first, add 1234 and 5678; second, count the words in the
@@ -1361,7 +1822,7 @@ which is appended as item 7.  The loop then terminates because `function_calls` 
 
 ---
 
-## 6. Pitfalls
+## Pitfalls
 
 > **Pitfall 1 — Losing the final structured response**
 >
@@ -1436,6 +1897,10 @@ which is appended as item 7.  The loop then terminates because `function_calls` 
   `create()` + `output_text` is simpler and behaves identically to the model.
 - Because you own the transcript, you can **save and reload** a conversation — that's
   what makes resuming a session possible.
+
+**Practice:** see [`EXERCISES.md` — Phase 3](./EXERCISES.md#phase-3--conversation--streaming)
+for hands-on exercises (session persistence, replay, and streaming renderers) before
+moving on.
 
 ## Check yourself
 

@@ -2,9 +2,27 @@
 
 An agent that can write files and run arbitrary shell commands is, in a very real sense, a remote-code-execution endpoint you are handing to a language model. Phase 4 gave you real tools — `bash`, `write_file`, `edit_file`. This phase installs the layer that stands between the model wanting to act and the action actually happening. Without it, a single confused completion can wipe a directory, exfiltrate secrets, or be hijacked by data the model read from an untrusted source.
 
+## The plan: four versions of the same harness
+
+Like every phase in this guide, Phase 5 climbs a ladder. Each rung is a **complete,
+runnable program** — the *same* harness every time, with its safety layer reorganized
+one abstraction at a time:
+
+| Version | The permission layer looks like… | New Python machinery |
+|---|---|---|
+| **V1 — line-by-line** | one inline `if` right before the tool runs | none — just statements |
+| **V2 — functions** | a `check_permission()` function + a `mode` variable | plain `def` |
+| **V3 — policy objects** | `Mode`, `Decision`, `PolicyRule`, `PermissionPolicy` | `Enum`, `@dataclass` |
+| **V4 — hooks** | before/after callbacks that fire around every tool | callbacks + a registry class |
+
+Nothing conceptually new appears after Version 1. V2, V3, and V4 are the same
+"decide before you act" idea, reorganized so it scales. Between versions you'll find a
+short **"What changed"** list, so each rung reads as a reorganization — not a brand-new
+program. But first, name what we're defending against.
+
 ---
 
-## 1. Threat Model
+## Threat Model
 
 Before writing a single line of policy code, name what you are defending against.
 
@@ -21,9 +39,170 @@ The design principle that makes all of these manageable is: **the model proposes
 
 ---
 
-## Step 0 — A minimal permission gate (plain functions + dicts)
+## Version 1 — line-by-line: one inline `if` before the tool runs
 
-The big idea of this entire phase is just: **before running a tool, ask a function "is this allowed?" and only run it if the answer is yes.** You can build a useful safety layer with nothing more than a dict, a list, and `if`/`else`.
+The big idea of this entire phase fits in one sentence: **before running a tool, decide
+"is this allowed?" — and if the answer is no, the tool result becomes an error string
+instead of the tool actually running.**
+
+Version 1 expresses that idea with zero abstractions. No `def`, no classes — a
+straight-line script you read top to bottom. It is the loop you built in Phases 1–4
+with two tools wired in (`read_file` and `bash`) and a permission check that is
+literally an `if` statement sitting between "the model asked" and "the OS acted."
+
+Three things to notice as you read it:
+
+1. `read_file` is read-only, so it runs without asking.
+2. `bash` is dangerous, so it pauses and asks you `Allow it? [y/n]` — and two obviously
+   destructive patterns (`rm -rf`, `sudo`) are refused without even asking.
+3. **A denial is not a crash.** Whether you allow or deny, the same `call_id` gets a
+   `function_call_output`. A denial just makes that output an error string the model
+   can read and react to.
+
+```python
+# agent_v1.py — Phase 5, Version 1: the permission check is one inline `if`.
+# No functions, no classes — just statements, a loop, and input().
+
+import json
+import subprocess
+from openai import OpenAI
+
+client = OpenAI()   # reads OPENAI_API_KEY from the environment
+
+TOOLS = [
+    {
+        "type": "function",
+        "name": "read_file",
+        "description": "Read a text file and return its contents.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string", "description": "Path to the file to read."},
+            },
+            "required": ["path"],
+        },
+    },
+    {
+        "type": "function",
+        "name": "bash",
+        "description": "Run a shell command and return its combined stdout/stderr.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "command": {"type": "string", "description": "Shell command to run."},
+            },
+            "required": ["command"],
+        },
+    },
+]
+
+input_items = [
+    {"role": "user", "content": "List the files in the current directory, then read hello.txt."}
+]
+
+while True:
+    resp = client.responses.create(model="gpt-4o", input=input_items, tools=TOOLS)
+
+    # Append every output item to the transcript (the agent's memory).
+    for item in resp.output:
+        input_items.append(item.model_dump())
+
+    tool_calls = [item for item in resp.output if item.type == "function_call"]
+
+    if not tool_calls:
+        # No tool calls -> the model produced its final answer.
+        for item in resp.output:
+            if item.type == "message":
+                for block in item.content:
+                    if block.type == "output_text":
+                        print("ANSWER:", block.text)
+        break
+
+    for tc in tool_calls:
+        args = json.loads(tc.arguments)
+
+        if tc.name == "read_file":
+            # Safe, read-only: runs without asking anyone.
+            try:
+                with open(args["path"], "r", encoding="utf-8", errors="replace") as f:
+                    result = f.read()
+            except OSError as exc:
+                result = f"Error: cannot read file: {exc}"
+
+        elif tc.name == "bash":
+            command = args["command"]
+            # ── THE ENTIRE SAFETY LAYER OF VERSION 1 ─────────────────────────
+            if "rm -rf" in command or "sudo " in command:
+                # Hard deny: never run, never even ask.
+                result = "Error: permission denied by the harness (blocked command)."
+            else:
+                print(f"\nThe model wants to run: {command}")
+                answer = input("Allow it? [y/n] ").strip().lower()
+                if answer == "y":
+                    try:
+                        proc = subprocess.run(
+                            command, shell=True, capture_output=True,
+                            text=True, timeout=30,
+                        )
+                        result = (proc.stdout + proc.stderr) or "(no output)"
+                    except subprocess.TimeoutExpired:
+                        result = "Error: command timed out after 30s."
+                else:
+                    result = "Error: permission denied by the user."
+            # ─────────────────────────────────────────────────────────────────
+
+        else:
+            result = f"Error: unknown tool '{tc.name}'"
+
+        # Denied or not, the call_id ALWAYS gets an answer.
+        input_items.append({
+            "type": "function_call_output",
+            "call_id": tc.call_id,
+            "output": result,
+        })
+```
+
+### ▶ Run it now
+
+```
+export OPENAI_API_KEY=sk-...
+echo "Hello from Phase 5" > hello.txt
+python agent_v1.py
+```
+
+You should see the model call `bash` (probably `ls`), the harness pause with
+`Allow it? [y/n]`, and — after you type `y` — the model go on to read `hello.txt`
+silently (it's a safe tool) and produce a final answer. Run it again and type `n`
+at the prompt: nothing crashes. The model receives the denial string as its tool
+result and either explains itself or tries another approach. That graceful
+degradation is the core contract of this entire phase.
+
+This eleven-line `if`/`else` block *is* the permission system. Everything that
+follows — modes, policies, hooks — is this block growing up.
+
+### What changed from Version 1 → Version 2
+
+- The inline `if "rm -rf" in command` check moves into a named function,
+  `check_permission(tool_name, arg)`, that returns `"allow"`, `"deny"`, or `"ask"` —
+  you can now test the *decision* in isolation, without an API call or a real shell.
+- The knowledge of "which tools are risky" moves out of the dispatch branches into one
+  `TOOL_RISK` dict, so adding a tool means adding a dict entry, not another `elif`.
+- The `input()` prompt moves into its own `ask_user()` function, keeping the decision
+  logic pure (no I/O mixed into it).
+- The tool bodies and the loop become functions too (`read_file`, `bash`, `dispatch`,
+  `run_agent`) — the same statements, now with names.
+- Behavior is identical: safe tools pass, blocked patterns are denied, everything else asks.
+
+---
+
+## Version 2 — functions: a `check_permission` you can call and test
+
+The same harness, reorganized. The idea is still: **before running a tool, ask
+"is this allowed?" and only run it if the answer is yes** — but now the asking is a
+function, so you can build a useful safety layer with nothing more than a dict, a
+list, and `if`/`else`.
+
+### Step 2.1 — The gate as a function
 
 Here is the simplest version that actually works:
 
@@ -70,9 +249,161 @@ else:
 
 That is the entire safety mechanism. A safe tool (`read_file`, `grep`) passes straight through. A dangerous command like `bash("rm -rf .")` is blocked before the shell ever sees it. Anything in between stops to ask you.
 
+Here is Version 2 in full — one paste-able file. It is `agent_v1.py` with names: the
+tool bodies became functions, the dispatch `elif` chain became `dispatch()`, the loop
+became `run_agent()`, and the safety layer is the three pieces you just read. A
+`write_file` tool is added so the `"caution"` risk level has something to gate.
+
+```python
+# agent_v2.py — Phase 5, Version 2: the same harness, reorganized into functions.
+
+import json
+import subprocess
+from openai import OpenAI
+
+client = OpenAI()   # reads OPENAI_API_KEY from the environment
+
+# ── Tools: plain functions (as in Phase 4) ────────────────────────────────────
+
+def read_file(path: str) -> str:
+    try:
+        with open(path, "r", encoding="utf-8", errors="replace") as f:
+            return f.read()
+    except OSError as exc:
+        return f"Error: cannot read file: {exc}"
+
+def write_file(path: str, content: str) -> str:
+    try:
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(content)
+        return f"Wrote {len(content)} characters to {path}."
+    except OSError as exc:
+        return f"Error: cannot write file: {exc}"
+
+def bash(command: str) -> str:
+    try:
+        proc = subprocess.run(
+            command, shell=True, capture_output=True, text=True, timeout=30,
+        )
+        return (proc.stdout + proc.stderr) or "(no output)"
+    except subprocess.TimeoutExpired:
+        return "Error: command timed out after 30s."
+
+TOOLS = [
+    {
+        "type": "function",
+        "name": "read_file",
+        "description": "Read a text file and return its contents.",
+        "parameters": {
+            "type": "object",
+            "properties": {"path": {"type": "string"}},
+            "required": ["path"],
+        },
+    },
+    {
+        "type": "function",
+        "name": "write_file",
+        "description": "Write content to a file, overwriting it.",
+        "parameters": {
+            "type": "object",
+            "properties": {"path": {"type": "string"}, "content": {"type": "string"}},
+            "required": ["path", "content"],
+        },
+    },
+    {
+        "type": "function",
+        "name": "bash",
+        "description": "Run a shell command and return its combined stdout/stderr.",
+        "parameters": {
+            "type": "object",
+            "properties": {"command": {"type": "string"}},
+            "required": ["command"],
+        },
+    },
+]
+
+# ── The permission layer (this phase's new code, from above) ──────────────────
+
+TOOL_RISK = {
+    "read_file": "safe", "glob": "safe", "grep": "safe", "list_dir": "safe",
+    "write_file": "caution", "edit_file": "caution",
+    "bash": "dangerous",
+}
+
+def check_permission(tool_name, arg):
+    """Return 'allow', 'deny', or 'ask'."""
+    if tool_name == "bash":
+        for bad in ["rm -rf", "sudo ", ":(){"]:
+            if bad in arg:
+                return "deny"
+    risk = TOOL_RISK.get(tool_name, "dangerous")
+    if risk == "safe":
+        return "allow"
+    return "ask"
+
+def ask_user(tool_name):
+    answer = input(f"Allow {tool_name}? [y/n] ").strip().lower()
+    return "allow" if answer == "y" else "deny"
+
+# ── Dispatch: the V1 elif-chain, named ────────────────────────────────────────
+
+def dispatch(name: str, args: dict) -> str:
+    if name == "read_file":
+        return read_file(**args)
+    if name == "write_file":
+        return write_file(**args)
+    if name == "bash":
+        return bash(**args)
+    return f"Error: unknown tool '{name}'"
+
+# ── The loop: the V1 while-loop, named ────────────────────────────────────────
+
+def run_agent(task: str) -> None:
+    input_items = [{"role": "user", "content": task}]
+    while True:
+        resp = client.responses.create(model="gpt-4o", input=input_items, tools=TOOLS)
+
+        for item in resp.output:
+            input_items.append(item.model_dump())
+
+        tool_calls = [item for item in resp.output if item.type == "function_call"]
+        if not tool_calls:
+            for item in resp.output:
+                if item.type == "message":
+                    for block in item.content:
+                        if block.type == "output_text":
+                            print("ANSWER:", block.text)
+            return
+
+        for tc in tool_calls:
+            args = json.loads(tc.arguments)
+            # The permission gate — the four lines from above:
+            arg = args.get("command", args.get("path", ""))
+            decision = check_permission(tc.name, arg)
+            if decision == "ask":
+                decision = ask_user(tc.name)
+            if decision == "deny":
+                result = "Permission denied by the harness."
+            else:
+                result = dispatch(tc.name, args)
+
+            input_items.append({
+                "type": "function_call_output",
+                "call_id": tc.call_id,
+                "output": result,
+            })
+
+if __name__ == "__main__":
+    run_agent("List the files in the current directory, then read hello.txt.")
+```
+
+(The `TOOL_RISK` dict already labels tools like `grep` and `edit_file` that this file
+doesn't wire in — that's harmless. Keys for tools you don't have are simply never
+looked up, and you won't need to touch the permission layer when you add them later.)
+
 ### ▶ Run it now
 
-Add `TOOL_RISK`, `check_permission`, and `ask_user` to your `agent_loop.py`, then replace your dispatch call with the four-line block above. Run the agent and ask it to read a file — you should see no prompt. Then ask it to run a shell command: you should be asked `Allow bash? [y/n]`. Type `n` — confirm the model receives "Permission denied by the harness." and continues gracefully.
+Run `python agent_v2.py` (or add `TOOL_RISK`, `check_permission`, and `ask_user` to your own `agent_loop.py` and replace your dispatch call with the four-line block above). Ask the agent to read a file — you should see no prompt. Then ask it to run a shell command: you should be asked `Allow bash? [y/n]`. Type `n` — confirm the model receives "Permission denied by the harness." and continues gracefully.
 
 > **What you should see:**
 > - Read-only tools run silently.
@@ -81,7 +412,7 @@ Add `TOOL_RISK`, `check_permission`, and `ask_user` to your `agent_loop.py`, the
 
 ---
 
-## Step 1 — Add permission modes (one new idea: a mode controls what's auto-allowed)
+### Step 2.2 — Add permission modes (one new idea: a mode controls what's auto-allowed)
 
 The gate above always asks about `caution`-level tools even if you are in the middle of a trusted editing session. **Why now?** You want to say "for this run, auto-approve file writes too" without changing your code — just pick a mode.
 
@@ -113,19 +444,26 @@ def check_permission(tool_name, arg, mode="auto"):
     return "ask"
 ```
 
-Update the call site to pass `mode`:
+Update the call site to pass `mode` — give `run_agent` a `mode` parameter:
 
 ```python
-decision = check_permission(fc.name, arg, mode=mode)
+def run_agent(task: str, mode: str = "auto") -> None:
+    ...
+```
+
+…and inside its tool-call loop, thread it through to the gate:
+
+```python
+decision = check_permission(tc.name, arg, mode=mode)
 ```
 
 ### ▶ Run it now
 
-Start the agent twice: once with `mode="plan"` and once with `mode="auto"`. In plan mode, ask the agent to edit a file — you should see "Permission denied" without being asked. In auto mode, the same edit goes through silently.
+Start the agent twice: once with `run_agent(task, mode="plan")` and once with `mode="auto"`. In plan mode, ask the agent to edit a file — you should see "Permission denied" without being asked. In auto mode, the same edit goes through silently.
 
 ---
 
-## Step 2 — Add structured rules (one new idea: a list of rules, first match wins)
+### Step 2.3 — Add structured rules (one new idea: a list of rules, first match wins)
 
 The mode approach works well, but you want to say "always allow `git status` without asking, even though `bash` is dangerous." **Why now?** Hard-coded `if` checks for every special case will pile up. A small list of rules, evaluated top-to-bottom, scales much better.
 
@@ -135,7 +473,7 @@ DEFAULT_RULES = [
     # Hard denials — checked before mode logic
     {"decision": "deny",  "tool": "bash", "arg_contains": "rm -rf"},
     {"decision": "deny",  "tool": "bash", "arg_contains": "sudo "},
-    {"decision": "deny",  "tool": "bash", "arg_contains": ":(}{"},
+    {"decision": "deny",  "tool": "bash", "arg_contains": ":(){"},
     # Explicit allows — safe git read commands
     {"decision": "allow", "tool": "bash", "arg_contains": "git status"},
     {"decision": "allow", "tool": "bash", "arg_contains": "git log"},
@@ -182,9 +520,9 @@ Run the agent and ask it to `git status`. With the rule in place it should run w
 > | AUTO_OK + mode | Auto-approves by risk level | a dict of lists |
 > | DEFAULT_RULES | Hard deny/allow by pattern | a list of dicts |
 >
-> The steps below scale this up to the production-grade version — using `Enum`, `@dataclass`,
-> and a `class`-based policy engine. Each new Python feature solves a concrete problem
-> you'd hit if you kept the plain-dict version on a real project.
+> Versions 3 and 4 below scale this up to the production-grade version — using `Enum`,
+> `@dataclass`, and a `class`-based policy engine. Each new Python feature solves a
+> concrete problem you'd hit if you kept the plain-dict version on a real project.
 >
 > | New thing below | What problem it solves |
 > |---|---|
@@ -197,14 +535,55 @@ Run the agent and ask it to `git status`. With the rule in place it should run w
 
 ---
 
-## 3. Risk Classification (production shape)
+### What changed from Version 2 → Version 3
 
-The plain `TOOL_RISK` dict works, but in a larger codebase you want risk declared *on the tool itself*, so it can't drift out of sync. Attach it to the `Tool` dataclass from Phase 2.
+- The `"safe"`/`"caution"`/`"dangerous"` strings move from a standalone `TOOL_RISK`
+  dict onto the tool itself (`Tool.risk`), so risk can't drift out of sync with the tool list.
+- The mode string becomes `class Mode(str, Enum)` — same values, but a typo like
+  `Mode.PLAM` fails at import time instead of silently never matching.
+- Each rule dict `{"decision": ..., "tool": ..., "arg_contains": ...}` becomes a
+  `PolicyRule` dataclass with named fields and a `matches()` method.
+- The rule list and its evaluation loop move together into `PermissionPolicy.evaluate()`
+  — still first-match-wins, exactly like `apply_rules()`.
+- `check_permission` now returns `(Decision, reason)` instead of a bare string, so
+  denials carry an explanation the model and your logs can read.
+- One genuinely new capability: **session memory** — answering `a`/`d` at the prompt
+  remembers your choice for the rest of the run.
+
+---
+
+## Version 3 — classes: the same gate as policy objects
+
+This is Version 2, organized. Each of the four steps below upgrades one of the plain
+dicts/functions you already have into its production-shaped form; at the end, the whole
+thing is assembled into one runnable file.
+
+### Step 3.1 — Risk Classification (production shape)
+
+The plain `TOOL_RISK` dict works, but in a larger codebase you want risk declared *on the tool itself*, so it can't drift out of sync. To do that, this phase builds its own richer `Tool` — a dataclass with a `risk` field — as an upgrade of the Phase 2 idea.
+
+> 🟢 **A two-minute bridge: how this phase's files relate to Phase 2's.** Phase 2 built a
+> `tools/` *package* (a folder) exporting `Tool`, `FunctionTool`, the `@tool` decorator,
+> and `ToolRegistry` — none of which know about risk. This phase keeps its upgraded
+> versions in **its own files** with **different names**, so nothing collides:
+>
+> | Phase 2 (`tools/` package) | Phase 5 (this phase's files) |
+> |---|---|
+> | `class Tool` / `FunctionTool(fn=...)` | `risk_tools.py` — `@dataclass Tool(run=..., risk=...)` |
+> | `ToolRegistry.to_openai_schema()` | `tool_registry.py` — `ToolRegistry.api_schemas()` |
+> | `ToolRegistry.dispatch(name, args_str)` | same name, plus `get()` and `all_tools()` |
+>
+> **Do not name this phase's file `tools.py`** — a `tools.py` file and Phase 2's `tools/`
+> package cannot live in the same folder (Python sees one name, `tools`, and picks one of
+> them — the same shadowing trap Phase 4 dodged by naming its module `coding_tools.py`).
+> We use **`risk_tools.py`** throughout. At the end of this phase, a small adapter
+> (`phase5_tools.py`, built in the sandbox section) wraps Phase 4's actual tools in these
+> risk-aware ones, so you reuse everything you already built.
 
 > **Why the `@dataclass` syntax?** It's a class whose only job is to hold named fields — think of it as a dict with fixed keys and dot-access. `tool.risk` is the same idea as `tool["risk"]`.
 
 ```python
-# tools.py  (extend the Tool dataclass from Phase 2)
+# risk_tools.py — this phase's risk-aware Tool (an upgraded take on Phase 2's Tool)
 from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Callable
@@ -228,17 +607,21 @@ class Tool:
             "name": self.name,
             "description": self.description,
             "parameters": self.parameters,
-            "strict": True,
+            # No "strict": True here — strict mode requires every property to be
+            # listed in "required", which breaks tools with optional parameters
+            # (read_file's offset/limit, bash's timeout). Phase 1 covered this.
         }
 ```
 
 When registering real tools (from Phase 4), declare their risk explicitly:
 
 ```python
-# tool_registry.py  (extend the registry from Phase 2)
+# tool_registry.py — this phase's registry (Phase 2's idea, plus get/all_tools/api_schemas)
 import json
 import fnmatch
 from typing import Any
+
+from risk_tools import Tool
 
 class ToolRegistry:
     def __init__(self) -> None:
@@ -285,9 +668,9 @@ The risk table for Phase 4 tools:
 
 ---
 
-## 4. Permission Modes (production shape)
+### Step 3.2 — Permission Modes (production shape)
 
-> **Why `class Mode(str, Enum)` instead of a plain string?** Your editor can autocomplete `Mode.PLAN` and will catch `Mode.PLAM` at import time. The plain-string version from Step 1 works identically at runtime; the Enum just catches typos early.
+> **Why `class Mode(str, Enum)` instead of a plain string?** Your editor can autocomplete `Mode.PLAN` and will catch `Mode.PLAM` at import time. The plain-string version from Step 2.2 works identically at runtime; the Enum just catches typos early.
 
 The harness operates in one of five modes. These mirror the mental model popularised by Claude Code, adapted for a pure-Python harness.
 
@@ -336,9 +719,9 @@ BYPASS_WARNING = """\
 
 ---
 
-## 5. The Policy Engine (production shape)
+### Step 3.3 — The Policy Engine (production shape)
 
-> **Why a `PermissionPolicy` class?** Your Step 2 `DEFAULT_RULES` list works fine for a few rules. When rules multiply, you want: (a) richer matching (regex, not just `in`), (b) a predicate function for complex logic, (c) the `evaluate()` method to live next to the data. This is exactly what the dataclass + class approach provides — it is the Step 2 list, organized.
+> **Why a `PermissionPolicy` class?** Your Step 2.3 `DEFAULT_RULES` list works fine for a few rules. When rules multiply, you want: (a) richer matching (regex, not just `in`), (b) a predicate function for complex logic, (c) the `evaluate()` method to live next to the data. This is exactly what the dataclass + class approach provides — it is the Step 2.3 list, organized.
 
 Beyond modes, you want structured allow/deny rules — a policy that can say "allow `bash(git *)` but deny `bash(rm *)` regardless of mode." Implement this as an ordered list of rules evaluated top-to-bottom, first match wins.
 
@@ -448,9 +831,9 @@ def default_policy() -> PermissionPolicy:
 
 ---
 
-## 6. The Approval Gate (production shape)
+### Step 3.4 — The Approval Gate (production shape)
 
-> **Why upgrade from the Step 0/1 gate?** The simple gate returned just `"allow"/"deny"/"ask"`. The production gate also returns a *reason string*, remembers per-session y/a/d/n answers across loop iterations (so it does not ask twice about the same tool), and integrates with the `Tool` dataclass's `.risk` field and the `PermissionPolicy` rules.
+> **Why upgrade from the Version 2 gate?** The simple gate returned just `"allow"/"deny"/"ask"`. The production gate also returns a *reason string*, remembers per-session y/a/d/n answers across loop iterations (so it does not ask twice about the same tool), and integrates with the `Tool` dataclass's `.risk` field and the `PermissionPolicy` rules.
 
 The gate combines mode, policy, and per-session memory into a single decision function. When the answer is ASK, it prompts the terminal and remembers the choice for the rest of the session.
 
@@ -539,9 +922,309 @@ def _ask_user(tool_name: str, args: dict) -> tuple[Decision, str]:
 
 **Critical design point:** a DENY does not raise an exception. It returns a `(Decision.DENY, reason)` tuple. The caller converts this into a tool result string and appends it to `input_items`. The model sees "Permission denied by policy: ..." and can adapt — ask for a safer alternative, explain what it was trying to do, or give up gracefully. Crashing or silently skipping would make the loop incoherent.
 
+### Version 3, assembled — one paste-able file
+
+Here is Version 3 as a single runnable program: the pieces from Steps 3.1–3.4 plus the
+loop from Version 2, which is **unchanged except for the gate call** (it now unpacks a
+`(decision, reason)` tuple). The rule list and mode set are trimmed slightly to keep the
+file readable — the full-fat versions you just read drop in without any other change,
+and the consolidated multi-file form appears at the end of the phase.
+
+```python
+# agent_v3.py — Phase 5, Version 3 assembled: the same harness with policy objects.
+from __future__ import annotations
+
+import fnmatch
+import json
+import subprocess
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any, Callable
+
+from openai import OpenAI
+
+client = OpenAI()   # reads OPENAI_API_KEY from the environment
+
+# ── Risk levels & modes (Steps 3.1 / 3.2) ─────────────────────────────────────
+
+RISK_SAFE      = "safe"
+RISK_CAUTION   = "caution"
+RISK_DANGEROUS = "dangerous"
+
+class Mode(str, Enum):
+    PLAN         = "plan"
+    AUTO         = "auto"
+    ALWAYS_ALLOW = "always-allow"
+
+_AUTO_APPROVED: dict[Mode, set[str]] = {
+    Mode.PLAN:         {RISK_SAFE},
+    Mode.AUTO:         {RISK_SAFE, RISK_CAUTION},
+    Mode.ALWAYS_ALLOW: {RISK_SAFE, RISK_CAUTION, RISK_DANGEROUS},
+}
+_HARD_DENY_IN_MODE: dict[Mode, set[str]] = {
+    Mode.PLAN: {RISK_CAUTION, RISK_DANGEROUS},
+}
+
+class Decision(str, Enum):
+    ALLOW = "allow"
+    DENY  = "deny"
+    ASK   = "ask"
+
+# ── Policy objects (Step 3.3) ─────────────────────────────────────────────────
+
+def _render_summary(tool_name: str, args: dict) -> str:
+    if tool_name == "bash" and "command" in args:
+        arg_part = args["command"]
+    elif "path" in args:
+        arg_part = args["path"]
+    elif args:
+        arg_part = str(next(iter(args.values())))[:80]
+    else:
+        arg_part = ""
+    return f"{tool_name}({arg_part})"
+
+@dataclass
+class PolicyRule:
+    decision: Decision
+    pattern: str    # fnmatch glob against "tool_name(arg_summary)"
+
+    def matches(self, tool_name: str, args: dict) -> bool:
+        return fnmatch.fnmatch(_render_summary(tool_name, args), self.pattern)
+
+@dataclass
+class PermissionPolicy:
+    rules: list[PolicyRule] = field(default_factory=list)
+
+    def evaluate(self, tool_name: str, args: dict) -> Decision:
+        for rule in self.rules:
+            if rule.matches(tool_name, args):
+                return rule.decision
+        return Decision.ASK
+
+POLICY = PermissionPolicy(rules=[
+    # Hard denials first — first match wins.
+    PolicyRule(Decision.DENY,  "bash(*rm -rf*)"),
+    PolicyRule(Decision.DENY,  "bash(sudo *)"),
+    # Explicit allows for safe git reads.
+    PolicyRule(Decision.ALLOW, "bash(git status*)"),
+    PolicyRule(Decision.ALLOW, "bash(git diff*)"),
+])
+
+# ── The approval gate (Step 3.4) ──────────────────────────────────────────────
+
+_session_always_allow: set[str] = set()
+_session_always_deny:  set[str] = set()
+
+def check_permission(
+    tool: "Tool", args: dict, policy: PermissionPolicy, mode: Mode,
+) -> tuple[Decision, str]:
+    if tool.name in _session_always_deny:
+        return Decision.DENY, f"Denied for this session (you denied '{tool.name}' earlier)."
+    if tool.name in _session_always_allow:
+        return Decision.ALLOW, "Allowed by session memory."
+    if tool.risk in _HARD_DENY_IN_MODE.get(mode, set()):
+        return Decision.DENY, f"Mode '{mode.value}' does not allow '{tool.risk}' tools."
+    decision = policy.evaluate(tool.name, args)
+    if decision == Decision.DENY:
+        return Decision.DENY, f"Blocked by policy: '{_render_summary(tool.name, args)}'."
+    if decision == Decision.ALLOW:
+        return Decision.ALLOW, "Explicitly allowed by policy."
+    if tool.risk in _AUTO_APPROVED.get(mode, set()):
+        return Decision.ALLOW, f"Auto-approved (mode='{mode.value}', risk='{tool.risk}')."
+    # Must ask the user.
+    print(f"\n[Permission required]  {_render_summary(tool.name, args)}")
+    print("  y = allow once   n = deny once   a/d = always allow/deny this session")
+    while True:
+        try:
+            answer = input("  Allow? [y/n/a/d] > ").strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            return Decision.DENY, "Denied: non-interactive environment."
+        if answer == "y":
+            return Decision.ALLOW, "Allowed by user (once)."
+        if answer == "n":
+            return Decision.DENY, "Denied by user."
+        if answer == "a":
+            _session_always_allow.add(tool.name)
+            return Decision.ALLOW, "Allowed by user (session)."
+        if answer == "d":
+            _session_always_deny.add(tool.name)
+            return Decision.DENY, "Denied by user (session)."
+        print("  Please type y, n, a, or d.")
+
+# ── Tools with risk attached (Step 3.1) ───────────────────────────────────────
+
+@dataclass
+class Tool:
+    name: str
+    description: str
+    parameters: dict[str, Any]
+    run: Callable[..., str]
+    risk: str = RISK_SAFE
+
+    def to_api_dict(self) -> dict[str, Any]:
+        return {
+            "type": "function",
+            "name": self.name,
+            "description": self.description,
+            "parameters": self.parameters,
+        }
+
+def _read_file(path: str) -> str:
+    try:
+        with open(path, "r", encoding="utf-8", errors="replace") as f:
+            return f.read()
+    except OSError as exc:
+        return f"Error: cannot read file: {exc}"
+
+def _write_file(path: str, content: str) -> str:
+    try:
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(content)
+        return f"Wrote {len(content)} characters to {path}."
+    except OSError as exc:
+        return f"Error: cannot write file: {exc}"
+
+def _bash(command: str) -> str:
+    try:
+        proc = subprocess.run(
+            command, shell=True, capture_output=True, text=True, timeout=30,
+        )
+        return (proc.stdout + proc.stderr) or "(no output)"
+    except subprocess.TimeoutExpired:
+        return "Error: command timed out after 30s."
+
+_STR = {"type": "string"}
+REGISTRY: dict[str, Tool] = {t.name: t for t in [
+    Tool("read_file", "Read a text file and return its contents.",
+         {"type": "object", "properties": {"path": _STR}, "required": ["path"]},
+         _read_file, RISK_SAFE),
+    Tool("write_file", "Write content to a file, overwriting it.",
+         {"type": "object", "properties": {"path": _STR, "content": _STR},
+          "required": ["path", "content"]},
+         _write_file, RISK_CAUTION),
+    Tool("bash", "Run a shell command and return its combined stdout/stderr.",
+         {"type": "object", "properties": {"command": _STR}, "required": ["command"]},
+         _bash, RISK_DANGEROUS),
+]}
+
+# ── The loop (unchanged from Version 2, except the gate call) ─────────────────
+
+def run_agent(task: str, mode: Mode = Mode.AUTO) -> None:
+    input_items = [{"role": "user", "content": task}]
+    while True:
+        resp = client.responses.create(
+            model="gpt-4o",
+            input=input_items,
+            tools=[t.to_api_dict() for t in REGISTRY.values()],
+        )
+        for item in resp.output:
+            input_items.append(item.model_dump())
+
+        tool_calls = [item for item in resp.output if item.type == "function_call"]
+        if not tool_calls:
+            for item in resp.output:
+                if item.type == "message":
+                    for block in item.content:
+                        if block.type == "output_text":
+                            print("ANSWER:", block.text)
+            return
+
+        for tc in tool_calls:
+            args = json.loads(tc.arguments)
+            tool = REGISTRY.get(tc.name)
+            if tool is None:
+                result = f"Error: unknown tool '{tc.name}'"
+            else:
+                decision, reason = check_permission(tool, args, POLICY, mode)
+                if decision == Decision.DENY:
+                    result = f"Permission denied: {reason}"
+                else:
+                    try:
+                        result = tool.run(**args)
+                    except Exception as exc:
+                        result = f"Error: tool raised unexpectedly: {exc}"
+
+            input_items.append({
+                "type": "function_call_output",
+                "call_id": tc.call_id,
+                "output": result,
+            })
+
+if __name__ == "__main__":
+    run_agent("Run `git status`, then read README.md and summarize it.", mode=Mode.AUTO)
+```
+
+### ▶ Run it now
+
+```
+python agent_v3.py
+```
+
+`git status` should run **without any prompt** — the explicit `ALLOW` policy rule
+matches even though `bash` is a dangerous tool. When the model reads `README.md`,
+nothing is asked either (safe tool, auto-approved). Now edit the `__main__` task to
+something like `"Run git push"` — no rule matches, `bash` isn't auto-approved in
+`auto` mode, so you get the `[y/n/a/d]` prompt. Answer `d`, then watch any further
+`bash` attempt in the same run get denied instantly by session memory.
+
 ---
 
-## 7. The Hook System
+### What changed from Version 3 → Version 4
+
+- Nothing about *permissions* changes — V4 adds a second, more general mechanism
+  *around* the same gate.
+- Cross-cutting concerns (audit logging, secret scrubbing, output truncation) move out
+  of the loop body into small standalone functions called **hooks**.
+- The harness gains two well-defined extension points: **pre-hooks** (run before the
+  tool, may block it) and **post-hooks** (run after, may rewrite the result).
+- A `HookRegistry` holds ordered lists of those functions; the loop just calls
+  `run_pre`/`run_post` and otherwise stays untouched.
+- A new `safe_dispatch()` becomes the single funnel every tool call flows through:
+  pre-hooks → permission check → `tool.run` → post-hooks.
+
+---
+
+## Version 4 — hooks: functions you hand to the harness
+
+### Step 4.0 — First, the callback idea (sixty seconds, no API key needed)
+
+Version 4 rests on one Python fact you may not have used yet: **a function is a value.**
+You can put one in a variable, in a list, or pass it as an argument — all *without
+calling it*. The receiver decides when (and whether) to call it. A function passed
+around like this is called a **callback**, and a *hook* is just a callback the harness
+promises to call at a specific moment.
+
+```python
+# callback_demo.py — a "hook" is just a function you hand over to be called later.
+
+def shout(text):
+    print(text.upper() + "!")
+
+def politely(text):
+    print("Please note: " + text)
+
+def announce(message, hook):
+    hook(message)        # the harness decides WHEN; you decided WHAT
+
+announce("the build passed", shout)      # THE BUILD PASSED!
+announce("the build passed", politely)   # Please note: the build passed
+```
+
+Note `announce("...", shout)` — no parentheses after `shout`. We hand over the function
+itself, not its result. `announce` calls it later. That single trick is the entire hook
+system: the harness keeps a list of functions you gave it and calls them before and
+after every tool.
+
+### ▶ Run it now
+
+```
+python callback_demo.py
+```
+
+No API key needed. Try writing a third style function and passing it in — if you can do
+that, you already understand hooks.
+
+### Step 4.1 — Why hooks, and what they look like in the harness
 
 > **Why hooks, and why now?** You now have permission checking wired in. But you also want to: log every tool call, scrub secrets from outputs, and inject warnings when a file looks like it contains prompt-injection text. You *could* add all of that logic directly to the dispatch block — but it would become a tangled mess. **Hooks** separate those cross-cutting concerns from the loop structure itself.
 
@@ -564,7 +1247,7 @@ Permissions are one kind of middleware. You also want to observe, transform, and
 > The `@dataclass PreToolContext`/`PostToolContext` below are just **dicts of
 > information** ("which tool, what args, what result") handed to each hook.
 
-### Hook context objects
+### Step 4.2 — Hook context objects
 
 ```python
 # hooks.py
@@ -589,7 +1272,7 @@ class PostToolContext:
     result: str                   # the raw string returned by tool.run(...)
 ```
 
-### Hook return types and the registry
+### Step 4.3 — Hook return types and the registry
 
 A pre-hook returns either:
 - `None` — continue as normal
@@ -635,7 +1318,7 @@ class HookRegistry:
         return result
 ```
 
-### Built-in hooks
+### Step 4.4 — Built-in hooks
 
 #### Hook 1 — Dangerous command blocker (pre-hook)
 
@@ -755,7 +1438,7 @@ Create a `HookRegistry`, add `dangerous_command_blocker` as a pre-hook and `secr
 
 ---
 
-## 8. Sandboxing: What Pure Python Can Do
+## Interlude — Sandboxing: What Pure Python Can Do
 
 The OS-level answer to sandboxing is containers (Docker, Podman), Linux namespaces, seccomp-bpf filters, or tools like `firejail` or `bubblewrap`. Those are the right answer for production. But you can meaningfully improve safety in-process with pure Python, applied to the `bash` tool's subprocess call.
 
@@ -864,33 +1547,84 @@ def run_sandboxed(
     return text
 ```
 
-The updated `bash` tool registration (from Phase 4) would call `run_sandboxed` instead of a bare `subprocess.run`:
+With the sandbox in hand, we can build this phase's complete tool set: `phase5_tools.py`.
+It does two jobs. First, it **adapts Phase 4's seven tools** — the `@tool`-decorated
+`FunctionTool` objects in `coding_tools.py` — into this phase's risk-aware `Tool`
+dataclass, assigning each the risk level from the Step 3.1 table (same name, same
+schema, same behaviour; just carrying a risk tag now). Second, it **rebuilds `bash` on
+`run_sandboxed`** instead of Phase 4's bare `subprocess.run`. The `build_registry()` it
+exports is what the final assembly at the end of this phase imports.
 
 ```python
-# real_tools.py  (excerpt, updating the bash tool from Phase 4)
+# phase5_tools.py — the complete risk-tagged tool set for this phase
+# Needs, in the same folder: risk_tools.py + tool_registry.py (Step 3.1),
+# sandbox.py (above), coding_tools.py (Phase 4 §9), and Phase 2's tools/
+# package (coding_tools imports it).
 import os
-from tools import Tool, RISK_DANGEROUS
+
+import coding_tools                      # Phase 4's seven @tool functions
+from risk_tools import Tool, RISK_SAFE, RISK_CAUTION, RISK_DANGEROUS
+from tool_registry import ToolRegistry
 from sandbox import run_sandboxed
 
 WORKSPACE_ROOT = os.environ.get("WORKSPACE_ROOT", os.getcwd())
 
+# Risk assignments from the Step 3.1 table. bash is handled separately below.
+RISK_BY_NAME = {
+    "read_file":  RISK_SAFE,
+    "glob":       RISK_SAFE,
+    "grep":       RISK_SAFE,
+    "list_dir":   RISK_SAFE,
+    "write_file": RISK_CAUTION,
+    "edit_file":  RISK_CAUTION,
+}
+
 def _bash(command: str) -> str:
     return run_sandboxed(command, workspace_root=WORKSPACE_ROOT)
 
-bash_tool = Tool(
-    name="bash",
-    description="Run a shell command inside the workspace.",
-    parameters={
-        "type": "object",
-        "properties": {
-            "command": {"type": "string", "description": "Shell command to execute."},
+def build_registry() -> ToolRegistry:
+    registry = ToolRegistry()
+
+    # Adapt Phase 4's FunctionTool objects: same name/description/schema/behaviour,
+    # now carrying the risk tag this phase's permission gate reads.
+    for name, risk in RISK_BY_NAME.items():
+        ft = getattr(coding_tools, name)          # a Phase 2 FunctionTool
+        registry.register(Tool(
+            name=ft.name,
+            description=ft.description,
+            parameters=ft.parameters,
+            run=ft.run,
+            risk=risk,
+        ))
+
+    # bash is rebuilt on the sandbox instead of Phase 4's bare subprocess.run.
+    registry.register(Tool(
+        name="bash",
+        description="Run a shell command inside the workspace sandbox.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "command": {"type": "string", "description": "Shell command to execute."},
+            },
+            "required": ["command"],
+            "additionalProperties": False,
         },
-        "required": ["command"],
-        "additionalProperties": False,
-    },
-    run=_bash,
-    risk=RISK_DANGEROUS,
-)
+        run=_bash,
+        risk=RISK_DANGEROUS,
+    ))
+    return registry
+```
+
+**▶ Check it now (no API key needed)**
+
+```python
+# check_phase5_tools.py
+from phase5_tools import build_registry
+
+registry = build_registry()
+for t in registry.all_tools():
+    print(f"{t.name:<12} risk={t.risk}")
+print(len(registry.api_schemas()), "schemas ready for the API")  # expect 7
 ```
 
 ### What sandboxing cannot do in pure Python
@@ -903,7 +1637,7 @@ The pure-Python layer meaningfully reduces the blast radius for accidents and co
 
 ---
 
-## 9. Prompt-Injection Defense
+## Interlude — Prompt-Injection Defense
 
 When `read_file` returns a file whose contents say:
 
@@ -953,9 +1687,11 @@ def injection_detector(ctx: PostToolContext) -> str | None:
 
 ---
 
-## 10. Integrating Everything into the Agent Loop
+## Version 4, assembled — Integrating Everything into the Agent Loop
 
-Here is the complete `safe_dispatch` function and the updated loop. The flow is:
+This is the production shape of the phase — the Version 3 harness plus the hook system,
+consolidated into the multi-file layout the rest of the guide uses. Here is the complete
+`safe_dispatch` function and the updated loop. The flow is:
 
 ```text
 model emits function_call
@@ -995,10 +1731,10 @@ import fnmatch
 import re
 
 if TYPE_CHECKING:
-    from tools import Tool
+    from risk_tools import Tool
 
 # ---------------------------------------------------------------------------
-# Risk levels (also defined in tools.py; repeated here for standalone import)
+# Risk levels (also defined in risk_tools.py; repeated here for standalone import)
 # ---------------------------------------------------------------------------
 RISK_SAFE      = "safe"
 RISK_CAUTION   = "caution"
@@ -1386,7 +2122,7 @@ from typing import Any
 
 from openai import OpenAI
 
-from tools import Tool
+from risk_tools import Tool
 from tool_registry import ToolRegistry
 from permissions import (
     Mode,
@@ -1531,7 +2267,7 @@ def run_agent(
 
 if __name__ == "__main__":
     import os
-    from real_tools import build_registry   # from Phase 4
+    from phase5_tools import build_registry   # built in the sandbox section above
 
     client   = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
     registry = build_registry()
@@ -1552,9 +2288,25 @@ if __name__ == "__main__":
     print(answer)
 ```
 
+### ▶ Run it now
+
+Save this phase's seven files — `risk_tools.py`, `tool_registry.py`, `permissions.py`,
+`hooks.py`, `sandbox.py`, `phase5_tools.py`, `agent_loop.py` — into the folder that
+already holds Phase 4's `coding_tools.py` and Phase 2's `tools/` package, then:
+
+```
+python agent_loop.py
+```
+
+Watch the funnel work end to end: read-only tools run silently, `bash` calls either
+match a policy rule, get auto-approved by the mode, or pause at the `[y/n/a/d]` prompt —
+and every tool result passes through the secret scrubber, the truncator, and into
+`/tmp/agent_audit.jsonl`. `tail -f /tmp/agent_audit.jsonl` in a second terminal to see
+the audit trail grow as the agent works.
+
 ---
 
-## 11. Pitfalls
+## Pitfalls
 
 > These are the mistakes that feel obvious in retrospect and cost hours in practice.
 
@@ -1588,10 +2340,15 @@ The injection detector prepends a warning and returns the full (warning + conten
 
 | File | Purpose |
 |---|---|
+| `risk_tools.py` | The risk-aware `Tool` dataclass (`run` + `risk` fields) and the three risk-level constants |
+| `tool_registry.py` | This phase's `ToolRegistry` with `get()`, `all_tools()`, `api_schemas()`, raw `dispatch()` |
 | `permissions.py` | Mode enum, `PermissionPolicy`, `PolicyRule`, `check_permission`, `_ask_user`, session memory |
 | `hooks.py` | `HookRegistry`, `PreToolContext`, `PostToolContext`, built-in hooks, `default_hooks()` |
 | `sandbox.py` | `run_sandboxed()` for hardened subprocess execution with env allowlist and POSIX resource limits |
+| `phase5_tools.py` | `build_registry()` — Phase 4's seven tools adapted with risk tags; `bash` rebuilt on the sandbox |
 | `agent_loop.py` | `safe_dispatch()` and updated `run_agent()` wiring everything together |
+
+For hands-on practice with the permission gate, policy rules, and hooks, work through the Phase 5 section of [EXERCISES.md](EXERCISES.md).
 
 Phase 6 will add multi-turn conversation management, context-window budgeting, and graceful handling of very long sessions.
 

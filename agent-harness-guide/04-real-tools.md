@@ -1,7 +1,7 @@
 # Phase 4 — Real-World Tools (the Claude-Code Toolset)
 
 > **Series context:** Phases 0–3 built the agent loop, the tool registry with the
-> `@tool` decorator and `Registry` class, and streaming. This phase fills the registry
+> `@tool` decorator and `ToolRegistry` class, and streaming. This phase fills the registry
 > with the tools that make a coding agent actually useful: filesystem reads and writes,
 > surgical edits, shell execution, glob, grep, and directory listing. Every tool is pure
 > Python stdlib. No frameworks, no third-party packages beyond `openai`.
@@ -37,6 +37,30 @@
 >   errors, return an error string instead of crashing."
 >
 > With those five notes, the entire phase is readable with your five concepts.
+
+---
+
+## The shape of this phase: three versions of one harness
+
+Like every phase in this guide, Phase 4 is a **ladder of complete, runnable versions of
+the same harness** — not one big program revealed all at once. Each version does the
+same job; only the organization changes:
+
+- **Version 1 — line-by-line.** The harness with **one** real tool (`read_file`) whose
+  logic sits *inline* in the dispatch branch. No `def`, no classes — just statements
+  top to bottom. You will watch the model touch your actual disk before any safety
+  machinery exists.
+- **Version 2 — functions.** The same harness with each tool as a **plain function**
+  (`read_file`, `list_dir`, `glob`, `grep`, `write_file`, `edit_file`, `bash`), plus two
+  plain helper functions (`_safe_path`, `_truncate`) that keep the agent confined to its
+  workspace and its output bounded. Tools are introduced one at a time, safest first.
+- **Version 3 — the organized toolset.** The same tools, grouped into one module with
+  the workspace confinement enforced centrally and the Phase 2 `@tool` / `ToolRegistry`
+  machinery doing the bookkeeping — the shape the consolidated package
+  (`code/agent_harness/tools/files.py` and `shell.py`) uses.
+
+Between versions you will find a short *"what changed"* list, so you always know you are
+looking at a reorganization of a program you already ran — never a brand-new one.
 
 ---
 
@@ -91,7 +115,7 @@ the path and asserts it stays within `WORKSPACE_ROOT`.
 
 ---
 
-## Step 0 — One Tool Wired In, Right Now
+## Version 1 — line-by-line: the agent touches your disk (no `def`, no classes)
 
 Before adding all seven tools, shared helpers, and the registry factory, let's get **one
 tool working end-to-end** so you can see the whole circuit light up.
@@ -99,14 +123,162 @@ tool working end-to-end** so you can see the whole circuit light up.
 We will start with `read_file` — the simplest, safest tool. It reads a file and returns
 its text. No writing, no shell commands, nothing destructive.
 
-### Step 0.1 — `read_file` as a plain function
+And we will write it the most primitive way possible: **no `def`, no classes** — the
+tool's logic lives *directly inside the dispatch branch* of the loop, as a bare
+`try`/`except` around `open()`. This is deliberate. When you can point at the exact line
+where the model's JSON arguments become a real `open()` call on your real filesystem,
+the phrase *"the agent can now touch your disk"* stops being abstract.
+
+This is the entire program — paste it into one file:
+
+```python
+# v1_inline_read.py
+"""Version 1 — the harness with one real tool, line by line.
+
+No def, no classes.  The read_file logic sits inline in the dispatch
+branch, so you can see the exact moment the model touches your disk.
+"""
+
+import json
+from openai import OpenAI
+
+client = OpenAI()   # reads OPENAI_API_KEY from the environment
+
+# Create a small test file so there is something to read.
+with open("hello.txt", "w") as f:
+    f.write("Hello from Phase 4!\nThis is line 2.\n")
+
+# The schema: a plain dict telling the model a read_file tool exists.
+tools = [{
+    "type": "function",
+    "name": "read_file",
+    "description": (
+        "Read a text file and return its contents. "
+        "Returns an ERROR string if the file does not exist or cannot be read."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "path": {"type": "string", "description": "Path to the file to read."},
+        },
+        "required": ["path"],
+    },
+}]
+
+input_items = [{"role": "user", "content": "What is in the file hello.txt?"}]
+
+while True:
+    resp = client.responses.create(
+        model="gpt-4o",
+        input=input_items,
+        tools=tools,
+    )
+
+    # Append every output item to the transcript.
+    for item in resp.output:
+        input_items.append(
+            item.model_dump() if hasattr(item, "model_dump") else item
+        )
+
+    # Collect any tool calls in this turn.
+    tool_calls = [item for item in resp.output
+                  if getattr(item, "type", None) == "function_call"]
+
+    if not tool_calls:
+        # No tool calls → the model produced its final answer.
+        for item in resp.output:
+            if getattr(item, "type", None) == "message":
+                for block in item.content:
+                    if getattr(block, "type", None) == "output_text":
+                        print("ANSWER:", block.text)
+        break
+
+    # Answer each tool call.
+    for tc in tool_calls:
+        args = json.loads(tc.arguments) if isinstance(tc.arguments, str) else tc.arguments
+        print(f"[tool] {tc.name}({args})")
+
+        if tc.name == "read_file":
+            # ── The tool logic, inlined right here. ─────────────────────
+            # This is the line where the model touches your disk.
+            try:
+                with open(args["path"], "r", encoding="utf-8", errors="replace") as f:
+                    result = f.read()
+            except FileNotFoundError:
+                result = "ERROR: File not found: " + args["path"]
+            except OSError as exc:
+                result = "ERROR: Cannot read file: " + str(exc)
+        else:
+            result = "ERROR: Unknown tool: " + tc.name
+
+        print(f"[result] {result[:120]}")
+
+        input_items.append({
+            "type": "function_call_output",
+            "call_id": tc.call_id,
+            "output": result,
+        })
+```
+
+### ▶ Run it now
+
+```
+export OPENAI_API_KEY=sk-...
+python v1_inline_read.py
+```
+
+You should see the model call `read_file({'path': 'hello.txt'})`, your inline
+`open()` execute, and the answer come back describing the file's two lines.
+
+**Let it sink in.** That `open(args["path"], ...)` call ran with a path that *the model
+chose*, on *your* machine. Nothing in this program stops it from choosing
+`"../../etc/passwd"` or `"~/.ssh/id_rsa"` — try changing the task string to
+`"What is in the file /etc/hostname?"` and watch it happily read outside your project.
+That is exactly the visceral lesson Version 1 exists to teach: **a real tool is real
+power, and right now there is zero safety machinery.** Versions 2 and 3 are largely
+about earning back control: workspace confinement, output caps, and (in Phase 5) human
+approval for the dangerous calls.
+
+One tool, one schema dict, an inline `try`/`except` — that is the whole circuit. The
+rest of this phase is the same circuit, scaled up and reorganized.
+
+---
+
+### What changed from Version 1 → Version 2
+
+- The inline `try`/`except open(...)` block moves out of the dispatch branch into a
+  named function, `read_file(path)` — the loop just calls `read_file(**args)`.
+- A plain dict, `tool_fns = {"read_file": read_file, ...}`, replaces the
+  `if tc.name == ...:` chain, so adding a tool means: write a function, write its schema
+  dict, add one dict entry. The loop never changes again.
+- Six more tools join, safest first: `list_dir`, `glob`, `grep` (read-only), then
+  `write_file`, `edit_file` (destructive), then `bash` (arbitrary execution).
+- Two shared helper functions appear — `_safe_path` (workspace confinement) and
+  `_truncate` (output caps) — and every tool routes through them.
+- The harness loop itself is **unchanged**: same transcript list, same
+  `call_id`/`function_call_output` handshake, same exit condition.
+
+---
+
+## Version 2 — functions: the toolset grows, one tool at a time
+
+The same harness, reorganized: each tool becomes a plain function, and a dispatch dict
+maps tool names to functions. No classes, no decorators — everything here is `def`,
+`if`/`else`, lists, dicts, and `return`. We build the toolset one tool per step, each
+with its own run checkpoint, ordered from safest (read-only) to most dangerous (`bash`).
+
+## Step 2.0 — `read_file` becomes a named function
+
+In Version 1 the file-reading logic lived inside the dispatch branch. The first move of
+Version 2 is to lift it out into a function with a name, so the loop reads as *what*
+happens (call the tool) rather than *how* (open, read, catch errors).
 
 No decorator, no `pathlib`, no path guard yet. Just `open()`, a `try/except`, and a
 `return`. If the file exists you get its text; if not, you get an error string.
 
 ```python
-# step0_read_file.py
-"""Minimal read_file tool wired into the harness."""
+# v2_read_file.py
+"""Version 2, first step: read_file as a named function wired into the harness."""
 
 import json
 from openai import OpenAI
@@ -208,7 +380,7 @@ if __name__ == "__main__":
 
 ```
 export OPENAI_API_KEY=sk-...
-python step0_read_file.py
+python v2_read_file.py
 ```
 
 You should see something like:
@@ -223,13 +395,14 @@ ANSWER: The file hello.txt contains two lines:
 2. "This is line 2."
 ```
 
-One tool, one schema dict, a plain function — that is the whole circuit. Everything in
-the rest of this phase is this same pattern, scaled up with more tools, better safety
-guards, and the `@tool` / `Registry` machinery from Phase 2.
+One tool, one schema dict, a plain function — the same circuit as Version 1, but now the
+tool has a name and the loop body stays short. Everything in the rest of this phase is
+this same pattern, scaled up with more tools, better safety guards, and (in Version 3)
+the `@tool` / `ToolRegistry` machinery from Phase 2.
 
 ---
 
-## Step 1 — Add `list_dir` and `glob` (read-only, low risk)
+## Step 2.1 — Add `list_dir` and `glob` (read-only, low risk)
 
 **Why now?** `read_file` is powerful, but the agent needs to *discover* files before it
 can read them. `list_dir` answers "what is in this directory?" and `glob` answers "which
@@ -308,7 +481,7 @@ You should see the model call `list_dir(".")` first, then `read_file("hello.txt"
 
 ---
 
-## Step 2 — Add `grep` (still read-only, slightly more complex)
+## Step 2.2 — Add `grep` (still read-only, slightly more complex)
 
 **Why now?** Once the agent can list and glob files, the natural next step is to search
 *inside* them. `grep` replaces dozens of `read_file` calls with one targeted search.
@@ -370,14 +543,14 @@ The model should call `grep("TODO", ".", "*.py")` and return the two matches.
 
 ---
 
-## Step 3 — Safety First: add `_safe_path` and `_truncate` before writing anything
+## Step 2.3 — Safety First: add `_safe_path` and `_truncate` before writing anything
 
 **Why now?** So far all our tools are read-only — if they misbehave the worst case is
 the model sees garbled text. We are about to add `write_file` and `edit_file`, which can
 destroy data. Before we do that, let's add two small safety helpers that every
 subsequent tool will use.
 
-### 3.1 `_safe_path` — the Path Guard
+### `_safe_path` — the Path Guard
 
 ```python
 import os
@@ -426,7 +599,7 @@ def _safe_path(user_path: str) -> pathlib.Path:
 > actually walks the filesystem, so a symlink pointing outside the workspace is caught.
 > The cost is an extra syscall per path; that is entirely acceptable.
 
-### 3.2 `_truncate` — the Output Size Guard
+### `_truncate` — the Output Size Guard
 
 ```python
 _DEFAULT_MAX_CHARS = 40_000    # ~10 k tokens at 4 chars/token — generous but bounded
@@ -495,7 +668,7 @@ print(read_file("../../etc/passwd"))
 
 ---
 
-## Step 4 — Add `write_file` (medium risk — destructive)
+## Step 2.4 — Add `write_file` (medium risk — destructive)
 
 **Why now?** The agent can now explore a codebase safely. Adding write capability means
 it can create new files. We add `write_file` before `edit_file` because creating files
@@ -542,7 +715,7 @@ run("Read output.txt and tell me what is in it.")
 
 ---
 
-## Step 5 — Add `edit_file` — the Surgical Edit Tool (medium risk)
+## Step 2.5 — Add `edit_file` — the Surgical Edit Tool (medium risk)
 
 **Why now?** `write_file` overwrites a file completely. For modifying existing files the
 safer approach is to replace only the part that needs changing — which is exactly what
@@ -669,7 +842,7 @@ run("Show me the current contents of greeting.py.")
 
 ---
 
-## Step 6 — Add `bash` (high risk — arbitrary execution)
+## Step 2.6 — Add `bash` (high risk — arbitrary execution)
 
 **Why now?** You have all the safe, targeted tools. `bash` is the escape hatch — it lets
 the agent run any shell command, including tests, package installs, and build scripts.
@@ -779,51 +952,363 @@ You should see `bash` called with that command and the output echoed back.
 
 ---
 
-## Step 7 — Wire Everything Up: `make_default_registry`
+## Step 2.7 — Version 2, complete: the whole harness in one file
 
-**Why now?** You have all seven tools working individually. The last step is to assemble
-them into a registry once so the rest of the program can use them by name, without
-knowing which function each name maps to.
+You have built every piece across Steps 2.0–2.6. Here is **Version 2 as one complete,
+runnable program** — the harness, the two safety helpers, and the four core tools
+(`read_file`, `write_file`, `list_dir`, `bash`) with their hand-written schema dicts and
+the dispatch dict. Still no classes, no decorators.
 
-This is just the Phase 2 `Registry` pattern applied to the full toolset. If you skipped
-Phase 2, think of the registry as a dict from tool name → function, plus a method that
-produces the `tools=[...]` list for the API call.
+```python
+# harness_v2.py
+"""Version 2 — the same harness, tools as plain functions.
 
-### Step 7.1 — Upgrade tools to use `@tool` and `Registry`
+Four core tools (read_file, write_file, list_dir, bash), two shared
+safety helpers, one dispatch dict.  No classes, no decorators.
+"""
 
-In the full `tools.py` module (Section 9 below), every tool function carries the
+import json
+import os
+import pathlib
+import subprocess
+
+from openai import OpenAI
+
+client = OpenAI()   # reads OPENAI_API_KEY from the environment
+
+# ── Safety helpers (Step 2.3) ────────────────────────────────────────────────
+
+WORKSPACE_ROOT = pathlib.Path(os.getcwd()).resolve()
+
+def _safe_path(user_path: str) -> pathlib.Path:
+    """Resolve user_path inside WORKSPACE_ROOT or raise ValueError."""
+    p = pathlib.Path(user_path)
+    if p.is_absolute():
+        p = WORKSPACE_ROOT / pathlib.Path(*p.parts[1:])
+    else:
+        p = WORKSPACE_ROOT / p
+    resolved = p.resolve()
+    try:
+        resolved.relative_to(WORKSPACE_ROOT)
+    except ValueError:
+        raise ValueError(
+            f"Path '{user_path}' resolves outside the workspace root '{WORKSPACE_ROOT}'."
+        )
+    return resolved
+
+def _truncate(text: str, max_chars: int = 40_000, max_lines: int = 2_000,
+              label: str = "output") -> str:
+    """Cap text at max_lines / max_chars with a visible notice."""
+    lines = text.splitlines(keepends=True)
+    if len(lines) > max_lines:
+        text = "".join(lines[:max_lines])
+        text += f"\n[... {label} truncated at {max_lines} lines ...]"
+    if len(text) > max_chars:
+        text = text[:max_chars] + f"\n[... {label} truncated at {max_chars} chars ...]"
+    return text
+
+# ── Tools (Steps 2.0, 2.1, 2.4, 2.6) ─────────────────────────────────────────
+
+def read_file(path: str) -> str:
+    """Read a text file and return its contents, or an ERROR string."""
+    try:
+        p = _safe_path(path)
+    except ValueError as exc:
+        return f"ERROR: {exc}"
+    try:
+        with open(p, "r", encoding="utf-8", errors="replace") as f:
+            text = f.read()
+    except FileNotFoundError:
+        return f"ERROR: File not found: {path}"
+    except OSError as exc:
+        return f"ERROR: Cannot read file: {exc}"
+    return _truncate(text, label=f"read_file({path})")
+
+def write_file(path: str, content: str) -> str:
+    """Write content to a file, creating it (and parent dirs) if needed."""
+    try:
+        p = _safe_path(path)
+    except ValueError as exc:
+        return f"ERROR: {exc}"
+    try:
+        p.parent.mkdir(parents=True, exist_ok=True)
+        encoded = content.encode("utf-8")
+        p.write_bytes(encoded)
+    except OSError as exc:
+        return f"ERROR: Cannot write file: {exc}"
+    return f"Wrote {len(encoded)} bytes ({content.count(chr(10))} lines) to '{path}'."
+
+def list_dir(path: str = ".") -> str:
+    """List the contents of a directory."""
+    try:
+        p = _safe_path(path)
+    except ValueError as exc:
+        return f"ERROR: {exc}"
+    if not p.exists():
+        return f"ERROR: Directory not found: {path}"
+    if not p.is_dir():
+        return f"ERROR: '{path}' is a file, not a directory."
+    entries = sorted(p.iterdir(), key=lambda e: (e.is_file(), e.name.lower()))
+    lines = []
+    for e in entries:
+        if e.is_dir():
+            lines.append(f"D  {e.name}/")
+        else:
+            lines.append(f"F  {e.name}  ({e.stat().st_size} bytes)")
+    return _truncate(f"Directory: {path}\n" + "\n".join(lines), label="list_dir")
+
+def bash(command: str, timeout: int = 120) -> str:
+    """Run a shell command; return exit code plus combined stdout/stderr."""
+    try:
+        result = subprocess.run(
+            command,
+            shell=True,
+            cwd=str(WORKSPACE_ROOT),
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            timeout=timeout,
+        )
+        output = result.stdout.decode("utf-8", errors="replace")
+        output = _truncate(output, label=f"bash({command[:60]})")
+        return f"Exit code: {result.returncode}\n---\n{output}"
+    except subprocess.TimeoutExpired:
+        return f"ERROR: Command timed out after {timeout} seconds: {command}"
+    except OSError as exc:
+        return f"ERROR: Failed to start command: {exc}"
+
+# ── Schemas: one hand-written dict per tool ──────────────────────────────────
+
+SCHEMAS = [
+    {
+        "type": "function",
+        "name": "read_file",
+        "description": "Read a text file and return its contents. Returns an ERROR string on failure.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string", "description": "Path relative to the workspace root."},
+            },
+            "required": ["path"],
+        },
+    },
+    {
+        "type": "function",
+        "name": "write_file",
+        "description": (
+            "Write content to a file, creating it (and parent directories) if needed. "
+            "Overwrites existing files completely."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string", "description": "Path relative to the workspace root."},
+                "content": {"type": "string", "description": "Full text content to write."},
+            },
+            "required": ["path", "content"],
+        },
+    },
+    {
+        "type": "function",
+        "name": "list_dir",
+        "description": "List the files and directories at a path, one entry per line.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string", "description": "Directory path. Default '.'."},
+            },
+            "required": [],
+        },
+    },
+    {
+        "type": "function",
+        "name": "bash",
+        "description": (
+            "Run a shell command in the workspace and return its exit code and combined "
+            "output. stdin is closed, so interactive commands will not work."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "command": {"type": "string", "description": "Shell command to execute."},
+                "timeout": {"type": "integer", "description": "Seconds before the command is killed. Default 120."},
+            },
+            "required": ["command"],
+        },
+    },
+]
+
+TOOL_FNS = {
+    "read_file": read_file,
+    "write_file": write_file,
+    "list_dir": list_dir,
+    "bash": bash,
+}
+
+# ── The harness (unchanged from Version 1, except dict dispatch) ─────────────
+
+def run(task: str) -> None:
+    input_items = [{"role": "user", "content": task}]
+    while True:
+        resp = client.responses.create(
+            model="gpt-4o",
+            input=input_items,
+            tools=SCHEMAS,
+        )
+        for item in resp.output:
+            input_items.append(
+                item.model_dump() if hasattr(item, "model_dump") else item
+            )
+        tool_calls = [item for item in resp.output
+                      if getattr(item, "type", None) == "function_call"]
+        if not tool_calls:
+            for item in resp.output:
+                if getattr(item, "type", None) == "message":
+                    for block in item.content:
+                        if getattr(block, "type", None) == "output_text":
+                            print("ANSWER:", block.text)
+            return
+        for tc in tool_calls:
+            args = json.loads(tc.arguments) if isinstance(tc.arguments, str) else tc.arguments
+            print(f"[tool] {tc.name}({args})")
+            fn = TOOL_FNS.get(tc.name)
+            result = fn(**args) if fn else f"ERROR: Unknown tool: {tc.name}"
+            input_items.append({
+                "type": "function_call_output",
+                "call_id": tc.call_id,
+                "output": result,
+            })
+
+if __name__ == "__main__":
+    run("List the files here, create notes.txt containing the word 'hello', "
+        "then run 'cat notes.txt' with bash and confirm the file says hello.")
+```
+
+The other three tools you built — `glob` (Step 2.1), `grep` (Step 2.2), and `edit_file`
+(Step 2.5) — slot in identically: paste each function above the schemas, write its schema
+dict, add one `TOOL_FNS` entry. Nothing else moves.
+
+### ▶ Run it now
+
+```
+python harness_v2.py
+```
+
+You should see a short tool-call chain — `list_dir`, then `write_file`, then `bash` —
+ending with an answer confirming `notes.txt` contains `hello`. Also re-try the Version 1
+escape: ask it to read `/etc/hostname` and watch `_safe_path` turn the attempt into an
+`ERROR:` string the model can see and explain.
+
+---
+
+### What changed from Version 2 → Version 3
+
+- The tool functions and helpers move out of the harness script into **one module**
+  (`coding_tools.py`) with the workspace root defined once at the top.
+- The hand-written schema dicts disappear: the **`@tool` decorator from Phase 2** derives
+  each schema from the function's type hints and docstring, making registration one line
+  per tool.
+- The `TOOL_FNS` dict becomes the Phase 2 **`ToolRegistry`**: `registry.to_openai_schema()`
+  feeds the API call and `registry.dispatch(name, arguments_json)` replaces the manual
+  lookup (Phase 2's dispatch takes the **raw JSON string** and does its own `json.loads`).
+- Confinement is enforced **centrally**: every path-taking tool funnels through
+  `_safe_path`, and the workspace root is set in exactly one place
+  (`make_default_registry(workspace=...)`, or `set_workspace()` in the package).
+- The tools gain production polish: line numbers and `offset`/`limit` paging in
+  `read_file`, result caps in `glob`/`grep`/`list_dir`, binary-file detection.
+- The harness loop **still does not change** — it consumes `registry.to_openai_schema()`
+  and `registry.dispatch()`, and the `call_id` handshake is identical.
+
+---
+
+## Version 3 — the organized toolset: the same idea, organized
+
+**Why now?** You have all seven tools working individually as plain functions. Version 3
+assembles them the way the consolidated package does: one module, central confinement,
+and the Phase 2 `@tool` / `ToolRegistry` machinery doing the bookkeeping — so the rest of
+the program can use tools by name without knowing which function each name maps to.
+
+This is just the Phase 2 `ToolRegistry` pattern applied to the full toolset. If you
+skipped Phase 2, think of the registry as a dict from tool name → function, plus a method
+that produces the `tools=[...]` list for the API call.
+
+### Step 3.0 — A two-minute bridge: wiring Version 3 against your real Phase 2 code
+
+> **Why now?** Everything from here to the end of the phase imports the tool system you
+> built in Phase 2. Three wiring facts keep that painless — get them straight once and
+> every listing below runs against your existing code with **zero changes** to Phase 2:
+>
+> 1. **The import line.** Phase 2's tool system lives in a **`tools/` package** (a
+>    directory with `__init__.py`, `base.py`, `registry.py`, `parallel.py`), not a
+>    single `registry.py` file. So the import is:
+>
+>    ```python
+>    from tools import tool, ToolRegistry   # Phase 2's tools/ package
+>    ```
+>
+>    and the class is named **`ToolRegistry`** (there is no class called `Registry`).
+>
+> 2. **The file name for this phase's module.** We will collect all seven tools into one
+>    module. Do **not** name it `tools.py`: saved next to your Phase 2 `tools/` package,
+>    `import tools` would resolve to the package directory and your file would be
+>    shadowed. We use **`coding_tools.py`** throughout. (The consolidated package avoids
+>    the clash differently — it puts these same tools *inside* the package, as
+>    `tools/files.py` and `tools/shell.py`.)
+>
+> 3. **The two method names you'll call.** The schema list for the API comes from
+>    `registry.to_openai_schema()` (that is Phase 2's name for it), and dispatch is
+>    `registry.dispatch(name, arguments_str)` where `arguments_str` is the **raw JSON
+>    string** from the model (`tc.arguments`) — Phase 2's dispatch does its own
+>    `json.loads` and validation, so do *not* parse the arguments into a dict first.
+>    One bonus: because `@tool` wraps each function in a `FunctionTool` object,
+>    `registry.register(read_file)` just works — the decorated name *is* a `Tool`.
+
+That is the whole bridge — no code to change in Phase 2, just the right names. Your
+project folder for the rest of this phase looks like:
+
+```
+project/
+├── tools/              # Phase 2, unchanged (base.py, registry.py, parallel.py, __init__.py)
+├── coding_tools.py     # this phase's toolset (complete listing in Section 9)
+└── demo_phase4.py      # the Version 3 harness (Section 6)
+```
+
+### Step 3.1 — Upgrade tools to use `@tool` and `ToolRegistry`
+
+In the full `coding_tools.py` module (Section 9 below), every tool function carries the
 `@tool` decorator from Phase 2. The decorator reads the function's type hints and
 docstring and automatically writes the schema dict — so you do not have to maintain
 `READ_FILE_SCHEMA` by hand any more.
 
-### Step 7.2 — `make_default_registry`
+### Step 3.2 — `make_default_registry`
 
 ```python
-def make_default_registry(workspace: pathlib.Path = None) -> Registry:
+def make_default_registry(workspace: pathlib.Path = None) -> ToolRegistry:
     """
-    Return a Registry pre-loaded with all coding-agent tools.
+    Return a ToolRegistry pre-loaded with all coding-agent tools.
 
     Args:
         workspace: Override WORKSPACE_ROOT for this session.  If None, the
                    module-level WORKSPACE_ROOT (defaulting to cwd) is used.
 
     Usage:
-        from tools import make_default_registry
+        from coding_tools import make_default_registry
         registry = make_default_registry(pathlib.Path("/my/project"))
-        # Pass registry.tools_list() to client.responses.create(tools=...)
-        # Pass registry.dispatch(name, args) to handle tool calls.
+        # Pass registry.to_openai_schema() to client.responses.create(tools=...)
+        # Answer each call with registry.dispatch(tc.name, tc.arguments) —
+        # tc.arguments is the raw JSON string; dispatch parses it itself.
     """
     global WORKSPACE_ROOT
     if workspace is not None:
         WORKSPACE_ROOT = workspace.resolve()
 
-    registry = Registry()
+    registry = ToolRegistry()
     for fn in (read_file, write_file, edit_file, bash, glob, grep, list_dir):
         registry.register(fn)
     return registry
 ```
 
-The `Registry` class from Phase 2 already knows how to produce the flat tool-schema
+The `ToolRegistry` class from Phase 2 already knows how to produce the flat tool-schema
 list and dispatch by name. All we do here is register every `@tool`-decorated function.
 The `@tool` decorator extracted the JSON schema from type hints and the docstring when
 the function was defined, so there is nothing more to do.
@@ -832,18 +1317,21 @@ the function was defined, so there is nothing more to do.
 
 ## 2. Module Layout and Shared Utilities
 
-*This section describes the production-ready `tools.py` layout. You have already met all
-the pieces above; here they are explained in their final assembled form.*
+*This section describes the production-ready `coding_tools.py` layout — the rest of
+Version 3. You have already met all the pieces above; here they are explained in their
+final assembled form.*
 
-All tools live in a single module `tools.py`. At the top of the module we establish the
-workspace root, the two shared helpers, and the imports.
+All tools live in a single module `coding_tools.py` (recall from Step 3.0 why the name
+is not `tools.py`: that would be shadowed by Phase 2's `tools/` package directory). At
+the top of the module we establish the workspace root, the two shared helpers, and the
+imports.
 
 ```python
-# tools.py
+# coding_tools.py
 """
 Phase 4 — Real-world tools for a coding agent.
 
-All tools use the @tool decorator and Registry from Phase 2.
+All tools use the @tool decorator and ToolRegistry from Phase 2's tools/ package.
 All I/O is pure stdlib. No third-party packages.
 """
 
@@ -857,7 +1345,7 @@ import subprocess
 import sys
 from typing import Optional
 
-from registry import tool, Registry   # Phase 2 artefacts
+from tools import tool, ToolRegistry   # Phase 2's tools/ package (base.py + registry.py)
 
 # ---------------------------------------------------------------------------
 # Workspace root
@@ -867,16 +1355,37 @@ from registry import tool, Registry   # Phase 2 artefacts
 # the current working directory at import time.
 #
 # Override before calling make_default_registry():
-#   import tools; tools.WORKSPACE_ROOT = pathlib.Path("/my/project")
+#   import coding_tools; coding_tools.WORKSPACE_ROOT = pathlib.Path("/my/project")
 
 WORKSPACE_ROOT: pathlib.Path = pathlib.Path(os.getcwd()).resolve()
 ```
+
+**This mirrors the consolidated package.** `code/agent_harness/tools/files.py` and
+`shell.py` organize confinement exactly this way: a module-level `_WORKSPACE_ROOT`, a
+small `set_workspace(path)` setter, and a `_safe_path` that every path-taking tool
+funnels through — so the boundary is enforced **centrally, in one place**, not
+re-implemented inside each tool. The guide's equivalent of the package's setter is two
+lines:
+
+```python
+def set_workspace(path: pathlib.Path) -> None:
+    """Point every tool at a new workspace root (the package's files.py/shell.py pattern)."""
+    global WORKSPACE_ROOT
+    WORKSPACE_ROOT = pathlib.Path(path).resolve()
+```
+
+`make_default_registry(workspace=...)` (Section 4) calls the same idea inline. One
+subtlety worth stealing from the package: its `_safe_path` rejects escapes with
+`Path.is_relative_to()`, **not** a string `startswith` check — a plain prefix
+comparison would let a sibling directory like `/ws-evil` slip through for workspace
+`/ws`. Our `resolved.relative_to(WORKSPACE_ROOT)` + `except ValueError` form is the
+pre-3.9-friendly spelling of the same test.
 
 ---
 
 ## 3. The Tools (production versions)
 
-*These are the same functions you built in Steps 0–6, now using `@tool`, `_safe_path`,
+*These are the same functions you built in Steps 2.0–2.6, now using `@tool`, `_safe_path`,
 and `_truncate`. The logic is identical; only the decorators and shared helpers have been
 added.*
 
@@ -1455,31 +1964,32 @@ def _human_size(n: int) -> str:
 ## 4. Registering Everything: `make_default_registry`
 
 ```python
-def make_default_registry(workspace: pathlib.Path = None) -> Registry:
+def make_default_registry(workspace: pathlib.Path = None) -> ToolRegistry:
     """
-    Return a Registry pre-loaded with all coding-agent tools.
+    Return a ToolRegistry pre-loaded with all coding-agent tools.
 
     Args:
         workspace: Override WORKSPACE_ROOT for this session.  If None, the
                    module-level WORKSPACE_ROOT (defaulting to cwd) is used.
 
     Usage:
-        from tools import make_default_registry
+        from coding_tools import make_default_registry
         registry = make_default_registry(pathlib.Path("/my/project"))
-        # Pass registry.tools_list() to client.responses.create(tools=...)
-        # Pass registry.dispatch(name, args) to handle tool calls.
+        # Pass registry.to_openai_schema() to client.responses.create(tools=...)
+        # Answer each call with registry.dispatch(tc.name, tc.arguments) —
+        # tc.arguments is the raw JSON string; dispatch parses it itself.
     """
     global WORKSPACE_ROOT
     if workspace is not None:
         WORKSPACE_ROOT = workspace.resolve()
 
-    registry = Registry()
+    registry = ToolRegistry()
     for fn in (read_file, write_file, edit_file, bash, glob, grep, list_dir):
         registry.register(fn)
     return registry
 ```
 
-The `Registry` class from Phase 2 already knows how to produce the flat tool-schema
+The `ToolRegistry` class from Phase 2 already knows how to produce the flat tool-schema
 list and dispatch by name. All we do here is register every `@tool`-decorated function.
 The `@tool` decorator extracted the JSON schema from type hints and the docstring when
 the function was defined, so there is nothing more to do.
@@ -1502,8 +2012,9 @@ the function was defined, so there is nothing more to do.
 
 ## 6. End-to-End Demo
 
-The following demo wires the tool registry into the Phase 3 streaming loop and sends
-the agent a real task: find all TODO comments in a small project and summarize them.
+The following demo is **Version 3 running end-to-end**: it wires the tool registry into
+the Phase 3 streaming loop and sends the agent a real task — find all TODO comments in a
+small project and summarize them.
 
 ### 6.1 Setup
 
@@ -1512,9 +2023,11 @@ the agent a real task: find all TODO comments in a small project and summarize t
 """
 End-to-end demo: an agent finds and summarizes TODO comments in a project.
 
-Prerequisites:
-  pip install openai
-  export OPENAI_API_KEY=sk-...
+Prerequisites (see the Step 3.0 bridge for the folder layout):
+  - Phase 2's tools/ package in the same folder
+  - coding_tools.py next to it (the complete Version 3 module from Section 9)
+  - pip install openai
+  - export OPENAI_API_KEY=sk-...
 """
 
 import pathlib
@@ -1524,8 +2037,7 @@ import json
 import os
 
 from openai import OpenAI
-from registry import Registry   # Phase 2
-from tools import make_default_registry
+from coding_tools import make_default_registry   # Section 9's module (pulls in Phase 2)
 
 # ── Create a toy project for the agent to explore ────────────────────────────
 
@@ -1603,7 +2115,7 @@ def run_demo():
                 model="gpt-4o",
                 instructions=system_prompt,
                 input=input_items,
-                tools=registry.tools_list(),
+                tools=registry.to_openai_schema(),
                 tool_choice="auto",
             )
 
@@ -1632,7 +2144,9 @@ def run_demo():
             for tc in tool_calls:
                 args = json.loads(tc.arguments) if isinstance(tc.arguments, str) else tc.arguments
                 print(f"\n[Tool call] {tc.name}({json.dumps(args, ensure_ascii=False)[:120]})")
-                result = registry.dispatch(tc.name, args)
+                # Phase 2's dispatch wants the RAW JSON string (tc.arguments) —
+                # it does its own json.loads and validation.  Don't pre-parse.
+                result = registry.dispatch(tc.name, tc.arguments)
                 preview = result[:200].replace("\n", " ")
                 print(f"[Result]   {preview}{'...' if len(result) > 200 else ''}")
 
@@ -1649,6 +2163,21 @@ def run_demo():
 if __name__ == "__main__":
     run_demo()
 ```
+
+### ▶ Run it now
+
+This is Version 3's full checkpoint. It needs exactly three things side by side (the
+Step 3.0 layout): Phase 2's `tools/` package, `coding_tools.py` (the complete module in
+Section 9 — paste it now if you haven't yet), and this `demo_phase4.py`.
+
+```
+export OPENAI_API_KEY=sk-...
+python demo_phase4.py
+```
+
+You should see a transcript like the one in 6.3 below. (Want to check the wiring
+*before* spending an API call? The offline smoke test at the end of Section 9 exercises
+the registry and tools with no key at all.)
 
 ### 6.3 Transcript (representative output)
 
@@ -1820,12 +2349,16 @@ a tool; always return something the model can reason about.
 
 ---
 
-## 9. Complete `tools.py`
+## 9. Complete `coding_tools.py` (Version 3, complete)
 
-For reference, here is the full module with all pieces assembled in dependency order:
+For reference, here is the full Version 3 module with all pieces assembled in dependency
+order. Together with the `tools/` package you built in Phase 2 and the `demo_phase4.py`
+harness from Section 6, this is the complete runnable Version 3 program (see the
+Step 3.0 bridge for the three-file folder layout):
 
 ```python
-# tools.py  — Phase 4: Real-world coding-agent tools
+# coding_tools.py  — Phase 4: Real-world coding-agent tools
+# Needs: Phase 2's tools/ package in the same folder.
 from __future__ import annotations
 
 import fnmatch
@@ -1836,7 +2369,7 @@ import re
 import subprocess
 from typing import Optional
 
-from registry import tool, Registry
+from tools import tool, ToolRegistry   # Phase 2's tools/ package
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -2222,9 +2755,9 @@ def list_dir(path: str = ".") -> str:
 # Factory
 # ---------------------------------------------------------------------------
 
-def make_default_registry(workspace: pathlib.Path = None) -> Registry:
+def make_default_registry(workspace: pathlib.Path = None) -> ToolRegistry:
     """
-    Return a Registry pre-loaded with all coding-agent tools.
+    Return a ToolRegistry pre-loaded with all coding-agent tools.
 
     Args:
         workspace: Override WORKSPACE_ROOT.  Defaults to cwd at import time.
@@ -2232,11 +2765,36 @@ def make_default_registry(workspace: pathlib.Path = None) -> Registry:
     global WORKSPACE_ROOT
     if workspace is not None:
         WORKSPACE_ROOT = workspace.resolve()
-    registry = Registry()
+    registry = ToolRegistry()
     for fn in (read_file, write_file, edit_file, bash, glob, grep, list_dir):
         registry.register(fn)
     return registry
 ```
+
+### ▶ Run it now (no API key needed)
+
+Before wiring the model in, prove the module and the Phase 2 registry are talking to
+each other. With `coding_tools.py` saved next to your Phase 2 `tools/` package, save and
+run this four-line smoke test from the same folder:
+
+```python
+# smoke_test_tools.py — checks the Version 3 wiring offline
+from coding_tools import make_default_registry
+
+registry = make_default_registry()
+print(len(registry.to_openai_schema()))                           # 7 — one schema per tool
+print(registry.dispatch("list_dir", '{"path": "."}')[:200])       # your folder listing
+print(registry.dispatch("read_file", '{"path": "nope.txt"}'))     # ERROR: File not found...
+```
+
+```
+python smoke_test_tools.py
+```
+
+Note the second argument to `dispatch` is a **JSON string**, exactly what the model
+sends as `tc.arguments`. If you see the count `7`, a directory listing, and a clean
+`ERROR:` string (not a traceback), Version 3 is fully wired — `demo_phase4.py` in
+Section 6 is the same plumbing plus the model.
 
 ---
 
@@ -2257,6 +2815,11 @@ a thin wrapper around `registry.dispatch`.
 fills the context window: how to summarize stale tool results, implement a sliding
 window over the transcript, and use `max_output_tokens` budgeting to keep the model
 reasoning clearly across hundreds of tool calls.
+
+**Practice first:** before moving on, try the
+[Phase 4 exercises](./EXERCISES.md#phase-4--real-tools) — they extend the toolset you
+just built (and you can start from your `harness_v2.py` or the Version 3 module,
+whichever feels more comfortable).
 
 ---
 
