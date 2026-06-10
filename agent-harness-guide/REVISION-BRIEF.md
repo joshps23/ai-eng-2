@@ -111,7 +111,7 @@ Score each phase 1–5 on each axis; the loop revises the lowest-scoring phase n
 
 The evaluator-reviser loop runs **at most 10 times**, then stops on its own.
 
-- Iterations used: **0 / 10** *(reset 2026-06-10 for the version-ladder pass)*
+- Iterations used: **1 / 10** *(reset 2026-06-10 for the version-ladder pass)*
 - Per iteration: score all phases on the rubric, pick the weakest, revise it one notch
   more incremental, increment the counter here, log it below, commit, push. Stop when the
   counter hits 10 **or** every phase scores ≥4 on every axis.
@@ -128,6 +128,16 @@ The evaluator-reviser loop runs **at most 10 times**, then stops on its own.
 
 ## Revision log (newest first)
 
+- **2026-06-10 — Eval-loop iteration 1: Phase 7 repaired.** Full 6-axis scoring of all
+  phases (totals: P0 30, P1 30, P2 29, P3 30, P4 25, P5 27, P6 28, P7 24, P8 27).
+  Weakest was Phase 7 (run-it cadence 3 — checkpoints with unrunnable placeholder
+  files; continuity 3 — stale `ToolRegistry` API references and the only phase missing
+  Exercises/Next footers). Fixed additively: a Step 3.0 "bridge" adding the three
+  helper methods V3/V4 assume onto Phase 2's real `ToolRegistry`, complete
+  self-contained `v3_agent_class.py` / `v3_task_tool.py` run files (no placeholders),
+  and the missing Exercises link + Phase 8 pointer. Known remaining below-4 axis:
+  **Phase 4 continuity 3** (imports a phantom `registry` module / `tools_list()` /
+  dict-arg dispatch that don't match Phase 2's actual API) — queued for iteration 2.
 - **2026-06-10 — Version-ladder parallel pass complete.** Nine sub-agents (one per
   phase, run concurrently) restructured every phase to the ladder spec: each now
   presents complete runnable versions of its harness at increasing abstraction levels

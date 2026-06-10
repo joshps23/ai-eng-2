@@ -656,6 +656,64 @@ You should see one `[task] spawning sub-agent...` line appear while the orchestr
 > complete file for this version appears in [§7 — Full Code](#7-full-code--subagentspy);
 > each step below is a replace-this-block increment toward it.
 
+### Step 3.0 — A two-minute bridge: teach Phase 2's registry three new names
+
+> **Why now?** The `Agent` class in the next step calls `registry.schemas()` and
+> `registry.dispatch_parallel(...)`, and the preset code in Step 3.2 calls
+> `registry.get(...)`. Phase 2's `ToolRegistry` already has all three
+> *capabilities*, just under different spellings: the schema list is
+> `to_openai_schema()`, the parallel runner is the free function
+> `dispatch_parallel(registry, calls)` in `tools/parallel.py`, and lookup is a
+> plain dict access. Rather than rewrite anything, paste these three one-line
+> bridge methods **inside** the `ToolRegistry` class in your `tools/registry.py`:
+
+```python
+# tools/registry.py — add these three methods INSIDE the Phase 2 ToolRegistry class
+
+    def get(self, name):
+        """Look up a tool by name; returns None if not registered."""
+        return self._tools.get(name)
+
+    def schemas(self):
+        """The tools= list for the API — an alias for to_openai_schema()."""
+        return self.to_openai_schema()
+
+    def dispatch_parallel(self, function_calls):
+        """Run a batch of function_call items concurrently (tools/parallel.py)."""
+        from .parallel import dispatch_parallel
+        return dispatch_parallel(self, function_calls)
+```
+
+Each method is a single line of delegation — nothing about the registry's behavior
+changes; it just answers to the names the rest of this phase (and the consolidated
+package) uses.
+
+#### ▶ Check it now (no API key needed)
+
+In a Python REPL with your Phase 2 `tools/` package on the path:
+
+```python
+from tools import tool, ToolRegistry
+
+@tool
+def add(a: float, b: float) -> str:
+    """Add two numbers.
+
+    Args:
+        a: First number.
+        b: Second number.
+    """
+    return str(a + b)
+
+registry = ToolRegistry()
+registry.register(add)
+print(registry.get("add").run(a=2, b=3))   # 5
+print(len(registry.schemas()))             # 1
+```
+
+If both lines print, the bridge is in place and every listing in this phase runs
+against the registry you already built.
+
 ### Step 3.1 — Refactoring the Loop into a Reusable `Agent` Class
 
 > **Why now?** In Version 2 we passed `instructions`, `task`, and `tools_dict` as separate arguments everywhere. When you want to run many sub-agents — or reuse the same agent for different tasks — it is cleaner to bundle the loop with its conversation into an object. This step does exactly that refactor. No new capability is added; the behavior is identical.
@@ -832,21 +890,47 @@ Key design decisions:
 
 #### ▶ Run it now
 
-After putting the `Agent` class in `agent.py`, rewrite Version 2's orchestrator using it:
+After putting the `Agent` class in `agent.py`, rewrite Version 2's orchestrator using
+it. This is a **complete** file — it needs only `agent.py` (from this step) and your
+Phase 2 `tools/` package with the Step 3.0 bridge methods pasted in. Note how Phase 2's
+`@tool` decorator does double duty here: it turns `read_file` into a tool, and it turns
+`task` — the function that *spawns a sub-agent* — into a tool exactly the same way.
 
 ```python
-# v3_agent_class.py  — same behavior as v2_subagent.py, using the Agent class
+# v3_agent_class.py — same behavior as v2_subagent.py, using the Agent class.
+# Needs: agent.py (Step 3.1) + the Phase 2 tools/ package (with Step 3.0's bridge).
 from agent import Agent
-from tools.registry import ToolRegistry
+from tools import tool, ToolRegistry
 
-# Register the same read_file tool via ToolRegistry (Phase 2 style)
-# ... (setup identical to your Phase 2 harness) ...
+
+# ── The sub-agent's tool: @tool builds the schema from hints + docstring ──
+@tool
+def read_file(path: str) -> str:
+    """Read a file and return its contents.
+
+    Args:
+        path: Path of the file to read.
+    """
+    try:
+        with open(path) as f:
+            return f.read()
+    except OSError as exc:
+        return f"[error] {exc}"
+
 
 sub_registry = ToolRegistry()
-sub_registry.register(read_file)   # @tool-decorated function from Phase 2
+sub_registry.register(read_file)
 
-def task_fn(role: str, prompt: str) -> str:
-    """Spawn a fresh sub-agent and return its answer."""
+
+# ── The orchestrator's tool: spawning a sub-agent is just Agent().run() ──
+@tool
+def task(role: str, prompt: str) -> str:
+    """Spawn a sub-agent to complete an independent task.
+
+    Args:
+        role: Sub-agent role label (e.g. 'reviewer').
+        prompt: Full task prompt for the sub-agent.
+    """
     print(f"  [task] spawning {role!r} ...")
     worker = Agent(
         name=role,
@@ -855,9 +939,9 @@ def task_fn(role: str, prompt: str) -> str:
     )
     return worker.run(prompt)
 
-# Register task_fn as a tool in the orchestrator's registry
+
 orchestrator_registry = ToolRegistry()
-# ... register task_fn as a tool ...
+orchestrator_registry.register(task)
 
 orchestrator = Agent(
     name="orchestrator",
@@ -867,7 +951,15 @@ orchestrator = Agent(
 print(orchestrator.run("Check README.md for clarity issues."))
 ```
 
-The behavior is identical to Version 2. The `Agent` class is just `run_agent` with its conversation stored as `self._conversation` and its configuration as constructor arguments.
+```
+python v3_agent_class.py
+```
+
+You should see the same `[task] spawning 'reviewer' ...` line as Version 2, then the
+orchestrator's synthesised answer. The behavior is identical to Version 2. The `Agent`
+class is just `run_agent` with its conversation stored as `self._conversation` and its
+configuration as constructor arguments — and the `task` tool is the same one-call-spawns-
+a-loop trick, now spelled `Agent(...).run(prompt)`.
 
 ### Step 3.2 — Agent Presets: Named Roles with Fixed Instructions and Tools
 
@@ -975,7 +1067,10 @@ def task_fn(role: str, prompt: str) -> str:
 #### ▶ Run it now
 
 ```python
-# Quick test: ask a reviewer sub-agent to check a file
+# Quick test: ask a reviewer sub-agent to check a file.
+# `full_registry` is a ToolRegistry holding every tool workers may draw from —
+# build it exactly like sub_registry in Step 3.1's v3_agent_class.py (register
+# read_file there for now; Step 3.3's complete file adds list_directory).
 result = task_fn("reviewer", "Check auth.py for security issues.")
 print(result)
 ```
@@ -1147,17 +1242,50 @@ Register this tool in the orchestrator's registry and the model gains the abilit
 #### ▶ Run it now
 
 ```python
-# v3_task_tool.py  — orchestrator with a real task tool
+# v3_task_tool.py  — orchestrator with a real task tool.
+# Needs: agent.py (Step 3.1), the Phase 2 tools/ package (with the Step 3.0
+# bridge), and subagents.py as built so far (AGENT_PRESETS from Step 3.2,
+# dispatch_subagent + make_task_tool from this step).
 from openai import OpenAI
 from agent import Agent
-from tools.registry import ToolRegistry
+from tools import tool, ToolRegistry
 from subagents import make_task_tool, AGENT_PRESETS
 
 client = OpenAI()
 
+
+# The tools sub-agents may draw from — @tool builds each schema (Phase 2).
+@tool
+def read_file(path: str) -> str:
+    """Read a file and return its contents.
+
+    Args:
+        path: Path of the file to read.
+    """
+    try:
+        with open(path) as f:
+            return f.read()
+    except OSError as exc:
+        return f"[error] {exc}"
+
+
+@tool
+def list_directory(path: str = ".") -> str:
+    """List the contents of a directory.
+
+    Args:
+        path: Directory path to list.
+    """
+    import os
+    try:
+        return "\n".join(sorted(os.listdir(path)))
+    except OSError as exc:
+        return f"[error] {exc}"
+
+
 # Full tool registry that sub-agents may draw from
 full_registry = ToolRegistry()
-full_registry.register(read_file)        # your @tool-decorated functions
+full_registry.register(read_file)
 full_registry.register(list_directory)
 
 # Orchestrator only has the task tool — it delegates everything
@@ -1435,7 +1563,8 @@ The wall time equals the slowest worker (researcher at 6.2 s), not their sum (16
 
 Version 4's complete runnable program is the worked example in §5 below
 (`example_orchestrator.py`), driven by the full `subagents.py` listing in §7 — together
-with `agent.py` from Step 3.1, those three files are the whole Version 4 harness. Save
+with `agent.py` from Step 3.1 (and your Phase 2 `tools/` package carrying the Step 3.0
+bridge methods), those three files are the whole Version 4 harness. Save
 them side by side, point `REPO_PATH` at a real repository, and run:
 
 ```
@@ -2293,3 +2422,24 @@ packages, and ships it.
 4. Focus improves quality, a small toolset limits what can go wrong, and a short brief
    keeps each sub-agent's **context small** (cheaper, clearer reasoning).
 </details>
+
+---
+
+## Exercises
+
+See [`EXERCISES.md` — Phase 7](./EXERCISES.md#phase-7--sub-agents--orchestration) for
+hands-on practice:
+
+- **7.1 (warm-up):** Add a `task` tool that spawns a sub-agent (your `run_agent` loop,
+  called again) to handle a focused search, and have the main agent call it. Version 2's
+  `v2_subagent.py` is the natural starting point.
+- **7.2 (stretch):** Fan out **two** sub-agents in parallel on independent subtasks and
+  combine their results in the main agent's answer. Measure the wall-clock saving vs
+  running them in series.
+
+---
+
+Proceed to **[Phase 8 — The production harness](./08-production-harness.md)**, where the
+ladders from every phase — this one included — are assembled into the single tested
+package: retries, observability, configuration, and a real CLI around the loop you have
+been building since Phase 1.
