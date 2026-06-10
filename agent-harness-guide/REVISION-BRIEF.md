@@ -128,6 +128,18 @@ The evaluator-reviser loop runs **at most 10 times**, then stops on its own.
 
 ## Revision log (newest first)
 
+- **2026-06-10 — Version-ladder parallel pass complete.** Nine sub-agents (one per
+  phase, run concurrently) restructured every phase to the ladder spec: each now
+  presents complete runnable versions of its harness at increasing abstraction levels
+  (V1 line-by-line with no `def` → V2 functions → V3 classes → V4 decorators/streaming/
+  hooks/compact/threads where the phase teaches them), with "What changed Vn → Vn+1"
+  bullet lists between rungs and ▶ Run-it checkpoints throughout. Phase 8 reframed as
+  the consolidation phase with a verified ladder-to-package mapping table and a closing
+  capability checklist. Phase 6 needed a second attempt (first agent's edits never
+  reached disk). Verified after the pass: `code/` untouched, `python -m pytest` green
+  (56), every phase retains its 🟢 boxes, "Key takeaways", "Check yourself", pitfalls,
+  and "Next" pointer; Phases 2 and 6 gained the Exercises/Next footers they previously
+  lacked. The evaluator loop refines from here.
 - **2026-06-10 — Brief sharpened to the version-ladder spec.** New PM directive: each
   phase must contain complete, runnable versions of its harness at increasing
   abstraction levels (V1 line-by-line with no `def` → V2 functions → V3 classes →

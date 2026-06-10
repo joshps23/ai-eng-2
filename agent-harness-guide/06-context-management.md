@@ -101,18 +101,15 @@ so you can see the *growth* without an API key, then the real harness.
 ### Step 1.1 — Feel the growth (no API key needed)
 
 Before writing any strategy, let's see the problem in concrete numbers. Run this
-self-contained script — it needs only the Python standard library.
+self-contained script — it needs only the Python standard library, and like everything
+in Version 1 it is **straight-line code**: no `def`, no classes, just statements top to
+bottom. (Giving these fragments names is exactly what Version 2 will do.)
 
 ```python
 # demo_context_problem.py
 # Run with: python demo_context_problem.py
+# No def, no classes — straight down the page.
 
-# --- the simplest possible token estimator ---
-def count_tokens(text):
-    """Rough estimate: ~4 characters per token (no libraries required)."""
-    return max(1, len(text) // 4)
-
-# --- a growing conversation ---
 transcript = []
 
 # Pretend each "turn" adds a user message and an assistant reply.
@@ -130,7 +127,10 @@ for turn in range(1, 9):
         ),
     })
 
-    total = sum(count_tokens(item["content"]) for item in transcript)
+    # Inline token estimate: ~4 characters per token, summed over every item.
+    total = 0
+    for item in transcript:
+        total += len(item["content"]) // 4
     print(f"After turn {turn}: {len(transcript)} items, ~{total} tokens in transcript")
 ```
 
@@ -140,51 +140,46 @@ for turn in range(1, 9):
 python demo_context_problem.py
 ```
 
-You should see something like:
+You should see:
 
 ```
-After turn 1:  2 items,  ~37 tokens in transcript
-After turn 2:  4 items,  ~74 tokens in transcript
-After turn 3:  6 items, ~111 tokens in transcript
+After turn 1: 2 items, ~353 tokens in transcript
+After turn 2: 4 items, ~706 tokens in transcript
+After turn 3: 6 items, ~1059 tokens in transcript
 ...
-After turn 8: 16 items, ~296 tokens in transcript
+After turn 8: 16 items, ~2824 tokens in transcript
 ```
 
-The transcript grows every turn. With real assistant answers (hundreds of tokens) and
-tool outputs (thousands), you hit limits fast.
+The transcript grows every turn — linearly here, and faster in real sessions, where
+tool outputs (file reads, test logs) add thousands of tokens at a time. You hit limits
+fast.
 
 #### The simplest fix: drop oldest turns when over a budget
 
-Now add a plain function that trims the list. No classes, no imports — just list
-operations:
+Now trim the list, in the same inline style: a `while` loop that pops the oldest item
+until the total fits. Still no `def` — just list operations.
 
 ```python
-# demo_context_problem.py  (continued — add these lines and re-run)
+# demo_context_problem.py  (continued — append these lines and re-run)
 
-TOKEN_BUDGET = 100  # tiny budget so we can see it working
+TOKEN_BUDGET = 1000   # tiny budget so we can see truncation fire
 
-def count_transcript(items):
-    """Total token estimate for a list of transcript items."""
-    return sum(count_tokens(item.get("content", "")) for item in items)
+# Re-estimate the total (same inline arithmetic as above).
+total = 0
+for item in transcript:
+    total += len(item["content"]) // 4
+print(f"\nBefore pruning: {len(transcript)} items, ~{total} tokens")
 
-def drop_oldest(items, budget):
-    """
-    Remove items from the FRONT of the list until the total is under budget.
-    Returns a new list — does not modify the original.
+# Naive truncation: treat every item as independent and pop from the front.
+# (No pairing rules yet — Version 2 adds them, and Step 1.3 shows why we must.)
+dropped_count = 0
+while transcript and total > TOKEN_BUDGET:
+    dropped = transcript.pop(0)            # drop the oldest item
+    total -= len(dropped["content"]) // 4
+    dropped_count += 1
 
-    Simple version: treats every item as independent (no pairing rules yet).
-    We'll add the pairing rule in Version 2.
-    """
-    result = list(items)
-    while result and count_transcript(result) > budget:
-        result.pop(0)   # drop the oldest item
-    return result
-
-# Show the transcript before and after pruning
-print(f"\nBefore pruning: {len(transcript)} items, ~{count_transcript(transcript)} tokens")
-pruned = drop_oldest(transcript, TOKEN_BUDGET)
-print(f"After  pruning: {len(pruned)} items, ~{count_transcript(pruned)} tokens")
-print(f"Dropped {len(transcript) - len(pruned)} items to stay under {TOKEN_BUDGET} tokens")
+print(f"After  pruning: {len(transcript)} items, ~{total} tokens")
+print(f"Dropped {dropped_count} items to stay under {TOKEN_BUDGET} tokens")
 ```
 
 **▶ Run it now** (same file, just append and re-run)
@@ -193,12 +188,12 @@ print(f"Dropped {len(transcript) - len(pruned)} items to stay under {TOKEN_BUDGE
 python demo_context_problem.py
 ```
 
-Expected output (numbers will vary slightly):
+Expected output (after the growth lines):
 
 ```
-Before pruning: 16 items, ~296 tokens
-After  pruning:  4 items,  ~74 tokens
-Dropped 12 items to stay under 100 tokens
+Before pruning: 16 items, ~2824 tokens
+After  pruning: 4 items, ~706 tokens
+Dropped 12 items to stay under 1000 tokens
 ```
 
 **That's the whole idea.** Everything in the rest of this phase is a refinement:
