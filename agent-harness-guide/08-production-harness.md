@@ -1818,7 +1818,7 @@ def make_agent(script, workspace):
         instructions="You are a test agent.",
         registry=registry,
         policy=PermissionPolicy(mode="yolo"),  # no approval prompts
-        accounting=SessionAccounting(model="gpt-5"),
+        accounting=SessionAccounting(model="gpt-4o"),
         tracer=Tracer(path=None),              # no file output
         settings=settings,
     )
@@ -1910,7 +1910,7 @@ def test_tool_error_does_not_crash_loop():
             instructions="test",
             registry=registry,
             policy=PermissionPolicy(mode="yolo"),
-            accounting=SessionAccounting(model="gpt-5"),
+            accounting=SessionAccounting(model="gpt-4o"),
             tracer=Tracer(path=None),
             settings=settings,
         )
