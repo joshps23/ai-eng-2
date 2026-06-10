@@ -111,7 +111,7 @@ Score each phase 1–5 on each axis; the loop revises the lowest-scoring phase n
 
 The evaluator-reviser loop runs **at most 10 times**, then stops on its own.
 
-- Iterations used: **1 / 10** *(reset 2026-06-10 for the version-ladder pass)*
+- Iterations used: **2 / 10** *(reset 2026-06-10 for the version-ladder pass)*
 - Per iteration: score all phases on the rubric, pick the weakest, revise it one notch
   more incremental, increment the counter here, log it below, commit, push. Stop when the
   counter hits 10 **or** every phase scores ≥4 on every axis.
@@ -128,6 +128,17 @@ The evaluator-reviser loop runs **at most 10 times**, then stops on its own.
 
 ## Revision log (newest first)
 
+- **2026-06-10 — Eval-loop iteration 2: Phase 4 repaired (25 → 30/30).** Phase 7's
+  iteration-1 repair verified intact. Confirmed and fixed Phase 4's continuity drift
+  against Phase 2's real API: `from registry import tool, Registry` → `from tools
+  import tool, ToolRegistry`, `tools_list()` → `to_openai_schema()`, dict-arg dispatch
+  → raw-JSON-string dispatch; renamed Phase 4's module `tools.py` → `coding_tools.py`
+  (it was shadowed by Phase 2's `tools/` package — a newly found beginner-breaking
+  trap); added a Step 3.0 wiring bridge, `# Needs:` prerequisite headers, and two new
+  run checkpoints (incl. an offline smoke test). Next target: **Phase 5** — confirmed
+  phantom import `from tools import Tool, RISK_DANGEROUS` (`RISK_DANGEROUS` doesn't
+  exist in Phase 2's package) plus its multi-file V4 assembly with unnamed
+  prerequisites.
 - **2026-06-10 — Eval-loop iteration 1: Phase 7 repaired.** Full 6-axis scoring of all
   phases (totals: P0 30, P1 30, P2 29, P3 30, P4 25, P5 27, P6 28, P7 24, P8 27).
   Weakest was Phase 7 (run-it cadence 3 — checkpoints with unrunnable placeholder

@@ -1,7 +1,7 @@
 # Phase 4 — Real-World Tools (the Claude-Code Toolset)
 
 > **Series context:** Phases 0–3 built the agent loop, the tool registry with the
-> `@tool` decorator and `Registry` class, and streaming. This phase fills the registry
+> `@tool` decorator and `ToolRegistry` class, and streaming. This phase fills the registry
 > with the tools that make a coding agent actually useful: filesystem reads and writes,
 > surgical edits, shell execution, glob, grep, and directory listing. Every tool is pure
 > Python stdlib. No frameworks, no third-party packages beyond `openai`.
@@ -55,7 +55,7 @@ same job; only the organization changes:
   plain helper functions (`_safe_path`, `_truncate`) that keep the agent confined to its
   workspace and its output bounded. Tools are introduced one at a time, safest first.
 - **Version 3 — the organized toolset.** The same tools, grouped into one module with
-  the workspace confinement enforced centrally and the Phase 2 `@tool` / `Registry`
+  the workspace confinement enforced centrally and the Phase 2 `@tool` / `ToolRegistry`
   machinery doing the bookkeeping — the shape the consolidated package
   (`code/agent_harness/tools/files.py` and `shell.py`) uses.
 
@@ -398,7 +398,7 @@ ANSWER: The file hello.txt contains two lines:
 One tool, one schema dict, a plain function — the same circuit as Version 1, but now the
 tool has a name and the loop body stays short. Everything in the rest of this phase is
 this same pattern, scaled up with more tools, better safety guards, and (in Version 3)
-the `@tool` / `Registry` machinery from Phase 2.
+the `@tool` / `ToolRegistry` machinery from Phase 2.
 
 ---
 
@@ -1204,19 +1204,20 @@ escape: ask it to read `/etc/hostname` and watch `_safe_path` turn the attempt i
 ### What changed from Version 2 → Version 3
 
 - The tool functions and helpers move out of the harness script into **one module**
-  (`tools.py`) with the workspace root defined once at the top.
+  (`coding_tools.py`) with the workspace root defined once at the top.
 - The hand-written schema dicts disappear: the **`@tool` decorator from Phase 2** derives
   each schema from the function's type hints and docstring, making registration one line
   per tool.
-- The `TOOL_FNS` dict becomes the Phase 2 **`Registry`**: `registry.tools_list()` feeds
-  the API call and `registry.dispatch(name, args)` replaces the manual lookup.
+- The `TOOL_FNS` dict becomes the Phase 2 **`ToolRegistry`**: `registry.to_openai_schema()`
+  feeds the API call and `registry.dispatch(name, arguments_json)` replaces the manual
+  lookup (Phase 2's dispatch takes the **raw JSON string** and does its own `json.loads`).
 - Confinement is enforced **centrally**: every path-taking tool funnels through
   `_safe_path`, and the workspace root is set in exactly one place
   (`make_default_registry(workspace=...)`, or `set_workspace()` in the package).
 - The tools gain production polish: line numbers and `offset`/`limit` paging in
   `read_file`, result caps in `glob`/`grep`/`list_dir`, binary-file detection.
-- The harness loop **still does not change** — it consumes `registry.tools_list()` and
-  `registry.dispatch()`, and the `call_id` handshake is identical.
+- The harness loop **still does not change** — it consumes `registry.to_openai_schema()`
+  and `registry.dispatch()`, and the `call_id` handshake is identical.
 
 ---
 
@@ -1224,16 +1225,57 @@ escape: ask it to read `/etc/hostname` and watch `_safe_path` turn the attempt i
 
 **Why now?** You have all seven tools working individually as plain functions. Version 3
 assembles them the way the consolidated package does: one module, central confinement,
-and the Phase 2 `@tool` / `Registry` machinery doing the bookkeeping — so the rest of
+and the Phase 2 `@tool` / `ToolRegistry` machinery doing the bookkeeping — so the rest of
 the program can use tools by name without knowing which function each name maps to.
 
-This is just the Phase 2 `Registry` pattern applied to the full toolset. If you skipped
-Phase 2, think of the registry as a dict from tool name → function, plus a method that
-produces the `tools=[...]` list for the API call.
+This is just the Phase 2 `ToolRegistry` pattern applied to the full toolset. If you
+skipped Phase 2, think of the registry as a dict from tool name → function, plus a method
+that produces the `tools=[...]` list for the API call.
 
-### Step 3.1 — Upgrade tools to use `@tool` and `Registry`
+### Step 3.0 — A two-minute bridge: wiring Version 3 against your real Phase 2 code
 
-In the full `tools.py` module (Section 9 below), every tool function carries the
+> **Why now?** Everything from here to the end of the phase imports the tool system you
+> built in Phase 2. Three wiring facts keep that painless — get them straight once and
+> every listing below runs against your existing code with **zero changes** to Phase 2:
+>
+> 1. **The import line.** Phase 2's tool system lives in a **`tools/` package** (a
+>    directory with `__init__.py`, `base.py`, `registry.py`, `parallel.py`), not a
+>    single `registry.py` file. So the import is:
+>
+>    ```python
+>    from tools import tool, ToolRegistry   # Phase 2's tools/ package
+>    ```
+>
+>    and the class is named **`ToolRegistry`** (there is no class called `Registry`).
+>
+> 2. **The file name for this phase's module.** We will collect all seven tools into one
+>    module. Do **not** name it `tools.py`: saved next to your Phase 2 `tools/` package,
+>    `import tools` would resolve to the package directory and your file would be
+>    shadowed. We use **`coding_tools.py`** throughout. (The consolidated package avoids
+>    the clash differently — it puts these same tools *inside* the package, as
+>    `tools/files.py` and `tools/shell.py`.)
+>
+> 3. **The two method names you'll call.** The schema list for the API comes from
+>    `registry.to_openai_schema()` (that is Phase 2's name for it), and dispatch is
+>    `registry.dispatch(name, arguments_str)` where `arguments_str` is the **raw JSON
+>    string** from the model (`tc.arguments`) — Phase 2's dispatch does its own
+>    `json.loads` and validation, so do *not* parse the arguments into a dict first.
+>    One bonus: because `@tool` wraps each function in a `FunctionTool` object,
+>    `registry.register(read_file)` just works — the decorated name *is* a `Tool`.
+
+That is the whole bridge — no code to change in Phase 2, just the right names. Your
+project folder for the rest of this phase looks like:
+
+```
+project/
+├── tools/              # Phase 2, unchanged (base.py, registry.py, parallel.py, __init__.py)
+├── coding_tools.py     # this phase's toolset (complete listing in Section 9)
+└── demo_phase4.py      # the Version 3 harness (Section 6)
+```
+
+### Step 3.1 — Upgrade tools to use `@tool` and `ToolRegistry`
+
+In the full `coding_tools.py` module (Section 9 below), every tool function carries the
 `@tool` decorator from Phase 2. The decorator reads the function's type hints and
 docstring and automatically writes the schema dict — so you do not have to maintain
 `READ_FILE_SCHEMA` by hand any more.
@@ -1241,31 +1283,32 @@ docstring and automatically writes the schema dict — so you do not have to mai
 ### Step 3.2 — `make_default_registry`
 
 ```python
-def make_default_registry(workspace: pathlib.Path = None) -> Registry:
+def make_default_registry(workspace: pathlib.Path = None) -> ToolRegistry:
     """
-    Return a Registry pre-loaded with all coding-agent tools.
+    Return a ToolRegistry pre-loaded with all coding-agent tools.
 
     Args:
         workspace: Override WORKSPACE_ROOT for this session.  If None, the
                    module-level WORKSPACE_ROOT (defaulting to cwd) is used.
 
     Usage:
-        from tools import make_default_registry
+        from coding_tools import make_default_registry
         registry = make_default_registry(pathlib.Path("/my/project"))
-        # Pass registry.tools_list() to client.responses.create(tools=...)
-        # Pass registry.dispatch(name, args) to handle tool calls.
+        # Pass registry.to_openai_schema() to client.responses.create(tools=...)
+        # Answer each call with registry.dispatch(tc.name, tc.arguments) —
+        # tc.arguments is the raw JSON string; dispatch parses it itself.
     """
     global WORKSPACE_ROOT
     if workspace is not None:
         WORKSPACE_ROOT = workspace.resolve()
 
-    registry = Registry()
+    registry = ToolRegistry()
     for fn in (read_file, write_file, edit_file, bash, glob, grep, list_dir):
         registry.register(fn)
     return registry
 ```
 
-The `Registry` class from Phase 2 already knows how to produce the flat tool-schema
+The `ToolRegistry` class from Phase 2 already knows how to produce the flat tool-schema
 list and dispatch by name. All we do here is register every `@tool`-decorated function.
 The `@tool` decorator extracted the JSON schema from type hints and the docstring when
 the function was defined, so there is nothing more to do.
@@ -1274,19 +1317,21 @@ the function was defined, so there is nothing more to do.
 
 ## 2. Module Layout and Shared Utilities
 
-*This section describes the production-ready `tools.py` layout — the rest of Version 3.
-You have already met all the pieces above; here they are explained in their final
-assembled form.*
+*This section describes the production-ready `coding_tools.py` layout — the rest of
+Version 3. You have already met all the pieces above; here they are explained in their
+final assembled form.*
 
-All tools live in a single module `tools.py`. At the top of the module we establish the
-workspace root, the two shared helpers, and the imports.
+All tools live in a single module `coding_tools.py` (recall from Step 3.0 why the name
+is not `tools.py`: that would be shadowed by Phase 2's `tools/` package directory). At
+the top of the module we establish the workspace root, the two shared helpers, and the
+imports.
 
 ```python
-# tools.py
+# coding_tools.py
 """
 Phase 4 — Real-world tools for a coding agent.
 
-All tools use the @tool decorator and Registry from Phase 2.
+All tools use the @tool decorator and ToolRegistry from Phase 2's tools/ package.
 All I/O is pure stdlib. No third-party packages.
 """
 
@@ -1300,7 +1345,7 @@ import subprocess
 import sys
 from typing import Optional
 
-from registry import tool, Registry   # Phase 2 artefacts
+from tools import tool, ToolRegistry   # Phase 2's tools/ package (base.py + registry.py)
 
 # ---------------------------------------------------------------------------
 # Workspace root
@@ -1310,7 +1355,7 @@ from registry import tool, Registry   # Phase 2 artefacts
 # the current working directory at import time.
 #
 # Override before calling make_default_registry():
-#   import tools; tools.WORKSPACE_ROOT = pathlib.Path("/my/project")
+#   import coding_tools; coding_tools.WORKSPACE_ROOT = pathlib.Path("/my/project")
 
 WORKSPACE_ROOT: pathlib.Path = pathlib.Path(os.getcwd()).resolve()
 ```
@@ -1919,31 +1964,32 @@ def _human_size(n: int) -> str:
 ## 4. Registering Everything: `make_default_registry`
 
 ```python
-def make_default_registry(workspace: pathlib.Path = None) -> Registry:
+def make_default_registry(workspace: pathlib.Path = None) -> ToolRegistry:
     """
-    Return a Registry pre-loaded with all coding-agent tools.
+    Return a ToolRegistry pre-loaded with all coding-agent tools.
 
     Args:
         workspace: Override WORKSPACE_ROOT for this session.  If None, the
                    module-level WORKSPACE_ROOT (defaulting to cwd) is used.
 
     Usage:
-        from tools import make_default_registry
+        from coding_tools import make_default_registry
         registry = make_default_registry(pathlib.Path("/my/project"))
-        # Pass registry.tools_list() to client.responses.create(tools=...)
-        # Pass registry.dispatch(name, args) to handle tool calls.
+        # Pass registry.to_openai_schema() to client.responses.create(tools=...)
+        # Answer each call with registry.dispatch(tc.name, tc.arguments) —
+        # tc.arguments is the raw JSON string; dispatch parses it itself.
     """
     global WORKSPACE_ROOT
     if workspace is not None:
         WORKSPACE_ROOT = workspace.resolve()
 
-    registry = Registry()
+    registry = ToolRegistry()
     for fn in (read_file, write_file, edit_file, bash, glob, grep, list_dir):
         registry.register(fn)
     return registry
 ```
 
-The `Registry` class from Phase 2 already knows how to produce the flat tool-schema
+The `ToolRegistry` class from Phase 2 already knows how to produce the flat tool-schema
 list and dispatch by name. All we do here is register every `@tool`-decorated function.
 The `@tool` decorator extracted the JSON schema from type hints and the docstring when
 the function was defined, so there is nothing more to do.
@@ -1977,9 +2023,11 @@ small project and summarize them.
 """
 End-to-end demo: an agent finds and summarizes TODO comments in a project.
 
-Prerequisites:
-  pip install openai
-  export OPENAI_API_KEY=sk-...
+Prerequisites (see the Step 3.0 bridge for the folder layout):
+  - Phase 2's tools/ package in the same folder
+  - coding_tools.py next to it (the complete Version 3 module from Section 9)
+  - pip install openai
+  - export OPENAI_API_KEY=sk-...
 """
 
 import pathlib
@@ -1989,8 +2037,7 @@ import json
 import os
 
 from openai import OpenAI
-from registry import Registry   # Phase 2
-from tools import make_default_registry
+from coding_tools import make_default_registry   # Section 9's module (pulls in Phase 2)
 
 # ── Create a toy project for the agent to explore ────────────────────────────
 
@@ -2068,7 +2115,7 @@ def run_demo():
                 model="gpt-4o",
                 instructions=system_prompt,
                 input=input_items,
-                tools=registry.tools_list(),
+                tools=registry.to_openai_schema(),
                 tool_choice="auto",
             )
 
@@ -2097,7 +2144,9 @@ def run_demo():
             for tc in tool_calls:
                 args = json.loads(tc.arguments) if isinstance(tc.arguments, str) else tc.arguments
                 print(f"\n[Tool call] {tc.name}({json.dumps(args, ensure_ascii=False)[:120]})")
-                result = registry.dispatch(tc.name, args)
+                # Phase 2's dispatch wants the RAW JSON string (tc.arguments) —
+                # it does its own json.loads and validation.  Don't pre-parse.
+                result = registry.dispatch(tc.name, tc.arguments)
                 preview = result[:200].replace("\n", " ")
                 print(f"[Result]   {preview}{'...' if len(result) > 200 else ''}")
 
@@ -2114,6 +2163,21 @@ def run_demo():
 if __name__ == "__main__":
     run_demo()
 ```
+
+### ▶ Run it now
+
+This is Version 3's full checkpoint. It needs exactly three things side by side (the
+Step 3.0 layout): Phase 2's `tools/` package, `coding_tools.py` (the complete module in
+Section 9 — paste it now if you haven't yet), and this `demo_phase4.py`.
+
+```
+export OPENAI_API_KEY=sk-...
+python demo_phase4.py
+```
+
+You should see a transcript like the one in 6.3 below. (Want to check the wiring
+*before* spending an API call? The offline smoke test at the end of Section 9 exercises
+the registry and tools with no key at all.)
 
 ### 6.3 Transcript (representative output)
 
@@ -2285,14 +2349,16 @@ a tool; always return something the model can reason about.
 
 ---
 
-## 9. Complete `tools.py` (Version 3, complete)
+## 9. Complete `coding_tools.py` (Version 3, complete)
 
 For reference, here is the full Version 3 module with all pieces assembled in dependency
-order. Together with `registry.py` from Phase 2 and the `demo_phase4.py` harness from
-Section 6, this is the complete runnable Version 3 program:
+order. Together with the `tools/` package you built in Phase 2 and the `demo_phase4.py`
+harness from Section 6, this is the complete runnable Version 3 program (see the
+Step 3.0 bridge for the three-file folder layout):
 
 ```python
-# tools.py  — Phase 4: Real-world coding-agent tools
+# coding_tools.py  — Phase 4: Real-world coding-agent tools
+# Needs: Phase 2's tools/ package in the same folder.
 from __future__ import annotations
 
 import fnmatch
@@ -2303,7 +2369,7 @@ import re
 import subprocess
 from typing import Optional
 
-from registry import tool, Registry
+from tools import tool, ToolRegistry   # Phase 2's tools/ package
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -2689,9 +2755,9 @@ def list_dir(path: str = ".") -> str:
 # Factory
 # ---------------------------------------------------------------------------
 
-def make_default_registry(workspace: pathlib.Path = None) -> Registry:
+def make_default_registry(workspace: pathlib.Path = None) -> ToolRegistry:
     """
-    Return a Registry pre-loaded with all coding-agent tools.
+    Return a ToolRegistry pre-loaded with all coding-agent tools.
 
     Args:
         workspace: Override WORKSPACE_ROOT.  Defaults to cwd at import time.
@@ -2699,11 +2765,36 @@ def make_default_registry(workspace: pathlib.Path = None) -> Registry:
     global WORKSPACE_ROOT
     if workspace is not None:
         WORKSPACE_ROOT = workspace.resolve()
-    registry = Registry()
+    registry = ToolRegistry()
     for fn in (read_file, write_file, edit_file, bash, glob, grep, list_dir):
         registry.register(fn)
     return registry
 ```
+
+### ▶ Run it now (no API key needed)
+
+Before wiring the model in, prove the module and the Phase 2 registry are talking to
+each other. With `coding_tools.py` saved next to your Phase 2 `tools/` package, save and
+run this four-line smoke test from the same folder:
+
+```python
+# smoke_test_tools.py — checks the Version 3 wiring offline
+from coding_tools import make_default_registry
+
+registry = make_default_registry()
+print(len(registry.to_openai_schema()))                           # 7 — one schema per tool
+print(registry.dispatch("list_dir", '{"path": "."}')[:200])       # your folder listing
+print(registry.dispatch("read_file", '{"path": "nope.txt"}'))     # ERROR: File not found...
+```
+
+```
+python smoke_test_tools.py
+```
+
+Note the second argument to `dispatch` is a **JSON string**, exactly what the model
+sends as `tc.arguments`. If you see the count `7`, a directory listing, and a clean
+`ERROR:` string (not a traceback), Version 3 is fully wired — `demo_phase4.py` in
+Section 6 is the same plumbing plus the model.
 
 ---
 
