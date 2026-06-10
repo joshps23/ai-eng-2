@@ -21,79 +21,187 @@ The design principle that makes all of these manageable is: **the model proposes
 
 ---
 
-> ## 🟢 Beginner track: the safety idea, in functions + dicts
->
-> The big idea of this phase needs none of the new syntax below. It's this: **before
-> running a tool, ask a function "is this allowed?" and only run it if the answer is
-> yes.** Here's the whole permission check using only dicts, a list, and if/else:
->
-> ```python
-> # How risky is each tool? (the original calls this its "risk level")
-> TOOL_RISK = {
->     "read_file": "safe", "glob": "safe", "grep": "safe", "list_dir": "safe",
->     "write_file": "caution", "edit_file": "caution",
->     "bash": "dangerous",
-> }
->
-> # For each mode, which risk levels run without asking the user?
-> AUTO_OK = {
->     "plan":  ["safe"],
->     "auto":  ["safe", "caution"],
->     "yolo":  ["safe", "caution", "dangerous"],
-> }
->
-> def check_permission(tool_name, command_or_path, mode):
->     """Return 'allow', 'deny', or 'ask'."""
->     # 1) Always block a few obviously destructive commands.
->     if tool_name == "bash":
->         for bad in ["rm -rf", "sudo ", ":(){"]:
->             if bad in command_or_path:
->                 return "deny"
->     # 2) Auto-approve if this tool's risk is OK for the current mode.
->     risk = TOOL_RISK.get(tool_name, "dangerous")
->     if risk in AUTO_OK.get(mode, []):
->         return "allow"
->     # 3) Otherwise, ask the user.
->     return "ask"
->
-> def ask_user(tool_name):
->     answer = input(f"Allow {tool_name}? [y/n] ").strip().lower()
->     return "allow" if answer == "y" else "deny"
-> ```
->
-> Use it in the loop right before running a tool:
->
-> ```python
-> decision = check_permission(fc.name, args.get("command", args.get("path", "")), mode)
-> if decision == "ask":
->     decision = ask_user(fc.name)
-> if decision == "deny":
->     result = "Permission denied by the harness."   # <- becomes the tool result
-> else:
->     result = dispatch(fc.name, fc.arguments)        # run it (Phase 2 dispatch)
-> ```
->
-> That's the entire safety mechanism. The rest of the phase makes it more powerful and
-> uses some new syntax to organize it — here's how to read each piece:
->
-> | New thing in this phase | What it is, in your terms |
-> |-------------------------|---------------------------|
-> | `@dataclass class Tool:` | A class whose only job is to hold named fields — basically **a dict with fixed keys**. Read `tool.name` as `tool["name"]`. |
-> | `class Mode(str, Enum)` / `Decision` | A fixed set of named text constants. `Mode.PLAN` is really just the string `"plan"`; you can use plain strings like the box above does. |
-> | `set` (e.g. `{"safe", "caution"}`) | Like a **list** but items are unique and `x in myset` is fast. For your purposes, treat it as a list. |
-> | a function that *returns* a function (e.g. `bash_command_matches`, `make_audit_logger`) | A **closure** — a function that builds and hands back another function with some values baked in. You can replace any of these with a single plain function plus an `if`. |
-> | `return (decision, reason)` | Returns **two values at once** as a pair; `a, b = check(...)` unpacks them. |
-> | a "hook" | Just **a function the harness calls** before or after a tool runs (to block, scrub secrets, or log). A list of such functions, called in order. |
->
-> Everything below is the production-grade version of the small `check_permission`
-> above. Read it for the ideas (risk levels, modes, deny-lists, secret scrubbing); use
-> the simple functions-and-dicts form when you build your own.
+## Step 0 — A minimal permission gate (plain functions + dicts)
+
+The big idea of this entire phase is just: **before running a tool, ask a function "is this allowed?" and only run it if the answer is yes.** You can build a useful safety layer with nothing more than a dict, a list, and `if`/`else`.
+
+Here is the simplest version that actually works:
+
+```python
+# How risky is each tool?
+TOOL_RISK = {
+    "read_file": "safe", "glob": "safe", "grep": "safe", "list_dir": "safe",
+    "write_file": "caution", "edit_file": "caution",
+    "bash": "dangerous",
+}
+
+def check_permission(tool_name, arg):
+    """Return 'allow', 'deny', or 'ask'."""
+    # Always block a few obviously destructive commands.
+    if tool_name == "bash":
+        for bad in ["rm -rf", "sudo ", ":(){"]:
+            if bad in arg:
+                return "deny"
+    # Safe tools always pass.
+    risk = TOOL_RISK.get(tool_name, "dangerous")
+    if risk == "safe":
+        return "allow"
+    # Everything else: ask the user.
+    return "ask"
+
+def ask_user(tool_name):
+    answer = input(f"Allow {tool_name}? [y/n] ").strip().lower()
+    return "allow" if answer == "y" else "deny"
+```
+
+Wire it into your dispatch path right before running a tool — these four lines replace the bare `dispatch(...)` call:
+
+```python
+# Inside your tool-call handling loop (from Phase 2 / Phase 4):
+arg = args.get("command", args.get("path", ""))
+decision = check_permission(fc.name, arg)
+if decision == "ask":
+    decision = ask_user(fc.name)
+if decision == "deny":
+    result = "Permission denied by the harness."   # becomes the tool result
+else:
+    result = dispatch(fc.name, fc.arguments)        # run it normally
+```
+
+That is the entire safety mechanism. A safe tool (`read_file`, `grep`) passes straight through. A dangerous command like `bash("rm -rf .")` is blocked before the shell ever sees it. Anything in between stops to ask you.
+
+### ▶ Run it now
+
+Add `TOOL_RISK`, `check_permission`, and `ask_user` to your `agent_loop.py`, then replace your dispatch call with the four-line block above. Run the agent and ask it to read a file — you should see no prompt. Then ask it to run a shell command: you should be asked `Allow bash? [y/n]`. Type `n` — confirm the model receives "Permission denied by the harness." and continues gracefully.
+
+> **What you should see:**
+> - Read-only tools run silently.
+> - `bash` pauses and waits for your input.
+> - Typing `n` does not crash — the model gets a denial message and responds to it.
 
 ---
 
-## 2. Risk Classification
+## Step 1 — Add permission modes (one new idea: a mode controls what's auto-allowed)
 
-Start by annotating each tool with a `risk` level. This is structural, not behavioral — it describes the worst the tool can do.
+The gate above always asks about `caution`-level tools even if you are in the middle of a trusted editing session. **Why now?** You want to say "for this run, auto-approve file writes too" without changing your code — just pick a mode.
+
+A mode is just a string that controls which risk levels are auto-approved. Add a second parameter to `check_permission`:
+
+```python
+# For each mode, which risk levels pass without asking?
+AUTO_OK = {
+    "plan":  ["safe"],                          # read-only; never mutate
+    "auto":  ["safe", "caution"],               # approve file writes, ask before bash
+    "yolo":  ["safe", "caution", "dangerous"],  # approve everything (careful!)
+}
+
+def check_permission(tool_name, arg, mode="auto"):
+    """Return 'allow', 'deny', or 'ask'."""
+    # Hard-block destructive patterns regardless of mode.
+    if tool_name == "bash":
+        for bad in ["rm -rf", "sudo ", ":(){"]:
+            if bad in arg:
+                return "deny"
+    # Auto-approve if this tool's risk fits the mode.
+    risk = TOOL_RISK.get(tool_name, "dangerous")
+    if risk in AUTO_OK.get(mode, []):
+        return "allow"
+    # In plan mode, mutations are a hard deny (not just "ask").
+    if mode == "plan" and risk in ["caution", "dangerous"]:
+        return "deny"
+    # Otherwise ask.
+    return "ask"
+```
+
+Update the call site to pass `mode`:
+
+```python
+decision = check_permission(fc.name, arg, mode=mode)
+```
+
+### ▶ Run it now
+
+Start the agent twice: once with `mode="plan"` and once with `mode="auto"`. In plan mode, ask the agent to edit a file — you should see "Permission denied" without being asked. In auto mode, the same edit goes through silently.
+
+---
+
+## Step 2 — Add structured rules (one new idea: a list of rules, first match wins)
+
+The mode approach works well, but you want to say "always allow `git status` without asking, even though `bash` is dangerous." **Why now?** Hard-coded `if` checks for every special case will pile up. A small list of rules, evaluated top-to-bottom, scales much better.
+
+```python
+# A rule is just a dict: {"decision": "allow"/"deny", "tool": name, "arg_contains": pattern}
+DEFAULT_RULES = [
+    # Hard denials — checked before mode logic
+    {"decision": "deny",  "tool": "bash", "arg_contains": "rm -rf"},
+    {"decision": "deny",  "tool": "bash", "arg_contains": "sudo "},
+    {"decision": "deny",  "tool": "bash", "arg_contains": ":(}{"},
+    # Explicit allows — safe git read commands
+    {"decision": "allow", "tool": "bash", "arg_contains": "git status"},
+    {"decision": "allow", "tool": "bash", "arg_contains": "git log"},
+    {"decision": "allow", "tool": "bash", "arg_contains": "git diff"},
+]
+
+def apply_rules(tool_name, arg, rules):
+    """Return 'allow', 'deny', or None (no rule matched)."""
+    for rule in rules:
+        if rule["tool"] == tool_name and rule["arg_contains"] in arg:
+            return rule["decision"]
+    return None  # no rule matched — fall through to mode logic
+
+def check_permission(tool_name, arg, mode="auto", rules=None):
+    if rules is None:
+        rules = DEFAULT_RULES
+    # 1. Rules first (hard deny/allow overrides mode)
+    rule_decision = apply_rules(tool_name, arg, rules)
+    if rule_decision is not None:
+        return rule_decision
+    # 2. Mode auto-approval
+    risk = TOOL_RISK.get(tool_name, "dangerous")
+    if risk in AUTO_OK.get(mode, []):
+        return "allow"
+    if mode == "plan" and risk in ["caution", "dangerous"]:
+        return "deny"
+    # 3. Ask
+    return "ask"
+```
+
+### ▶ Run it now
+
+Run the agent and ask it to `git status`. With the rule in place it should run without prompting even though `bash` is "dangerous." Then try `git push` — no rule matches, so it falls through to the mode logic and (in `auto` mode) asks you.
+
+---
+
+> ## 🟢 Beginner recap: what you've built so far
+>
+> You now have a working, three-layer permission system using only functions, dicts, and lists:
+>
+> | Layer | What it does | Key data structure |
+> |---|---|---|
+> | TOOL_RISK | Labels each tool | a dict |
+> | AUTO_OK + mode | Auto-approves by risk level | a dict of lists |
+> | DEFAULT_RULES | Hard deny/allow by pattern | a list of dicts |
+>
+> The steps below scale this up to the production-grade version — using `Enum`, `@dataclass`,
+> and a `class`-based policy engine. Each new Python feature solves a concrete problem
+> you'd hit if you kept the plain-dict version on a real project.
+>
+> | New thing below | What problem it solves |
+> |---|---|
+> | `class Mode(str, Enum)` | Autocomplete + typo detection: `Mode.PLAN` instead of the string `"plan"` |
+> | `@dataclass class PolicyRule` | Named fields instead of `rule["arg_contains"]`; easier to add a `predicate` field |
+> | `class PermissionPolicy` | Bundles the rule list with its `evaluate()` logic; easy to swap policies |
+> | `tuple[Decision, str]` return value | Carries a *reason* alongside the decision — the model and logs can read it |
+> | Session memory (`set`) | Remembers y/n/a/d answers across the loop without re-asking |
+> | `class HookRegistry` | Manages an ordered list of before/after functions without if-chains |
+
+---
+
+## 3. Risk Classification (production shape)
+
+The plain `TOOL_RISK` dict works, but in a larger codebase you want risk declared *on the tool itself*, so it can't drift out of sync. Attach it to the `Tool` dataclass from Phase 2.
+
+> **Why the `@dataclass` syntax?** It's a class whose only job is to hold named fields — think of it as a dict with fixed keys and dot-access. `tool.risk` is the same idea as `tool["risk"]`.
 
 ```python
 # tools.py  (extend the Tool dataclass from Phase 2)
@@ -177,7 +285,9 @@ The risk table for Phase 4 tools:
 
 ---
 
-## 3. Permission Modes
+## 4. Permission Modes (production shape)
+
+> **Why `class Mode(str, Enum)` instead of a plain string?** Your editor can autocomplete `Mode.PLAN` and will catch `Mode.PLAM` at import time. The plain-string version from Step 1 works identically at runtime; the Enum just catches typos early.
 
 The harness operates in one of five modes. These mirror the mental model popularised by Claude Code, adapted for a pure-Python harness.
 
@@ -226,7 +336,9 @@ BYPASS_WARNING = """\
 
 ---
 
-## 4. The Policy Engine
+## 5. The Policy Engine (production shape)
+
+> **Why a `PermissionPolicy` class?** Your Step 2 `DEFAULT_RULES` list works fine for a few rules. When rules multiply, you want: (a) richer matching (regex, not just `in`), (b) a predicate function for complex logic, (c) the `evaluate()` method to live next to the data. This is exactly what the dataclass + class approach provides — it is the Step 2 list, organized.
 
 Beyond modes, you want structured allow/deny rules — a policy that can say "allow `bash(git *)` but deny `bash(rm *)` regardless of mode." Implement this as an ordered list of rules evaluated top-to-bottom, first match wins.
 
@@ -336,7 +448,9 @@ def default_policy() -> PermissionPolicy:
 
 ---
 
-## 5. The Approval Gate
+## 6. The Approval Gate (production shape)
+
+> **Why upgrade from the Step 0/1 gate?** The simple gate returned just `"allow"/"deny"/"ask"`. The production gate also returns a *reason string*, remembers per-session y/a/d/n answers across loop iterations (so it does not ask twice about the same tool), and integrates with the `Tool` dataclass's `.risk` field and the `PermissionPolicy` rules.
 
 The gate combines mode, policy, and per-session memory into a single decision function. When the answer is ASK, it prompts the terminal and remembers the choice for the rest of the session.
 
@@ -427,7 +541,9 @@ def _ask_user(tool_name: str, args: dict) -> tuple[Decision, str]:
 
 ---
 
-## 6. The Hook System
+## 7. The Hook System
+
+> **Why hooks, and why now?** You now have permission checking wired in. But you also want to: log every tool call, scrub secrets from outputs, and inject warnings when a file looks like it contains prompt-injection text. You *could* add all of that logic directly to the dispatch block — but it would become a tangled mess. **Hooks** separate those cross-cutting concerns from the loop structure itself.
 
 Permissions are one kind of middleware. You also want to observe, transform, and gate tool calls for other reasons: scrubbing secrets from outputs, logging to an audit file, injecting defaults into arguments. Generalise this with a hook registry.
 
@@ -633,9 +749,13 @@ def make_output_truncator(max_chars: int = 8000) -> PostHook:
     return _hook
 ```
 
+### ▶ Check your hooks
+
+Create a `HookRegistry`, add `dangerous_command_blocker` as a pre-hook and `secret_scrubber` as a post-hook. Call `registry.run_pre(ctx)` with a `PreToolContext` whose `args` contain `"command": "rm -rf ."` — you should get a blocked-message string back. Call `registry.run_post(ctx)` with a `PostToolContext` whose `result` contains a fake key like `sk-abc123xyz789abc123xyz789` — you should see `[REDACTED:openai-key]` in the output.
+
 ---
 
-## 7. Sandboxing: What Pure Python Can Do
+## 8. Sandboxing: What Pure Python Can Do
 
 The OS-level answer to sandboxing is containers (Docker, Podman), Linux namespaces, seccomp-bpf filters, or tools like `firejail` or `bubblewrap`. Those are the right answer for production. But you can meaningfully improve safety in-process with pure Python, applied to the `bash` tool's subprocess call.
 
@@ -783,7 +903,7 @@ The pure-Python layer meaningfully reduces the blast radius for accidents and co
 
 ---
 
-## 8. Prompt-Injection Defense
+## 9. Prompt-Injection Defense
 
 When `read_file` returns a file whose contents say:
 
@@ -833,7 +953,7 @@ def injection_detector(ctx: PostToolContext) -> str | None:
 
 ---
 
-## 9. Integrating Everything into the Agent Loop
+## 10. Integrating Everything into the Agent Loop
 
 Here is the complete `safe_dispatch` function and the updated loop. The flow is:
 
@@ -1434,7 +1554,7 @@ if __name__ == "__main__":
 
 ---
 
-## 10. Pitfalls
+## 11. Pitfalls
 
 > These are the mistakes that feel obvious in retrospect and cost hours in practice.
 
