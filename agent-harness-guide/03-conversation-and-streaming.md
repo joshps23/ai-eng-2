@@ -752,7 +752,7 @@ across turns:
 import sys
 from openai import OpenAI
 
-MODEL = "gpt-5"
+MODEL = "gpt-4o"
 client = OpenAI()
 
 
@@ -1069,7 +1069,7 @@ import pathlib
 from typing import Any, Callable
 from openai import OpenAI
 
-MODEL = "gpt-5"
+MODEL = "gpt-4o"
 client = OpenAI()
 
 # ── Tool registry ─────────────────────────────────────────────────────

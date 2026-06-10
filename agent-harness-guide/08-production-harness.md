@@ -124,7 +124,7 @@ def create_with_retry(client, **kwargs):
 
 
 fake = FakeClient()
-resp = create_with_retry(fake, model="gpt-5", input=[], tools=[])
+resp = create_with_retry(fake, model="gpt-4o", input=[], tools=[])
 print("Success on attempt", fake._call_count)
 ```
 
@@ -463,7 +463,7 @@ The plain-dict equivalent is just:
 
 ```python
 settings = {
-    "model": os.environ.get("AGENT_MODEL", "gpt-5"),
+    "model": os.environ.get("AGENT_MODEL", "gpt-4o"),
     "max_iterations": int(os.environ.get("AGENT_MAX_ITERATIONS", "100")),
     "transcript_path": "transcript.json",
     # … and so on
@@ -491,12 +491,12 @@ from .accounting import DEFAULT_PRICE_TABLE
 @dataclass
 class Settings:
     # Core model
-    model: str = "gpt-5"
+    model: str = "gpt-4o"
 
     # Context budget (tokens)
     max_context_tokens: int = 180_000
     compact_threshold: float = 0.85        # compact at 85 % of budget
-    compaction_model: str = "gpt-4.1-mini" # cheap model for summary
+    compaction_model: str = "gpt-4o-mini"  # cheap model for summary
 
     # Tool execution
     max_tool_concurrency: int = 4
@@ -600,7 +600,7 @@ An example `.agentrc` file at the project root:
 
 ```json
 {
-  "model": "gpt-4.1",
+  "model": "gpt-4o",
   "permission_mode": "strict",
   "max_context_tokens": 128000,
   "memory_path": "AGENTS.md"
@@ -611,10 +611,10 @@ An example `.agentrc` file at the project root:
 
 ```python
 import os
-os.environ["AGENT_MODEL"] = "gpt-4.1"
+os.environ["AGENT_MODEL"] = "gpt-4o"
 
 settings = Settings.from_env()
-print(settings.model)          # gpt-4.1
+print(settings.model)          # gpt-4o
 print(settings.max_iterations) # 100  (default)
 ```
 
@@ -776,7 +776,7 @@ from .permissions import PermissionPolicy
 from .tools import build_registry       # builds the Phase 4 tool set
 from .tracer import Tracer
 
-MODEL = "gpt-5"
+MODEL = "gpt-4o"
 
 # ---------------------------------------------------------------------------
 # Argparse
@@ -1684,7 +1684,7 @@ Run:
 agent                              # interactive REPL
 agent -p "Summarise all TODO comments in this repo"
 agent --resume --mode strict
-AGENT_MODEL=gpt-4.1 agent         # cheaper model via env
+AGENT_MODEL=gpt-4o agent          # override model via env
 ```
 
 ### Running the Bash Tool Safely in Production
@@ -1814,7 +1814,7 @@ def make_agent(script, workspace):
     )
     return Agent(
         client=FakeClient(script),
-        model="gpt-5",
+        model="gpt-4o",
         instructions="You are a test agent.",
         registry=registry,
         policy=PermissionPolicy(mode="yolo"),  # no approval prompts
@@ -1906,7 +1906,7 @@ def test_tool_error_does_not_crash_loop():
 
         agent = Agent(
             client=FakeClient(script),
-            model="gpt-5",
+            model="gpt-4o",
             instructions="test",
             registry=registry,
             policy=PermissionPolicy(mode="yolo"),

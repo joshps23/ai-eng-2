@@ -1149,7 +1149,7 @@ from tools.registry import ToolRegistry
 from tools.parallel import dispatch_parallel
 
 client = OpenAI()
-MODEL  = "gpt-5"
+MODEL  = "gpt-4o"
 
 
 def run_agent(
@@ -1530,7 +1530,7 @@ from tools import tool, ToolRegistry
 from tools.parallel import dispatch_parallel, dispatch_sequential
 
 client = OpenAI()
-MODEL  = "gpt-5"
+MODEL  = "gpt-4o"
 
 
 # ------------------------------------------------------------------ #

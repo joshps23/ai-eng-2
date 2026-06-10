@@ -125,7 +125,7 @@ client = OpenAI()  # reads OPENAI_API_KEY from the environment
 We pin a model id in one place so every phase agrees:
 
 ```python
-MODEL = "gpt-5"  # any Responses-API-capable model works; swap as you like
+MODEL = "gpt-4o"  # any Responses-API-capable model works; swap as you like
 ```
 
 > Throughout this guide, `MODEL` refers to a current, capable OpenAI model. Use the
@@ -141,7 +141,7 @@ This is the smallest end-to-end program we can write.
 # step1_hello.py
 from openai import OpenAI
 
-MODEL = "gpt-5"
+MODEL = "gpt-4o"
 client = OpenAI()
 
 resp = client.responses.create(
@@ -184,7 +184,7 @@ the conversation history. The full form passes a Python list you own and append 
 # step2_list_input.py
 from openai import OpenAI
 
-MODEL = "gpt-5"
+MODEL = "gpt-4o"
 client = OpenAI()
 
 input_items = [
@@ -282,7 +282,7 @@ to do (call it, or answer directly):
 # step3_tool_request.py
 from openai import OpenAI
 
-MODEL = "gpt-5"
+MODEL = "gpt-4o"
 client = OpenAI()
 
 tools = [{
@@ -381,7 +381,7 @@ under 30 lines:
 import json
 from openai import OpenAI
 
-MODEL = "gpt-5"
+MODEL = "gpt-4o"
 client = OpenAI()
 
 tools = [{
@@ -613,7 +613,7 @@ completely deterministic output so you can easily verify correctness.
 import json
 from openai import OpenAI
 
-MODEL = "gpt-5"
+MODEL = "gpt-4o"
 client = OpenAI()
 
 tools = [{
