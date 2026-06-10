@@ -52,12 +52,19 @@ Status: ☐ todo · ◐ in progress · ☑ done
 | 6 | **Beginner FAQ / troubleshooting** page: API keys, rate limits, common tracebacks, Windows vs. mac/Linux | 1, 4 | ☑ |
 | 7 | **CI** that runs the test suite (and ideally a markdown link/code-block check) on every push | 6 | ☑ |
 | 8 | **Verify phase code samples** against the canonical package — flag any drift between snippets and `code/` | 6 | ☑ |
-| 9 | **Visual diagrams**: replace/augment ASCII with clearer flow diagrams where it helps a beginner | 4 | ☐ |
+| 9 | **Visual diagrams**: replace/augment ASCII with clearer flow diagrams where it helps a beginner | 4 | ☑ |
 | 10 | **"What you'll have built" capstone** + a checklist mapping each phase's output to a feature of a real harness | 5 | ☐ |
 
 ## Iteration log
 
 Newest first. One line per shipped iteration.
+
+- **2026-06-10** — Shipped **Item 9**: converted the five most central flow diagrams to
+  Mermaid (renders natively on GitHub): the core agent loop (Phase 0), the `call_id`
+  handshake as a new sequence diagram (Phase 0), the bare-harness loop (Phase 1), the
+  permission funnel with its two short-circuit-to-tool-output paths (Phase 5), and the
+  orchestrator-worker fan-out (Phase 7). Package trees and tables intentionally stay as
+  text — they read better that way.
 
 - **2026-06-09** — Shipped **Item 8**: audited phase snippets vs the canonical package by
   extracting every module/symbol and every `*.py` reference. Found real drift — phases

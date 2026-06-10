@@ -26,29 +26,19 @@ Different subtasks benefit from different system prompts and different toolsets.
 
 The architecture this phase builds:
 
-```
-                     ┌─────────────────────────────────────┐
-                     │           ORCHESTRATOR               │
-                     │  (decides what work needs doing,     │
-                     │   how many workers, what each does)  │
-                     └────────────────┬────────────────────┘
-                                      │
-              ┌───────────────────────┼───────────────────────┐
-              │ task()                │ task()                │ task()
-              ▼                       ▼                       ▼
-   ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐
-   │  WORKER A        │   │  WORKER B        │   │  WORKER C        │
-   │  role=researcher │   │  role=coder      │   │  role=reviewer   │
-   │  own transcript  │   │  own transcript  │   │  own transcript  │
-   │  own tools       │   │  own tools       │   │  own tools       │
-   └────────┬────────┘   └────────┬────────┘   └────────┬────────┘
-            │ summary             │ diff                 │ findings
-            └───────────────────►─┴─◄──────────────────┘
-                                  │
-                     ┌────────────▼────────────┐
-                     │  ORCHESTRATOR synthesises│
-                     │  final answer            │
-                     └─────────────────────────┘
+```mermaid
+flowchart TD
+    O["ORCHESTRATOR<br/>decides what work needs doing,<br/>how many workers, what each does"]
+    A["WORKER A · researcher<br/>own transcript, own tools"]
+    B["WORKER B · coder<br/>own transcript, own tools"]
+    C["WORKER C · reviewer<br/>own transcript, own tools"]
+    S["ORCHESTRATOR synthesises<br/>final answer"]
+    O -->|"task()"| A
+    O -->|"task()"| B
+    O -->|"task()"| C
+    A -->|"summary"| S
+    B -->|"diff"| S
+    C -->|"findings"| S
 ```
 
 The critical insight is that the orchestrator **decides at runtime** how many workers to spawn and what each does. This is a *dynamic* workflow, not a hardcoded pipeline. The model looks at the task, reasons about how to decompose it, and emits the appropriate `task` tool calls. If the task only warrants one worker, one is spawned. If it warrants seven, seven run in parallel.

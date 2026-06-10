@@ -1693,29 +1693,22 @@ This is the production shape of the phase — the Version 3 harness plus the hoo
 consolidated into the multi-file layout the rest of the guide uses. Here is the complete
 `safe_dispatch` function and the updated loop. The flow is:
 
-```text
-model emits function_call
-        │
-        ▼
-  run pre-hooks (dangerous_command_blocker, ...)
-        │ short-circuit? → return hook result as tool output
-        │
-        ▼
-  check_permission(tool, args, policy, mode)
-        │ DENY? → return denial string as tool output
-        │
-        ▼
-  tool.run(**args)
-        │
-        ▼
-  run post-hooks (secret_scrubber, audit_logger, truncator, ...)
-        │
-        ▼
-  append {"type":"function_call_output", "call_id":..., "output": result}
-        │
-        ▼
-  next loop iteration
+```mermaid
+flowchart TD
+    F["model emits function_call"] --> PRE["run pre-hooks<br/>(dangerous_command_blocker, …)"]
+    PRE -->|"short-circuit"| OUT["hook result becomes<br/>the tool output"]
+    PRE -->|"pass"| PERM["check_permission(tool, args, policy, mode)"]
+    PERM -->|"DENY"| OUT2["denial string becomes<br/>the tool output"]
+    PERM -->|"allow"| RUN["tool.run(**args)"]
+    RUN --> POST["run post-hooks<br/>(secret_scrubber, audit_logger, truncator, …)"]
+    POST --> APP["append function_call_output<br/>(same call_id, string output)"]
+    OUT --> APP
+    OUT2 --> APP
+    APP --> NEXT["next loop iteration"]
 ```
+
+Note the two short-circuit paths on the left: a blocked or denied call still produces a
+`function_call_output` — the loop never raises, it *answers* the model with the refusal.
 
 ### `permissions.py` — final complete file
 

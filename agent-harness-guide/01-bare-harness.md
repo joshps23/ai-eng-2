@@ -33,25 +33,15 @@ Every agent iteration is the same three-step cycle:
 2. **Inspect** — if the response contains tool calls, execute them and append the results; go to step 1.
 3. **Answer** — if the response contains no tool calls, emit the text and stop.
 
-```
-┌─────────────────────────────────────────────────────┐
-│  input_items (grows each iteration)                  │
-│                                                       │
-│  [user msg] ──► responses.create()                   │
-│                        │                             │
-│              ┌─────────▼──────────┐                  │
-│              │  resp.output items │                  │
-│              └──┬─────────────┬───┘                  │
-│          message│       function_call│               │
-│                 │                   │                │
-│           print &           dispatch() → str         │
-│           break            append output item        │
-│                                   │                  │
-│                       input_items += resp.output     │
-│                       input_items += [call_outputs]  │
-│                            │                         │
-│                            └──► responses.create()   │
-└─────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    U["input_items = [user message]"] --> C["resp = client.responses.create(model, input=input_items, tools)"]
+    C --> A["input_items += resp.output<br/>(always carry the model's output forward first)"]
+    A --> Q{"any function_call<br/>items in resp.output?"}
+    Q -->|"no — final answer"| P["print resp.output_text and stop"]
+    Q -->|"yes"| D["dispatch each call → result string"]
+    D --> O["append function_call_output<br/>(same call_id, string output)"]
+    O --> C
 ```
 
 The transcript is **append-only**: nothing is ever removed, and the model's own output items travel back in unchanged as part of the next call's `input`.

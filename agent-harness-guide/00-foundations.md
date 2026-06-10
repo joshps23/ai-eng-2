@@ -37,20 +37,14 @@ That loop — *model → tool calls → execute → feed results back → model*
 entire ballgame. Everything else (streaming, permissions, sub-agents, context
 compaction, retries) is refinement on top of this loop.
 
-```
-                ┌─────────────────────────────────────────────┐
-                │                                             │
-                ▼                                             │
-   ┌────────────────────────┐     wants to    ┌──────────────┴───────────────┐
-   │  Send conversation to  │──── call tools ─▶│  Execute tools, append their  │
-   │  the model (Responses) │                  │  outputs to the conversation  │
-   └────────────────────────┘                  └──────────────────────────────┘
-                │
-                │ produced final text
-                ▼
-        ┌───────────────┐
-        │  Return answer │
-        └───────────────┘
+```mermaid
+flowchart TD
+    A["Send conversation to the model<br/>(responses.create)"]
+    B["Execute tools, append their<br/>outputs to the conversation"]
+    C["Return answer"]
+    A -->|"model wants to call tools"| B
+    B -->|"go around again"| A
+    A -->|"model produced final text"| C
 ```
 
 Claude Code, Cursor, and every "coding agent" you've used is — at its core — this
@@ -387,6 +381,20 @@ To answer it, you append **two things** to your `input_items` list, in order:
 Then you call `client.responses.create(...)` again with the grown `input_items`.
 That is the entire loop. The `call_id` is the glue that ties a request to its
 result — **echoing it back exactly is mandatory**.
+
+Here is the whole two-turn exchange as a timeline — note how `call_xyz789` travels
+out with the request and comes back with your result:
+
+```mermaid
+sequenceDiagram
+    participant H as Your harness
+    participant M as Model (Responses API)
+    H->>M: responses.create(input=[user message], tools=[...])
+    M-->>H: function_call · name="get_weather" · call_id="call_xyz789"
+    Note over H: run the tool locally → "Sunny, 21°C"
+    H->>M: responses.create(input = items + function_call + function_call_output with call_id="call_xyz789")
+    M-->>H: message · "It's sunny and 21°C in Paris."
+```
 
 > **Two ways to carry state.** Either (a) keep your own `input_items` list and append
 > output items + tool results yourself (explicit, portable, what we do), or (b) pass
