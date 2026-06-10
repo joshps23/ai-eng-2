@@ -560,12 +560,30 @@ thing is assembled into one runnable file.
 
 ### Step 3.1 — Risk Classification (production shape)
 
-The plain `TOOL_RISK` dict works, but in a larger codebase you want risk declared *on the tool itself*, so it can't drift out of sync. Attach it to the `Tool` dataclass from Phase 2.
+The plain `TOOL_RISK` dict works, but in a larger codebase you want risk declared *on the tool itself*, so it can't drift out of sync. To do that, this phase builds its own richer `Tool` — a dataclass with a `risk` field — as an upgrade of the Phase 2 idea.
+
+> 🟢 **A two-minute bridge: how this phase's files relate to Phase 2's.** Phase 2 built a
+> `tools/` *package* (a folder) exporting `Tool`, `FunctionTool`, the `@tool` decorator,
+> and `ToolRegistry` — none of which know about risk. This phase keeps its upgraded
+> versions in **its own files** with **different names**, so nothing collides:
+>
+> | Phase 2 (`tools/` package) | Phase 5 (this phase's files) |
+> |---|---|
+> | `class Tool` / `FunctionTool(fn=...)` | `risk_tools.py` — `@dataclass Tool(run=..., risk=...)` |
+> | `ToolRegistry.to_openai_schema()` | `tool_registry.py` — `ToolRegistry.api_schemas()` |
+> | `ToolRegistry.dispatch(name, args_str)` | same name, plus `get()` and `all_tools()` |
+>
+> **Do not name this phase's file `tools.py`** — a `tools.py` file and Phase 2's `tools/`
+> package cannot live in the same folder (Python sees one name, `tools`, and picks one of
+> them — the same shadowing trap Phase 4 dodged by naming its module `coding_tools.py`).
+> We use **`risk_tools.py`** throughout. At the end of this phase, a small adapter
+> (`phase5_tools.py`, built in the sandbox section) wraps Phase 4's actual tools in these
+> risk-aware ones, so you reuse everything you already built.
 
 > **Why the `@dataclass` syntax?** It's a class whose only job is to hold named fields — think of it as a dict with fixed keys and dot-access. `tool.risk` is the same idea as `tool["risk"]`.
 
 ```python
-# tools.py  (extend the Tool dataclass from Phase 2)
+# risk_tools.py — this phase's risk-aware Tool (an upgraded take on Phase 2's Tool)
 from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Callable
@@ -589,17 +607,21 @@ class Tool:
             "name": self.name,
             "description": self.description,
             "parameters": self.parameters,
-            "strict": True,
+            # No "strict": True here — strict mode requires every property to be
+            # listed in "required", which breaks tools with optional parameters
+            # (read_file's offset/limit, bash's timeout). Phase 1 covered this.
         }
 ```
 
 When registering real tools (from Phase 4), declare their risk explicitly:
 
 ```python
-# tool_registry.py  (extend the registry from Phase 2)
+# tool_registry.py — this phase's registry (Phase 2's idea, plus get/all_tools/api_schemas)
 import json
 import fnmatch
 from typing import Any
+
+from risk_tools import Tool
 
 class ToolRegistry:
     def __init__(self) -> None:
@@ -1525,33 +1547,84 @@ def run_sandboxed(
     return text
 ```
 
-The updated `bash` tool registration (from Phase 4) would call `run_sandboxed` instead of a bare `subprocess.run`:
+With the sandbox in hand, we can build this phase's complete tool set: `phase5_tools.py`.
+It does two jobs. First, it **adapts Phase 4's seven tools** — the `@tool`-decorated
+`FunctionTool` objects in `coding_tools.py` — into this phase's risk-aware `Tool`
+dataclass, assigning each the risk level from the Step 3.1 table (same name, same
+schema, same behaviour; just carrying a risk tag now). Second, it **rebuilds `bash` on
+`run_sandboxed`** instead of Phase 4's bare `subprocess.run`. The `build_registry()` it
+exports is what the final assembly at the end of this phase imports.
 
 ```python
-# real_tools.py  (excerpt, updating the bash tool from Phase 4)
+# phase5_tools.py — the complete risk-tagged tool set for this phase
+# Needs, in the same folder: risk_tools.py + tool_registry.py (Step 3.1),
+# sandbox.py (above), coding_tools.py (Phase 4 §9), and Phase 2's tools/
+# package (coding_tools imports it).
 import os
-from tools import Tool, RISK_DANGEROUS
+
+import coding_tools                      # Phase 4's seven @tool functions
+from risk_tools import Tool, RISK_SAFE, RISK_CAUTION, RISK_DANGEROUS
+from tool_registry import ToolRegistry
 from sandbox import run_sandboxed
 
 WORKSPACE_ROOT = os.environ.get("WORKSPACE_ROOT", os.getcwd())
 
+# Risk assignments from the Step 3.1 table. bash is handled separately below.
+RISK_BY_NAME = {
+    "read_file":  RISK_SAFE,
+    "glob":       RISK_SAFE,
+    "grep":       RISK_SAFE,
+    "list_dir":   RISK_SAFE,
+    "write_file": RISK_CAUTION,
+    "edit_file":  RISK_CAUTION,
+}
+
 def _bash(command: str) -> str:
     return run_sandboxed(command, workspace_root=WORKSPACE_ROOT)
 
-bash_tool = Tool(
-    name="bash",
-    description="Run a shell command inside the workspace.",
-    parameters={
-        "type": "object",
-        "properties": {
-            "command": {"type": "string", "description": "Shell command to execute."},
+def build_registry() -> ToolRegistry:
+    registry = ToolRegistry()
+
+    # Adapt Phase 4's FunctionTool objects: same name/description/schema/behaviour,
+    # now carrying the risk tag this phase's permission gate reads.
+    for name, risk in RISK_BY_NAME.items():
+        ft = getattr(coding_tools, name)          # a Phase 2 FunctionTool
+        registry.register(Tool(
+            name=ft.name,
+            description=ft.description,
+            parameters=ft.parameters,
+            run=ft.run,
+            risk=risk,
+        ))
+
+    # bash is rebuilt on the sandbox instead of Phase 4's bare subprocess.run.
+    registry.register(Tool(
+        name="bash",
+        description="Run a shell command inside the workspace sandbox.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "command": {"type": "string", "description": "Shell command to execute."},
+            },
+            "required": ["command"],
+            "additionalProperties": False,
         },
-        "required": ["command"],
-        "additionalProperties": False,
-    },
-    run=_bash,
-    risk=RISK_DANGEROUS,
-)
+        run=_bash,
+        risk=RISK_DANGEROUS,
+    ))
+    return registry
+```
+
+**▶ Check it now (no API key needed)**
+
+```python
+# check_phase5_tools.py
+from phase5_tools import build_registry
+
+registry = build_registry()
+for t in registry.all_tools():
+    print(f"{t.name:<12} risk={t.risk}")
+print(len(registry.api_schemas()), "schemas ready for the API")  # expect 7
 ```
 
 ### What sandboxing cannot do in pure Python
@@ -1658,10 +1731,10 @@ import fnmatch
 import re
 
 if TYPE_CHECKING:
-    from tools import Tool
+    from risk_tools import Tool
 
 # ---------------------------------------------------------------------------
-# Risk levels (also defined in tools.py; repeated here for standalone import)
+# Risk levels (also defined in risk_tools.py; repeated here for standalone import)
 # ---------------------------------------------------------------------------
 RISK_SAFE      = "safe"
 RISK_CAUTION   = "caution"
@@ -2049,7 +2122,7 @@ from typing import Any
 
 from openai import OpenAI
 
-from tools import Tool
+from risk_tools import Tool
 from tool_registry import ToolRegistry
 from permissions import (
     Mode,
@@ -2194,7 +2267,7 @@ def run_agent(
 
 if __name__ == "__main__":
     import os
-    from real_tools import build_registry   # from Phase 4
+    from phase5_tools import build_registry   # built in the sandbox section above
 
     client   = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
     registry = build_registry()
@@ -2217,8 +2290,9 @@ if __name__ == "__main__":
 
 ### ▶ Run it now
 
-Save `permissions.py`, `hooks.py`, and `agent_loop.py` (plus `tools.py`/`real_tools.py`
-from Phase 4), then:
+Save this phase's seven files — `risk_tools.py`, `tool_registry.py`, `permissions.py`,
+`hooks.py`, `sandbox.py`, `phase5_tools.py`, `agent_loop.py` — into the folder that
+already holds Phase 4's `coding_tools.py` and Phase 2's `tools/` package, then:
 
 ```
 python agent_loop.py
@@ -2266,9 +2340,12 @@ The injection detector prepends a warning and returns the full (warning + conten
 
 | File | Purpose |
 |---|---|
+| `risk_tools.py` | The risk-aware `Tool` dataclass (`run` + `risk` fields) and the three risk-level constants |
+| `tool_registry.py` | This phase's `ToolRegistry` with `get()`, `all_tools()`, `api_schemas()`, raw `dispatch()` |
 | `permissions.py` | Mode enum, `PermissionPolicy`, `PolicyRule`, `check_permission`, `_ask_user`, session memory |
 | `hooks.py` | `HookRegistry`, `PreToolContext`, `PostToolContext`, built-in hooks, `default_hooks()` |
 | `sandbox.py` | `run_sandboxed()` for hardened subprocess execution with env allowlist and POSIX resource limits |
+| `phase5_tools.py` | `build_registry()` — Phase 4's seven tools adapted with risk tags; `bash` rebuilt on the sandbox |
 | `agent_loop.py` | `safe_dispatch()` and updated `run_agent()` wiring everything together |
 
 For hands-on practice with the permission gate, policy rules, and hooks, work through the Phase 5 section of [EXERCISES.md](EXERCISES.md).

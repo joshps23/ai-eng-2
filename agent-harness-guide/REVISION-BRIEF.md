@@ -111,7 +111,7 @@ Score each phase 1–5 on each axis; the loop revises the lowest-scoring phase n
 
 The evaluator-reviser loop runs **at most 10 times**, then stops on its own.
 
-- Iterations used: **2 / 10** *(reset 2026-06-10 for the version-ladder pass)*
+- Iterations used: **3 / 10** *(reset 2026-06-10 for the version-ladder pass)*
 - Per iteration: score all phases on the rubric, pick the weakest, revise it one notch
   more incremental, increment the counter here, log it below, commit, push. Stop when the
   counter hits 10 **or** every phase scores ≥4 on every axis.
@@ -128,6 +128,22 @@ The evaluator-reviser loop runs **at most 10 times**, then stops on its own.
 
 ## Revision log (newest first)
 
+- **2026-06-10 — Eval-loop iteration 3: Phase 5 repaired (27 → 30/30).** Re-diagnosis
+  found Phase 5's V3 `Tool` dataclass / `ToolRegistry` are deliberate in-file upgrades
+  (not phantoms) — but they were mislabeled "extend from Phase 2," the module name
+  `tools.py` collided with Phase 2's `tools/` package, `tool_registry.py` used `Tool`
+  without importing it (NameError), `to_api_dict` set `"strict": True` (rejected by the
+  API for tools with optional params), and the final run checkpoint imported a phantom
+  `real_tools.build_registry`. Fixed: renamed this phase's module to `risk_tools.py`
+  with a Phase 2↔Phase 5 bridge table + shadowing warning, added the missing import,
+  dropped strict, and built the missing `phase5_tools.py` (adapts Phase 4's seven
+  `coding_tools` FunctionTools into risk-tagged Tools, rebuilds `bash` on the sandbox,
+  exports `build_registry()`) with an offline ▶ check. Updated the run-checkpoint file
+  list and files-added table. All 7 new/changed snippets AST-parse; tests green (56).
+  Note: org spend limit currently blocks sub-agent launches — this iteration was done
+  in-session; remaining candidates (P2 step-size 4, P8 continuity 4) are at-target
+  (≥4 on all axes), so the loop's stop condition is met unless re-grading finds new
+  below-4 evidence.
 - **2026-06-10 — Eval-loop iteration 2: Phase 4 repaired (25 → 30/30).** Phase 7's
   iteration-1 repair verified intact. Confirmed and fixed Phase 4's continuity drift
   against Phase 2's real API: `from registry import tool, Registry` → `from tools
