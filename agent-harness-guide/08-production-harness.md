@@ -136,6 +136,11 @@ That is it. The `2 ** attempt` pattern is called **exponential backoff**: each f
 
 Use `create_with_retry(client, model=..., input=..., tools=...)` anywhere the guide calls `client.responses.create(...)`. That one change captures 90% of the value of the much longer `llm.py` shown later.
 
+> **Which rung is this?** This is the **V2 — functions** rung of `llm.py`'s ladder: one
+> plain function, no classes, no decorators. Notably, `llm.py` *never climbs higher* —
+> retry has no state worth grouping into a class, so the production module (§6) stays on
+> this rung and just hardens the error handling. Not every ladder needs a V3.
+
 ### ▶ Run it now
 
 You can test retry logic without a real API by using a fake client that fails the first two times:

@@ -764,11 +764,12 @@ any entry in the input list.
 
 ---
 
-## Step 4 — A Non-Streaming Agent Loop (Primary Path)
+### Step 3.4 — A Non-Streaming Agent Loop (Primary Path)
 
-Before streaming, build the complete agent loop using plain `create()`.  This is the version
-you should understand first — streaming (Step 5) only changes how text is *displayed*, not
-how the loop works.
+So far Versions 1–3 have been pure chat — no tools.  Now bring back the Phase 2 tool loop,
+with the `Conversation` class managing the transcript.  This is the version you should
+understand first — streaming (Version 4) only changes how text is *displayed*, not how the
+loop works.
 
 **Why non-streaming first?** It is simpler, has fewer moving parts, and produces identical
 results.  Once you have this running you can add streaming as a display-layer enhancement
