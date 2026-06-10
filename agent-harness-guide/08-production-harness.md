@@ -290,9 +290,18 @@ log.info(
 
 The `logging` module is just `print()` with on/off levels. When `level="WARNING"`, INFO lines are silenced; turn on `level="DEBUG"` to see everything. You switch it once at startup, not at every call site.
 
+> **Which rung is this?** Still **V2 — functions**. We swapped our hand-rolled `log()`
+> function for the stdlib's, but nothing was reorganized: same calls, same places, better
+> plumbing.
+
 ### 1c — The JSONL Tracer
 
 A machine-readable event log is invaluable for post-hoc debugging and cost audits.
+
+> **Which rung is this?** **V3 — classes.** The `Tracer` below is your `log()` helper
+> *with state*: it has to remember the file path and a session id across every call, so
+> — exactly like `Conversation` in Phase 3 — the function grows into a class that carries
+> its own data. The method bodies are still just "build a dict, write a line."
 
 ```python
 # agent_harness/tracer.py
@@ -419,6 +428,11 @@ class Tracer:
 
 Track usage across turns (and across sub-agents spawned in Phase 7). This is the same idea as the `log()` helper above — just accumulating numbers instead of printing strings:
 
+> **Which rung is this?** **V3 — classes**, for the same reason as the `Tracer`: the
+> running totals are *state*, and state is what justifies a class. The `@dataclass`
+> decorator is only there to write `__init__` for us — see the beginner note below the
+> listing.
+
 ```python
 # agent_harness/accounting.py
 from __future__ import annotations
@@ -526,6 +540,13 @@ settings = {
 ```
 
 The production `Settings` dataclass below is exactly that, with nicer access syntax and a loader chain. Read `settings.model` as `settings["model"]`:
+
+> **Which rung is this?** The plain dict above is the **V2** form; the dataclass below is
+> its **V3** rung — *the same settings, organized*, exactly like the V2→V3 climbs you made
+> in Phases 1–7. What changed and why: (1) fields get defaults and types in one place,
+> (2) typos like `settings.modle` fail loudly instead of silently creating a new key, and
+> (3) the loaders (`from_env`, `apply_project_config`, `apply_cli_args`) live next to the
+> data they fill in. This is the package's `config.py`.
 
 ```python
 # agent_harness/config.py
@@ -682,6 +703,11 @@ Any field you do not set stays at its default. The loop now reads `settings.max_
 **Why now?** With retry, logging, and config in place, the next lever is the instructions string. The right system prompt prevents whole classes of model mistakes before they happen: the agent knows its working directory, its permission mode, and whether the project has special conventions.
 
 Here is a production-grade prompt for a coding agent, with explanations of each section:
+
+> **Which rung is this?** **V2 — functions**, and it stays there: building a string needs
+> no state, so `build_instructions` and its two helpers never become a class. (In the
+> consolidated package this logic lives inside `agent.py` and `config.py` rather than a
+> separate `instructions.py` — remember the file-name note in §0.)
 
 ````python
 # agent_harness/instructions.py

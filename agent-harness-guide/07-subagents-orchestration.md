@@ -154,10 +154,326 @@ a reorganization of the previous one, never a brand-new program.
 > Read the rest of the phase for the ideas (isolated context, depth limits, disjoint
 > file scopes). Build it with the functions above.
 
-Here is the minimal complete version — everything above expressed as runnable code. It uses only the concepts from Phases 1–2: a loop, a conversation list, `client.responses.create`, and plain functions as tools.
+---
+
+## Version 1 — Line-by-Line: the Same Loop, Pasted Twice
+
+> **Why this version first?** Because the entire phase rests on one claim — *a sub-agent
+> is just the same loop run again* — and the most convincing proof is to literally paste
+> the loop a second time, inside the dispatch branch of a `task` tool, and watch it work.
+> No `def`, no classes: just statements, two `while` loops, and the Responses-API
+> handshake you already know from Phase 1.
+
+### Step 1.1 — The outer loop with a *stub* `task` tool
+
+First, build only the **orchestrator**: a straight-line script whose single tool, `task`,
+doesn't spawn anything yet — it returns a placeholder string. This proves the outer half
+of the handshake (the model calls `task`, we answer with a `function_call_output`
+carrying the same `call_id`) before any sub-agent exists.
 
 ```python
-# step0_subagent.py  — minimal sub-agent demo, no classes required
+# v1_subagent_inline.py — Step 1.1: orchestrator with a stub task tool
+import json
+from openai import OpenAI
+
+client = OpenAI()
+MODEL = "gpt-4o"
+
+# The one tool the orchestrator has: delegate work to a sub-agent.
+TASK_TOOL_SCHEMA = {
+    "type": "function",
+    "name": "task",
+    "description": "Spawn a sub-agent to complete an independent task.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "prompt": {
+                "type": "string",
+                "description": "Full task prompt for the sub-agent.",
+            },
+        },
+        "required": ["prompt"],
+        "additionalProperties": False,
+    },
+}
+
+# ---- THE OUTER LOOP: the orchestrator --------------------------------------
+outer_items = [{
+    "role": "user",
+    "content": (
+        "Use the task tool to ask a sub-agent to read README.md and "
+        "summarize it in two sentences."
+    ),
+}]
+
+while True:
+    outer_resp = client.responses.create(
+        model=MODEL,
+        instructions=(
+            "You are an orchestrator. Delegate work with the task tool, "
+            "then report back what the sub-agent found."
+        ),
+        input=outer_items,
+        tools=[TASK_TOOL_SCHEMA],
+    )
+    outer_items += list(outer_resp.output)
+    outer_calls = [it for it in outer_resp.output if it.type == "function_call"]
+    if not outer_calls:
+        break                          # no tool calls -> the model is done
+
+    for outer_call in outer_calls:
+        print(f"[outer] model called {outer_call.name!r}")
+        # STUB: no sub-agent yet — just answer the call with a placeholder.
+        outer_items.append({
+            "type": "function_call_output",
+            "call_id": outer_call.call_id,
+            "output": "[stub] Sub-agents are not built yet. Report that "
+                      "delegation is not implemented.",
+        })
+
+print("\nFinal answer:", outer_resp.output_text)
+```
+
+#### ▶ Run it now
+
+```
+python v1_subagent_inline.py
+```
+
+You should see `[outer] model called 'task'` once, then a final answer in which the
+orchestrator relays that delegation isn't implemented yet. Nothing new happened here —
+this is exactly the Phase 1 loop with one tool. The interesting part is next.
+
+### Step 1.2 — Paste the loop *again* inside the `task` branch
+
+Now replace the stub. What goes in its place? **The same loop, copy-pasted**, with three
+renames: its own transcript list (`inner_items` instead of `outer_items`), its own
+instructions, and its own tool (`read_file` instead of `task`). The inner loop's final
+text becomes the string we hand back as the outer call's `function_call_output`.
+
+Here is the complete file. Read the two `while True:` blocks side by side — they are the
+same code. That *is* the lesson.
+
+```python
+# v1_subagent_inline.py — Step 1.2: the inner loop pasted inline. No def, no classes.
+import json
+from openai import OpenAI
+
+client = OpenAI()
+MODEL = "gpt-4o"
+
+# The orchestrator's only tool: delegate to a sub-agent.
+TASK_TOOL_SCHEMA = {
+    "type": "function",
+    "name": "task",
+    "description": "Spawn a sub-agent to complete an independent task.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "prompt": {
+                "type": "string",
+                "description": "Full task prompt for the sub-agent.",
+            },
+        },
+        "required": ["prompt"],
+        "additionalProperties": False,
+    },
+}
+
+# The sub-agent's only tool: read a file.
+READ_FILE_SCHEMA = {
+    "type": "function",
+    "name": "read_file",
+    "description": "Read a file and return its contents.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "path": {"type": "string", "description": "File path"},
+        },
+        "required": ["path"],
+        "additionalProperties": False,
+    },
+}
+
+# ---- THE OUTER LOOP: the orchestrator --------------------------------------
+outer_items = [{
+    "role": "user",
+    "content": (
+        "Use the task tool to ask a sub-agent to read README.md and "
+        "summarize it in two sentences."
+    ),
+}]
+
+while True:
+    outer_resp = client.responses.create(
+        model=MODEL,
+        instructions=(
+            "You are an orchestrator. Delegate work with the task tool, "
+            "then report back what the sub-agent found."
+        ),
+        input=outer_items,
+        tools=[TASK_TOOL_SCHEMA],
+    )
+    outer_items += list(outer_resp.output)
+    outer_calls = [it for it in outer_resp.output if it.type == "function_call"]
+    if not outer_calls:
+        break                          # orchestrator is done
+
+    for outer_call in outer_calls:
+        args = json.loads(outer_call.arguments)
+        print(f"[outer] spawning a sub-agent for: {args['prompt'][:60]}...")
+
+        # ==== THE INNER LOOP: the sub-agent — the SAME loop, pasted again ====
+        inner_items = [{"role": "user", "content": args["prompt"]}]
+        inner_answer = ""
+        while True:
+            inner_resp = client.responses.create(
+                model=MODEL,
+                instructions=(
+                    "You are a careful assistant. Use read_file if needed, "
+                    "then answer concisely."
+                ),
+                input=inner_items,
+                tools=[READ_FILE_SCHEMA],
+            )
+            inner_items += list(inner_resp.output)
+            inner_calls = [it for it in inner_resp.output
+                           if it.type == "function_call"]
+            if not inner_calls:
+                inner_answer = inner_resp.output_text   # sub-agent is done
+                break
+            for inner_call in inner_calls:
+                inner_args = json.loads(inner_call.arguments)
+                print(f"  [inner] model called {inner_call.name!r}")
+                try:
+                    with open(inner_args["path"]) as f:
+                        tool_result = f.read()
+                except OSError as exc:
+                    tool_result = f"[error] {exc}"
+                inner_items.append({
+                    "type": "function_call_output",
+                    "call_id": inner_call.call_id,
+                    "output": tool_result,
+                })
+        # ==== inner loop finished ============================================
+
+        print("[outer] sub-agent finished.")
+        # The sub-agent's final text is the task tool's output — a plain string.
+        outer_items.append({
+            "type": "function_call_output",
+            "call_id": outer_call.call_id,
+            "output": inner_answer,
+        })
+
+print("\nFinal answer:", outer_resp.output_text)
+```
+
+Notice what the two loops do and don't share. They share the *client* and the *model id*
+— nothing else. `inner_items` is a **fresh list**: the sub-agent never sees the
+orchestrator's conversation, and the orchestrator never sees the sub-agent's. The only
+thing that crosses the boundary is `inner_answer`, a plain string, handed back under the
+outer call's `call_id` exactly like any other tool result.
+
+#### ▶ Run it now
+
+```
+python v1_subagent_inline.py
+```
+
+You should see `[outer] spawning a sub-agent...`, then one or more
+`  [inner] model called 'read_file'` lines (the sub-agent doing its own tool calls in its
+own conversation), then `[outer] sub-agent finished.`, and finally the orchestrator's
+synthesised answer. Two complete agent loops ran — one inside the other's dispatch branch.
+
+The pasted copy works, but it should also bother you: if you wanted the orchestrator to
+have *two* tools, or sub-agents that can spawn sub-sub-agents, you'd be pasting loops
+inside loops inside loops. That itch is exactly what Version 2 scratches.
+
+---
+
+## What changed from V1 → V2
+
+- The **inner pasted loop becomes a plain function**, `run_subagent(task_description) -> str`,
+  and the `task` dispatch branch shrinks to a single call.
+- Then comes the punchline: the outer loop is the *same code too*, so both collapse into
+  **one function, `run_agent(instructions, task, tools_dict)`** — called once at top level
+  for the orchestrator and once, from inside the `task` tool, for the worker.
+- Tools move from hardcoded `if` branches into a **`tools_dict`** of
+  `{name: {"fn": ..., "schema": ...}}`, with tiny `dispatch` / `tools_for_api` helpers, so
+  the loop body no longer names any tool.
+- Nothing else changes: same model, same Responses-API handshake, same `call_id`
+  discipline, same isolated transcripts. Run both versions on the same prompt and you get
+  the same behavior.
+
+---
+
+## Version 2 — Functions: the Duplication Collapses
+
+> **Why now?** Version 1 proved the idea by brute force — two copies of the loop. Version
+> 2 keeps the behavior and deletes the duplication, in two small moves.
+
+### Step 2.1 — Extract the inner loop into `run_subagent`
+
+Take the pasted inner loop from Step 1.2, wrap it in a `def`, and return the final text.
+The `task` branch in the outer loop becomes one line:
+
+```python
+def run_subagent(task_description):
+    """The inner loop from Version 1, wrapped in a function. Returns final text."""
+    inner_items = [{"role": "user", "content": task_description}]
+    while True:
+        inner_resp = client.responses.create(
+            model=MODEL,
+            instructions=("You are a careful assistant. Use read_file if "
+                          "needed, then answer concisely."),
+            input=inner_items,
+            tools=[READ_FILE_SCHEMA],
+        )
+        inner_items += list(inner_resp.output)
+        inner_calls = [it for it in inner_resp.output
+                       if it.type == "function_call"]
+        if not inner_calls:
+            return inner_resp.output_text
+        for inner_call in inner_calls:
+            inner_args = json.loads(inner_call.arguments)
+            try:
+                with open(inner_args["path"]) as f:
+                    tool_result = f.read()
+            except OSError as exc:
+                tool_result = f"[error] {exc}"
+            inner_items.append({
+                "type": "function_call_output",
+                "call_id": inner_call.call_id,
+                "output": tool_result,
+            })
+```
+
+…and in the outer loop, the whole `==== THE INNER LOOP ====` block becomes:
+
+```python
+        outer_items.append({
+            "type": "function_call_output",
+            "call_id": outer_call.call_id,
+            "output": run_subagent(args["prompt"]),
+        })
+```
+
+#### ▶ Run it now
+
+Replace the inner-loop block in `v1_subagent_inline.py` with the function above (put the
+`def` near the top of the file) and run it again. Same output as Step 1.2 — the program
+didn't change, only its shape did.
+
+### Step 2.2 — One loop function for both: `run_agent`
+
+Look at `run_subagent` and the outer loop again. They differ only in their
+*configuration*: which instructions, which tools, which starting prompt. So generalize
+once — `run_agent(instructions, task, tools_dict)` — and call it twice.
+
+Here is the complete Version 2 file — everything above expressed as runnable code. It uses only the concepts from Phases 1–2: a loop, a conversation list, `client.responses.create`, and plain functions as tools.
+
+```python
+# v2_subagent.py  — minimal sub-agent demo, plain functions, no classes
 import json
 from openai import OpenAI
 

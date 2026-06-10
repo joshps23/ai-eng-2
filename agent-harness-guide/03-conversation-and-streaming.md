@@ -894,9 +894,183 @@ item, and the final assistant message.
 > is all you need.  When you want to inspect individual items (e.g. to find tool calls),
 > iterate `resp.output` directly.
 
+### Step 3.5 — Version 3, complete: `agent_v3.py`
+
+The snippets above introduced the class and the loop separately.  Here is Version 3 as one
+complete file you can paste and run — the `Conversation` class plus the non-streaming agent
+loop plus a tool, nothing else:
+
+```python
+#!/usr/bin/env python3
+# agent_v3.py — Version 3, complete: the Conversation class + the tool loop.
+# Same harness as chat_v2.py, organized into a class — and tools are back.
+import json
+import pathlib
+from openai import OpenAI
+
+MODEL = "gpt-4o"
+client = OpenAI()
+
+
+# ── The Conversation class (Step 3.1, verbatim essentials) ───────────
+
+class Conversation:
+    """Owns the input_items list for a single conversation thread."""
+
+    def __init__(self, instructions: str = ""):
+        self._items: list[dict] = []
+        self.instructions = instructions
+
+    def add_user(self, text: str) -> None:
+        self._items.append({"role": "user", "content": text})
+
+    def extend(self, output_items) -> None:
+        for item in output_items:
+            d = item.model_dump() if hasattr(item, "model_dump") else dict(item)
+            self._items.append(d)
+
+    def add_tool_result(self, call_id: str, output: str) -> None:
+        self._items.append({
+            "type": "function_call_output",
+            "call_id": call_id,
+            "output": output,
+        })
+
+    def to_input(self) -> list[dict]:
+        return list(self._items)
+
+    def save(self, path) -> None:
+        path = pathlib.Path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("w", encoding="utf-8") as f:
+            json.dump(
+                {"instructions": self.instructions, "items": self._items},
+                f, indent=2, ensure_ascii=False,
+            )
+
+    @classmethod
+    def load(cls, path) -> "Conversation":
+        with pathlib.Path(path).open(encoding="utf-8") as f:
+            data = json.load(f)
+        conv = cls(instructions=data.get("instructions", ""))
+        conv._items = data["items"]
+        return conv
+
+    def __len__(self) -> int:
+        return len(self._items)
+
+
+# ── Tools (a plain dict registry, as in Phase 2) ─────────────────────
+
+REGISTRY = {
+    "add": lambda a, b: a + b,
+}
+
+TOOLS_LIST = [{
+    "type": "function",
+    "name": "add",
+    "description": "Add two numbers.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "a": {"type": "number"},
+            "b": {"type": "number"},
+        },
+        "required": ["a", "b"],
+    },
+}]
+
+
+# ── The loop (Step 3.4, verbatim) ────────────────────────────────────
+
+def run_tool_calls(function_calls, registry):
+    """Execute each tool call in order and return output items."""
+    results = []
+    for fc in function_calls:
+        fn = registry.get(fc["name"])
+        if fn is None:
+            output = f"Error: unknown tool '{fc['name']}'"
+        else:
+            try:
+                kwargs = json.loads(fc["arguments"])
+                output = str(fn(**kwargs))
+            except Exception as exc:
+                output = f"Error: {exc}"
+        results.append({
+            "type": "function_call_output",
+            "call_id": fc["call_id"],
+            "output": output,
+        })
+    return results
+
+
+def run_agent(user_message, instructions, tools_list, registry, max_turns=10):
+    """Non-streaming agent loop.  Returns the Conversation when done."""
+    conv = Conversation(instructions=instructions)
+    conv.add_user(user_message)
+
+    for turn in range(max_turns):
+        resp = client.responses.create(
+            model=MODEL,
+            instructions=conv.instructions,
+            input=conv.to_input(),
+            tools=tools_list,
+        )
+        conv.extend(resp.output)          # output items FIRST (see Pitfall 3)
+
+        if resp.output_text:
+            print(f"Assistant: {resp.output_text}")
+
+        function_calls = [
+            item.model_dump() if hasattr(item, "model_dump") else item
+            for item in resp.output
+            if (getattr(item, "type", None) or item.get("type")) == "function_call"
+        ]
+        if not function_calls:
+            break                          # model is done
+
+        for output in run_tool_calls(function_calls, REGISTRY):
+            conv.add_tool_result(output["call_id"], output["output"])
+
+    return conv
+
+
+if __name__ == "__main__":
+    conv = run_agent(
+        user_message="What is 1234 + 5678?",
+        instructions="You are a helpful math assistant. Use the add tool.",
+        tools_list=TOOLS_LIST,
+        registry=REGISTRY,
+    )
+    print(f"\nTranscript has {len(conv)} items.")
+    conv.save("/tmp/phase3-agent-v3.json")
+    print("Saved to /tmp/phase3-agent-v3.json")
+```
+
+**▶ Run it now.** Same expected output as the Step 3.4 check (the answer 6912, then a
+4-item transcript).  Open `/tmp/phase3-agent-v3.json` — you can read the entire tool
+handshake (`function_call` → `function_call_output`, matched by `call_id`) in plain JSON.
+This file is the Version 3 harness in full; Version 4 changes exactly one thing about it.
+
 ---
 
-## 3. Streaming Deep-Dive
+### What changed from V3 → V4
+
+- **The loop, the `Conversation` class, the tools, and the transcript are untouched.**
+  Version 4 changes *presentation*, not logic — run V3 and V4 with the same prompt and
+  the saved transcripts are equivalent.
+- `client.responses.create(...)` gains one argument, `stream=True` — and instead of one
+  finished `Response`, it now returns an **iterator of typed events**.
+- Text is printed **delta by delta** as it streams in, instead of `resp.output_text`
+  once at the end.
+- Tool calls become *visible as they form*: a `response.output_item.added` event announces
+  the call, then `response.function_call_arguments.delta` events stream its JSON arguments.
+- The final structured `Response` (the thing V3's loop already uses) arrives on the
+  **`response.completed`** event — capture it there, and everything after that line is
+  exactly the V3 loop.
+- One new helper, `stream_turn()`, replaces the bare `create()` call inside the loop.
+
+## Version 4 — Streaming: the Same Harness, Live
 
 > **This entire section is optional.** If streaming is not a priority for you right now,
 > skip to Section 6 (Pitfalls) — the non-streaming loop above is complete and correct.

@@ -40,6 +40,30 @@
 
 ---
 
+## The shape of this phase: three versions of one harness
+
+Like every phase in this guide, Phase 4 is a **ladder of complete, runnable versions of
+the same harness** — not one big program revealed all at once. Each version does the
+same job; only the organization changes:
+
+- **Version 1 — line-by-line.** The harness with **one** real tool (`read_file`) whose
+  logic sits *inline* in the dispatch branch. No `def`, no classes — just statements
+  top to bottom. You will watch the model touch your actual disk before any safety
+  machinery exists.
+- **Version 2 — functions.** The same harness with each tool as a **plain function**
+  (`read_file`, `list_dir`, `glob`, `grep`, `write_file`, `edit_file`, `bash`), plus two
+  plain helper functions (`_safe_path`, `_truncate`) that keep the agent confined to its
+  workspace and its output bounded. Tools are introduced one at a time, safest first.
+- **Version 3 — the organized toolset.** The same tools, grouped into one module with
+  the workspace confinement enforced centrally and the Phase 2 `@tool` / `Registry`
+  machinery doing the bookkeeping — the shape the consolidated package
+  (`code/agent_harness/tools/files.py` and `shell.py`) uses.
+
+Between versions you will find a short *"what changed"* list, so you always know you are
+looking at a reorganization of a program you already ran — never a brand-new one.
+
+---
+
 ## 1. Why Tools Define the Agent's Power
 
 The loop from Phase 1 is the skeleton. Tools are the muscles. A model that can only
