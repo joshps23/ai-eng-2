@@ -586,7 +586,7 @@ class Settings:
     max_iterations: int = 100             # hard stop
 
     # Permissions (see Phase 5)
-    permission_mode: str = "default"      # "default" | "strict" | "yolo"
+    permission_mode: str = "auto"  # plan | auto | accept_edits | always_allow | bypass
 
     # Filesystem
     workspace_root: str = field(default_factory=lambda: os.getcwd())
@@ -682,7 +682,7 @@ An example `.agentrc` file at the project root:
 ```json
 {
   "model": "gpt-4o",
-  "permission_mode": "strict",
+  "permission_mode": "plan",
   "max_context_tokens": 128000,
   "memory_path": "AGENTS.md"
 }
@@ -754,7 +754,7 @@ def _read_memory(memory_path: str, workspace: str) -> str:
 def build_instructions(
     workspace_root: str,
     memory_path: str = "CLAUDE.md",
-    permission_mode: str = "default",
+    permission_mode: str = "auto",
 ) -> str:
     cwd = os.path.abspath(workspace_root)
     os_info = f"{platform.system()} {platform.release()}"
@@ -783,7 +783,7 @@ commands, search codebases, and delegate work to sub-agents.
 - Act autonomously on clear, well-scoped requests.
 - Ask before: deleting data, making irreversible changes, or taking actions
   with significant side effects that were not explicitly requested.
-- In strict mode, ask before any file modification outside the workspace.
+- In `plan` mode, file modifications are denied by the harness — propose the change instead.
 - Current permission mode: **{permission_mode}**
 
 ## Output Conventions
@@ -815,7 +815,7 @@ The memory file (Phase 6's `CLAUDE.md` or `AGENTS.md`) is injected here so the m
 ```python
 instructions = build_instructions(
     workspace_root=".",
-    permission_mode="default",
+    permission_mode="auto",
 )
 print(instructions[:300])   # should show the working directory and OS info
 ```
@@ -847,7 +847,7 @@ Usage:
   agent                          # interactive
   agent --resume                 # resume last session
   agent -p "Fix the test suite"  # one-shot (for CI / scripting)
-  agent --mode strict            # override permission mode
+  agent --mode plan              # override permission mode (read-only)
   agent --debug                  # full logging
 """
 
@@ -866,7 +866,7 @@ from .config import Settings, load_settings
 from .conversation import Conversation
 from .instructions import build_instructions
 from .logging_config import configure_logging
-from .permissions import PermissionPolicy
+from .permissions import default_policy
 from .tools import build_registry       # builds the Phase 4 tool set
 from .tracer import Tracer
 
@@ -890,8 +890,8 @@ def make_parser() -> argparse.ArgumentParser:
     p.add_argument("--model", metavar="MODEL",
                    help=f"Model to use (default: {MODEL})")
     p.add_argument("--mode", dest="permission_mode",
-                   choices=["default", "strict", "yolo"],
-                   help="Permission mode")
+                   choices=["plan", "auto", "accept_edits", "always_allow", "bypass"],
+                   help="Permission mode (Phase 5)")
     p.add_argument("--workspace", dest="workspace_root", metavar="DIR",
                    help="Workspace root directory")
     p.add_argument("--no-stream", dest="stream", action="store_false",
@@ -916,7 +916,7 @@ Slash commands:
   /compact           Manually trigger context compaction
   /save [path]       Save transcript to path (default: transcript.json)
   /resume [path]     Load transcript from path
-  /mode <mode>       Set permission mode: default | strict | yolo
+  /mode <mode>       Set permission mode: plan | auto | accept_edits | always_allow | bypass
   /cost              Show token and cost summary for this session
   /tools             List registered tools
   /quit  /exit       Exit the agent
@@ -964,14 +964,17 @@ def handle_slash(
         print(f"[Loaded {len(agent.conversation.items)} messages from {path}]")
 
     elif cmd == "/mode":
+        modes = ("plan", "auto", "accept_edits", "always_allow", "bypass")
         if not args:
             print(f"Current mode: {settings.permission_mode}")
-        elif args[0] in ("default", "strict", "yolo"):
+        elif args[0] in modes:
+            # The agent reads settings.permission_mode on every dispatch, so this
+            # takes effect immediately. The policy (the rule list) is unchanged —
+            # mode and policy are separate inputs to check_permission (Phase 5).
             settings.permission_mode = args[0]
-            agent.policy = PermissionPolicy(mode=args[0])
             print(f"[Permission mode set to {args[0]}]")
         else:
-            print("Unknown mode. Choose: default | strict | yolo")
+            print("Unknown mode. Choose: " + " | ".join(modes))
 
     elif cmd == "/cost":
         accounting.print_summary()
@@ -1036,7 +1039,7 @@ def main() -> None:
         model=settings.model,
         price_table=settings.price_table,
     )
-    policy = PermissionPolicy(mode=settings.permission_mode)
+    policy = default_policy()   # the hard-deny rule list; the *mode* lives in settings
     registry = build_registry(workspace_root=settings.workspace_root)
     instructions = build_instructions(
         workspace_root=settings.workspace_root,
@@ -1424,7 +1427,7 @@ from .accounting import SessionAccounting
 from .config import Settings
 from .conversation import Conversation
 from .hooks import run_pre_hooks, run_post_hooks
-from .permissions import Decision, PermissionPolicy
+from .permissions import PermissionPolicy, check_permission
 from .tools import ToolRegistry
 from .tracer import Tracer
 
@@ -1591,34 +1594,32 @@ class Agent:
                 args = json.loads(fc.arguments) if isinstance(fc.arguments, str) else fc.arguments
                 run_pre_hooks(tool_name=fc.name, args=args)
 
-            # 6b. Permission gate
+            # 6b. Permission gate — Phase 5's check_permission, unchanged:
+            # it folds the policy rules, the mode, and the interactive ask
+            # into one yes/no answer. The asker callback is only invoked
+            # when the decision lands on ASK.
             approved: list[Any] = []
             for fc in function_calls:
                 args = json.loads(fc.arguments) if isinstance(fc.arguments, str) else fc.arguments
-                decision = self.policy.check(tool_name=fc.name, args=args)
-                self.tracer.permission_decision(
-                    self.turn_count, fc.name, decision.value
+                allowed = check_permission(
+                    fc.name,
+                    args,
+                    self.policy,
+                    self.settings.permission_mode,
+                    asker=lambda prompt: self._ask_user_approval(fc.name, args),
                 )
-                if decision == Decision.DENY:
+                self.tracer.permission_decision(
+                    self.turn_count, fc.name, "allow" if allowed else "deny"
+                )
+                if allowed:
+                    approved.append(fc)
+                else:
                     log.warning("Permission DENIED: %s", fc.name)
                     pending_tool_outputs.append({
                         "type": "function_call_output",
                         "call_id": fc.call_id,
                         "output": f"Error: permission denied for tool '{fc.name}'",
                     })
-                elif decision == Decision.ESCALATE:
-                    # Ask the user interactively
-                    granted = self._ask_user_approval(fc.name, args)
-                    if granted:
-                        approved.append(fc)
-                    else:
-                        pending_tool_outputs.append({
-                            "type": "function_call_output",
-                            "call_id": fc.call_id,
-                            "output": f"Error: user denied permission for '{fc.name}'",
-                        })
-                else:
-                    approved.append(fc)
 
             # 6c. Parallel execution
             results: dict[str, str] = {}
@@ -1744,7 +1745,7 @@ agent_harness/
 ├── instructions.py      # build_instructions
 ├── llm.py               # Resilient wrapper (this phase)
 ├── logging_config.py    # configure_logging
-├── permissions.py       # PermissionPolicy, Decision (Phase 5)
+├── permissions.py       # PermissionPolicy, Decision, check_permission (Phase 5's gate, consolidated)
 ├── streaming.py         # Streaming renderer (Phase 3)
 ├── tools.py             # Tool, @tool, ToolRegistry + real tools (Phases 2, 4)
 │   └── filesystem.py    # read_file, write_file, bash, etc. (Phase 4)
@@ -1811,7 +1812,7 @@ Run:
 ```bash
 agent                              # interactive REPL
 agent -p "Summarise all TODO comments in this repo"
-agent --resume --mode strict
+agent --resume --mode plan
 AGENT_MODEL=gpt-4o agent          # override model via env
 ```
 
@@ -1918,7 +1919,7 @@ import tempfile
 from agent_harness.agent import Agent
 from agent_harness.accounting import SessionAccounting
 from agent_harness.config import Settings
-from agent_harness.permissions import PermissionPolicy
+from agent_harness.permissions import default_policy
 from agent_harness.tools import ToolRegistry, tool
 from agent_harness.tracer import Tracer
 from tests.fake_client import (
@@ -1946,13 +1947,16 @@ def make_agent(script, workspace):
         trace_path=str(workspace / "trace.jsonl"),
         stream=False,
         max_iterations=10,
+        permission_mode="bypass",   # no approval prompts in tests
     )
     return Agent(
         client=FakeClient(script),
         model="gpt-4o",
         instructions="You are a test agent.",
         registry=registry,
-        policy=PermissionPolicy(mode="yolo"),  # no approval prompts
+        # default_policy() = just the hard-deny rules; the "bypass" mode in
+        # settings skips the interactive gate entirely — no approval prompts.
+        policy=default_policy(),
         accounting=SessionAccounting(model="gpt-4o"),
         tracer=Tracer(path=None),              # no file output
         settings=settings,
@@ -2035,6 +2039,7 @@ def test_tool_error_does_not_crash_loop():
             workspace_root=str(workspace),
             transcript_path=str(workspace / "transcript.json"),
             stream=False,
+            permission_mode="bypass",   # no approval prompts in tests
         )
         registry = ToolRegistry()
         registry.register(exploding_tool)
@@ -2044,7 +2049,7 @@ def test_tool_error_does_not_crash_loop():
             model="gpt-4o",
             instructions="test",
             registry=registry,
-            policy=PermissionPolicy(mode="yolo"),
+            policy=default_policy(),
             accounting=SessionAccounting(model="gpt-4o"),
             tracer=Tracer(path=None),
             settings=settings,

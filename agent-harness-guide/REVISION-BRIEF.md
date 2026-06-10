@@ -111,7 +111,7 @@ Score each phase 1–5 on each axis; the loop revises the lowest-scoring phase n
 
 The evaluator-reviser loop runs **at most 10 times**, then stops on its own.
 
-- Iterations used: **3 / 10** *(reset 2026-06-10 for the version-ladder pass)*
+- Iterations used: **4 / 10** *(reset 2026-06-10 for the version-ladder pass)*
 - Per iteration: score all phases on the rubric, pick the weakest, revise it one notch
   more incremental, increment the counter here, log it below, commit, push. Stop when the
   counter hits 10 **or** every phase scores ≥4 on every axis.
@@ -128,6 +128,22 @@ The evaluator-reviser loop runs **at most 10 times**, then stops on its own.
 
 ## Revision log (newest first)
 
+- **2026-06-10 — Eval-loop iteration 4: Phase 8 permission-API drift repaired (27 →
+  30/30).** Phase 8 used an invented permission API matching neither Phase 5 nor the
+  package: `PermissionPolicy(mode=...)` constructor (the real one holds *rules*; mode
+  is a separate input), `Decision.ESCALATE` (real enum: ALLOW/DENY/ASK), and a
+  `default|strict|yolo` mode set (real: plan/auto/accept_edits/always_allow/bypass).
+  Fixed across 13 sites: the `/mode` command, argparse choices, `/help` text,
+  `.agentrc` example, Settings default, `build_instructions` (default + system-prompt
+  prose), `main()` wiring (`default_policy()` + mode-in-settings), the Agent listing's
+  permission gate (now Phase 5's consolidated `check_permission(name, args, policy,
+  mode, asker)` bool form), and the §9 tests (`policy=default_policy()`,
+  `permission_mode="bypass"` instead of `PermissionPolicy(mode="yolo")`). Verified the
+  §9 test imports target the phase's own teaching layout (which the in-file Mapping
+  note reconciles with the real package), all edited blocks AST-parse, tests green
+  (56). With P7/P4/P5/P8 repaired, every phase stands ≥4 on all axes; remaining 4s
+  (P2 step-size, P6 fragments) are at-target — loop stop condition met, pending one
+  final confirmation re-grade.
 - **2026-06-10 — Eval-loop iteration 3: Phase 5 repaired (27 → 30/30).** Re-diagnosis
   found Phase 5's V3 `Tool` dataclass / `ToolRegistry` are deliberate in-file upgrades
   (not phantoms) — but they were mislabeled "extend from Phase 2," the module name
