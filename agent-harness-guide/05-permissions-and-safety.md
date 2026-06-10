@@ -22,7 +22,7 @@ program. But first, name what we're defending against.
 
 ---
 
-## 1. Threat Model
+## Threat Model
 
 Before writing a single line of policy code, name what you are defending against.
 
@@ -644,7 +644,7 @@ The risk table for Phase 4 tools:
 
 ### Step 3.2 — Permission Modes (production shape)
 
-> **Why `class Mode(str, Enum)` instead of a plain string?** Your editor can autocomplete `Mode.PLAN` and will catch `Mode.PLAM` at import time. The plain-string version from Step 1 works identically at runtime; the Enum just catches typos early.
+> **Why `class Mode(str, Enum)` instead of a plain string?** Your editor can autocomplete `Mode.PLAN` and will catch `Mode.PLAM` at import time. The plain-string version from Step 2.2 works identically at runtime; the Enum just catches typos early.
 
 The harness operates in one of five modes. These mirror the mental model popularised by Claude Code, adapted for a pure-Python harness.
 
@@ -1221,7 +1221,7 @@ Permissions are one kind of middleware. You also want to observe, transform, and
 > The `@dataclass PreToolContext`/`PostToolContext` below are just **dicts of
 > information** ("which tool, what args, what result") handed to each hook.
 
-### Hook context objects
+### Step 4.2 — Hook context objects
 
 ```python
 # hooks.py
@@ -1246,7 +1246,7 @@ class PostToolContext:
     result: str                   # the raw string returned by tool.run(...)
 ```
 
-### Hook return types and the registry
+### Step 4.3 — Hook return types and the registry
 
 A pre-hook returns either:
 - `None` — continue as normal
@@ -1292,7 +1292,7 @@ class HookRegistry:
         return result
 ```
 
-### Built-in hooks
+### Step 4.4 — Built-in hooks
 
 #### Hook 1 — Dangerous command blocker (pre-hook)
 
@@ -1412,7 +1412,7 @@ Create a `HookRegistry`, add `dangerous_command_blocker` as a pre-hook and `secr
 
 ---
 
-## 8. Sandboxing: What Pure Python Can Do
+## Interlude — Sandboxing: What Pure Python Can Do
 
 The OS-level answer to sandboxing is containers (Docker, Podman), Linux namespaces, seccomp-bpf filters, or tools like `firejail` or `bubblewrap`. Those are the right answer for production. But you can meaningfully improve safety in-process with pure Python, applied to the `bash` tool's subprocess call.
 
@@ -1560,7 +1560,7 @@ The pure-Python layer meaningfully reduces the blast radius for accidents and co
 
 ---
 
-## 9. Prompt-Injection Defense
+## Interlude — Prompt-Injection Defense
 
 When `read_file` returns a file whose contents say:
 
@@ -1610,9 +1610,11 @@ def injection_detector(ctx: PostToolContext) -> str | None:
 
 ---
 
-## 10. Integrating Everything into the Agent Loop
+## Version 4, assembled — Integrating Everything into the Agent Loop
 
-Here is the complete `safe_dispatch` function and the updated loop. The flow is:
+This is the production shape of the phase — the Version 3 harness plus the hook system,
+consolidated into the multi-file layout the rest of the guide uses. Here is the complete
+`safe_dispatch` function and the updated loop. The flow is:
 
 ```text
 model emits function_call
@@ -2211,7 +2213,7 @@ if __name__ == "__main__":
 
 ---
 
-## 11. Pitfalls
+## Pitfalls
 
 > These are the mistakes that feel obvious in retrospect and cost hours in practice.
 

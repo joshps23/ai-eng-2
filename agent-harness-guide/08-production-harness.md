@@ -1759,14 +1759,16 @@ trace.jsonl              # auto-saved event log (gitignore this)
 ```
 
 > **Mapping note.** The layout above is the *teaching* layout, using this phase's
-> illustrative file names. The consolidated, tested package consolidates further:
+> illustrative file names. The consolidated, tested package merges further:
 > `tools.py`/`filesystem.py` became the `tools/` subpackage (`base.py`, `registry.py`,
-> `files.py`, `shell.py`, `parallel.py`), `sub_agents.py` became `subagents.py`,
-> `accounting.py`/`tracer.py`/`compaction.py` were folded into their consumers
-> (`config.py`, `context.py`, `agent.py`), and `testing.py` ships the fake client from
-> §9. Compare for yourself: the real tree is in
-> [`code/agent_harness/`](code/agent_harness/) and the full name-by-name mapping table
-> is in [`code/README.md`](code/README.md).
+> `files.py`, `shell.py`, `parallel.py`); `sub_agents.py` became `subagents.py`;
+> `compaction.py` is `context.py`'s `compact()`; the token half of `accounting.py`
+> survives as a small `UsageAccumulator` inside `agent.py` (the price table is an
+> extension you can add); `tracer.py`, `logging_config.py`, and `instructions.py` are
+> production extensions shown here, not separate package modules; and the package adds
+> `testing.py` — the fake client from §9. Compare for yourself: the real tree is in
+> [`code/agent_harness/`](code/agent_harness/) and the name-by-name mapping table is in
+> [`code/README.md`](code/README.md).
 
 ### `pyproject.toml`
 
