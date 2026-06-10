@@ -77,6 +77,22 @@ The evaluator-reviser loop runs **at most 10 times**, then stops on its own.
   more incremental, increment the counter here, log it below, commit, push. Stop when the
   counter hits 10 **or** every phase scores ≥4 on every axis.
 
+### Known issues for the loop to address (seed list)
+
+- **Model-id inconsistency.** Runnable examples mix `MODEL = "gpt-5"`, `"gpt-4o"`, and
+  `gpt-4.1`/`gpt-4o-mini` across phases. Standardize the runnable `MODEL = "..."` constant
+  to one default (**`gpt-4o`**, matching the canonical `code/agent_harness/config.py` and
+  the FAQ), while leaving genuine prose discussion of model *families* intact. (Rubric
+  axis: correct & current.)
+- Re-check that phases whose agents folded the old sidebar 🟢 box into live steps (Phase 2,
+  Phase 5) still carry an explicit beginner-track recap.
+
 ## Revision log (newest first)
 
-- _(initial parallel pass and loop iterations will be logged here)_
+- **2026-06-09 — Initial parallel pass complete.** Nine sub-agents (one per phase, run
+  concurrently) restructured every phase to lead with **Step 0 — the simplest version that
+  works** (basic functions, basic tools, no classes/decorators/threads), followed by
+  one-idea-per-step increments each with a **▶ Run it now** checkpoint, deferring the
+  production/class-based shape to later. Verified: `code/` untouched, `python -m pytest`
+  green (56), every phase retains its 🟢 boxes, "Key takeaways", "Check yourself", and
+  "Next" pointer. The evaluator loop below now refines from here.
