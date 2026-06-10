@@ -103,10 +103,11 @@ agent loop:
 
 ---
 
-## 0.3 The Responses API contract (memorize this)
+## 0.3 The Responses API contract (build it up step by step)
 
-This section is the **single source of truth** every later phase relies on. If a
-code sample in a later phase looks unfamiliar, come back here.
+This section is the **single source of truth** every later phase relies on. We
+introduce each piece one at a time, with a working checkpoint after each new idea.
+If a code sample in a later phase looks unfamiliar, come back here.
 
 ### 0.3.1 Installation & client
 
@@ -131,9 +132,18 @@ MODEL = "gpt-5"  # any Responses-API-capable model works; swap as you like
 > latest model available to you. Reasoning-capable models give the best agentic
 > behavior; everything here also works on smaller/faster models.
 
-### 0.3.2 A basic call
+### 0.3.2 Step 1 — the simplest possible call (text in, text out)
+
+Before tools, loops, or state: just ask the model a question and print its answer.
+This is the smallest end-to-end program we can write.
 
 ```python
+# step1_hello.py
+from openai import OpenAI
+
+MODEL = "gpt-5"
+client = OpenAI()
+
 resp = client.responses.create(
     model=MODEL,
     instructions="You are a terse assistant.",   # the system prompt
@@ -150,16 +160,38 @@ Two important fields on the request:
 - **`input`** — either a plain string (shorthand for one user message) or a **list
   of input items** (the real, full-control form we use everywhere).
 
-### 0.3.3 `input` as a list of items
+**▶ Run it now.**
 
-This is the form the harness actually uses. The conversation is a Python list you
-own and append to:
+```
+python step1_hello.py
+```
+
+You should see something like:
+
+```
+Hello there! How are you?
+```
+
+The exact words vary, but if any five-word greeting appears your API key is valid
+and the client is wired up correctly. Move on only once this works.
+
+### 0.3.3 Step 2 — `input` as a list of items
+
+The plain-string shortcut is convenient, but the harness needs precise control over
+the conversation history. The full form passes a Python list you own and append to:
 
 ```python
+# step2_list_input.py
+from openai import OpenAI
+
+MODEL = "gpt-5"
+client = OpenAI()
+
 input_items = [
     {"role": "user", "content": "What's the capital of France?"},
 ]
 resp = client.responses.create(model=MODEL, input=input_items)
+print(resp.output_text)
 ```
 
 A `message` item has a `role` (`"user"`, `"assistant"`, `"system"`/`"developer"`)
@@ -167,6 +199,16 @@ and `content`. Content can be a simple string, or a list of typed content parts
 (`{"type": "input_text", "text": "..."}` for user input,
 `{"type": "output_text", "text": "..."}` for assistant output). For our purposes,
 plain-string content for user messages is fine.
+
+**▶ Run it now.**
+
+```
+python step2_list_input.py
+```
+
+You should see "Paris" (or a short sentence containing it). This is the form we'll
+use for every multi-turn conversation because we can append new items as the
+conversation grows.
 
 ### 0.3.4 The output: a list of typed items
 
@@ -188,10 +230,14 @@ plain-string content for user messages is fine.
 `output_text` parts. Great for simple cases; in the loop we iterate `resp.output`
 directly so we can see tool calls.
 
-### 0.3.5 Defining tools
+You already saw `resp.output_text` in Steps 1 and 2. In Step 3 you'll see why we
+need to iterate `resp.output` directly.
 
-In the Responses API a function tool is a **flat** object (note: no nested
-`"function": {...}` wrapper like Chat Completions used):
+### 0.3.5 Step 3 — defining a tool and seeing the model request it
+
+Now we add one tool and observe the two-turn handshake. In the Responses API a
+function tool is a **flat** object (note: no nested `"function": {...}` wrapper like
+Chat Completions used):
 
 ```python
 tools = [
@@ -229,7 +275,60 @@ useful agent and a confused one.
 > property be listed in `required` and `additionalProperties: False`. We'll discuss
 > this in Phase 2.
 
-### 0.3.6 Handling a tool call — the critical handshake
+Here is the minimal program that defines one tool and prints what the model decided
+to do (call it, or answer directly):
+
+```python
+# step3_tool_request.py
+from openai import OpenAI
+
+MODEL = "gpt-5"
+client = OpenAI()
+
+tools = [{
+    "type": "function",
+    "name": "get_weather",
+    "description": "Get the current weather for a city.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "city": {"type": "string", "description": "City name, e.g. 'Paris'"},
+        },
+        "required": ["city"],
+        "additionalProperties": False,
+    },
+}]
+
+input_items = [{"role": "user", "content": "What's the weather like in Tokyo?"}]
+resp = client.responses.create(model=MODEL, input=input_items, tools=tools)
+
+for item in resp.output:
+    print(f"item.type = {item.type}")
+    if item.type == "function_call":
+        print(f"  name      = {item.name}")
+        print(f"  arguments = {item.arguments}")
+        print(f"  call_id   = {item.call_id}")
+```
+
+**▶ Run it now.**
+
+```
+python step3_tool_request.py
+```
+
+Expected output (exact values vary):
+
+```
+item.type = function_call
+  name      = get_weather
+  arguments = {"city": "Tokyo"}
+  call_id   = call_xyz789
+```
+
+The model did **not** answer in text — it instead asked you to run `get_weather`.
+That `call_id` is critical: you must echo it back in the next step.
+
+### 0.3.6 Step 4 — the tool call → result handshake (the critical step)
 
 When the model wants a tool, `resp.output` contains a `function_call` item:
 
@@ -274,6 +373,74 @@ result — **echoing it back exactly is mandatory**.
 > items. We use (a) by default because it's transparent and survives process
 > restarts; we cover (b) in Phase 8.
 
+Now let's run the complete two-turn exchange. This is the **complete handshake** in
+under 30 lines:
+
+```python
+# step4_handshake.py
+import json
+from openai import OpenAI
+
+MODEL = "gpt-5"
+client = OpenAI()
+
+tools = [{
+    "type": "function",
+    "name": "get_weather",
+    "description": "Get the current weather for a city.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "city": {"type": "string", "description": "City name, e.g. 'Paris'"},
+        },
+        "required": ["city"],
+        "additionalProperties": False,
+    },
+}]
+
+def get_weather(city):
+    # Stub: in a real harness this would call a weather API
+    return f"Sunny, 21°C in {city}"
+
+input_items = [{"role": "user", "content": "What's the weather like in Tokyo?"}]
+
+# Turn 1: model should ask to call get_weather
+resp = client.responses.create(model=MODEL, input=input_items, tools=tools)
+input_items += resp.output   # carry all output items forward
+
+# Execute any tool calls
+for item in resp.output:
+    if item.type == "function_call":
+        args = json.loads(item.arguments)
+        result = get_weather(**args)
+        input_items.append({
+            "type": "function_call_output",
+            "call_id": item.call_id,   # echo back the same call_id
+            "output": result,          # a string
+        })
+
+# Turn 2: feed the result back; model should now answer in words
+resp = client.responses.create(model=MODEL, input=input_items, tools=tools)
+print(resp.output_text)
+```
+
+**▶ Run it now.**
+
+```
+python step4_handshake.py
+```
+
+Expected output:
+
+```
+The weather in Tokyo is sunny and 21°C.
+```
+
+(Wording varies, but it will quote back the stub data.) If you see this, you have
+successfully run the **complete agent loop** — model asks for a tool, you run it,
+you feed the result back, and the model answers. Phase 1 simply wraps this pattern
+in a `while` loop.
+
 ### 0.3.7 Carrying model output back into the conversation
 
 The cleanest, least error-prone pattern — and the one we standardize on — is to
@@ -291,7 +458,16 @@ you ever need plain dicts (e.g. to persist to disk), use
 `item.model_dump()` / `resp.model_dump()`. We'll formalize a `to_input()` helper in
 Phase 3.
 
-### 0.3.8 Streaming (preview — full treatment in Phase 3)
+You already saw this pattern in `step4_handshake.py` — `input_items += resp.output`
+is the key line that makes the conversation grow correctly.
+
+---
+
+## 0.3.8 Preview: streaming (full treatment in Phase 3)
+
+> **This section is optional for now.** Skip it on your first pass. Come back after
+> you have Phase 1 working. Streaming is a UI enhancement — it does not change the
+> handshake logic you just learned.
 
 For a live UI you stream events instead of waiting for the whole response. Pass
 `stream=True` to the **same** `responses.create()` call — it then returns an iterator of
@@ -324,7 +500,13 @@ purpose — the harness drives the event loop itself.) Key event types you'll us
 `response.output_text.delta`, `response.function_call_arguments.delta`,
 `response.output_item.added`, `response.completed`. Phase 3 builds a full streaming renderer.
 
-### 0.3.9 Usage & cost
+---
+
+## 0.3.9 Preview: usage & cost (full treatment in Phase 6)
+
+> **This section is optional for now.** Skip it on your first pass. Token accounting
+> matters a lot once your conversations grow long — but first get the handshake
+> working.
 
 Every response carries token accounting:
 
@@ -421,9 +603,10 @@ subprocess).
 
 ## 0.5 Sanity-check script
 
-Before moving to Phase 1, confirm your environment works end to end. This is the
-"hello world" of the Responses API *with a tool round trip* — it exercises the exact
-handshake from §0.3.6.
+Before moving to Phase 1, confirm your environment works end to end. This script is
+a variant of `step4_handshake.py` that uses the integer `add` tool from
+§0.3.5 — it exercises the exact handshake you just learned, with a tool that has
+completely deterministic output so you can easily verify correctness.
 
 ```python
 # check_setup.py
@@ -470,7 +653,13 @@ resp = client.responses.create(model=MODEL, input=input_items, tools=tools)
 print(resp.output_text)   # -> something like "21 + 21 = 42"
 ```
 
-If that prints a correct answer, your key, model access, and understanding of the
+**▶ Run it now.**
+
+```
+python check_setup.py
+```
+
+If that prints a sentence containing "42", your key, model access, and understanding of the
 handshake are all good. **You now have everything you need to build the loop.**
 
 ---

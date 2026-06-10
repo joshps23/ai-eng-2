@@ -89,9 +89,214 @@ approach.
 
 ---
 
+## Step 0 — The Simplest Version That Works
+
+Before introducing any classes or helpers, let's see the core idea in the most direct form:
+a plain Python list that grows with every turn and gets passed back to the model so it
+"remembers" the conversation.
+
+**Why this first?** Everything in this phase is just an organized version of what you are
+about to write. If you understand this loop you already understand the whole phase.
+
+```python
+import json
+from openai import OpenAI
+
+MODEL = "gpt-4o"
+client = OpenAI()
+
+# The entire conversation is a plain list of dicts.
+# We will append to it and pass it as input= on every call.
+input_items = []
+
+# --- Turn 1: ask the model something ---
+input_items.append({"role": "user", "content": "My name is Alex. Remember that."})
+
+resp = client.responses.create(
+    model=MODEL,
+    input=input_items,
+)
+
+# Append the model's output items so it "remembers" this turn.
+for item in resp.output:
+    input_items.append(item.model_dump())  # SDK object -> plain dict
+
+print("Turn 1:", resp.output_text)
+
+# --- Turn 2: ask a follow-up that requires memory ---
+input_items.append({"role": "user", "content": "What is my name?"})
+
+resp2 = client.responses.create(
+    model=MODEL,
+    input=input_items,
+)
+
+for item in resp2.output:
+    input_items.append(item.model_dump())
+
+print("Turn 2:", resp2.output_text)
+print(f"\nTranscript now has {len(input_items)} items.")
+```
+
+**▶ Run it now.** You should see:
+
+```text
+Turn 1: Got it! I'll remember your name is Alex.
+Turn 2: Your name is Alex.
+
+Transcript now has 4 items.
+```
+
+The model answered "Alex" on turn 2 because `input_items` still contained the turn-1
+exchange. That list *is* the memory.
+
+> 🟢 **What just happened?**
+> After each `responses.create()` call you called `.model_dump()` on every item in
+> `resp.output` to convert it from an SDK object (a Python class instance) to a plain
+> `dict`.  Plain dicts are JSON-serializable, easy to print, and accepted by the API
+> as input on the next call.  You will use this pattern everywhere.
+
+---
+
+## Step 1 — Add Small Helper Functions
+
+The four operations you just did inline — add user message, extend with model output, add a
+tool result, return the list to pass as `input=` — will repeat every turn.  Naming them
+makes the loop easier to read and avoids copy-paste mistakes.
+
+**Why now?** Because the next step (save/load) is much cleaner once the helpers are in place.
+
+```python
+import json
+
+def new_conversation(instructions=""):
+    """Create a fresh conversation dict."""
+    return {"instructions": instructions, "items": []}
+
+def add_user(conv, text):
+    """Append a user turn."""
+    conv["items"].append({"role": "user", "content": text})
+
+def extend_items(conv, output_items):
+    """Append all items from resp.output, converting SDK objects to dicts."""
+    for item in output_items:
+        if hasattr(item, "model_dump"):
+            item = item.model_dump()
+        conv["items"].append(dict(item))
+
+def add_tool_result(conv, call_id, output):
+    """Append a function_call_output item."""
+    conv["items"].append({
+        "type": "function_call_output",
+        "call_id": call_id,
+        "output": output,
+    })
+
+def to_input(conv):
+    """Return the items list ready to pass as input=."""
+    return list(conv["items"])
+```
+
+Now rewrite the two-turn chat using these helpers:
+
+```python
+from openai import OpenAI
+
+MODEL = "gpt-4o"
+client = OpenAI()
+
+conv = new_conversation(instructions="You are a helpful assistant.")
+
+add_user(conv, "My name is Alex. Remember that.")
+resp = client.responses.create(
+    model=MODEL,
+    instructions=conv["instructions"],
+    input=to_input(conv),
+)
+extend_items(conv, resp.output)
+print("Turn 1:", resp.output_text)
+
+add_user(conv, "What is my name?")
+resp2 = client.responses.create(
+    model=MODEL,
+    instructions=conv["instructions"],
+    input=to_input(conv),
+)
+extend_items(conv, resp2.output)
+print("Turn 2:", resp2.output_text)
+print(f"Transcript has {len(conv['items'])} items.")
+```
+
+**▶ Run it now.** Output should be the same as Step 0.  Nothing changed externally —
+only the code is cleaner.
+
+---
+
+## Step 2 — Save and Load the Transcript
+
+Right now, if the program restarts, the conversation is lost.  Because `conv` is just a
+dict with a list, saving it is one `json.dump()` call.
+
+**Why now?** This is the whole point of owning the transcript locally — you can persist it,
+reload it, and resume without touching the server.
+
+```python
+def save(conv, path):
+    """Write the conversation to a JSON file."""
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(conv, f, indent=2, ensure_ascii=False)
+
+def load(path):
+    """Read a conversation back from a JSON file."""
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
+```
+
+Try it — save after turn 1 and reload before turn 2:
+
+```python
+from openai import OpenAI
+
+MODEL = "gpt-4o"
+client = OpenAI()
+
+# --- Session A: first turn ---
+conv = new_conversation(instructions="You are a helpful assistant.")
+add_user(conv, "My name is Alex. Remember that.")
+resp = client.responses.create(
+    model=MODEL,
+    instructions=conv["instructions"],
+    input=to_input(conv),
+)
+extend_items(conv, resp.output)
+save(conv, "/tmp/my_session.json")
+print("Saved session. Turn 1:", resp.output_text)
+
+# --- Session B: simulate a restart by loading from disk ---
+conv2 = load("/tmp/my_session.json")
+add_user(conv2, "What is my name?")
+resp2 = client.responses.create(
+    model=MODEL,
+    instructions=conv2["instructions"],
+    input=to_input(conv2),
+)
+extend_items(conv2, resp2.output)
+print("Loaded session. Turn 2:", resp2.output_text)
+```
+
+**▶ Run it now.** The model should still answer "Alex" on turn 2, even though the
+conversation dict was serialized to disk and loaded back.  Open `/tmp/my_session.json`
+in a text editor — you will see the full transcript as plain JSON.
+
+---
+
 ## 2. Transcript Management Deep-Dive
 
 ### 2.1 Own vs. Delegate — Which Should You Choose?
+
+The two-turn example above used **owning the list** (`input_items` / `conv["items"]`).
+The alternative is passing `previous_response_id=resp.id` and letting the server stitch
+history together.  Here is when each makes sense:
 
 | Concern | Own `input_items` | `previous_response_id` |
 |---|---|---|
@@ -149,6 +354,19 @@ def to_input(items: list) -> list[dict]:
 
 This is intentionally minimal.  The API silently ignores unknown fields in input items, so
 including extra fields from `model_dump()` is harmless.
+
+---
+
+## Step 3 — Organize Into the `Conversation` Class
+
+You now have five functions (`new_conversation`, `add_user`, `extend_items`,
+`add_tool_result`, `to_input`) and two persistence functions (`save`, `load`).  They work
+fine as standalone functions.
+
+**Why introduce a class now?** A class bundles the data (`_items`, `instructions`) together
+with the functions that operate on it, so you cannot accidentally call `add_user` on the
+wrong list.  It also gives you a natural home for the `save`/`load` pair.  The class below
+is *exactly the same logic* — just organized.
 
 ### 2.4 The `Conversation` Class
 
@@ -256,7 +474,7 @@ class Conversation:
         return ""
 ```
 
-Usage:
+The two-turn chat now reads:
 
 ```python
 conv = Conversation(instructions="You are a helpful assistant.")
@@ -272,6 +490,10 @@ resp = client.responses.create(
 conv.extend(resp.output)   # append assistant message + any reasoning items
 conv.save("./sessions/session-001.json")
 ```
+
+**▶ Run it now.** Same result as Step 0.  The only difference is `conv.add_user(...)`
+instead of `add_user(conv, ...)` and `conv.extend(...)` instead of
+`extend_items(conv, ...)`.  Everything else is identical.
 
 ### 2.5 Reasoning Items and `encrypted_content`
 
@@ -325,7 +547,151 @@ any entry in the input list.
 
 ---
 
+## Step 4 — A Non-Streaming Agent Loop (Primary Path)
+
+Before streaming, build the complete agent loop using plain `create()`.  This is the version
+you should understand first — streaming (Step 5) only changes how text is *displayed*, not
+how the loop works.
+
+**Why non-streaming first?** It is simpler, has fewer moving parts, and produces identical
+results.  Once you have this running you can add streaming as a display-layer enhancement
+without touching any logic.
+
+```python
+import json
+from openai import OpenAI
+
+MODEL = "gpt-4o"
+client = OpenAI()
+
+# Simple sequential tool dispatcher (no threads needed for a beginner version)
+def run_tool_calls(function_calls, registry):
+    """Execute each tool call in order and return output items."""
+    results = []
+    for fc in function_calls:
+        fn = registry.get(fc["name"])
+        if fn is None:
+            output = f"Error: unknown tool '{fc['name']}'"
+        else:
+            try:
+                kwargs = json.loads(fc["arguments"])
+                output = str(fn(**kwargs))
+            except Exception as exc:
+                output = f"Error: {exc}"
+        results.append({
+            "type": "function_call_output",
+            "call_id": fc["call_id"],
+            "output": output,
+        })
+    return results
+
+
+def run_agent(user_message, instructions, tools_list, registry, max_turns=10):
+    """
+    Non-streaming agent loop.  Returns the Conversation when done.
+    """
+    conv = Conversation(instructions=instructions)
+    conv.add_user(user_message)
+
+    for turn in range(max_turns):
+        resp = client.responses.create(
+            model=MODEL,
+            instructions=conv.instructions,
+            input=conv.to_input(),
+            tools=tools_list,
+        )
+
+        # Append ALL output items (message, reasoning, function_call) FIRST.
+        conv.extend(resp.output)
+
+        # Print the assistant's text response (empty string if no text yet).
+        if resp.output_text:
+            print(f"Assistant: {resp.output_text}")
+
+        # Collect any tool calls.
+        function_calls = [
+            item.model_dump() if hasattr(item, "model_dump") else item
+            for item in resp.output
+            if (getattr(item, "type", None) or item.get("type")) == "function_call"
+        ]
+
+        if not function_calls:
+            break  # model is done
+
+        # Run tools and append results.
+        tool_outputs = run_tool_calls(function_calls, registry)
+        for output in tool_outputs:
+            conv.add_tool_result(output["call_id"], output["output"])
+
+    return conv
+```
+
+Try it with a simple tool:
+
+```python
+# A tiny tool registry: just a dict of name -> function
+REGISTRY = {
+    "add": lambda a, b: a + b,
+}
+
+TOOLS_LIST = [{
+    "type": "function",
+    "name": "add",
+    "description": "Add two numbers.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "a": {"type": "number"},
+            "b": {"type": "number"},
+        },
+        "required": ["a", "b"],
+    },
+}]
+
+conv = run_agent(
+    user_message="What is 1234 + 5678?",
+    instructions="You are a helpful math assistant. Use the add tool.",
+    tools_list=TOOLS_LIST,
+    registry=REGISTRY,
+)
+print(f"\nTranscript has {len(conv)} items.")
+conv.save("/tmp/phase3-nonstreaming.json")
+print("Saved to /tmp/phase3-nonstreaming.json")
+```
+
+**▶ Run it now.** You should see:
+
+```text
+Assistant: The sum of 1234 and 5678 is 6912.
+
+Transcript has 4 items.
+Saved to /tmp/phase3-nonstreaming.json
+```
+
+The four transcript items are: user message, `function_call` item, `function_call_output`
+item, and the final assistant message.
+
+> 🟢 **`output_text` is a shortcut.**  `resp.output_text` is a convenience property that
+> concatenates all text content from the response into one string.  For most use cases it
+> is all you need.  When you want to inspect individual items (e.g. to find tool calls),
+> iterate `resp.output` directly.
+
+---
+
 ## 3. Streaming Deep-Dive
+
+> **This entire section is optional.** If streaming is not a priority for you right now,
+> skip to Section 6 (Pitfalls) — the non-streaming loop above is complete and correct.
+> Come back here when you specifically want characters to appear as the model types.
+
+### Step 5 — Add Streaming as a Display Enhancement
+
+Streaming does not change the loop logic or the transcript.  It changes only *how the
+model's text reaches the terminal*: instead of printing `resp.output_text` after the whole
+response arrives, you print each small text chunk (`delta`) as it streams in.
+
+**Why streaming?** Faster perceived responsiveness, and tool calls become visible as they
+form — useful for debugging.
 
 ### 3.1 Why Stream?
 
@@ -500,6 +866,17 @@ def stream_turn(
 - `KeyboardInterrupt` propagates after the context manager closes the connection, so no
   resource leak occurs.
 - The dim ANSI escape `\033[2m` is purely cosmetic; remove it for plain terminals.
+
+**▶ Run it now (streaming check).** Call `stream_turn` with a `Conversation` that has a
+user message, using `tools=[]`.  You should see the assistant's response print
+character-by-character.  The returned `final` object should have `.output_text` set.
+
+```python
+conv = Conversation(instructions="You are a helpful assistant.")
+conv.add_user("Say hello in three words.")
+final_resp = stream_turn(conv, tools=[], instructions=conv.instructions)
+print("\nFull response object output_text:", final_resp.output_text)
+```
 
 ### 3.4 A Simpler Renderer (No ANSI)
 
@@ -969,114 +1346,3 @@ The sum of 1234 and 5678 is 6912, and the sentence
 --- Saved transcript: ./sessions/phase3-demo.json ---
 Transcript has 6 items.
 ```
-
-The six items in the saved transcript are:
-
-1. `{"role": "user", "content": "Please do two things..."}` — the initial user message
-2. A `reasoning` item (if using a reasoning model; absent with standard GPT models)
-3. A `function_call` item for `add` (with its `call_id` and `arguments`)
-4. A `function_call` item for `count_words`
-5. A `function_call_output` item for `add` (result: `"6912"`)
-6. A `function_call_output` item for `count_words` (result: `"9"`)
-
-After the second API call the model produces a `message` item containing the final text,
-which is appended as item 7.  The loop then terminates because `function_calls` is empty.
-
----
-
-## 6. Pitfalls
-
-> **Pitfall 1 — Losing the final structured response**
->
-> If you break out of the stream loop early, or never handle the `response.completed`
-> event, you keep only the raw event deltas — no `.output` list, no `.usage`.  When you
-> stream with `client.responses.create(stream=True)` there is no `get_final_response()`
-> helper: the fully-assembled `Response` arrives exactly once, on the `response.completed`
-> event's `event.response`.  Capture it there, or you lose it.
-
-> **Pitfall 2 — Mixing streamed text handling with tool-call ordering**
->
-> Do not assume text ends before tool calls begin.  A model may emit text, then start a
-> function_call, then emit more text.  Drive your rendering purely from events; never
-> assume a particular interleaving.  The `response.output_item.added` event tells you a
-> new item type has started — use it to switch rendering mode.
-
-> **Pitfall 3 — Appending tool results before the function_call items**
->
-> `conv.extend(resp.output)` must run **before** `conv.add_tool_result(...)`.  The API
-> validates that every `function_call_output` item is preceded by a matching
-> `function_call` item with the same `call_id`.  If you append tool results first, the
-> next API call will return a 400 error.
-
-> **Pitfall 4 — Assuming `output_text` exists mid-stream**
->
-> During streaming, a `response.output_item.added` event for a `message` item does not
-> mean any text is available yet.  Text arrives only via `response.output_text.delta`
-> events.  Do not try to read `.content` or `.text` from a partial item object; use the
-> delta events exclusively for live rendering.
-
-> **Pitfall 5 — Using SDK objects in `input` across process boundaries**
->
-> SDK output objects are not JSON-serializable by default.  If you serialize with
-> `json.dumps(conv.to_input())` and one of the items is still an SDK object (not yet
-> normalized via `.model_dump()`), you will get a `TypeError`.  `Conversation.extend()`
-> normalizes to dicts immediately, so this is only a risk if you bypass `extend()` and
-> push SDK objects directly into `_items`.
-
-> **Pitfall 6 — Ignoring `response.error` events**
->
-> If the server encounters an error mid-stream it emits a `response.error` event and
-> closes the stream.  If your loop only handles text and function-call events, the error
-> is silently swallowed.  Always handle `response.error` — at minimum print it to stderr
-> and break, or raise an exception.
-
----
-
-## Summary
-
-| Concept | Key takeaway |
-|---|---|
-| Transcript ownership | Own `input_items`; use `previous_response_id` only as an optimization |
-| Serialization | Call `.model_dump()` immediately; store dicts, not SDK objects |
-| `Conversation` class | Single source of truth; handles add/extend/tool-result/save/load |
-| Reasoning items | Append them like any other output; use `encrypted_content` with `store=False` |
-| `instructions` | Top-level parameter, not in `input_items`; pass on every call |
-| Streaming | Use `client.responses.create(..., stream=True)`; drive UI from events; capture the final `Response` from the `response.completed` event |
-| Append order | `conv.extend(resp.output)` before `conv.add_tool_result(...)` — always |
-| Cancellation | `KeyboardInterrupt` inside `with stream:` is safe; context manager cleans up |
-
----
-
-## Key takeaways
-
-- This phase separates **two orthogonal concerns**: *owning the transcript* (state) and
-  *streaming* (presentation). Each works without the other.
-- The transcript is **yours to manage**. Every turn, append the model's output items
-  **first**, then the tool results — `conv.extend(resp.output)` before
-  `conv.add_tool_result(...)`, always.
-- **Streaming is optional.** `create(..., stream=True)` yields events you drive the UI
-  from; grab the final complete `Response` from the `response.completed` event. Plain
-  `create()` + `output_text` is simpler and behaves identically to the model.
-- Because you own the transcript, you can **save and reload** a conversation — that's
-  what makes resuming a session possible.
-
-## Check yourself
-
-1. What are the two orthogonal concerns this phase pulls apart?
-2. In what order must you append the model's items and the tool results each turn, and why?
-3. With streaming, where do you obtain the final, complete `Response` object?
-4. Do you need streaming for a *correct* agent?
-
-<details><summary>Answers</summary>
-
-1. **Transcript/state** (what the model remembers) vs **streaming/presentation** (how
-   output reaches the user).
-2. **Model output items first, then tool results.** The tool results refer back to the
-   model's `function_call` items by `call_id`, so those must already be in the transcript.
-3. From the **`response.completed`** event emitted at the end of the stream.
-4. **No** — streaming only changes *how* text is displayed, not what the model computes.
-   It's a UX feature.
-</details>
-
-**Next:** Phase 4 — Real Tools (the `read_file`, `edit_file`, `bash`, `grep`, `glob`
-toolset that turns the loop into a genuine coding agent).
