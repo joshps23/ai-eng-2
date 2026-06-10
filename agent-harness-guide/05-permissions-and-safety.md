@@ -444,13 +444,17 @@ def check_permission(tool_name, arg, mode="auto"):
     return "ask"
 ```
 
-Update the call site to pass `mode` — give `run_agent` a `mode` parameter and thread it through:
+Update the call site to pass `mode` — give `run_agent` a `mode` parameter:
 
 ```python
 def run_agent(task: str, mode: str = "auto") -> None:
     ...
-            decision = check_permission(tc.name, arg, mode=mode)
-    ...
+```
+
+…and inside its tool-call loop, thread it through to the gate:
+
+```python
+decision = check_permission(tc.name, arg, mode=mode)
 ```
 
 ### ▶ Run it now
@@ -516,9 +520,9 @@ Run the agent and ask it to `git status`. With the rule in place it should run w
 > | AUTO_OK + mode | Auto-approves by risk level | a dict of lists |
 > | DEFAULT_RULES | Hard deny/allow by pattern | a list of dicts |
 >
-> The steps below scale this up to the production-grade version — using `Enum`, `@dataclass`,
-> and a `class`-based policy engine. Each new Python feature solves a concrete problem
-> you'd hit if you kept the plain-dict version on a real project.
+> Versions 3 and 4 below scale this up to the production-grade version — using `Enum`,
+> `@dataclass`, and a `class`-based policy engine. Each new Python feature solves a
+> concrete problem you'd hit if you kept the plain-dict version on a real project.
 >
 > | New thing below | What problem it solves |
 > |---|---|
@@ -695,7 +699,7 @@ BYPASS_WARNING = """\
 
 ### Step 3.3 — The Policy Engine (production shape)
 
-> **Why a `PermissionPolicy` class?** Your Step 2 `DEFAULT_RULES` list works fine for a few rules. When rules multiply, you want: (a) richer matching (regex, not just `in`), (b) a predicate function for complex logic, (c) the `evaluate()` method to live next to the data. This is exactly what the dataclass + class approach provides — it is the Step 2 list, organized.
+> **Why a `PermissionPolicy` class?** Your Step 2.3 `DEFAULT_RULES` list works fine for a few rules. When rules multiply, you want: (a) richer matching (regex, not just `in`), (b) a predicate function for complex logic, (c) the `evaluate()` method to live next to the data. This is exactly what the dataclass + class approach provides — it is the Step 2.3 list, organized.
 
 Beyond modes, you want structured allow/deny rules — a policy that can say "allow `bash(git *)` but deny `bash(rm *)` regardless of mode." Implement this as an ordered list of rules evaluated top-to-bottom, first match wins.
 
@@ -807,7 +811,7 @@ def default_policy() -> PermissionPolicy:
 
 ### Step 3.4 — The Approval Gate (production shape)
 
-> **Why upgrade from the Step 0/1 gate?** The simple gate returned just `"allow"/"deny"/"ask"`. The production gate also returns a *reason string*, remembers per-session y/a/d/n answers across loop iterations (so it does not ask twice about the same tool), and integrates with the `Tool` dataclass's `.risk` field and the `PermissionPolicy` rules.
+> **Why upgrade from the Version 2 gate?** The simple gate returned just `"allow"/"deny"/"ask"`. The production gate also returns a *reason string*, remembers per-session y/a/d/n answers across loop iterations (so it does not ask twice about the same tool), and integrates with the `Tool` dataclass's `.risk` field and the `PermissionPolicy` rules.
 
 The gate combines mode, policy, and per-session memory into a single decision function. When the answer is ASK, it prompts the terminal and remembers the choice for the rest of the session.
 
@@ -2211,6 +2215,21 @@ if __name__ == "__main__":
     print(answer)
 ```
 
+### ▶ Run it now
+
+Save `permissions.py`, `hooks.py`, and `agent_loop.py` (plus `tools.py`/`real_tools.py`
+from Phase 4), then:
+
+```
+python agent_loop.py
+```
+
+Watch the funnel work end to end: read-only tools run silently, `bash` calls either
+match a policy rule, get auto-approved by the mode, or pause at the `[y/n/a/d]` prompt —
+and every tool result passes through the secret scrubber, the truncator, and into
+`/tmp/agent_audit.jsonl`. `tail -f /tmp/agent_audit.jsonl` in a second terminal to see
+the audit trail grow as the agent works.
+
 ---
 
 ## Pitfalls
@@ -2251,6 +2270,8 @@ The injection detector prepends a warning and returns the full (warning + conten
 | `hooks.py` | `HookRegistry`, `PreToolContext`, `PostToolContext`, built-in hooks, `default_hooks()` |
 | `sandbox.py` | `run_sandboxed()` for hardened subprocess execution with env allowlist and POSIX resource limits |
 | `agent_loop.py` | `safe_dispatch()` and updated `run_agent()` wiring everything together |
+
+For hands-on practice with the permission gate, policy rules, and hooks, work through the Phase 5 section of [EXERCISES.md](EXERCISES.md).
 
 Phase 6 will add multi-turn conversation management, context-window budgeting, and graceful handling of very long sessions.
 
