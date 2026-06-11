@@ -111,7 +111,7 @@ Score each phase 1–5 on each axis; the loop revises the lowest-scoring phase n
 
 The evaluator-reviser loop runs **at most 10 times**, then stops on its own.
 
-- Iterations used: **5 / 10** *(reset 2026-06-10 for the version-ladder pass; iterations 4–5 ran 2026-06-11 as the beginner-persona dev loop below)*
+- Iterations used: **6 / 10** *(reset 2026-06-10 for the version-ladder pass; iterations 4–6 ran 2026-06-11 as the beginner-persona dev loop below)*
 - Per iteration: score all phases on the rubric, pick the weakest, revise it one notch
   more incremental, increment the counter here, log it below, commit, push. Stop when the
   counter hits 10 **or** every phase scores ≥4 on every axis.
@@ -133,6 +133,20 @@ The evaluator-reviser loop runs **at most 10 times**, then stops on its own.
 
 ## Revision log (newest first)
 
+- **2026-06-11 — Iteration 6: beginner-persona dev loop, cycle 3 (verification +
+  closing polish).** A second cold-read pass (three fresh "Sam" readers, same scopes)
+  confirmed every cycle-2 fix held under execution: phases 0–5 had **zero blockers**
+  (all offline checkpoints byte-exact, keyless path honest, the reordered permission
+  gate verified safe), and phases 6–8 had two: Phase 8 §9's tests imported four modules
+  the phase never printed (fixed with a new §9.0 layout + shim listings —
+  execution-verified, 2 passed), and the shown CLI's `--transcript` flag was dropped
+  by an argparse `dest` mismatch (fixed). Remaining confusions/paper cuts across all
+  phases closed in the same pass (getattr-fallback gloss, `_build_schema` agreement,
+  Phase 0 layout diagram, fnmatch brace-glob in a model-facing docstring, first-line-
+  only Args-parsing warning, `prune_to_budget` over-budget-by-design note, etc.).
+  Commits: cycle-3 slices for phases 0–3, 4–5, 6–8. Tests 56 green throughout; the
+  loop's verification method (cold beginner read + execute) is now the recommended
+  acceptance gate for future passes.
 - **2026-06-11 — Iterations 4–5: beginner-persona dev loop (cycles 1–2).** New
   verification method: after each revision pass, a fresh sub-agent role-plays "Sam," a
   Python beginner (the assumed five concepts only), reads the repo cold, executes every

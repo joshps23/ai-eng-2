@@ -59,6 +59,10 @@ Status: ☐ todo · ◐ in progress · ☑ done
 
 Newest first. One line per shipped iteration.
 
+- **2026-06-11** — Beginner-persona dev loop, cycle 3: re-verification found zero
+  blockers in phases 0–5 and two in Phase 8 (un-runnable §9 tests → new §9.0 shims,
+  execution-verified; dead `--transcript` flag → fixed); closing polish landed across
+  all phases. Loop converged: 13 verified blockers (cycle 1) → 2 (cycle 3) → 0.
 - **2026-06-11** — Beginner-persona dev loop, cycles 1–2: a role-played Python-beginner
   reader executed every offline checkpoint and filed 13 verified blockers + ~50 smaller
   issues; all fixed across phases 0–8, entry docs, and one real `code/` bug (keyless CLI
