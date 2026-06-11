@@ -35,6 +35,8 @@ Nothing conceptually new happens after Version 1. Versions 2 and 3 are reorganiz
 - [Example Session](#7-example-session)
 - [Pitfalls](#pitfalls)
 
+> **Prefer running this phase as a notebook?** [`notebooks/01-bare-harness.ipynb`](./notebooks/01-bare-harness.ipynb) executes this phase's checkpoints offline — see [notebooks/README.md](./notebooks/README.md).
+
 ---
 
 ## 2. The Loop, Conceptually

@@ -29,6 +29,8 @@
 - [0.7 Project conventions (used by every phase)](#07-project-conventions-used-by-every-phase)
 - [0.8 Sanity-check script](#08-sanity-check-script)
 
+> **Prefer running this phase as a notebook?** [`notebooks/00-foundations.ipynb`](./notebooks/00-foundations.ipynb) executes this phase's checkpoints offline — see [notebooks/README.md](./notebooks/README.md).
+
 ---
 
 ## 0.1 What is an "agent harness"?

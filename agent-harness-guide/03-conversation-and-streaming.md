@@ -102,6 +102,8 @@ and how the answer is displayed (V4). If a version ever feels confusing, drop ba
 - [Version 4 — Streaming (optional)](#version-4--streaming-the-same-harness-live-optional)
 - [Pitfalls](#pitfalls)
 
+> **Prefer running this phase as a notebook?** [`notebooks/03-conversation-and-streaming.ipynb`](./notebooks/03-conversation-and-streaming.ipynb) executes this phase's checkpoints offline — see [notebooks/README.md](./notebooks/README.md).
+
 ---
 
 ## Two Orthogonal Concerns

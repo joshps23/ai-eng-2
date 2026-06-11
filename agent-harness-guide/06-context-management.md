@@ -89,6 +89,8 @@ Each version is **the same harness, reorganized** — between versions there's a
 - [Persistent memory across sessions](#persistent-memory-across-sessions)
 - [The production shape: full `context.py`](#the-production-shape-full-contextpy)
 
+> **Prefer running this phase as a notebook?** [`notebooks/06-context-management.ipynb`](./notebooks/06-context-management.ipynb) executes this phase's checkpoints offline — see [notebooks/README.md](./notebooks/README.md).
+
 ---
 
 ## The Problem in Numbers

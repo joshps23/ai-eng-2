@@ -38,6 +38,9 @@ The Learning Path will send you to these when you need them:
   methods, parameters, return types, and examples.
 - 💻 **[Runnable code](./agent-harness-guide/code/)** — the consolidated, tested
   `agent_harness` package. The source of truth for the implementation.
+- 📓 **[Notebooks](./agent-harness-guide/notebooks/README.md)** — companion Jupyter
+  notebooks for Phases 0–3 and 6 (plus a setup check): run each phase's checkpoints
+  top-to-bottom, fully offline, no API key needed.
 
 ## Quick start
 

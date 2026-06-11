@@ -80,6 +80,22 @@ These files follow a deliberate beginner-incremental shape; preserve it when edi
 - Edits to phases are **markdown only** — never change `code/` to make a snippet match, and never run
   the guide's snippets against the package expecting equality.
 
+## Notebooks (`agent-harness-guide/notebooks/`)
+
+Companion runnables for phases 0–3 and 6 (+ `setup-check`). Rules (the drift firewall):
+
+- Each notebook is a jupytext **py:percent pair**; the `.py` is the review surface — **edit the
+  `.py`, then `jupytext --sync`**, never hand-edit the `.ipynb`.
+- The `.ipynb` carries **committed FakeClient outputs** (GitHub rendering for keyless readers);
+  refresh them via `notebooks/refresh.sh` after any notebook edit, and commit both files.
+- Notebooks **import the package** and drive it — they do not re-paste phase version ladders.
+- No `input()` / `while True` REPLs; no bare `OpenAI()` outside the `USE_REAL_API` guard; build a
+  `FakeClient` and consume it **in the same cell** (turns pop off a list; re-running re-scripts).
+- Every notebook must execute headlessly top-to-bottom with **no API key** — CI enforces this via
+  the `notebooks` job in `.github/workflows/ci.yml` (jupytext-sync check + `jupyter execute`).
+- When a notebook and a phase snippet differ, that is the deliberate divergence: **the package is
+  correct** (see `notebooks/README.md`).
+
 ## Project-management artifacts
 
 The repo is iterated against written specs; read these before large changes:

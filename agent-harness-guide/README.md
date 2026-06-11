@@ -55,6 +55,15 @@ Claude-Code-shaped harness.
 > that every later phase depends on. If a later code sample looks unfamiliar, Phase 0
 > is your reference.
 
+### Prefer to run it as notebooks?
+
+Phases **0, 1, 2, 3, and 6** (plus a setup check) have companion **Jupyter
+notebooks** in [`notebooks/`](./notebooks/README.md) — small, run-top-to-bottom
+checkpoint runners that execute each phase's ideas against the tested package,
+**fully offline by default** (no API key needed). The phases keep the narrative;
+the notebooks run things. Setup and conventions:
+[`notebooks/README.md`](./notebooks/README.md).
+
 ## Support docs and what each is for
 
 | Doc | Its job |

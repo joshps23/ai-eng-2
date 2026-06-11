@@ -44,6 +44,37 @@ module directly: `python -m agent_harness.cli`.
 3.10 or newer (`python --version` to check). The guide uses 3.10+ syntax such as
 `X | Y` type unions.
 
+**Q: How do I set up the companion notebooks?**
+The optional [Jupyter notebooks](./notebooks/README.md) (phases 0–3 and 6, plus a
+setup check) need one extras group and one kernel registration on top of the canonical
+setup above:
+
+```bash
+cd agent-harness-guide/code
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -e ".[dev,notebooks]"
+python -m ipykernel install --user --name agent-harness --display-name "Python (agent-harness)"
+jupyter lab ../notebooks/
+```
+
+The `ipykernel install` line registers your venv as a named kernel so notebooks can
+import `agent_harness` (see the next question for the failure mode it prevents).
+JupyterLab is the documented default; VS Code's notebook UI works identically — it
+discovers the same kernelspec. The notebooks run **fully offline by default** (a
+`FakeClient` stands in for the API); see [`notebooks/README.md`](./notebooks/README.md)
+for the `USE_REAL_API` switch and conventions.
+
+**Q: My notebook can't import `agent_harness` (`ModuleNotFoundError` inside Jupyter).**
+The kernel running your notebook isn't the venv you `pip install`ed into. This is the
+notebook analog of the `python -m pytest` vs bare `pytest` rule above: a system-wide
+Jupyter launches a system-wide Python, where `agent_harness` was never installed — even
+though imports work fine in your terminal. Two fixes, use both:
+1. Register the venv as a kernel (with the venv active, from `agent-harness-guide/code`):
+   `python -m ipykernel install --user --name agent-harness --display-name "Python (agent-harness)"`.
+2. In the notebook, pick **Kernel → Change Kernel → Python (agent-harness)**, then
+   re-run. The notebooks' first cell prints `sys.executable` so you can confirm it
+   points into your `.venv`.
+
 **Q: Do I need an API key just to learn?**
 **No.** The entire guide is readable offline and the full test suite passes with **no
 key and no network** — a `FakeClient` (see `code/agent_harness/testing.py`) stands in

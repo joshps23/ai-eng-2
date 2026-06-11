@@ -52,6 +52,8 @@ You can stop at any version; each one is a complete, working tool system that pr
 - [Full Runnable Example — the `tools/` Package](#full-runnable-example--the-tools-package)
 - [Pitfalls](#pitfalls)
 
+> **Prefer running this phase as a notebook?** [`notebooks/02-tool-system.ipynb`](./notebooks/02-tool-system.ipynb) executes this phase's checkpoints offline — see [notebooks/README.md](./notebooks/README.md).
+
 ---
 
 ## Version 1 — Line by Line: Inline `if/elif` Dispatch
