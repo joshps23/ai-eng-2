@@ -86,7 +86,7 @@ class _FakeResponses:
         self._turns = list(turns)
         self._call_count = 0
 
-    def create(self, *, model: str, instructions: str, input: list, tools: list | None = None, **kwargs) -> FakeResponse:
+    def create(self, *, model: str, instructions: str = "", input: list, tools: list | None = None, **kwargs) -> FakeResponse:
         if not self._turns:
             raise RuntimeError("FakeClient: no more scripted turns")
         items = self._turns.pop(0)
