@@ -1,3 +1,5 @@
+[Guide index](./README.md) · [Phase 1: A Bare Harness in ~80 Lines →](./01-bare-harness.md)
+
 # Phase 0 — Foundations: The Agent Loop and the Responses API
 
 > **Goal of this phase:** Understand *what an agent harness actually is*, learn the
@@ -8,13 +10,24 @@
 > HTTP client) and the Python standard library. The whole point of this guide is to
 > show you what those frameworks hide.
 
-> 🟢 **New to Python? Read this first.** This guide originally assumed an
-> experienced engineer. If you only know **functions, lists, dictionaries,
+> 🟢 **New to Python? Read this first.** This guide is written for two audiences
+> at once: experienced engineers, and beginners who are still learning the
+> language. If you only know **functions, lists, dictionaries,
 > operators, and `client.responses.create(...)`**, start with
 > [`BEGINNER-NOTES.md`](./BEGINNER-NOTES.md). It explains — in those terms — every
 > other concept the guide uses (classes, `json.loads`, JSON Schema, `with`,
 > threads…). Green boxes like this one appear throughout to bridge each gap as it
 > comes up.
+
+**Contents:**
+
+- [0.1 What is an "agent harness"?](#01-what-is-an-agent-harness)
+- [0.2 Why the Responses API (and not Chat Completions)?](#02-why-the-responses-api-and-not-chat-completions)
+- [0.3 Version 1 — the whole handshake, line by line](#03-version-1--the-whole-handshake-line-by-line)
+- [0.4 Version 2 — the same handshake, organized into functions](#04-version-2--the-same-handshake-organized-into-functions)
+- [0.5 Preview: streaming](#05-preview-streaming-full-treatment-in-phase-3) · [0.6 Preview: usage & cost](#06-preview-usage--cost-full-treatment-in-phase-6)
+- [0.7 Project conventions (used by every phase)](#07-project-conventions-used-by-every-phase)
+- [0.8 Sanity-check script](#08-sanity-check-script)
 
 ---
 
@@ -37,7 +50,7 @@ That loop — *model → tool calls → execute → feed results back → model*
 entire ballgame. Everything else (streaming, permissions, sub-agents, context
 compaction, retries) is refinement on top of this loop.
 
-```
+```text
                 ┌─────────────────────────────────────────────┐
                 │                                             │
                 ▼                                             │
@@ -184,15 +197,15 @@ Two important fields on the request:
 - **`input`** — either a plain string (shorthand for one user message) or a **list
   of input items** (the real, full-control form we use everywhere).
 
-**▶ Run it now.**
+### ▶ Run it now
 
-```
+```bash
 python step1_hello.py
 ```
 
 You should see something like:
 
-```
+```text
 Hello there! How are you?
 ```
 
@@ -247,9 +260,9 @@ and `content`. Content can be a simple string, or a list of typed content parts
 `{"type": "output_text", "text": "..."}` for assistant output). For our purposes,
 plain-string content for user messages is fine.
 
-**▶ Run it now.**
+### ▶ Run it now
 
-```
+```bash
 python step2_list_input.py
 ```
 
@@ -357,15 +370,15 @@ for item in resp.output:
         print(f"  call_id   = {item.call_id}")
 ```
 
-**▶ Run it now.**
+### ▶ Run it now
 
-```
+```bash
 python step3_tool_request.py
 ```
 
 Expected output (exact values vary):
 
-```
+```text
 item.type = function_call
   name      = get_weather
   arguments = {"city": "Tokyo"}
@@ -471,15 +484,15 @@ resp = client.responses.create(model=MODEL, input=input_items, tools=tools)
 print(resp.output_text)
 ```
 
-**▶ Run it now.**
+### ▶ Run it now
 
-```
+```bash
 python version1_handshake.py
 ```
 
 Expected output:
 
-```
+```text
 The weather in Tokyo is sunny and 21°C.
 ```
 
@@ -535,7 +548,7 @@ Same behavior. Same two API calls. Same output. If you run Version 1 and
 Version 2 side by side, the model cannot tell them apart — because on the wire
 they are the same program.
 
-### What changed from Version 1 → Version 2
+### What changed from V1 to V2
 
 - **Behavior: nothing.** Same two turns, same handshake, same printed answer.
 - The `client.responses.create(...)` call, previously pasted twice, now lives in
@@ -569,7 +582,9 @@ Nothing else changes — `call_model(input_items)` returns the exact same `resp`
 object you've been using, with the same `resp.output` list and
 `resp.output_text` convenience.
 
-**▶ Run it now (a 30-second check).** Open your `version1_handshake.py`, paste
+### ▶ Run it now
+
+A 30-second check: open your `version1_handshake.py`, paste
 this `def` near the top (after `tools` is defined), and replace both
 `client.responses.create(model=MODEL, input=input_items, tools=tools)` lines
 with `call_model(input_items)`. Run it — the output is unchanged. You have just
@@ -689,15 +704,15 @@ resp = call_model(input_items)              # Turn 2: model answers in words
 print(resp.output_text)
 ```
 
-**▶ Run it now.**
+### ▶ Run it now
 
-```
+```bash
 python version2_functions.py
 ```
 
 Expected output:
 
-```
+```text
 The weather in Tokyo is sunny and 21°C.
 ```
 
@@ -783,7 +798,7 @@ To keep eight phases coherent, we fix these conventions now.
 
 By the end of the guide the consolidated package lives in `code/` and looks like:
 
-```
+```text
 agent_harness/
 ├── __init__.py
 ├── config.py          # MODEL, defaults, env
@@ -915,9 +930,9 @@ resp = client.responses.create(model=MODEL, input=input_items, tools=tools)
 print(resp.output_text)   # -> something like "21 + 21 = 42"
 ```
 
-**▶ Run it now.**
+### ▶ Run it now
 
-```
+```bash
 python check_setup.py
 ```
 
@@ -959,4 +974,13 @@ Before moving on, can you answer these?
    the model's prior output items is exactly what preserves the conversation.
 </details>
 
-Proceed to **Phase 1 — A bare harness in ~80 lines**.
+---
+
+## Exercises
+
+See [`EXERCISES.md` — Phase 0](./EXERCISES.md): reorganize the `check_setup.py`
+sanity script (§0.8) into the Version 2 function shape and add a `multiply` tool.
+
+---
+
+**Next:** [Phase 1 — A Bare Harness in ~80 Lines](./01-bare-harness.md)
