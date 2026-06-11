@@ -247,7 +247,7 @@ while True:
         estimated = 0
         for item in input_items:
             estimated += len(str(item)) // 4       # ~4 characters per token
-        print(f"[context] ~{estimated} tokens across {len(input_items)} items")
+        print(f"[context] ~{estimated} tokens across {len(input_items)} item(s)")
 
         while estimated > TOKEN_BUDGET and len(input_items) > 1:
             dropped = input_items.pop(0)           # naive: drop the oldest item
@@ -296,17 +296,22 @@ echo "The launch checklist: 1) freeze the schema. 2) tag the release. \
 python harness_v1.py
 ```
 
+(No `OPENAI_API_KEY` set? The script dies immediately at `client = OpenAI()` with a raw
+`openai.OpenAIError: Missing credentials` traceback — that's expected, and it applies to
+every key-requiring script in Phases 6–8. See Phase 0's "No API key?" box for how to
+follow these checkpoints keyless.)
+
 Then have a conversation that involves the file:
 
 ```
 you> Read notes.txt and tell me what step 3 is.
-[context] ~16 tokens across 1 items
+[context] ~16 tokens across 1 item(s)
 [tool] read_file({"path":"notes.txt"}) → 142 chars
-[context] ~213 tokens across 4 items
+[context] ~213 tokens across 4 item(s)
 agent> Step 3 is to run the smoke tests twice.
 
 you> Great. Now explain why smoke tests matter, in detail.
-[context] ~244 tokens across 5 items
+[context] ~244 tokens across 5 item(s)
 agent> ...
 ```
 
@@ -384,7 +389,7 @@ def count_items(items):
 ```python
 items = [{"role": "user", "content": "hello"},
          {"role": "assistant", "content": "Hi! " * 50}]
-print(count_items(items))    # ~70 — a number, instantly, no API
+print(count_items(items))    # 68 — a number, instantly, no API
 ```
 
 ### Step 2.2 — Rule 1: pairs travel together
@@ -949,6 +954,9 @@ def prune_to_budget(
     - Items with no natural pair (orphaned tool calls, plain messages) may be
       dropped individually once they fall outside the recency window.
 
+    When only protected items remain, pruning stops — so the result may still
+    exceed *budget*. The recency guarantee outranks the budget target.
+
     Returns a new list; does not mutate *items*.
     """
     if count_items(items) <= budget:
@@ -1055,6 +1063,24 @@ assert calls == outputs, "Orphaned tool call/output detected!"
 print("Pairing check passed — no orphaned tool calls.")
 ```
 
+Expected output (with the heuristic counter; exact numbers shift a little if
+`tiktoken` is installed):
+
+```text
+Before: 10 items, ~1595 tokens
+After:  2 items, ~319 tokens
+Pairing check passed — no orphaned tool calls.
+```
+
+Look closely: the result is **still over the 200-token budget** — and that is correct
+behavior, not a bug. `keep_last_n=2` protects the final
+`function_call`/`function_call_output` pair outright, and protected items can never be
+dropped, so once only protected items remain, pruning stops even though the budget is
+unmet. The budget is a *target*; the recency window is a *guarantee*; when the two
+conflict, the window wins. (In the real harness this is the right trade: sending a
+slightly-too-big input is recoverable, but orphaning the round-trip the model made one
+second ago is not.)
+
 **Tradeoff:** The agent loses access to the full history of what it did and why. For short-horizon tasks this is fine; for long-horizon tasks (e.g. refactoring an entire codebase) the agent may repeat work or contradict earlier decisions. That is where compaction comes in.
 
 ### Step 3.7 — The loop consults the module
@@ -1159,8 +1185,12 @@ filler. Omit any heading whose content is empty. Maximum 600 tokens.
 
 ```python
 # context.py  (continued)
-
-import openai  # or however you import the client
+#
+# Deliberately NO module-level `import openai` here: compact() only ever
+# *receives* an already-built client, so the type hint below is written as
+# the string "openai.OpenAI". That keeps context.py importable — and all its
+# offline functions usable — on a machine without the openai package. The
+# consolidated listing at the end of this phase makes the same choice.
 
 # Number of recent items to keep verbatim after compaction.
 # These items will NOT be fed to the summariser — they stay intact.
@@ -1169,7 +1199,7 @@ KEEP_RECENT_VERBATIM = 10
 
 def compact(
     conversation: "Conversation",
-    client: openai.OpenAI,
+    client: "openai.OpenAI",
     model: str,
     *,
     keep_recent: int = KEEP_RECENT_VERBATIM,
@@ -1731,7 +1761,8 @@ def prune_to_budget(
     keep_last_n: int = 6,
 ) -> list[dict[str, Any]]:
     """
-    Drop oldest items until count_items(result) <= budget.
+    Drop oldest items until count_items(result) <= budget — or until only
+    protected items remain, in which case the result may still exceed budget.
     Never splits a function_call / function_call_output pair.
     Never drops items in the recency window (last keep_last_n items, plus
     any paired partners that are themselves in the window).

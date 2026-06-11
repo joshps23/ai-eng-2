@@ -720,6 +720,11 @@ against the registry you already built.
 
 Until now the agent loop lived in a standalone function or script. To support sub-agents we need agents to be *values* — objects you can instantiate, configure, and pass around. The refactor is small but important.
 
+> ⚠️ **File-name collision:** Phase 2's full demo script was *also* called `agent.py`.
+> If you've been following the guide in a single working directory, saving the listing
+> below will silently overwrite it — keep each phase in its own folder (or rename the
+> Phase 2 file first).
+
 ```python
 # agent.py
 from __future__ import annotations
@@ -1073,11 +1078,18 @@ def task_fn(role: str, prompt: str) -> str:
 
 #### ▶ Run it now
 
+One prerequisite before this runs: `task_fn` reads a module-level `full_registry` — a
+`ToolRegistry` holding every tool workers may draw from — which is only *defined* in
+Step 3.3's complete file. To try `task_fn` right now, build it yourself first, exactly
+like `sub_registry` in Step 3.1's `v3_agent_class.py` (registering `read_file` is
+enough for the reviewer; Step 3.3 adds `list_directory`):
+
 ```python
+# Prerequisite: the registry task_fn draws from (Step 3.3 will own this).
+full_registry = ToolRegistry()
+full_registry.register(read_file)
+
 # Quick test: ask a reviewer sub-agent to check a file.
-# `full_registry` is a ToolRegistry holding every tool workers may draw from —
-# build it exactly like sub_registry in Step 3.1's v3_agent_class.py (register
-# read_file there for now; Step 3.3's complete file adds list_directory).
 result = task_fn("reviewer", "Check auth.py for security issues.")
 print(result)
 ```
@@ -1606,10 +1618,10 @@ from tools.base import tool
 from subagents import (
     AGENT_PRESETS,
     make_task_tool,
-    run_subagents_parallel,
-    dispatch_subagent,
-    MAX_CONCURRENT_SUBAGENTS,
 )
+# (run_subagents_parallel and MAX_CONCURRENT_SUBAGENTS stay in subagents.py —
+# this script doesn't call them directly; make_task_tool's TaskTool covers the
+# fan-out, as the §5.2 transcript note explains.)
 
 # ---------------------------------------------------------------------------
 # Define the "real" tools available to sub-agents

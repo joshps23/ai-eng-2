@@ -860,7 +860,9 @@ instructions = build_instructions(
     workspace_root=".",
     permission_mode="default",
 )
-print(instructions[:300])   # should show the working directory and OS info
+print(instructions[-300:])  # the LAST 300 chars — the Environment block
+                            # (working directory, OS, git status) sits at the
+                            # END of the string, after the behavioral sections
 ```
 
 The model will now know exactly where it is and what it is allowed to do, without you having to repeat it in every user message.
@@ -928,7 +930,10 @@ def make_parser() -> argparse.ArgumentParser:
                    help="One-shot prompt (non-interactive)")
     p.add_argument("--resume", action="store_true",
                    help="Resume from saved transcript")
-    p.add_argument("--transcript", metavar="PATH",
+    # dest="transcript_path" is load-bearing: apply_cli_args (Step 2) merges by
+    # attribute name, and the Settings field is transcript_path. With argparse's
+    # default dest ("transcript"), the flag would be silently ignored.
+    p.add_argument("--transcript", dest="transcript_path", metavar="PATH",
                    help="Transcript file path (default: transcript.json)")
     p.add_argument("--model", metavar="MODEL",
                    help=f"Model to use (default: {MODEL})")
@@ -1926,6 +1931,164 @@ The harness does not enforce sandboxing itself; that is an infrastructure concer
 
 ## 9. Testing the Harness
 
+### 9.0 Before You Run: the Layout and the Four Shim Modules
+
+The test files in §9.2–§9.3 are real, runnable code — but they import four modules
+this phase never prints: `permissions`, `hooks`, `conversation`, and `tools`. You
+*built* all four ideas in Phases 2, 3, and 5, under different spellings
+(`dispatch(name, arguments_str)`, a private `_items` list, `evaluate()` returning
+`ALLOW`/`DENY`/`ASK`). The listings below are the **aspirational interfaces from the
+§0 translation table**, written out as four tiny shims — just enough for §9's tests to
+pass against §7's `agent.py` exactly as printed. They are honest stand-ins, not the
+real thing: the tested package spells each of these differently (and far more
+completely) in [`code/agent_harness/`](code/agent_harness/).
+
+Lay the project out like this — note that `agent_harness/__init__.py` can be a
+completely **empty file**; its only job is to mark the directory as a package:
+
+```text
+yourproject/
+├── agent_harness/
+│   ├── __init__.py        # empty file is fine
+│   ├── accounting.py      # Step 1d
+│   ├── agent.py           # §7
+│   ├── config.py          # Step 2 (keep its real `from .accounting import …` line)
+│   ├── llm.py             # §6
+│   ├── tracer.py          # Step 1c
+│   ├── permissions.py     # shim — below
+│   ├── hooks.py           # shim — below
+│   ├── conversation.py    # shim — below
+│   └── tools.py           # shim — below
+└── tests/
+    ├── fake_client.py     # §9.2
+    └── test_agent_loop.py # §9.3
+```
+
+and run the tests **from the project root** (`yourproject/`):
+
+```bash
+python -m pytest tests/ -v        # 2 passed
+```
+
+Running from the root matters: the `python -m` form puts the current directory on
+`sys.path`, which is what lets both `from agent_harness.agent import Agent` and
+`from tests.fake_client import …` resolve. (You do need `pip install openai pytest`
+once — `llm.py` imports the SDK's exception types — but **no API key**: nothing in
+this section touches the network.)
+
+The four shims:
+
+```python
+# agent_harness/permissions.py  (shim — Phase 5's policy, §0's idealized spelling)
+from enum import Enum
+
+
+class Decision(Enum):
+    ALLOW = "allow"
+    DENY = "deny"
+    ESCALATE = "escalate"
+
+
+class PermissionPolicy:
+    def __init__(self, mode: str = "default") -> None:
+        self.mode = mode                   # "default" | "strict" | "yolo"
+
+    def check(self, tool_name: str, args: dict) -> Decision:
+        if self.mode == "yolo":
+            return Decision.ALLOW          # run everything, never ask
+        if self.mode == "strict":
+            return Decision.ESCALATE       # ask the user before every tool
+        return Decision.ALLOW              # "default": permissive shim — Phase 5's
+                                           # per-tool rule list would slot in here
+```
+
+```python
+# agent_harness/hooks.py  (shim — Phase 5's hooks, as the two functions §7 imports)
+def run_pre_hooks(tool_name: str, args: dict) -> None:
+    pass   # Phase 5's PreToolUse observers would fire here
+
+
+def run_post_hooks(tool_name: str, args: dict, result: str) -> None:
+    pass   # ...and its PostToolUse observers here
+```
+
+```python
+# agent_harness/conversation.py  (shim — public .items, instance load();
+# Phase 3 built private _items and load() as a classmethod)
+import json
+
+
+class Conversation:
+    def __init__(self) -> None:
+        self.items: list = []              # public, plain list of dicts
+
+    def save(self, path: str) -> None:
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(self.items, f, indent=2)
+
+    def load(self, path: str) -> None:    # instance method, mutates in place
+        with open(path, encoding="utf-8") as f:
+            self.items = json.load(f)
+```
+
+```python
+# agent_harness/tools.py  (shim — @tool + ToolRegistry with the idealized
+# .schemas() / .call(name, args_dict) / public .tools spellings;
+# Phase 2 built to_openai_schema() and dispatch(name, arguments_str))
+import inspect
+import json
+
+_JSON_TYPES = {str: "string", int: "integer", float: "number", bool: "boolean"}
+
+
+class Tool:
+    def __init__(self, fn):
+        self.fn = fn
+        self.name = fn.__name__
+        doc = inspect.getdoc(fn) or ""
+        self.description = doc.splitlines()[0] if doc else ""
+        params = inspect.signature(fn).parameters
+        props = {p: {"type": _JSON_TYPES.get(params[p].annotation, "string")}
+                 for p in params}
+        self.schema = {
+            "type": "function",
+            "name": self.name,
+            "description": self.description,
+            "parameters": {"type": "object", "properties": props,
+                           "required": list(props)},
+        }
+
+
+def tool(fn) -> Tool:
+    return Tool(fn)
+
+
+class ToolRegistry:
+    def __init__(self) -> None:
+        self.tools: dict[str, Tool] = {}   # public, name -> Tool
+
+    def register(self, t: Tool) -> None:
+        self.tools[t.name] = t
+
+    def schemas(self) -> list[dict]:
+        return [t.schema for t in self.tools.values()]
+
+    def call(self, name: str, args: dict) -> str:
+        if name not in self.tools:
+            return f"Error: unknown tool '{name}'"
+        try:
+            result = self.tools[name].fn(**args)
+            return result if isinstance(result, str) else json.dumps(result)
+        except Exception as exc:
+            return f"Error: {exc}"
+```
+
+That is all four — under a hundred lines total, and each one is the smallest object
+honoring the interface §7's `agent.py` and §9.3's tests expect. When you outgrow them,
+either swap in your real Phase 2/3/5 modules (translating method names with the §0
+table) or read the package's `tools/`, `conversation.py`, `permissions.py`, and
+`hooks.py` for the production form of each.
+
 ### 9.1 Guiding Principles
 
 - **Unit-test tools directly**: call `read_file({"path": "..."})` and assert the output. No LLM involved.
@@ -2163,14 +2326,16 @@ def test_tool_error_does_not_crash_loop():
         assert any("Error" in o["output"] for o in outputs)
 ```
 
-Run with:
+Run from the project root — the directory containing both `agent_harness/` and
+`tests/`, laid out as in §9.0:
 
 ```bash
 python -m pytest tests/ -v
 ```
 
 (The `python -m` form guarantees pytest runs under the same interpreter you installed the
-package into — a bare `pytest` on your PATH might belong to a different Python.)
+package into — a bare `pytest` on your PATH might belong to a different Python — and puts
+the project root on `sys.path` so `tests.fake_client` resolves.)
 
 This is also exactly how the consolidated package is verified: from
 [`code/`](code/), `python -m pytest -q` runs the full suite offline — no API key needed,
@@ -2254,7 +2419,7 @@ Claude Code — and you understand every line of it.
 | Declaring boolean CLI flags with argparse's natural defaults (`store_true` → `False`, `store_false` → `True`) | A flag the user never typed looks like an explicit choice, so `apply_cli_args` silently overrides env vars and `.agentrc` — the documented precedence chain breaks for `verbose`/`debug`/`stream` | Give boolean flags `default=None`; `apply_cli_args` only merges non-`None` values |
 | Sleeping after the *final* failed retry attempt | The harness waits the longest backoff (16 s and up) only to raise anyway — pure dead time | `break` out of the retry loop before sleeping when no attempts remain (Step 0 and §6 both guard this) |
 | Misreading `for … else` in `run_turn` as error handling | You expect the `else:` branch on exceptions; it actually runs when the loop exhausts `max_iterations` without `break` | Read `for … else` as "for … *no-break*" — see the 🟢 gloss after the §7 listing |
-| Building Phase 8 against this phase's aspirational interfaces | A wall of `AttributeError`s (`registry.call`, `Decision.ESCALATE`, instance `conversation.load`, …) when assembling from your real Phase 2–7 code | Use the §0 method-name translation table, or build against the tested package in `code/agent_harness/` |
+| Building Phase 8 against this phase's aspirational interfaces | A wall of `AttributeError`s (`registry.call`, `Decision.ESCALATE`, instance `conversation.load`, …) when assembling from your real Phase 2–7 code | Use the §0 method-name translation table (§9.0 writes it out as four runnable shim modules), or build against the tested package in `code/agent_harness/` |
 
 ---
 
