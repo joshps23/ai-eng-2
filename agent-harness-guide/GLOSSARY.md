@@ -1,8 +1,7 @@
 # Glossary
 
-> Every term this guide uses that goes beyond your assumed five concepts
-> (functions, lists, dicts, operators, `client.responses.create(...)`), defined in
-> plain language. When a phase uses a word you don't recognise, look here first.
+> Every term this guide uses that goes beyond basic Python (functions, lists,
+> dicts, operators, `client.responses.create(...)`), defined in plain language. When a phase uses a word you don't recognise, look here first.
 > Terms are grouped, then alphabetical within a group. 🟢 marks the most
 > beginner-essential entries.
 
@@ -228,5 +227,4 @@ edits take effect immediately.
 
 ---
 
-> Missing a term? It's a gap — open an issue or add it. Keeping this list complete
-> is part of the standing goal (see [`ROADMAP.md`](./ROADMAP.md)).
+> Spotted a gap or an error? Open an issue on the repo.

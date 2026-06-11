@@ -228,3 +228,34 @@ The evaluator-reviser loop runs **at most 10 times**, then stops on its own.
   production/class-based shape to later. Verified: `code/` untouched, `python -m pytest`
   green (56), every phase retains its 🟢 boxes, "Key takeaways", "Check yourself", and
   "Next" pointer. The evaluator loop below now refines from here.
+
+## Appendix — beginner-adaptation review tracker
+
+*(Moved here from BEGINNER-NOTES.md in the cycle-4 UX pass: it is maintainer bookkeeping,
+not learner content.)*
+
+Status legend: ☐ not started · ◐ in progress · ☑ adapted for beginners
+
+| File | Status | Notes |
+|------|:------:|-------|
+| `README.md` (top level) | ☑ | Beginner-track pointer box. |
+| `agent-harness-guide/README.md` | ☑ | Beginner-track pointer in "Who this is for". |
+| `00-foundations.md` | ☑ | Added orientation pointer + scaffolding for dot-access, `json.loads`, JSON Schema, `with`/stream, threads. |
+| `01-bare-harness.md` | ☑ | Scaffolding for type hints, `**args`, `try/except`, list comprehension (with plain-loop equivalent), `__main__`. |
+| `02-tool-system.md` | ☑ | Functions-only beginner material now lives in the version ladder itself (Versions 1–2 = schema dicts + dict registry + for-loop dispatch), flagged by the "🟢 Beginner track" heading near the top; plus inline boxes translating classes, the `@tool` decorator/introspection, and threads. |
+| `03-conversation-and-streaming.md` | ☑ | Beginner track: `Conversation` as a plain dict + functions (new_conversation/add_user/extend_items/save/load); streaming framed as optional (use non-streaming `create()` + `output_text`). Inline boxes on the class methods and the argument-taking decorator. |
+| `04-real-tools.md` | ☑ | One consolidated box: tools are plain functions; `@tool` is optional (hand-write schemas per Phase 2); plus heads-ups on `pathlib.Path`, `lambda`, f-string format specs, and try/except. |
+| `05-permissions-and-safety.md` | ☑ | Beginner track: full permission check in dicts + if/else (TOOL_RISK, AUTO_OK, check_permission/ask_user); concept table for dataclass≈dict, Enum≈string constants, set≈list, closure, tuple-return, hooks. Inline box reframing hooks as plain functions. |
+| `06-context-management.md` | ☑ | Beginner box: one idea (shrink the growing list) + three tactics (clip/drop-oldest/summarize) as plain functions; syntax notes on count_tokens≈len//4, the bare-`*` keyword-only marker, generator comprehensions, isinstance. |
+| `07-subagents-orchestration.md` | ☑ | Beginner track: a sub-agent = calling your run_agent loop again from inside a `task` tool; Agent class→loop+conversation dict; presets→dict; parallel optional. Syntax table for @dataclass/@property/factory-closure/asyncio. |
+| `08-production-harness.md` | ☑ | Beginner track: phase is polish not new ideas; retry shown as plain for-loop+try/except+sleep; table mapping dataclass/@property/@contextmanager/argparse/logging/typed-except/ThreadPool to known concepts. |
+| `09-library-reference.md` | ☑ | Added a "beginner reading order" box: study §1 (openai, in-scope), skim §2–§4 (tiktoken/threads/subprocess) as background. |
+| `code/` package | ☑ | Kept the tested package intact (source of truth); added a "New to Python?" reading-guide box to `code/README.md` mapping every module to its plain-functions phase box, plus beginner-pointer docstrings in `agent.py` and `tools/base.py`. |
+
+**Review complete** — all files adapted for the beginner audience. Approach: in-place
+scaffolding (green 🟢 boxes) + per-phase functions-and-dicts "Beginner track" rewrites
+of anything using classes/decorators/threads, while leaving the original advanced
+material intact for later. The runnable `code/` package was left untouched (so its tests
+still pass) and bridged with a reading guide instead of a risky rewrite.
+
+Each pass: pick the next ☐ file, adapt it, flip it to ☑, and note what was done.

@@ -12,16 +12,17 @@
 
 ## Who this is for
 
-A competent Python engineer who wants to *really* understand how modern AI agents
-work: the loop, tools, streaming, permissions, context management, and multi-agent
-orchestration. By the end you'll have built a production-shaped harness with a CLI,
-a sandboxed toolset, an approval system, automatic context compaction, and parallel
-sub-agents.
+Written for working engineers **and** for beginners who know functions, lists,
+dictionaries, operators, and `client.responses.create(...)` — the 🟢 beginner track
+is built in. Either way, it's for anyone who wants to *really* understand how modern
+AI agents work: the loop, tools, streaming, permissions, context management, and
+multi-agent orchestration. By the end you'll have built a production-shaped harness
+with a CLI, a sandboxed toolset, an approval system, automatic context compaction,
+and parallel sub-agents.
 
-> 🟢 **Newer to Python?** You don't need to be an expert to follow along. If you're
-> comfortable with **functions, lists, dictionaries, operators, and
-> `client.responses.create(...)`**, read **[`BEGINNER-NOTES.md`](./BEGINNER-NOTES.md)**
-> first. It explains every other concept the guide uses — classes, `json.loads`,
+> 🟢 **Newer to Python?** Read the
+> **[Python Concepts Cheat-Sheet](./BEGINNER-NOTES.md)** once before Phase 0. It
+> explains every concept the guide uses beyond those five — classes, `json.loads`,
 > JSON Schema, `with`, threads — in those terms, and green 🟢 boxes throughout the
 > phases bridge each gap exactly where it appears. Keep the
 > **[`GLOSSARY.md`](./GLOSSARY.md)** open in a tab: it defines every harness and
@@ -53,6 +54,16 @@ Claude-Code-shaped harness.
 > establishes the API contract and conventions (naming, data shapes, project layout)
 > that every later phase depends on. If a later code sample looks unfamiliar, Phase 0
 > is your reference.
+
+## Support docs and what each is for
+
+| Doc | Its job |
+|-----|---------|
+| [Learning Path](./LEARNING-PATH.md) | The step-by-step route through the phases: pick a track, do the per-phase tasks, pass the checkpoints. |
+| [Python Concepts Cheat-Sheet](./BEGINNER-NOTES.md) | A one-time pre-read before Phase 0: every Python concept beyond functions/lists/dicts, in a sentence or two each. |
+| [Glossary](./GLOSSARY.md) | Look-up-as-you-read definitions of every harness and Python term the guide uses. |
+| [FAQ & troubleshooting](./FAQ.md) | The canonical setup page plus symptom-first fixes: install errors, API keys, models, "the agent did nothing", tracebacks. |
+| [Exercises](./EXERCISES.md) | A warm-up + a stretch task per phase (with hints), plus the capstone — so you build, not just read. |
 
 ## The canonical, runnable code
 

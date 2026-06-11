@@ -9,6 +9,19 @@
 
 ## Setup & installation
 
+This is the canonical setup recipe — other pages link here instead of repeating it.
+From the **repo root**:
+
+```bash
+cd agent-harness-guide/code
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -e ".[dev]"
+python -m pytest -q          # expect: all tests pass, offline, no API key needed
+```
+
+Python 3.10+; the only required dependency is `openai>=1.66.0`. If any step
+misbehaves, find your symptom below.
+
 **Q: `ModuleNotFoundError: No module named 'agent_harness'` when I run the tests.**
 Almost always an interpreter mismatch: a globally-installed `pytest` belongs to a
 different Python than the one you `pip install`ed into. Two fixes, use both:
@@ -140,5 +153,4 @@ went wrong — read a traceback **bottom-up**:
 
 ---
 
-> Hit a problem that isn't here? That's a gap worth closing — it's exactly what the
-> [`ROADMAP.md`](./ROADMAP.md) standing goal is for.
+> Spotted a gap or an error? Open an issue on the repo.
