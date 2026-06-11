@@ -1,3 +1,5 @@
+[← Phase 1: A Bare Harness in ~80 Lines](./01-bare-harness.md) · [Guide index](./README.md) · [Phase 3: Conversation State & Streaming →](./03-conversation-and-streaming.md)
+
 # Phase 2 — A Real Tool System
 
 ## Where We Left Off
@@ -37,6 +39,20 @@ You can stop at any version; each one is a complete, working tool system that pr
 > are a perfectly legitimate stopping point — hand-written schema dicts plus a dict
 > registry is a complete tool system, and it is exactly what the later versions automate.
 > Read Versions 3 and 4 for the *ideas* and come back to the syntax when you are ready.
+
+**Contents:**
+
+- [Version 1 — Line by Line: Inline `if/elif` Dispatch](#version-1--line-by-line-inline-ifelif-dispatch)
+- [Version 2 — Functions and a Dict Registry](#version-2--functions-and-a-dict-registry)
+- [Version 3 — Classes: `Tool` and `ToolRegistry`](#version-3--classes-tool-and-toolregistry)
+- [Version 4 — The `@tool` Decorator](#version-4--the-tool-decorator)
+- [Going Further (Optional) — Parallel Tool Execution](#going-further-optional--parallel-tool-execution)
+- [Argument Validation (optional)](#argument-validation-strict-mode-vs-manual-checks-optional) · [Structured Results and Errors (optional)](#structured-results-and-errors-optional)
+- [The Updated Agent Loop — the Production Shape](#the-updated-agent-loop--the-production-shape)
+- [Full Runnable Example — the `tools/` Package](#full-runnable-example--the-tools-package)
+- [Pitfalls](#pitfalls)
+
+> **Prefer running this phase as a notebook?** [`notebooks/02-tool-system.ipynb`](./notebooks/02-tool-system.ipynb) executes this phase's checkpoints offline — see [notebooks/README.md](./notebooks/README.md).
 
 ---
 
@@ -81,7 +97,9 @@ word_count_schema = {
 TOOLS = [add_schema, word_count_schema]
 ```
 
-**▶ Check it now.** Paste just this much into a file, add `import json` and `print(json.dumps(TOOLS, indent=2))` at the bottom, and run it. What prints is *exactly* what the model will see — there is no magic between your dict and the API.
+### ▶ Check it now (no API key needed)
+
+Paste just this much into a file, add `import json` and `print(json.dumps(TOOLS, indent=2))` at the bottom, and run it. What prints is *exactly* what the model will see — there is no magic between your dict and the API.
 
 ### 1.2 The loop, with the tool logic inlined
 
@@ -218,7 +236,7 @@ Three places, in different parts of the file, that must stay in sync by hand. An
 
 ## Version 2 — Functions and a Dict Registry
 
-**What changed from V1 → V2**
+### What changed from V1 to V2
 
 - Each tool's logic moves out of the `elif` branch into a **named function** (`add`, `word_count`).
 - The `if/elif` chain becomes a **dict lookup**: `TOOLS[name]` finds both the function and its schema in one place.
@@ -323,7 +341,9 @@ def dispatch(name, arguments_str):
         return f"Error ({type(exc).__name__}): {exc}"
 ```
 
-**▶ Check it now.** With everything above in one file, no API key is needed to test dispatch itself. Add and run:
+### ▶ Check it now (no API key needed)
+
+With everything above in one file, no API key is needed to test dispatch itself. Add and run:
 
 ```python
 print(dispatch("add", '{"a": 2, "b": 3}'))      # 5
@@ -506,7 +526,7 @@ Final answer:
 
 The same output as Version 1 — that is the point. That is the complete tool system — no classes, no decorators, no threads. Everything from here is a convenience upgrade. Adding a tool now means: write a function, write its schema, call `register(...)` once. The dispatch code never changes again.
 
-> 🟢 **Checkpoint.** If the script ran and gave sensible answers, you have a fully working
+> **Checkpoint.** If the script ran and gave sensible answers, you have a fully working
 > multi-tool agent. The remaining versions show how to remove repetitive boilerplate, not how
 > to make the agent *work* — it already works.
 
@@ -514,7 +534,7 @@ The same output as Version 1 — that is the point. That is the complete tool sy
 
 ## Version 3 — Classes: `Tool` and `ToolRegistry`
 
-**What changed from V2 → V3**
+### What changed from V2 to V3
 
 - Each *function + schema dict* pair becomes a single **`Tool` object** — the data and the behavior now live in one place.
 - The module-level `TOOLS` dict and its three loose helpers (`register`, `tools_for_api`, `dispatch`) become one **`ToolRegistry` object** with methods `register()`, `to_openai_schema()`, and `dispatch()`.
@@ -587,7 +607,9 @@ class AddTool(Tool):
         return str(a + b)
 ```
 
-**▶ Check it now.** In a Python REPL with the class pasted in, run `AddTool().run(a=2, b=3)` — you should get `"5"`. The object also carries its own schema: `AddTool().parameters` is the dict you used to keep in a separate variable.
+### ▶ Check it now (no API key needed)
+
+In a Python REPL with the class pasted in, run `AddTool().run(a=2, b=3)` — you should get `"5"`. The object also carries its own schema: `AddTool().parameters` is the dict you used to keep in a separate variable.
 
 This works but it is verbose. For every tool you must write the JSON Schema by hand, which means the schema and the Python signature can drift again. That is why the `@tool` decorator (Version 4) is more practical for most tools.
 
@@ -918,7 +940,7 @@ You should see the same output as Versions 1 and 2. The tool *behavior* is ident
 
 ## Version 4 — The `@tool` Decorator
 
-**What changed from V3 → V4**
+### What changed from V3 to V4
 
 - The hand-written schema dicts **disappear**: `@tool` builds each one automatically from the function's **type hints** and **docstring**.
 - A new `Tool` subclass, **`FunctionTool`**, wraps a plain function — so a decorated function *is* an ordinary `Tool` object that the V3 registry already accepts, unchanged.
@@ -1583,7 +1605,7 @@ The safe default for unknown tools is sequential. Switch to parallel only when y
 
 ---
 
-## Argument Validation: Strict Mode vs. Manual Checks
+## Argument Validation: Strict Mode vs. Manual Checks (optional)
 
 The Responses API supports a `"strict": True` field on each tool definition. When strict mode is active, the API guarantees:
 
@@ -1632,7 +1654,7 @@ The `@tool` decorator does not currently generate this form automatically; it ou
 
 ---
 
-## Structured Results and Errors
+## Structured Results and Errors (optional)
 
 ### The String Contract
 
@@ -1684,6 +1706,8 @@ This string is the tool output. The model reads it, understands something went w
 ---
 
 ## The Updated Agent Loop — the Production Shape
+
+*The optional detour ends here — the core path resumes with this section.*
 
 With the registry and parallel dispatch in place, the agent loop becomes completely decoupled from individual tools.
 
@@ -1800,6 +1824,11 @@ project/
 
 ### `tools/base.py` — Complete
 
+> **Reference copy.** Assembled from Version 4 (§4.5–4.6) unchanged, except the
+> docstring parsing is factored into a `_parse_google_docstring` helper. Nothing new to
+> type here — skim or skip. The maintained version lives in
+> [`code/agent_harness/tools/base.py`](./code/agent_harness/tools/base.py).
+
 ```python
 # tools/base.py
 from __future__ import annotations
@@ -1911,6 +1940,11 @@ def tool(fn: Callable) -> FunctionTool:
 
 ### `tools/registry.py` — Complete
 
+> **Reference copy.** Assembled from Version 3 (§3.2) unchanged, except the validation
+> helper is compacted and `register()` returns `self` for chaining. Nothing new to type
+> here — skim or skip. The maintained version lives in
+> [`code/agent_harness/tools/registry.py`](./code/agent_harness/tools/registry.py).
+
 ```python
 # tools/registry.py
 from __future__ import annotations
@@ -1994,6 +2028,10 @@ def _validate(tool: Tool, args: dict) -> str | None:
 
 ### `tools/parallel.py` — Complete
 
+> **Reference copy.** Assembled from the "Going Further" section above unchanged
+> (minus comments). Nothing new to type here — skim or skip. The maintained version
+> lives in [`code/agent_harness/tools/parallel.py`](./code/agent_harness/tools/parallel.py).
+
 ```python
 # tools/parallel.py
 from __future__ import annotations
@@ -2059,7 +2097,54 @@ __all__ = [
 ]
 ```
 
+### ▶ Check it now (no API key needed)
+
+The whole `tools/` package can be exercised offline — dispatch never touches the
+network. From the `project/` directory, save this as `check_tools.py` and run it:
+
+```python
+# check_tools.py — exercises the tools/ package; no API key, no network.
+from tools import tool, ToolRegistry
+
+@tool
+def add(a: float, b: float) -> str:
+    """Add two numbers and return the result.
+
+    Args:
+        a: First number.
+        b: Second number.
+    """
+    return str(a + b)
+
+registry = ToolRegistry()
+registry.register(add)
+
+print(registry.dispatch("add", '{"a": 2, "b": 3}'))
+print(registry.dispatch("add", '{"a": 2}'))
+print(registry.dispatch("nope", '{}'))
+```
+
+```bash
+python check_tools.py
+```
+
+You should see:
+
+```text
+5
+Error: missing required argument 'b'
+Error: unknown tool 'nope'.
+```
+
+The same three behaviors as the Version 2 dispatch check (§2.4) — proof the package
+reorganization changed nothing about what the tool system *does*.
+
 ### `agent.py` — Complete with Example Tools
+
+> **Reference copy.** Assembled from "The Updated Agent Loop" above plus three
+> `@tool` example tools — unchanged logic. Nothing new to type here — skim or skip.
+> The maintained version lives in
+> [`code/agent_harness/agent.py`](./code/agent_harness/agent.py).
 
 ```python
 # agent.py
@@ -2303,4 +2388,4 @@ See [`EXERCISES.md` — Phase 2](./EXERCISES.md) for hands-on practice:
 
 ---
 
-Proceed to **[Phase 3 — Conversation and Streaming](./03-conversation-and-streaming.md)**, where the transcript you have been growing by hand gets an owner (a `Conversation` class) and the model's answers start arriving token by token.
+**Next:** [Phase 3 — Conversation State & Streaming](./03-conversation-and-streaming.md), where the transcript you have been growing by hand gets an owner (a `Conversation` class) and the model's answers start arriving token by token.

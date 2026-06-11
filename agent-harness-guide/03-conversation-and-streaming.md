@@ -1,3 +1,5 @@
+[← Phase 2: A Real Tool System](./02-tool-system.md) · [Guide index](./README.md) · [Phase 4: Real-World Tools →](./04-real-tools.md)
+
 # Phase 3 — Conversation State & Streaming
 
 This phase addresses two tightly related concerns that every production agent harness must
@@ -90,6 +92,20 @@ and how the answer is displayed (V4). If a version ever feels confusing, drop ba
 
 ---
 
+**Contents:**
+
+- [Two Orthogonal Concerns](#two-orthogonal-concerns)
+- [Version 1 — Line-by-Line: the Transcript Is Just a List](#version-1--line-by-line-the-transcript-is-just-a-list)
+- [Version 2 — Functions: Name the Moves](#version-2--functions-name-the-moves)
+- [Interlude — Transcript Management Deep-Dive](#interlude--transcript-management-deep-dive)
+- [Version 3 — Classes: the `Conversation` Object](#version-3--classes-the-conversation-object)
+- [Version 4 — Streaming (optional)](#version-4--streaming-the-same-harness-live-optional)
+- [Pitfalls](#pitfalls)
+
+> **Prefer running this phase as a notebook?** [`notebooks/03-conversation-and-streaming.ipynb`](./notebooks/03-conversation-and-streaming.ipynb) executes this phase's checkpoints offline — see [notebooks/README.md](./notebooks/README.md).
+
+---
+
 ## Two Orthogonal Concerns
 
 **Transcript management** determines what you send in `input` on each call.  You have two
@@ -160,7 +176,9 @@ print("Turn 2:", resp2.output_text)
 print(f"\nTranscript now has {len(input_items)} items.")
 ```
 
-**▶ Run it now.** You should see:
+### ▶ Run it now
+
+You should see:
 
 ```text
 Turn 1: Got it! I'll remember your name is Alex.
@@ -226,7 +244,9 @@ while True:
 print(f"\nGoodbye — the transcript held {len(input_items)} items.")
 ```
 
-**▶ Run it now.** Tell it your name on the first turn, then ask `What is my name?` on the
+### ▶ Run it now
+
+Tell it your name on the first turn, then ask `What is my name?` on the
 second. It answers correctly — not because the model remembers, but because the turn-1
 exchange is still sitting in `input_items` and gets re-sent on turn 2:
 
@@ -250,7 +270,9 @@ lives in that one line's placement.
 
 ---
 
-### What changed from V1 → V2
+## Version 2 — Functions: Name the Moves
+
+### What changed from V1 to V2
 
 - **Nothing about behavior.** Version 2 is the exact same chat — same API calls, same
   transcript, same output.
@@ -261,8 +283,6 @@ lives in that one line's placement.
 - Because the conversation is now one plain dict, **save/load** becomes a one-line
   `json.dump`/`json.load` — Version 2's one genuinely new capability.
 - Still **no classes** — only plain functions taking `conv` as their first argument.
-
-## Version 2 — Functions: Name the Moves
 
 ### Step 2.1 — Add Small Helper Functions
 
@@ -333,7 +353,9 @@ print("Turn 2:", resp2.output_text)
 print(f"Transcript has {len(conv['items'])} items.")
 ```
 
-**▶ Run it now.** Output should be the same as Step 1.1.  Nothing changed externally —
+### ▶ Run it now
+
+Output should be the same as Step 1.1.  Nothing changed externally —
 only the code is cleaner.
 
 ---
@@ -390,7 +412,9 @@ extend_items(conv2, resp2.output)
 print("Loaded session. Turn 2:", resp2.output_text)
 ```
 
-**▶ Run it now.** The model should still answer "Alex" on turn 2, even though the
+### ▶ Run it now
+
+The model should still answer "Alex" on turn 2, even though the
 conversation dict was serialized to disk and loaded back.  Open `/tmp/my_session.json`
 in a text editor — you will see the full transcript as plain JSON.
 
@@ -486,7 +510,9 @@ while True:
 print(f"\nGoodbye — transcript saved to {SESSION_PATH}.")
 ```
 
-**▶ Run it now.** Tell it your name, type `quit`, then **run the program again** and ask
+### ▶ Run it now
+
+Tell it your name, type `quit`, then **run the program again** and ask
 `What is my name?`. It remembers — across a full process restart — because the transcript
 was sitting in `/tmp/chat_v2_session.json` the whole time. (Delete that file to start
 fresh.) Compare the `while` loop body to `chat_v1.py`: the same three moves, now named.
@@ -563,7 +589,9 @@ including extra fields from `model_dump()` is harmless.
 
 ---
 
-### What changed from V2 → V3
+## Version 3 — Classes: the `Conversation` Object
+
+### What changed from V2 to V3
 
 - **Nothing about behavior.** Version 3 is the same chat-with-memory harness — same API
   calls, same transcript on disk, same answers.
@@ -578,8 +606,6 @@ including extra fields from `model_dump()` is harmless.
   `last_assistant_text()`.
 - Underneath, it is still the **same plain list** (`self._items`) you appended to in
   Version 1 — this is the shape the final package's `conversation.py` uses.
-
-## Version 3 — Classes: the `Conversation` Object
 
 You now have five functions (`new_conversation`, `add_user`, `extend_items`,
 `add_tool_result`, `to_input`) and two persistence functions (`save`, `load`).  They work
@@ -717,7 +743,9 @@ conv.extend(resp.output)   # append assistant message + any reasoning items
 conv.save("./sessions/session-001.json")
 ```
 
-**▶ Run it now.** Same result as Step 1.1.  The only difference is `conv.add_user(...)`
+### ▶ Run it now
+
+Same result as Step 1.1.  The only difference is `conv.add_user(...)`
 instead of `add_user(conv, ...)` and `conv.extend(...)` instead of
 `extend_items(conv, ...)`.  Everything else is identical.
 
@@ -901,7 +929,9 @@ print("Saved to /tmp/phase3-nonstreaming.json")
 > [`GLOSSARY.md`](./GLOSSARY.md) under **`lambda`**.) The complete Version 3 file below
 > uses the same shortcut.
 
-**▶ Run it now.** You should see:
+### ▶ Run it now
+
+You should see:
 
 ```text
 Assistant: The sum of 1234 and 5678 is 6912.
@@ -1073,14 +1103,24 @@ if __name__ == "__main__":
     print("Saved to /tmp/phase3-chat-v3.json")
 ```
 
-**▶ Run it now.** Same expected output as the Step 3.4 check (the answer 6912, then a
+### ▶ Run it now
+
+Same expected output as the Step 3.4 check (the answer 6912, then a
 4-item transcript).  Open `/tmp/phase3-chat-v3.json` — you can read the entire tool
 handshake (`function_call` → `function_call_output`, matched by `call_id`) in plain JSON.
 This file is the Version 3 harness in full; Version 4 changes exactly one thing about it.
 
 ---
 
-### What changed from V3 → V4
+## Version 4 — Streaming: the Same Harness, Live (optional)
+
+> **This entire version is optional** — the beginner box at the top of this phase
+> already sanctioned skipping the whole streaming half. If streaming is not a priority
+> for you right now, skip ahead to [Pitfalls](#pitfalls) — the non-streaming Version 3
+> above is complete and correct.  Come back here when you specifically want characters
+> to appear as the model types.
+
+### What changed from V3 to V4
 
 - **The loop, the `Conversation` class, the tools, and the transcript are untouched.**
   Version 4 changes *presentation*, not logic — run V3 and V4 with the same prompt and
@@ -1095,13 +1135,6 @@ This file is the Version 3 harness in full; Version 4 changes exactly one thing 
   **`response.completed`** event — capture it there, and everything after that line is
   exactly the V3 loop.
 - One new helper, `stream_turn()`, replaces the bare `create()` call inside the loop.
-
-## Version 4 — Streaming: the Same Harness, Live
-
-> **This entire version is optional.** If streaming is not a priority for you right now,
-> skip ahead to [Pitfalls](#pitfalls) — the non-streaming Version 3 above is complete and
-> correct.  Come back here when you specifically want characters to appear as the model
-> types.
 
 Streaming does not change the loop logic or the transcript.  It changes only *how the
 model's text reaches the terminal*: instead of printing `resp.output_text` after the whole
@@ -1157,7 +1190,9 @@ print("\n\n--- after the stream ---")
 print("final.output_text:", final.output_text[:40], "...")
 ```
 
-**▶ Run it now.** Watch the numbers appear *as they are generated*, not all at once.  Then
+### ▶ Run it now
+
+Watch the numbers appear *as they are generated*, not all at once.  Then
 note the last line: `final` is a normal `Response` object — `.output`, `.output_text`,
 `.usage` all present — recovered from the `response.completed` event.  That object is what
 the V3 loop already consumes, which is why streaming bolts on without touching the loop.
@@ -1347,7 +1382,9 @@ def stream_turn(
   resource leak occurs.
 - The dim ANSI escape `\033[2m` is purely cosmetic; remove it for plain terminals.
 
-**▶ Run it now (streaming check).** Call `stream_turn` with a `Conversation` that has a
+### ▶ Run it now
+
+A streaming check: call `stream_turn` with a `Conversation` that has a
 user message, using `tools=[]`.  You should see the assistant's response print
 character-by-character.  The returned `final` object should have `.output_text` set.
 
@@ -1565,6 +1602,11 @@ Everything from this phase in one pasteable file: the `Conversation` class (Vers
 the Phase 2 registry, `stream_turn()`, and the integrated loop.  This is the phase's
 final form — and structurally it is still `chat_v1.py`: a list that grows, re-sent every
 call.
+
+> **Reference copy.** Assembled from Steps 4.1–4.6 unchanged (except: `stream_turn` is
+> the compact form without the two in-flight trackers noted in Step 4.4). Nothing new
+> to type here — skim or skip. The maintained `Conversation` lives in
+> [`code/agent_harness/conversation.py`](./code/agent_harness/conversation.py).
 
 ```python
 #!/usr/bin/env python3
@@ -1834,7 +1876,9 @@ if __name__ == "__main__":
 
 ### Expected terminal output (conceptual)
 
-The deltas stream in character-by-character; the tool-call lines appear as the model
+There is nothing new to run here — the file above assembles Steps 4.1–4.6, each of
+which you have already run. The transcript below shows what a full session looks like:
+the deltas stream in character-by-character; the tool-call lines appear as the model
 generates arguments.  The session is saved to disk after each turn.
 
 > **Before you compare your output:** the `🤔 thinking:` lines below appear **only** if
@@ -1937,21 +1981,6 @@ so the same session saves **8** items: a `reasoning` item slots in before the tw
 
 ---
 
-## Summary
-
-| Concept | Key takeaway |
-|---|---|
-| Transcript ownership | Own `input_items`; use `previous_response_id` only as an optimization |
-| Serialization | Call `.model_dump()` immediately; store dicts, not SDK objects |
-| `Conversation` class | Single source of truth; handles add/extend/tool-result/save/load |
-| Reasoning items | Append them like any other output; use `encrypted_content` with `store=False` |
-| `instructions` | Top-level parameter, not in `input_items`; pass on every call |
-| Streaming | Use `client.responses.create(..., stream=True)`; drive UI from events; capture the final `Response` from the `response.completed` event |
-| Append order | `conv.extend(resp.output)` before `conv.add_tool_result(...)` — always |
-| Cancellation | `KeyboardInterrupt` inside `with stream:` is safe; context manager cleans up |
-
----
-
 ## Key takeaways
 
 - This phase separates **two orthogonal concerns**: *owning the transcript* (state) and
@@ -1965,9 +1994,18 @@ so the same session saves **8** items: a `reasoning` item slots in before the tw
 - Because you own the transcript, you can **save and reload** a conversation — that's
   what makes resuming a session possible.
 
-**Practice:** see [`EXERCISES.md` — Phase 3](./EXERCISES.md#phase-3--conversation--streaming)
-for hands-on exercises (session persistence, replay, and streaming renderers) before
-moving on.
+The whole phase at a glance:
+
+| Concept | Key takeaway |
+|---|---|
+| Transcript ownership | Own `input_items`; use `previous_response_id` only as an optimization |
+| Serialization | Call `.model_dump()` immediately; store dicts, not SDK objects |
+| `Conversation` class | Single source of truth; handles add/extend/tool-result/save/load |
+| Reasoning items | Append them like any other output; use `encrypted_content` with `store=False` |
+| `instructions` | Top-level parameter, not in `input_items`; pass on every call |
+| Streaming | Use `client.responses.create(..., stream=True)`; drive UI from events; capture the final `Response` from the `response.completed` event |
+| Append order | `conv.extend(resp.output)` before `conv.add_tool_result(...)` — always |
+| Cancellation | `KeyboardInterrupt` inside `with stream:` is safe; context manager cleans up |
 
 ## Check yourself
 
@@ -1987,5 +2025,15 @@ moving on.
    It's a UX feature.
 </details>
 
-**Next:** Phase 4 — Real Tools (the `read_file`, `edit_file`, `bash`, `grep`, `glob`
-toolset that turns the loop into a genuine coding agent).
+---
+
+## Exercises
+
+**Practice:** see [`EXERCISES.md` — Phase 3](./EXERCISES.md#phase-3--conversation--streaming)
+for hands-on exercises (session persistence, replay, and streaming renderers) before
+moving on.
+
+---
+
+**Next:** [Phase 4 — Real-World Tools](./04-real-tools.md) (the `read_file`, `edit_file`,
+`bash`, `grep`, `glob` toolset that turns the loop into a genuine coding agent).

@@ -111,7 +111,7 @@ Score each phase 1–5 on each axis; the loop revises the lowest-scoring phase n
 
 The evaluator-reviser loop runs **at most 10 times**, then stops on its own.
 
-- Iterations used: **6 / 10** *(reset 2026-06-10 for the version-ladder pass; iterations 4–6 ran 2026-06-11 as the beginner-persona dev loop below)*
+- Iterations used: **9 / 10** *(reset 2026-06-10 for the version-ladder pass; iterations 4–9 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8)*
 - Per iteration: score all phases on the rubric, pick the weakest, revise it one notch
   more incremental, increment the counter here, log it below, commit, push. Stop when the
   counter hits 10 **or** every phase scores ≥4 on every axis.
@@ -133,6 +133,55 @@ The evaluator-reviser loop runs **at most 10 times**, then stops on its own.
 
 ## Revision log (newest first)
 
+- **2026-06-11 — Iteration 9: beginner-persona pass through the notebooks (cycle 6).**
+  Two fresh "Sam" readers verified the new notebook resource end to end on /tmp
+  copies: discovery from the front door works three ways; the documented setup
+  works; **zero blockers** in all six notebooks; keyless outputs reproduced
+  cell-for-cell against the committed ones; re-run resilience, the kernel-restart
+  save/load flow, the hidden-state lesson, and the hard-stop handoffs all behaved
+  as designed (the readers called 03 "the standout"). Their ~10 fixes landed in one
+  pass: the Exercise 1.1 silent tools-list trap, live-API cells now gated on the
+  USE_REAL_API switch (the README's one-switch contract is now true — no surprise
+  spend), reset-cell rebuild, the unexplained None in self-checks, check-cell idiom
+  boxes, 02's stale re-run-safety claim + self-diagnosing asserts, 06 convention
+  drift, subsection anchors, and a Series-conventions list (defining C1) in
+  notebooks/README.md. Re-verified: all six execute headlessly with no key, pairs
+  in sync, 56 tests green. Cycle ran under a 500k-token budget (≈340k used).
+- **2026-06-11 — Iteration 8: persona dev loop, cycle 5 (Jupyter-expert verification →
+  notebook build).** The verification persona became a Jupyter-notebook expert: three
+  reviewers (core funnel, advanced phases, notebook engineering) assessed how to turn
+  the guide into a notebook resource, each shipping an *executed* proof of concept.
+  Consensus: notebooks are companion runnables that import the tested package (never a
+  third diverging copy); FakeClient makes the keyless path primary; review happens on
+  jupytext py:percent pairs with committed deterministic outputs; CI executes every
+  notebook headlessly with no key. Their PoCs surfaced real traps now codified in
+  CLAUDE.md's notebook rules: notebook input() raises StdinNotImplementedError (Phase
+  5's EOFError guard misses it), FakeClient.create() required instructions= (fixed in
+  testing.py — the cycle's one code/ change, 56 tests green), and importlib.reload
+  resets WORKSPACE_ROOT, silently un-confining the file tools. The build pass then
+  shipped: notebooks/ with six executed jupytext pairs (setup-check, 00, 01, 02
+  pre-package half, 03 transcript half, 06), notebooks/README.md contract +
+  refresh.sh, a 'notebooks' extras group, a CI job (pair-sync check + offline
+  execution), FAQ kernel entries, and link lines in the covered phases. Acceptance
+  gate re-verified independently: all six execute offline, pairs in sync, links
+  resolve, tests green. Deferred to the backlog: companion notebooks for phases
+  4/5/7/8 (per the expert v1-scope verdict: hybrid/thin slices only).
+- **2026-06-11 — Iteration 7: persona dev loop, cycle 4 (UX-designer verification).**
+  The verification persona switched from "Python beginner" (correctness) to "senior
+  UX/content designer" (reading experience): three reviewers covered the entry funnel,
+  the in-phase experience (with measurements: code:prose ratios, checkpoint gaps up to
+  999 lines, longest code blocks), and the late-guide/consistency axis (a component ×
+  phase matrix). Their conflicting suggestions were resolved into a binding design
+  contract (checkpoints as `### ▶ Run it now` H3s; a nav header on every phase; linked
+  mini-TOCs; Reference-copy banners + offline Check-it-nows over consolidated listings;
+  one closing-block template ending in a linked Next; 🟢 restricted to gloss/track;
+  `> [!WARNING]` only for destructive-op sites; Phase 4's colliding dual numbering and
+  Phase 8's ghost-§5 repaired). Front door rebuilt around a single Learning Path CTA;
+  BEGINNER-NOTES became the "Python Concepts Cheat-Sheet" (its maintainer tracker moved
+  to this file's appendix); Phase 8 now ends on a Graduation section instead of a
+  fade-out; Appendix 09 got an explicit identity and inbound links. Verified after:
+  repo-wide link/anchor check 0 problems, snippet-parse regressions 0, tests 56 green,
+  `code/` untouched.
 - **2026-06-11 — Iteration 6: beginner-persona dev loop, cycle 3 (verification +
   closing polish).** A second cold-read pass (three fresh "Sam" readers, same scopes)
   confirmed every cycle-2 fix held under execution: phases 0–5 had **zero blockers**
@@ -228,3 +277,34 @@ The evaluator-reviser loop runs **at most 10 times**, then stops on its own.
   production/class-based shape to later. Verified: `code/` untouched, `python -m pytest`
   green (56), every phase retains its 🟢 boxes, "Key takeaways", "Check yourself", and
   "Next" pointer. The evaluator loop below now refines from here.
+
+## Appendix — beginner-adaptation review tracker
+
+*(Moved here from BEGINNER-NOTES.md in the cycle-4 UX pass: it is maintainer bookkeeping,
+not learner content.)*
+
+Status legend: ☐ not started · ◐ in progress · ☑ adapted for beginners
+
+| File | Status | Notes |
+|------|:------:|-------|
+| `README.md` (top level) | ☑ | Beginner-track pointer box. |
+| `agent-harness-guide/README.md` | ☑ | Beginner-track pointer in "Who this is for". |
+| `00-foundations.md` | ☑ | Added orientation pointer + scaffolding for dot-access, `json.loads`, JSON Schema, `with`/stream, threads. |
+| `01-bare-harness.md` | ☑ | Scaffolding for type hints, `**args`, `try/except`, list comprehension (with plain-loop equivalent), `__main__`. |
+| `02-tool-system.md` | ☑ | Functions-only beginner material now lives in the version ladder itself (Versions 1–2 = schema dicts + dict registry + for-loop dispatch), flagged by the "🟢 Beginner track" heading near the top; plus inline boxes translating classes, the `@tool` decorator/introspection, and threads. |
+| `03-conversation-and-streaming.md` | ☑ | Beginner track: `Conversation` as a plain dict + functions (new_conversation/add_user/extend_items/save/load); streaming framed as optional (use non-streaming `create()` + `output_text`). Inline boxes on the class methods and the argument-taking decorator. |
+| `04-real-tools.md` | ☑ | One consolidated box: tools are plain functions; `@tool` is optional (hand-write schemas per Phase 2); plus heads-ups on `pathlib.Path`, `lambda`, f-string format specs, and try/except. |
+| `05-permissions-and-safety.md` | ☑ | Beginner track: full permission check in dicts + if/else (TOOL_RISK, AUTO_OK, check_permission/ask_user); concept table for dataclass≈dict, Enum≈string constants, set≈list, closure, tuple-return, hooks. Inline box reframing hooks as plain functions. |
+| `06-context-management.md` | ☑ | Beginner box: one idea (shrink the growing list) + three tactics (clip/drop-oldest/summarize) as plain functions; syntax notes on count_tokens≈len//4, the bare-`*` keyword-only marker, generator comprehensions, isinstance. |
+| `07-subagents-orchestration.md` | ☑ | Beginner track: a sub-agent = calling your run_agent loop again from inside a `task` tool; Agent class→loop+conversation dict; presets→dict; parallel optional. Syntax table for @dataclass/@property/factory-closure/asyncio. |
+| `08-production-harness.md` | ☑ | Beginner track: phase is polish not new ideas; retry shown as plain for-loop+try/except+sleep; table mapping dataclass/@property/@contextmanager/argparse/logging/typed-except/ThreadPool to known concepts. |
+| `09-library-reference.md` | ☑ | Added a "beginner reading order" box: study §1 (openai, in-scope), skim §2–§4 (tiktoken/threads/subprocess) as background. |
+| `code/` package | ☑ | Kept the tested package intact (source of truth); added a "New to Python?" reading-guide box to `code/README.md` mapping every module to its plain-functions phase box, plus beginner-pointer docstrings in `agent.py` and `tools/base.py`. |
+
+**Review complete** — all files adapted for the beginner audience. Approach: in-place
+scaffolding (green 🟢 boxes) + per-phase functions-and-dicts "Beginner track" rewrites
+of anything using classes/decorators/threads, while leaving the original advanced
+material intact for later. The runnable `code/` package was left untouched (so its tests
+still pass) and bridged with a reading guide instead of a risky rewrite.
+
+Each pass: pick the next ☐ file, adapt it, flip it to ☑, and note what was done.

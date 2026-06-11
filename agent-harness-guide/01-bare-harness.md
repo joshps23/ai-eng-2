@@ -1,3 +1,5 @@
+[← Phase 0: Foundations](./00-foundations.md) · [Guide index](./README.md) · [Phase 2: A Real Tool System →](./02-tool-system.md)
+
 # Phase 1 — A Bare Harness in ~80 Lines
 
 > **Series context:** Phase 0 established the agent-loop theory and the full API contract (how `responses.create` works, the structure of `resp.output`, the tool-call handshake, and the `function_call_output` pattern). This phase puts that contract into practice with the smallest possible working implementation. Read Phase 0 first; this phase references it but does not repeat it.
@@ -23,6 +25,18 @@ We'll build it as a **ladder of three complete versions** — each one a full pr
 
 Nothing conceptually new happens after Version 1. Versions 2 and 3 are reorganizations — the loop you see in Version 1 is the loop you ship.
 
+**Contents:**
+
+- [The Loop, Conceptually](#2-the-loop-conceptually)
+- [Version 1 — Line-by-Line](#3-version-1--line-by-line-no-functions-no-classes)
+- [Version 2 — Functions](#4-version-2--functions-the-same-harness-named-in-pieces)
+- [The Complete File (Version 2, Polished)](#5-the-complete-file-version-2-polished)
+- [Version 3 — Classes: A Minimal `Agent`](#6-version-3--classes-a-minimal-agent-preview)
+- [Example Session](#7-example-session)
+- [Pitfalls](#pitfalls)
+
+> **Prefer running this phase as a notebook?** [`notebooks/01-bare-harness.ipynb`](./notebooks/01-bare-harness.ipynb) executes this phase's checkpoints offline — see [notebooks/README.md](./notebooks/README.md).
+
 ---
 
 ## 2. The Loop, Conceptually
@@ -33,7 +47,7 @@ Every agent iteration is the same three-step cycle:
 2. **Inspect** — if the response contains tool calls, execute them and append the results; go to step 1.
 3. **Answer** — if the response contains no tool calls, emit the text and stop.
 
-```
+```text
 ┌─────────────────────────────────────────────────────┐
 │  input_items (grows each iteration)                  │
 │                                                       │
@@ -125,9 +139,9 @@ while True:
 
 > 🟢 **Two small bits of new syntax in Version 1.** (1) `args.get("timezone", "")` reads the `"timezone"` key out of the dict, falling back to `""` if the model omitted it — that's why an empty string means UTC. (2) `[item for item in resp.output if item.type == "function_call"]` is a **list comprehension** — a compact way to filter a list. It's identical to writing a `for` loop with an `if` inside that calls `.append()`. See [`BEGINNER-NOTES.md`](./BEGINNER-NOTES.md) for the full list.
 
-**▶ Run it now**
+### ▶ Run it now
 
-```text
+```bash
 pip install openai
 export OPENAI_API_KEY=sk-...
 python bare_harness.py
@@ -164,7 +178,7 @@ That's the whole loop. There is genuinely nothing else: ask the model, run any t
 
 Version 2 fixes all three by giving the harness's parts **names**: a tool function, a `dispatch` function, a `run_agent` function, and a `main` REPL. We'll extract them one at a time, running after each step.
 
-**What changed from V1 → V2**
+### What changed from V1 to V2
 
 - The inline time computation becomes a named function, `get_current_time(timezone="")`.
 - The `if tc.name == ...` block becomes a `dispatch(name, arguments)` function wrapped in `try`/`except`, so tool errors become strings instead of crashes.
@@ -201,7 +215,9 @@ def get_current_time(timezone=""):
 
 > 🟢 **The `**args` in `get_current_time(**args)`** "spreads" a dict into named arguments, so `get_current_time(**{"timezone": "Asia/Tokyo"})` is exactly the same as `get_current_time(timezone="Asia/Tokyo")`. This is why the model's JSON arguments can drive a normal Python function directly. See [`BEGINNER-NOTES.md`](./BEGINNER-NOTES.md) for more.
 
-**▶ Run it now** — the output is identical to Version 1. Bonus check: open a Python shell, paste the three-line function in, and call `get_current_time("Europe/London")` directly. The tool now exists independently of the agent. (Paste rather than `import bare_harness`: importing the file also executes its module-level `client = OpenAI()` line, which needs your API key set — see the note in §5.)
+### ▶ Run it now
+
+The output is identical to Version 1. Bonus check: open a Python shell, paste the three-line function in, and call `get_current_time("Europe/London")` directly. The tool now exists independently of the agent. (Paste rather than `import bare_harness`: importing the file also executes its module-level `client = OpenAI()` line, which needs your API key set — see the note in §5.)
 
 ### Step 2 — Extract a `dispatch` helper
 
@@ -245,7 +261,9 @@ And update the loop body to call it:
         })
 ```
 
-**▶ Run it now** — the output is identical, but now try passing a bad timezone name (e.g., `"Not/ATimezone"`). Instead of crashing, you'll see an `ERROR:` string returned and the model will politely tell the user it couldn't look that up.
+### ▶ Run it now
+
+The output is identical, but now try passing a bad timezone name (e.g., `"Not/ATimezone"`). Instead of crashing, you'll see an `ERROR:` string returned and the model will politely tell the user it couldn't look that up.
 
 > **Why catch everything?** A tool raising an unhandled exception would kill the loop and produce no answer. Returning the error string gives the model a chance to retry with corrected arguments or explain the problem to the user.
 
@@ -295,9 +313,9 @@ def main():
 main()
 ```
 
-**▶ Run it now**
+### ▶ Run it now
 
-```text
+```bash
 python bare_harness.py
 ```
 
@@ -346,7 +364,9 @@ def run_agent(user_message):
     print(f"[Agent stopped: reached {MAX_ITERATIONS}-iteration safety cap]")
 ```
 
-**▶ Run it now** — normal use is unchanged. The cap only fires if the model gets stuck in a loop.
+### ▶ Run it now
+
+Normal use is unchanged. The cap only fires if the model gets stuck in a loop.
 
 **Why `MAX_ITERATIONS`?**
 Without a cap, a model stuck in a reasoning loop or a buggy tool that always returns errors could spin indefinitely, burning API quota and dollars. 25 is a conservative default for single-turn tasks; multi-step workflows may need more. Log a clear message when the cap fires so you can detect and debug runaway loops.
@@ -535,7 +555,7 @@ Key points about the schema you may have noticed:
 
 **Why now?** Look at Version 2's moving parts: the `client`, the tool schemas, and the transcript all float around as globals and locals, and `run_agent` has to know about all of them. That's fine for one agent in one file. But the moment you want *two* agents (Phase 7 builds sub-agents!), or want to keep a transcript alive between turns, you need a way to bundle **state** together. That's exactly what a class is for — and nothing more. Version 3 is **the same harness, organized**: same loop, same dispatch, same handshake, with the state grouped into one small `Agent` object.
 
-**What changed from V2 → V3**
+### What changed from V2 to V3
 
 - The three pieces of state — `client`, the tool schemas, and `input_items` — move into `self.client`, `self.tools`, and `self.input_items` on an `Agent` object, created once in `__init__`.
 - `dispatch` and the loop become **methods** (`agent.dispatch(...)`, `agent.run(...)`) — same bodies, now reading state from `self` instead of globals.
@@ -658,9 +678,9 @@ if __name__ == "__main__":
     main()
 ```
 
-**▶ Run it now**
+### ▶ Run it now
 
-```text
+```bash
 python bare_harness_v3.py
 ```
 
@@ -693,7 +713,7 @@ The second question does not call `get_current_time` at all — the model answer
 
 ---
 
-## 8. Common Pitfalls
+## Pitfalls
 
 | Pitfall | What happens | How to avoid |
 |---------|--------------|---------------|
@@ -747,4 +767,4 @@ See [`EXERCISES.md` — Phase 1](./EXERCISES.md) for hands-on practice:
 
 ---
 
-Proceed to **[Phase 2 — The tool system](./02-tool-system.md)**, where you'll replace the `if/elif` dispatch with a registry and auto-generate schemas from type hints.
+**Next:** [Phase 2 — A Real Tool System](./02-tool-system.md), where you'll replace the `if/elif` dispatch with a registry and auto-generate schemas from type hints.

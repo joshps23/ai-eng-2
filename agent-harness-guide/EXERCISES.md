@@ -4,9 +4,11 @@
 > **warm-up** (cements the core idea) and a **stretch** (pushes a little further). Try
 > each before opening its hint. You only need what that phase has already taught.
 >
-> Work in a scratch copy so you can experiment freely:
+> Work in a scratch copy so you can experiment freely (from the repo root; the
+> canonical setup with troubleshooting is in the [FAQ](./FAQ.md#setup--installation)):
 > ```bash
-> cd code && python -m venv .venv && source .venv/bin/activate && pip install -e ".[dev]"
+> cd agent-harness-guide/code
+> python -m venv .venv && source .venv/bin/activate && pip install -e ".[dev]"
 > ```
 > The canonical implementation in [`code/agent_harness/`](./code/) is your answer key —
 > if you get stuck, find the same idea there. New terms? See the
@@ -180,5 +182,4 @@ genuine task ("add a docstring to every function in `foo.py` and run the tests")
 loop read, edit, run `bash`, hit the permission gate, and stay within its context budget.
 If it does that end-to-end, you've built — and understood — a coding agent from scratch.
 
-> Found an exercise that was too easy, too hard, or unclear? That's signal for the
-> standing goal — see [`ROADMAP.md`](./ROADMAP.md).
+> Spotted a gap or an error? Open an issue on the repo.

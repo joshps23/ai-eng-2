@@ -54,11 +54,27 @@ Status: ☐ todo · ◐ in progress · ☑ done
 | 8 | **Verify phase code samples** against the canonical package — flag any drift between snippets and `code/` | 6 | ☑ |
 | 9 | **Visual diagrams**: replace/augment ASCII with clearer flow diagrams where it helps a beginner | 4 | ☐ |
 | 10 | **"What you'll have built" capstone** + a checklist mapping each phase's output to a feature of a real harness | 5 | ☐ |
+| 11 | **Notebook resource**: executed jupytext companion notebooks for phases 0–3 + 6, offline CI gate, kernel/setup docs | 1, 3, 4 | ☑ |
+| 12 | **Companion notebooks for phases 4/5/7/8** (hybrid slices per the expert v1-scope verdict: scripted-asker permission gate, tmpdir tools, sub-agent core, Phase-8 demo trio) | 3 | ☐ |
 
 ## Iteration log
 
 Newest first. One line per shipped iteration.
 
+- **2026-06-11** — Persona dev loop, cycle 6 (beginner through the notebooks): two
+  readers verified all six notebooks keyless — zero blockers, outputs reproduced
+  cell-for-cell; their ~10 fixes (Exercise 1.1 tools-list trap, USE_REAL_API gating
+  on live cells, convention drift) landed in one pass; all six re-executed offline,
+  pairs in sync, tests green.
+- **2026-06-11** — Persona dev loop, cycle 5 (Jupyter expert → build): shipped Item 11 —
+  six executed notebook pairs (setup-check, 0, 1, 2, 3, 6) + contract README +
+  refresh.sh + offline CI gate + FakeClient instructions= fix, all verified to execute
+  headlessly with no API key. Phases 4/5/7/8 companions logged as Item 12.
+- **2026-06-11** — Persona dev loop, cycle 4 (UX): three UX-designer reviewers audited
+  the entry funnel, in-phase pacing, and cross-guide consistency; a shared design
+  contract was applied by four agents (single front-door CTA, nav headers + mini-TOCs,
+  uniform checkpoints, Reference-copy banners, Phase 4/8 numbering repairs, Phase 8
+  Graduation ending, Appendix identity). Links/anchors 0 broken; tests green.
 - **2026-06-11** — Beginner-persona dev loop, cycle 3: re-verification found zero
   blockers in phases 0–5 and two in Phase 8 (un-runnable §9 tests → new §9.0 shims,
   execution-verified; dead `--transcript` flag → fixed); closing polish landed across

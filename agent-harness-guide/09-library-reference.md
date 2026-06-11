@@ -1,4 +1,9 @@
+[← Phase 8: The Production Harness](./08-production-harness.md) · [Guide index](./README.md)
+
 # Appendix — Library Reference
+
+> **This is a lookup appendix, not a ninth phase** — come here when a phase names a
+> stdlib module you want more depth on, not as the next chapter after Phase 8.
 
 > A focused reference for every **external library** the harness depends on, plus the
 > two standard-library modules it leans on most heavily. For each, you get the
@@ -22,6 +27,14 @@ to document here too: [`concurrent.futures`](#3-concurrentfutures--running-tools
 pip install "openai>=1.66.0"   # Responses API was added in 1.66.0
 pip install tiktoken           # optional
 ```
+
+**Contents:**
+
+- [§1 — `openai`: the Responses API](#1-openai--the-responses-api)
+- [§2 — `tiktoken`: local token counting](#2-tiktoken--local-token-counting)
+- [§3 — `concurrent.futures`: running tools in parallel](#3-concurrentfutures--running-tools-in-parallel)
+- [§4 — `subprocess`: running shell commands](#4-subprocess--running-shell-commands)
+- [Where to go next](#where-to-go-next)
 
 > 🟢 **Beginner reading order for this appendix.** **§1 (`openai`) is the one section
 > to actually know** — it's the `client.responses.create(...)` API you already use, and

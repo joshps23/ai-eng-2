@@ -15,6 +15,7 @@ dependencies = [
 [project.optional-dependencies]
 tiktoken = ["tiktoken"]
 dev = ["pytest"]
+notebooks = ["jupyterlab", "ipykernel", "nbformat", "nbclient", "jupytext"]
 
 [project.scripts]
 agent-harness = "agent_harness.cli:main"

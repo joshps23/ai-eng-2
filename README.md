@@ -1,41 +1,46 @@
-# ai-eng-2
+# Building a Full-Fledged Agent Harness with the OpenAI Responses API — in Pure Python
 
 [![CI](https://github.com/joshps23/ai-eng-2/actions/workflows/ci.yml/badge.svg)](https://github.com/joshps23/ai-eng-2/actions/workflows/ci.yml)
-
-**Building a Full-Fledged Agent Harness with the OpenAI Responses API — in Pure Python.**
 
 An exhaustive, phase-by-phase guide to building an agentic coding harness (the kind of
 program that powers tools like Claude Code and Cursor) from scratch, using **only** the
 OpenAI Responses API and the Python standard library. No LangChain, no agent SDKs — the
 point is to understand what those frameworks hide and be able to rebuild them yourself.
 
-> 🟢 **New to Python?** This guide was written for experienced engineers, but it now
-> ships with a beginner track. If you know **functions, lists, dictionaries,
-> operators, and `client.responses.create(...)`**, start with
-> **[`BEGINNER-NOTES.md`](./agent-harness-guide/BEGINNER-NOTES.md)** — it translates
-> every other concept (classes, `json.loads`, JSON Schema, `with`, threads) into
-> those terms, and inline 🟢 boxes in each phase bridge the gaps as they appear.
+**👉 New here? Follow the [Learning Path](./agent-harness-guide/LEARNING-PATH.md)** —
+pick the track that fits your time (2 hours / a weekend / deep) and it walks you
+through Phases 0–8 step by step, with per-phase checkpoints.
 
-## Start here
+> 🟢 **Who this is for.** Written for working engineers **and** for beginners who know
+> **functions, lists, dictionaries, operators, and `client.responses.create(...)`** —
+> the 🟢 beginner track is built in. If that beginner description is you, read the
+> **[Python Concepts Cheat-Sheet](./agent-harness-guide/BEGINNER-NOTES.md)** once
+> before Phase 0 — it translates every other concept (classes, `json.loads`,
+> JSON Schema, `with`, threads) into those terms, and inline 🟢 boxes in each phase
+> bridge the gaps as they appear.
 
-- 🧭 **[Learning path](./agent-harness-guide/LEARNING-PATH.md)** — not sure what to
-  read or how long it takes? This turns the 8 phases into a step-by-step plan with
-  time-budgeted tracks (2 hours / a weekend / deep) and per-phase checkpoints.
-- 🛠️ **[Exercises](./agent-harness-guide/EXERCISES.md)** — a warm-up + a stretch task per
-  phase (with hints) so you *build*, not just read.
-- 📖 **[The guide](./agent-harness-guide/README.md)** — 8 incremental phases, from an
+## Reference shelf
+
+The Learning Path will send you to these when you need them:
+
+- 📖 **[The guide](./agent-harness-guide/README.md)** — Phases 0–8, incremental, from an
   ~80-line agent to a production-shaped harness (loop, tools, streaming, permissions,
   context management, sub-agents).
+- 🛠️ **[Exercises](./agent-harness-guide/EXERCISES.md)** — a warm-up + a stretch task per
+  phase (with hints) so you *build*, not just read.
 - 📒 **[Glossary](./agent-harness-guide/GLOSSARY.md)** — every harness and Python
   term the guide uses, defined in plain language. Hit an unfamiliar word? Start here.
-- 🛟 **[Beginner FAQ & troubleshooting](./agent-harness-guide/FAQ.md)** — fixes for
-  the common first-run errors (install, API keys, models, "the agent did nothing",
-  reading tracebacks, Windows notes).
+- 🛟 **[Beginner FAQ & troubleshooting](./agent-harness-guide/FAQ.md)** — the canonical
+  setup and troubleshooting page: fixes for the common first-run errors (install, API
+  keys, models, "the agent did nothing", reading tracebacks, Windows notes).
 - 📚 **[Library reference appendix](./agent-harness-guide/09-library-reference.md)** —
   every external library used (`openai`, `tiktoken`) plus key stdlib, documented with
   methods, parameters, return types, and examples.
 - 💻 **[Runnable code](./agent-harness-guide/code/)** — the consolidated, tested
   `agent_harness` package. The source of truth for the implementation.
+- 📓 **[Notebooks](./agent-harness-guide/notebooks/README.md)** — companion Jupyter
+  notebooks for Phases 0–3 and 6 (plus a setup check): run each phase's checkpoints
+  top-to-bottom, fully offline, no API key needed.
 
 ## Quick start
 
@@ -51,22 +56,7 @@ agent-harness
 Python 3.10+. The only required dependency is `openai>=1.66.0` (the version that added
 the Responses API); `tiktoken` is an optional extra for exact local token counting.
 
-### Setup & troubleshooting (read this if something won't run)
-
-- **Use a virtual environment.** `python -m venv .venv && source .venv/bin/activate`
-  (Windows: `.venv\Scripts\activate`) *before* `pip install`. This avoids the most
-  common gotcha: a globally-installed `pytest` belonging to a different interpreter
-  that can't find the package (`ModuleNotFoundError: No module named 'agent_harness'`).
-- **Run tests as `python -m pytest`,** not bare `pytest`. The `python -m` form uses
-  the *same* interpreter you installed into, so imports resolve. Run it from
-  `agent-harness-guide/code`.
-- **No API key needed to learn.** The full test suite runs offline — a `FakeClient`
-  stands in for the API. You only need `OPENAI_API_KEY` to actually *chat* with the
-  agent (`agent-harness`) or to execute the phases' "▶ Run it now" scripts — without
-  a key those stop at `openai.OpenAIError: Missing credentials`, and the "No API
-  key?" box in Phase 0 shows the offline alternatives (expected output + tests).
-- **`agent-harness: command not found`?** The console script is installed by
-  `pip install -e ".[dev]"`; make sure your venv is active, or run it as
-  `python -m agent_harness.cli`.
-- **Unfamiliar term anywhere?** See the
-  **[Glossary](./agent-harness-guide/GLOSSARY.md)**.
+**Something won't run?** The **[FAQ](./agent-harness-guide/FAQ.md)** is the canonical
+setup & troubleshooting page — symptom-first fixes for installs, API keys, models, and
+tracebacks. (Two habits prevent most problems: work inside a virtual environment, and
+run tests as `python -m pytest`, never bare `pytest`.)
