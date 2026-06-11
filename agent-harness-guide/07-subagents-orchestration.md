@@ -1,3 +1,5 @@
+[← Phase 6: Context Management](./06-context-management.md) · [Guide index](./README.md) · [Phase 8: The Production Harness →](./08-production-harness.md)
+
 # Phase 7 — Sub-Agents & Dynamic Parallel Orchestration
 
 > **Series context:** Phases 0–6 built a complete, production-grade single-agent harness: a working loop, a typed tool system with `@tool` and `ToolRegistry`, streaming, conversation management, permission hooks, and structured outputs. This phase is the headline feature: turning that single agent into an **orchestrator** that spawns worker agents at runtime, fans them out in parallel, and synthesises their results. Read the earlier phases first; this phase builds on every concept they introduced without repeating them.
@@ -77,6 +79,18 @@ a `task` tool. Only the *organization* of the code changes:
 
 Between versions you'll find a short **"What changed"** list, so you can see each rung as
 a reorganization of the previous one, never a brand-new program.
+
+**Contents:**
+
+- [Version 1 — line-by-line: the same loop, pasted twice](#version-1--line-by-line-the-same-loop-pasted-twice)
+- [Version 2 — functions: the duplication collapses](#version-2--functions-the-duplication-collapses)
+- [Version 3 — classes: the same harness, organized](#version-3--classes-the-same-harness-organized)
+- [Version 4 — threads: parallel sub-agents](#version-4--threads-parallel-sub-agents-optional-speed-up)
+- [§5 — a complete worked example: dynamic fan-out](#5-a-complete-worked-example--dynamic-fan-out)
+- [§6 — design considerations](#6-design-considerations)
+- [§7 — full code: `subagents.py`](#7-full-code--subagentspy)
+- [§8 — async alternative](#8-async-alternative)
+- [Pitfalls](#pitfalls)
 
 > ## 🟢 Beginner track: a "sub-agent" is just calling your agent loop again
 >
@@ -234,7 +248,7 @@ while True:
 print("\nFinal answer:", outer_resp.output_text)
 ```
 
-#### ▶ Run it now
+### ▶ Run it now
 
 ```
 python v1_subagent_inline.py
@@ -374,7 +388,7 @@ orchestrator's conversation, and the orchestrator never sees the sub-agent's. Th
 thing that crosses the boundary is `inner_answer`, a plain string, handed back under the
 outer call's `call_id` exactly like any other tool result.
 
-#### ▶ Run it now
+### ▶ Run it now
 
 ```
 python v1_subagent_inline.py
@@ -391,7 +405,9 @@ inside loops inside loops. That itch is exactly what Version 2 scratches.
 
 ---
 
-## What changed from V1 → V2
+## Version 2 — Functions: the Duplication Collapses
+
+### What changed from V1 to V2
 
 - The **inner pasted loop becomes a plain function**, `run_subagent(task_description) -> str`,
   and the `task` dispatch branch shrinks to a single call.
@@ -404,10 +420,6 @@ inside loops inside loops. That itch is exactly what Version 2 scratches.
 - Nothing else changes: same model, same Responses-API handshake, same `call_id`
   discipline, same isolated transcripts. Run both versions on the same prompt and you get
   the same behavior.
-
----
-
-## Version 2 — Functions: the Duplication Collapses
 
 > **Why now?** Version 1 proved the idea by brute force — two copies of the loop. Version
 > 2 keeps the behavior and deletes the duplication, in two small moves.
@@ -458,7 +470,7 @@ def run_subagent(task_description):
         })
 ```
 
-#### ▶ Run it now
+### ▶ Run it now
 
 Replace the inner-loop block in `v1_subagent_inline.py` with the function above (put the
 `def` near the top of the file) and run it again. Same output as Step 1.2 — the program
@@ -616,7 +628,7 @@ if __name__ == "__main__":
     print("\nFinal answer:", answer)
 ```
 
-#### ▶ Run it now
+### ▶ Run it now
 
 ```
 python v2_subagent.py
@@ -628,7 +640,9 @@ You should see one `[task] spawning sub-agent...` line appear while the orchestr
 
 ---
 
-## What changed from V2 → V3
+## Version 3 — Classes: the Same Harness, Organized
+
+### What changed from V2 to V3
 
 - `run_agent`'s parameters (`instructions`, the tool set, plus model and client) become
   **constructor arguments of an `Agent` class**; the local `conversation` list becomes
@@ -644,10 +658,6 @@ You should see one `[task] spawning sub-agent...` line appear while the orchestr
   child, so sub-agents spawning sub-agents can't recurse forever.
 - Behavior is unchanged: a sub-agent is still your loop called again — now spelled
   `Agent(...).run(prompt)` inside a tool.
-
----
-
-## Version 3 — Classes: the Same Harness, Organized
 
 > **Framing.** Nothing in this version is a new idea — it is Version 2 with its state
 > grouped into objects, in the shape the real package uses
@@ -688,7 +698,7 @@ Each method is a single line of delegation — nothing about the registry's beha
 changes; it just answers to the names the rest of this phase (and the consolidated
 package) uses.
 
-#### ▶ Check it now (no API key needed)
+### ▶ Check it now (no API key needed)
 
 In a Python REPL with your Phase 2 `tools/` package on the path:
 
@@ -720,7 +730,8 @@ against the registry you already built.
 
 Until now the agent loop lived in a standalone function or script. To support sub-agents we need agents to be *values* — objects you can instantiate, configure, and pass around. The refactor is small but important.
 
-> ⚠️ **File-name collision:** Phase 2's full demo script was *also* called `agent.py`.
+> [!WARNING]
+> **File-name collision:** Phase 2's full demo script was *also* called `agent.py`.
 > If you've been following the guide in a single working directory, saving the listing
 > below will silently overwrite it — keep each phase in its own folder (or rename the
 > Phase 2 file first).
@@ -899,7 +910,7 @@ Key design decisions:
 - **`depth` is carried from parent to child.** When the orchestrator spawns a sub-agent it passes `depth=self.depth + 1`, allowing the guard to trigger before a recursion goes too deep.
 - **`registry.dispatch_parallel` is the Phase 2 machinery.** Phase 2 already handles running multiple tool calls concurrently; nothing new is needed here.
 
-#### ▶ Run it now
+### ▶ Run it now
 
 After putting the `Agent` class in `agent.py`, rewrite Version 2's orchestrator using
 it. This is a **complete** file — it needs only `agent.py` (from this step) and your
@@ -1076,7 +1087,7 @@ def task_fn(role: str, prompt: str) -> str:
     return worker.run(prompt)
 ```
 
-#### ▶ Run it now
+### ▶ Run it now
 
 One prerequisite before this runs: `task_fn` reads a module-level `full_registry` — a
 `ToolRegistry` holding every tool workers may draw from — which is only *defined* in
@@ -1258,7 +1269,7 @@ def make_task_tool(
 
 Register this tool in the orchestrator's registry and the model gains the ability to spawn workers. The schema's `enum` for `role` tells the model exactly which values are valid, which reduces hallucination significantly.
 
-#### ▶ Run it now
+### ▶ Run it now
 
 ```python
 # v3_task_tool.py  — orchestrator with a real task tool.
@@ -1331,7 +1342,9 @@ The orchestrator will call `task("reviewer", ..., "Check auth.py ...")`. Your ha
 
 ---
 
-## What changed from V3 → V4
+## Version 4 — Threads: Parallel Sub-Agents (Optional Speed-Up)
+
+### What changed from V3 to V4
 
 - Nothing about a *single* sub-agent changes — same `Agent`, same presets, same
   `dispatch_subagent`. What changes is **how a batch of `task` calls is executed**:
@@ -1345,10 +1358,6 @@ The orchestrator will call `task("reviewer", ..., "Check auth.py ...")`. Your ha
   running (failure isolation).
 - A cap, `MAX_CONCURRENT_SUBAGENTS`, bounds the pool so a fan-out of 50 doesn't fire 50
   simultaneous agents.
-
----
-
-## Version 4 — Threads: Parallel Sub-Agents (Optional Speed-Up)
 
 > **Why now?** Everything so far works serially — sub-agents run one at a time. If the orchestrator issues multiple `task` calls in a single response, Phase 2's `dispatch_parallel` already runs them concurrently via `ThreadPoolExecutor`. This version makes that visible, adds per-worker timing, and explains when it helps. **You can skip this version** and everything still works; you just wait longer.
 
@@ -1369,7 +1378,8 @@ same time* means you wait only as long as the slowest one: four seconds.
 > calls, this overlap is nearly free speed.
 >
 > You rarely manage threads by hand. The standard library's
-> `concurrent.futures.ThreadPoolExecutor` does it for you:
+> [`concurrent.futures`](./09-library-reference.md#3-concurrentfutures--running-tools-in-parallel)
+> module (its `ThreadPoolExecutor`, documented in depth in the Appendix) does it for you:
 >
 > ```python
 > from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -1582,7 +1592,7 @@ the worked example in §5 takes a different route — the `task` *tool* via Phas
 
 The wall time equals the slowest worker (researcher at 6.2 s), not their sum (16.1 s).
 
-#### ▶ Run it now
+### ▶ Run it now
 
 Version 4's complete runnable program is the worked example in §5 below
 (`example_orchestrator.py`), driven by the full `subagents.py` listing in §7 — together
@@ -1971,6 +1981,11 @@ machinery (presets, `dispatch_subagent`, `make_task_tool`) and the Version 4 par
 runner in one place. It mirrors the shape of the tested package
 (`code/agent_harness/subagents.py` plus `tools/parallel.py`); when this listing and the
 package disagree, the package is correct.
+
+> **Reference copy.** Assembled from Steps 3.2–4.5 unchanged (except: the worker-name
+> format and the `[done]` timing log inside `TaskTool.run`). Nothing new to type here —
+> skim or skip. The maintained version lives in
+> [`code/agent_harness/subagents.py`](./code/agent_harness/subagents.py).
 
 ```python
 # subagents.py
@@ -2399,23 +2414,7 @@ For HTTP-heavy workloads (many parallel sub-agents all making long-running API c
 
 ---
 
-## 9. Pitfalls
-
-> **Fork-bomb recursion.** The single most dangerous failure mode. If a sub-agent's role includes the `task` tool and its prompt encourages decomposition, each generation spawns multiple children. At depth 4 with a fan-out of 3, you have 3⁴ = 81 concurrent agents, each making multiple API calls. **Always cap depth and max-concurrent workers in harness code, not just in the prompt.**
-
-> **Parallel writes clobbering files.** Two `coder` agents both writing to `core/auth.py` will race. Last write wins; the loser's changes disappear silently. Assign disjoint file scopes in the orchestrator prompt, or use git worktrees for each parallel coder.
-
-> **Swallowing sub-agent errors.** The `dispatch_subagent` function returns error strings rather than raising. This is correct — it lets siblings continue — but the orchestrator must notice the error string in the result and react appropriately. Include explicit error-handling instruction in the orchestrator's system prompt: "If a worker returns `[error]`, note it in the final report and do not fabricate the missing data."
-
-> **Unbounded cost.** Each agent call is independently billed. A three-level tree with average fan-out 3 and 1,000 input tokens per node costs 3 + 9 + 27 = 39 API calls and potentially hundreds of thousands of tokens. Set a hard budget in the harness and abort once it is exceeded, or use a cheaper model for worker agents (`gpt-4o-mini` for simple tasks).
-
-> **Parent context bloat from large worker output.** If workers return 5,000-token essays, the orchestrator's context fills up despite the isolation. Instruct workers in their system prompt to return summaries, not raw data. Enforce this with the structured output schema (§6.5): a `summary` field capped at N words prevents accidental verbosity.
-
-> **Transcript reuse between tasks.** If you call `agent.run(task)` twice on the same `Agent` instance, the second call sees the first task's conversation. Call `agent.reset()` between tasks, or instantiate a fresh `Agent` for each independent use — which is what `dispatch_subagent` does.
-
----
-
-## 10. What's Next
+## What's next
 
 Phase 7 completes the orchestration story. One phase remains:
 
@@ -2428,6 +2427,23 @@ Phase 7 completes the orchestration story. One phase remains:
 The architecture you have now — a loop, a typed tool system, permissions, streaming,
 structured output, and multi-agent orchestration — is production-grade. Phase 8 hardens,
 packages, and ships it.
+
+---
+
+## Pitfalls
+
+> [!WARNING]
+> **Fork-bomb recursion.** The single most dangerous failure mode. If a sub-agent's role includes the `task` tool and its prompt encourages decomposition, each generation spawns multiple children. At depth 4 with a fan-out of 3, you have 3⁴ = 81 concurrent agents, each making multiple API calls. **Always cap depth and max-concurrent workers in harness code, not just in the prompt.**
+
+> **Parallel writes clobbering files.** Two `coder` agents both writing to `core/auth.py` will race. Last write wins; the loser's changes disappear silently. Assign disjoint file scopes in the orchestrator prompt, or use git worktrees for each parallel coder.
+
+> **Swallowing sub-agent errors.** The `dispatch_subagent` function returns error strings rather than raising. This is correct — it lets siblings continue — but the orchestrator must notice the error string in the result and react appropriately. Include explicit error-handling instruction in the orchestrator's system prompt: "If a worker returns `[error]`, note it in the final report and do not fabricate the missing data."
+
+> **Unbounded cost.** Each agent call is independently billed. A three-level tree with average fan-out 3 and 1,000 input tokens per node costs 3 + 9 + 27 = 39 API calls and potentially hundreds of thousands of tokens. Set a hard budget in the harness and abort once it is exceeded, or use a cheaper model for worker agents (`gpt-4o-mini` for simple tasks).
+
+> **Parent context bloat from large worker output.** If workers return 5,000-token essays, the orchestrator's context fills up despite the isolation. Instruct workers in their system prompt to return summaries, not raw data. Enforce this with the structured output schema (§6.5): a `summary` field capped at N words prevents accidental verbosity.
+
+> **Transcript reuse between tasks.** If you call `agent.run(task)` twice on the same `Agent` instance, the second call sees the first task's conversation. Call `agent.reset()` between tasks, or instantiate a fresh `Agent` for each independent use — which is what `dispatch_subagent` does.
 
 ---
 
@@ -2478,7 +2494,7 @@ hands-on practice:
 
 ---
 
-Proceed to **[Phase 8 — The production harness](./08-production-harness.md)**, where the
+**Next:** [Phase 8 — The production harness](./08-production-harness.md), where the
 ladders from every phase — this one included — are assembled into the single tested
 package: retries, observability, configuration, and a real CLI around the loop you have
 been building since Phase 1.

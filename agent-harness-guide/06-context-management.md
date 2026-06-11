@@ -1,4 +1,12 @@
+[← Phase 5: Permissions, Safety & the Hook System](./05-permissions-and-safety.md) · [Guide index](./README.md) · [Phase 7: Sub-Agents & Orchestration →](./07-subagents-orchestration.md)
+
 # Phase 6 — Context Management: Token Budgeting & Compaction
+
+> **Series context:** Phases 0–5 built a complete, safe single-agent harness: the loop,
+> a typed tool system, streaming and conversation management, real file/shell tools, and
+> a permission layer in front of them. One resource is still unmanaged: the **context
+> window** itself. This phase adds the budgeting and compaction machinery that lets a
+> session run for an hour instead of ten minutes.
 
 Every model has a finite context window. In a toy demo that window is plenty; in a real agentic session — many tool calls, large file reads, multi-step plans, long reasoning traces — you will exceed it. When that happens you get one of three failure modes: an API error (hard limit breached), silently dropped instructions (the model just forgets the system prompt), or "context rot" — degraded output quality as the signal-to-noise ratio in the window falls. None of those is acceptable for a harness meant to run for an hour.
 
@@ -29,7 +37,8 @@ This phase adds active context management to the harness: token counting, a conf
 > A few syntax heads-ups so nothing surprises you:
 >
 > - **`count_tokens(text)`** is basically `len(text) // 4` — a "token" is roughly 4
->   characters. The `tiktoken` library just makes that estimate exact; if it isn't
+>   characters. The [`tiktoken`](./09-library-reference.md#2-tiktoken--local-token-counting)
+>   library just makes that estimate exact; if it isn't
 >   installed, the code falls back to the divide-by-4 version. Tokens are the unit the
 >   model's limit is measured in.
 > - **`def f(items, *, keep_last_n=6)`** — the bare `*` only forces `keep_last_n` to be
@@ -68,6 +77,17 @@ This phase adds active context management to the harness: token counting, a conf
 
 Each version is **the same harness, reorganized** — between versions there's a short
 "what changed" list so you can see the reorganization rather than re-learn the program.
+
+**Contents:**
+
+- [The problem in numbers](#the-problem-in-numbers)
+- [Version 1 — line-by-line: watch the window fill up](#version-1--line-by-line-watch-the-window-fill-up)
+- [Version 2 — functions: `count_tokens` and `prune_to_budget`](#version-2--functions-count_tokens-and-prune_to_budget)
+- [Version 3 — the organized form: a `context.py` module](#version-3--the-organized-form-a-contextpy-module-the-loop-consults)
+- [Version 4 — `compact`: spend one API call to buy back context](#version-4--compact-spend-one-api-call-to-buy-back-context)
+- [Beyond the ladder: keep tokens out of the window entirely](#beyond-the-ladder-keep-tokens-out-of-the-window-entirely)
+- [Persistent memory across sessions](#persistent-memory-across-sessions)
+- [The production shape: full `context.py`](#the-production-shape-full-contextpy)
 
 ---
 
@@ -134,9 +154,9 @@ for turn in range(1, 9):
     print(f"After turn {turn}: {len(transcript)} items, ~{total} tokens in transcript")
 ```
 
-**▶ Run it now**
+### ▶ Run it now (no API key needed)
 
-```
+```bash
 python demo_context_problem.py
 ```
 
@@ -182,9 +202,11 @@ print(f"After  pruning: {len(transcript)} items, ~{total} tokens")
 print(f"Dropped {dropped_count} items to stay under {TOKEN_BUDGET} tokens")
 ```
 
-**▶ Run it now** (same file, just append and re-run)
+### ▶ Run it now (no API key needed)
 
-```
+Same file — just append the lines above and re-run:
+
+```bash
 python demo_context_problem.py
 ```
 
@@ -288,9 +310,9 @@ The harness is exactly Phase 1's loop; the *only* new code is the block between 
 `──` rules: estimate the transcript size, print it, and pop the oldest item while over
 budget.
 
-**▶ Run it now**
+### ▶ Run it now
 
-```
+```bash
 echo "The launch checklist: 1) freeze the schema. 2) tag the release. \
 3) run the smoke tests twice. 4) page the on-call before deploying." > notes.txt
 python harness_v1.py
@@ -339,7 +361,11 @@ Both bugs come from the same root cause: the truncation treats the transcript as
 list of interchangeable items, when really it has *structure* (a pinned goal, and pairs
 that must travel together). Encoding that structure is exactly what Version 2 does.
 
-### What changed from V1 → V2
+---
+
+## Version 2 — functions: `count_tokens` and `prune_to_budget`
+
+### What changed from V1 to V2
 
 - The inline estimate gets a name: `count_tokens(text)` plus `count_items(items)` for a
   whole transcript — same `// 4` arithmetic, now callable and testable on its own.
@@ -352,10 +378,6 @@ that must travel together). Encoding that structure is exactly what Version 2 do
 - The model's output items are normalized to plain dicts with `.model_dump()` as they
   are appended, so the functions only ever deal with one shape of item.
 - Nothing else moves: same tool, same loop, same prints — the same harness, reorganized.
-
----
-
-## Version 2 — functions: `count_tokens` and `prune_to_budget`
 
 Still no classes. We lift the three inline fragments into three plain functions and fix
 both planted bugs. These are the same two correctness rules the production package
@@ -384,7 +406,7 @@ def count_items(items):
 > same normalization trick `Conversation.to_input()` uses in Phase 3. (The tested
 > package's `conversation.py` spells the same method `to_input_dict()`.)
 
-**▶ Run it now** (offline)
+### ▶ Run it now (no API key needed)
 
 ```python
 items = [{"role": "user", "content": "hello"},
@@ -467,7 +489,9 @@ def prune_to_budget(items, budget):
     return [item for group in kept if group is not None for item in group]
 ```
 
-**▶ Run it now** (offline — verify both rules)
+### ▶ Run it now (no API key needed)
+
+Verify both rules offline:
 
 ```python
 # Build a transcript: one goal message, then five tool round-trips.
@@ -643,9 +667,9 @@ while True:
             })
 ```
 
-**▶ Run it now**
+### ▶ Run it now
 
-```
+```bash
 python harness_v2.py
 ```
 
@@ -658,7 +682,11 @@ One rough edge remains, and it's worth seeing: with a brutally small budget, pru
 drop the tool round-trip the model *just* made — there's no notion of "recent items are
 precious" yet. Version 3 fixes that with a recency window.
 
-### What changed from V2 → V3
+---
+
+## Version 3 — the organized form: a `context.py` module the loop consults
+
+### What changed from V2 to V3
 
 - The functions move out of the harness file into their own **`context.py` module**;
   the loop just imports and consults it before every API call — the same shape the
@@ -673,10 +701,6 @@ precious" yet. Version 3 fixes that with a recency window.
   including the tool round-trip in flight — are never shed.
 - After each call, `resp.usage` provides **ground-truth token counts** to check the
   estimate against.
-
----
-
-## Version 3 — the organized form: a `context.py` module the loop consults
 
 Nothing conceptually new at this rung — it's Version 2's functions, *organized*: moved
 into a module, hardened with exact counting, named constants, clipping, and a recency
@@ -695,7 +719,7 @@ are offline, so you can skip the install and keep going:
 pip install tiktoken
 ```
 
-`tiktoken` implements the same byte-pair encoding the OpenAI models use, so its counts match the API exactly (within rounding).
+`tiktoken` implements the same byte-pair encoding the OpenAI models use, so its counts match the API exactly (within rounding). (Its full API — the encodings, the lazy vocabulary download, the robust fallback pattern — is documented in the [Appendix's tokenizer section](./09-library-reference.md#2-tiktoken--local-token-counting).)
 
 **Why now?** Versions 1 and 2 used `len(text) // 4`. That's good enough for experimentation, but
 for a real harness you want exact counts so you don't compact too late. This function
@@ -875,7 +899,7 @@ def clip_output(text: str, max_tokens: int = MAX_TOOL_OUTPUT_TOKENS) -> str:
     return clipped + f"\n... [output truncated to ~{max_tokens} tokens]"
 ```
 
-**▶ Try it**
+### ▶ Check it now (no API key needed)
 
 ```python
 # Quick test — no API needed
@@ -1040,7 +1064,7 @@ def _find_call(items: list[dict[str, Any]], call_id: str) -> int | None:
     return None
 ```
 
-**▶ Try it** (no API needed)
+### ▶ Check it now (no API key needed)
 
 ```python
 # Quick check — build a transcript with tool calls and prune it
@@ -1111,13 +1135,19 @@ while True:
     # pass through clip_output(result) before being appended ...
 ```
 
-**▶ Run it now** — same conversation as before. With the real `INPUT_BUDGET` (≈124 k
+### ▶ Run it now
+
+Same conversation as before. With the real `INPUT_BUDGET` (≈124 k
 tokens) pruning won't fire in a short chat; to watch the same truncation behavior as V2,
 temporarily *replace the derived line* `INPUT_BUDGET = MAX_CONTEXT_TOKENS -
 RESPONSE_RESERVE` in `context.py` with `INPUT_BUDGET = 800` — now with the recency
 window keeping the latest round-trip intact. (Restore the derived line afterwards.)
 
-### What changed from V3 → V4
+---
+
+## Version 4 — `compact`: spend one API call to buy back context
+
+### What changed from V3 to V4
 
 - One new function in `context.py`: **`compact(conversation, client, model)`** — it
   spends *one extra API call* asking the model to summarize the older portion of the
@@ -1129,10 +1159,6 @@ window keeping the latest round-trip intact. (Restore the derived line afterward
 - The loop's pre-call check becomes two-tier: **compact at 75 % of budget** (preserve
   the gist), **prune as the fallback** (when the transcript is too short to compact).
 - Information is now *summarized* instead of *discarded* — old turns survive as gist.
-
----
-
-## Version 4 — `compact`: spend one API call to buy back context
 
 The phase's advanced rung. Pruning is free but lossy; compaction costs one API call and
 a few seconds, and in exchange the agent *remembers* what it did. Same harness, one new
@@ -1414,7 +1440,9 @@ def run_agent(
 
 The ordering matters: **check and compact first, then call the API.** Do not call the API and then compact; that wastes tokens and may fail if you are already over the limit.
 
-**▶ Run it now** — to see compaction fire without an hour-long session, temporarily set
+### ▶ Run it now
+
+To see compaction fire without an hour-long session, temporarily set
 `COMPACT_TRIGGER = 800` and `KEEP_RECENT_VERBATIM = 4`, chat for a few file-reading
 turns, and watch the `[compact]` lines appear. Then ask the agent what it did earlier:
 unlike pruning, it can answer from the summary.
@@ -1446,7 +1474,9 @@ Practical rules of thumb:
 - Intermediate results (e.g. grep output, compilation log): write to a temp file, return the path + a one-line summary.
 - Always-needed reference material (API docs, schema): inject once at session start in `instructions`, not as a tool call.
 
-**▶ Check:** after adding `clip_output` and the filesystem rule to your tools, run a
+### ▶ Check it now
+
+After adding `clip_output` and the filesystem rule to your tools, run a
 session and check `resp.usage.input_tokens` each turn. It should grow much more slowly
 than before.
 
@@ -1574,6 +1604,10 @@ The memory file is injected once into `instructions` — which is **outside** `i
 
 This is the consolidated module — Versions 3 and 4 in one file, the form that maps onto
 `code/agent_harness/context.py` in the tested package.
+
+> **Reference copy.** Assembled from Steps 3.1–4.1 unchanged (except: `compact` gains a
+> local `import openai` guard). Nothing new to type here — skim or skip. The maintained
+> version lives in [`code/agent_harness/context.py`](./code/agent_harness/context.py).
 
 > 🟢 One new bit of typing machinery appears in the imports below. The
 > `if TYPE_CHECKING:` block **never runs** — type checkers read it, Python skips it — so
@@ -1966,7 +2000,9 @@ def compact(
 
 ---
 
-## Summary
+## Key takeaways
+
+The five mechanisms at a glance:
 
 | Mechanism | When to use | Token cost | Information loss |
 |---|---|---|---|
@@ -1977,10 +2013,6 @@ def compact(
 | Persistent memory file | Cross-session facts | Small (injected in instructions) | None |
 
 With these five mechanisms layered in order, the harness can sustain arbitrarily long sessions without degrading or crashing — the difference between a demo and a tool you would trust with a real engineering task.
-
----
-
-## Key takeaways
 
 - **One core problem:** the transcript grows every turn, but the context window is
   finite — a long session *must* shed tokens without losing the thread.
@@ -2024,4 +2056,4 @@ See [`EXERCISES.md` — Phase 6](./EXERCISES.md) for hands-on practice:
 
 ---
 
-Proceed to **[Phase 7 — Sub-agents & orchestration](./07-subagents-orchestration.md)**, where the harness learns to delegate: a `task` tool that spins up a fresh agent with its own clean context — another way to keep the main window lean.
+**Next:** [Phase 7 — Sub-agents & orchestration](./07-subagents-orchestration.md), where the harness learns to delegate: a `task` tool that spins up a fresh agent with its own clean context — another way to keep the main window lean.

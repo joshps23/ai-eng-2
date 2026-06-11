@@ -1,3 +1,5 @@
+[← Phase 7: Sub-Agents & Orchestration](./07-subagents-orchestration.md) · [Guide index](./README.md) · [Appendix: Library Reference →](./09-library-reference.md)
+
 # Phase 8 — The Production Harness: Assembling Claude Code
 
 You have built every organ of the system. Phase 2 gave you tools and parallel dispatch. Phase 3 gave you conversation persistence and streaming. Phase 4 gave you real filesystem and shell tools. Phase 5 gave you permissions and hooks. Phase 6 gave you token budgeting and compaction. Phase 7 gave you agent orchestration and sub-agents.
@@ -33,10 +35,10 @@ gets its own rung-by-rung treatment below, exactly like the earlier phases:
 
 | New in this phase | Package module |
 |---|---|
-| Retry/backoff around `client.responses.create(...)` (Step 0 → §6) | `llm.py` |
+| Retry/backoff around `client.responses.create(...)` (Step 0 → §5) | `llm.py` |
 | `Settings` — configuration without magic constants (Step 2) | `config.py` |
 | The REPL / CLI entry point (Step 4) | `cli.py` |
-| `FakeClient` — testing the loop offline (§9) | `testing.py` |
+| `FakeClient` — testing the loop offline (§8) | `testing.py` |
 
 Each of these new pieces climbs its own *mini*-ladder inside this phase — first the
 plain-function form (V2 in the vocabulary you know), then, only where state demands it,
@@ -51,7 +53,7 @@ production listing so you always know where you are on the ladder.
 > package disagree, **the package is the source of truth** — it has the passing tests.
 >
 > **…and a note on method names.** The same applies to *interfaces*. The assembled
-> listings in §5 and §7 credit each line to the phase that taught the idea, but several
+> listings in Step 4 and §6 credit each line to the phase that taught the idea, but several
 > names and signatures are **aspirational** — written for this final shape, not the
 > exact APIs those phases literally built. If you assemble Phase 8 from your own
 > Phase 2–7 files, translate as you go:
@@ -90,13 +92,27 @@ A demo works when the network is fast, the model cooperates on the first try, no
 | **Testability** | Fake client, scripted tool calls, deterministic assertions |
 
 Each section below is a self-contained module. All of them plug into `agent_harness/`.
+(A note on numbering: §0–§1 set the stage, **Steps 0–4** build the new production pieces
+one at a time, and **§5–§10** harden, assemble, package, test, and close.)
+
+**Contents:**
+
+- [§0 — the ladder-to-package map](#0-youve-already-built-all-of-this--the-ladder-to-package-map)
+- [Step 0 — retry with backoff](#step-0--the-smallest-reliability-win-retry-with-backoff)
+- [Step 1 — observability](#step-1--observability-know-what-your-agent-is-doing)
+- [Step 2 — configuration](#step-2--configuration-no-more-magic-constants)
+- [Step 3 — system prompt engineering](#step-3--system-prompt-engineering)
+- [Step 4 — the CLI / REPL](#step-4--the-cli--repl-the-face-of-the-harness)
+- [§5 — reliability, production shape](#5-reliability-production-shape-llmpy) · [§6 — the definitive `run_turn`](#6-the-definitive-agentrun_turn-loop)
+- [§7 — packaging](#7-packaging-and-operations) · [§8 — testing the harness](#8-testing-the-harness)
+- [Graduation — run the real thing](#graduation--run-the-real-thing)
 
 ---
 
 > ## 🟢 Beginner track: this phase is polish, not new core ideas
 >
 > Take a breath — there's **no new agent concept** in Phase 8. The loop at the heart of
-> `run_turn` (§7) is the *same loop* you wrote in Phases 1–2: call the model, run the
+> `run_turn` (§6) is the *same loop* you wrote in Phases 1–2: call the model, run the
 > tools it asks for, feed results back, repeat until done. Everything else here is
 > *optional production polish* wrapped around that loop:
 >
@@ -126,6 +142,9 @@ Each section below is a self-contained module. All of them plug into `agent_harn
 >
 > Read this phase to understand *what a production harness adds and why*. You do not
 > need to build every module to have a working agent — you already do.
+>
+> One more thing you may have noticed: there are fewer green boxes from here on — not
+> because the material got harder, but because you know the patterns now.
 
 ---
 
@@ -157,10 +176,10 @@ That is it. The `2 ** attempt` pattern is called **exponential backoff**: each f
 Use `create_with_retry(client, model=..., input=..., tools=...)` anywhere the guide calls `client.responses.create(...)`. That one change captures 90% of the value of the much longer `llm.py` shown later.
 
 > **Which rung is this?** This is the **V2 — functions** rung of `llm.py`'s ladder: one
-> plain function, no classes, no decorators. §6 shows the hardened V2 form (smarter error
+> plain function, no classes, no decorators. §5 shows the hardened V2 form (smarter error
 > sorting, jitter, `Retry-After`), and the tested package takes one final small step to
 > **V3**: a tiny `LLMClient` class whose only state is *which client to wrap* — that
-> injectability is exactly what makes the offline `FakeClient` testing in §9 possible.
+> injectability is exactly what makes the offline `FakeClient` testing in §8 possible.
 
 ### ▶ Run it now
 
@@ -681,7 +700,7 @@ class Settings:
         """Merge values from an argparse Namespace, skipping None.
 
         NOTE: this relies on every *untyped* flag being None. Boolean
-        flags need ``default=None`` in the parser (see cli.py, Step 5) —
+        flags need ``default=None`` in the parser (see cli.py, Step 4) —
         argparse's store_true/store_false would otherwise default to
         False/True and look like an explicit user choice here.
         """
@@ -741,7 +760,7 @@ Any field you do not set stays at its default. The loop now reads `settings.max_
 One subtlety keeps the precedence chain honest for **booleans**: `apply_cli_args` skips
 only `None`, but argparse's `store_true`/`store_false` flags default to `False`/`True` —
 never `None` — so a flag the user *didn't type* would look like an explicit choice and
-silently override env-var and `.agentrc` values. The CLI in Step 5 therefore declares its
+silently override env-var and `.agentrc` values. The CLI in Step 4 therefore declares its
 boolean flags with `default=None`.
 
 ---
@@ -879,7 +898,7 @@ The full `cli.py` wires together everything built above. Read it as the final as
 > ladder; it is the **assembly floor** where the *top rungs you already built* get bolted
 > together. Watch the `main()` function: every object it constructs is a ladder-top from
 > the §0 map — `build_registry` (Phase 2 V4 + Phase 4 V3), `PermissionPolicy` (Phase 5 V3),
-> `Agent` (Phase 1 V3, grown up in §7), plus this phase's `Settings`, `Tracer`, and
+> `Agent` (Phase 1 V3, grown up in §6), plus this phase's `Settings`, `Tracer`, and
 > `SessionAccounting`. If you can name the phase each line comes from, you have absorbed
 > the whole guide.
 
@@ -1169,15 +1188,50 @@ if __name__ == "__main__":
 > then `args.model` will be `"gpt-4o"`. You can replicate the whole thing with
 > `sys.argv` and a dict; `argparse` just handles the parsing and `--help` for you.
 
+### ▶ Run it now
+
+This is the REPL you have spent eight phases earning — run it. The fastest route is the
+tested package, whose `cli.py` is the consolidated form of this listing (building from
+this phase's own listings instead works too, but needs the §8.0 layout to complete the
+imports):
+
+```bash
+cd code/
+pip install -e ".[dev]"
+agent-harness                 # or: python -m agent_harness.cli
+```
+
+One honest caveat first: **without `OPENAI_API_KEY` set, you don't get a REPL** — the
+CLI stops at `client = OpenAI()` with the SDK's missing-credentials error
+(`OpenAIError: The api_key client option must be set…`). That is expected, not a bug;
+[Phase 0's "No API key?" box](./00-foundations.md) explains how to follow the
+key-requiring checkpoints keyless (and the §8 test suite below runs fully offline).
+
+With a key, you should see:
+
+```text
+Agent ready. Type /help for commands. Ctrl-C cancels turn; Ctrl-D exits.
+You: /help
+Slash commands:
+  /help              Show this help
+  /clear             Start a new conversation (discards transcript)
+  ...
+You: List the files in this directory and pick the most interesting one.
+```
+
+Type `/help` first — every slash-command in it is a feature you built — then give it one
+real prompt and watch the full stack fire: permission gate, tool call, streamed answer.
+`/cost` shows you Step 1d's accounting; `/quit` exits.
+
 ---
 
-## 6. Reliability (Production Shape: `llm.py`)
+## 5. Reliability (Production Shape: `llm.py`)
 
 > **Which rung is this?** The listing below is the **hardened V2 — functions** form: the
 > same rung as Step 0, with better error sorting. It is a hardening pass, not a climb.
 > The consolidated package then makes one last short climb to **V3**: it wraps these
 > functions in an `LLMClient` class whose only state is the OpenAI client it holds —
-> so tests can hand it a `FakeClient` instead (§9). Same retry logic either way.
+> so tests can hand it a `FakeClient` instead (§8). Same retry logic either way.
 
 The `create_with_retry` function from Step 0 is the essential idea. The production `llm.py` below is the same idea with three additions:
 
@@ -1376,7 +1430,7 @@ def stream(
 
 Call sites replace bare `client.responses.create(...)` with `llm.create(client, ...)` and the streaming form `client.responses.create(..., stream=True)` with `llm.stream(client, ...)`.
 
-### 6.2 Timeouts and KeyboardInterrupt Handling
+### 5.2 Timeouts and KeyboardInterrupt Handling
 
 A long-running turn should not lock up the REPL. Wrap each turn in a try/except for `KeyboardInterrupt` and let the thread finish cleanly:
 
@@ -1405,7 +1459,7 @@ response = llm.create(
 )
 ```
 
-### 6.3 Idempotency and Crash Resumability
+### 5.3 Idempotency and Crash Resumability
 
 From Phase 3, `Conversation.save(path)` serialises `input_items` to JSON. Call it after every step:
 
@@ -1425,7 +1479,7 @@ On resume, the harness loads the transcript and prints a one-line summary (`"Res
 
 ---
 
-## 7. The Definitive `Agent.run_turn` Loop
+## 6. The Definitive `Agent.run_turn` Loop
 
 This is the fully-annotated reference implementation. It wires every middleware component in the correct order. Read it as the canonical specification.
 
@@ -1440,7 +1494,7 @@ This is the fully-annotated reference implementation. It wires every middleware 
 > | `self.policy.check(...)`, `run_pre_hooks` / `run_post_hooks` | Phase 5 V3/V4 (policy + hooks) |
 > | `self.estimate_tokens()` / `self.compact()` | Phase 6 (`count_tokens` → `compact`) |
 > | `ThreadPoolExecutor(...)` over approved calls | Phase 7 V4 (threaded dispatch) |
-> | `llm.create(...)` / `llm.stream(...)` | this phase, Step 0 → §6 |
+> | `llm.create(...)` / `llm.stream(...)` | this phase, Step 0 → §5 |
 >
 > Nothing in the body is new. If any line feels foreign, the table tells you which phase
 > to revisit — climb that ladder again and come back.
@@ -1526,7 +1580,7 @@ class Agent:
         the transcript.
 
         The model's output items arrive as SDK (pydantic) objects — and in
-        tests (§9) as dataclass fakes. If we appended them raw, the very
+        tests (§8) as dataclass fakes. If we appended them raw, the very
         next iteration's estimate_tokens() — json.dumps over the transcript
         — would raise TypeError, and conversation.save() would too.
         Normalizing at append time keeps the transcript JSON-serializable,
@@ -1536,7 +1590,7 @@ class Agent:
             return item
         if hasattr(item, "model_dump"):          # real SDK objects
             return item.model_dump()
-        if dataclasses.is_dataclass(item):       # test fakes (§9.2)
+        if dataclasses.is_dataclass(item):       # test fakes (§8.2)
             return dataclasses.asdict(item)
         return vars(item)                        # last resort
 
@@ -1821,7 +1875,7 @@ class Agent:
 
 ---
 
-## 8. Packaging and Operations
+## 7. Packaging and Operations
 
 ### Project Layout
 
@@ -1860,7 +1914,7 @@ trace.jsonl              # auto-saved event log (gitignore this)
 > survives as a small `UsageAccumulator` inside `agent.py` (the price table is an
 > extension you can add); `tracer.py`, `logging_config.py`, and `instructions.py` are
 > production extensions shown here, not separate package modules; and the package adds
-> `testing.py` — the fake client from §9. The **console-script name** maps too: the
+> `testing.py` — the fake client from §8. The **console-script name** maps too: the
 > tested package's `pyproject.toml` installs the command as **`agent-harness`**
 > (equivalently `python -m agent_harness.cli`) — wherever prose in this phase shortens
 > it to `agent`, that is the command it means. Compare for yourself: the real tree is in
@@ -1929,17 +1983,17 @@ The harness does not enforce sandboxing itself; that is an infrastructure concer
 
 ---
 
-## 9. Testing the Harness
+## 8. Testing the Harness
 
-### 9.0 Before You Run: the Layout and the Four Shim Modules
+### 8.0 Before You Run: the Layout and the Four Shim Modules
 
-The test files in §9.2–§9.3 are real, runnable code — but they import four modules
+The test files in §8.2–§8.3 are real, runnable code — but they import four modules
 this phase never prints: `permissions`, `hooks`, `conversation`, and `tools`. You
 *built* all four ideas in Phases 2, 3, and 5, under different spellings
 (`dispatch(name, arguments_str)`, a private `_items` list, `evaluate()` returning
 `ALLOW`/`DENY`/`ASK`). The listings below are the **aspirational interfaces from the
-§0 translation table**, written out as four tiny shims — just enough for §9's tests to
-pass against §7's `agent.py` exactly as printed. They are honest stand-ins, not the
+§0 translation table**, written out as four tiny shims — just enough for §8's tests to
+pass against §6's `agent.py` exactly as printed. They are honest stand-ins, not the
 real thing: the tested package spells each of these differently (and far more
 completely) in [`code/agent_harness/`](code/agent_harness/).
 
@@ -1951,17 +2005,17 @@ yourproject/
 ├── agent_harness/
 │   ├── __init__.py        # empty file is fine
 │   ├── accounting.py      # Step 1d
-│   ├── agent.py           # §7
+│   ├── agent.py           # §6
 │   ├── config.py          # Step 2 (keep its real `from .accounting import …` line)
-│   ├── llm.py             # §6
+│   ├── llm.py             # §5
 │   ├── tracer.py          # Step 1c
 │   ├── permissions.py     # shim — below
 │   ├── hooks.py           # shim — below
 │   ├── conversation.py    # shim — below
 │   └── tools.py           # shim — below
 └── tests/
-    ├── fake_client.py     # §9.2
-    └── test_agent_loop.py # §9.3
+    ├── fake_client.py     # §8.2
+    └── test_agent_loop.py # §8.3
 ```
 
 and run the tests **from the project root** (`yourproject/`):
@@ -2003,7 +2057,7 @@ class PermissionPolicy:
 ```
 
 ```python
-# agent_harness/hooks.py  (shim — Phase 5's hooks, as the two functions §7 imports)
+# agent_harness/hooks.py  (shim — Phase 5's hooks, as the two functions §6 imports)
 def run_pre_hooks(tool_name: str, args: dict) -> None:
     pass   # Phase 5's PreToolUse observers would fire here
 
@@ -2084,18 +2138,18 @@ class ToolRegistry:
 ```
 
 That is all four — under a hundred lines total, and each one is the smallest object
-honoring the interface §7's `agent.py` and §9.3's tests expect. When you outgrow them,
+honoring the interface §6's `agent.py` and §8.3's tests expect. When you outgrow them,
 either swap in your real Phase 2/3/5 modules (translating method names with the §0
 table) or read the package's `tools/`, `conversation.py`, `permissions.py`, and
 `hooks.py` for the production form of each.
 
-### 9.1 Guiding Principles
+### 8.1 Guiding Principles
 
 - **Unit-test tools directly**: call `read_file({"path": "..."})` and assert the output. No LLM involved.
 - **Mock the OpenAI client** for loop tests: return canned responses.
 - **Scripted tool calls**: make the fake model emit known `function_call` items so you can assert the tool was called and the result fed back correctly.
 
-### 9.2 A Fake Client
+### 8.2 A Fake Client
 
 > **Which rung is this?** You met the V1 of this idea back in Step 0's ▶ Run it now — a
 > fake client that fails twice then succeeds, written inline to test retry. This is its
@@ -2165,10 +2219,10 @@ class FakeClient:
         self.responses = FakeResponses(script)
 ```
 
-### 9.3 A Loop Test
+### 8.3 A Loop Test
 
 This test drives a full two-iteration loop — and it passes only because `run_turn`
-normalizes output items at append time (`_to_dict`, §7): the `FakeFunctionCall` /
+normalizes output items at append time (`_to_dict`, §6): the `FakeFunctionCall` /
 `FakeMessage` dataclasses above enter the transcript as plain dicts (via
 `dataclasses.asdict`), so the second iteration's `estimate_tokens()` — a `json.dumps`
 of the whole transcript — and `conversation.save()` work instead of raising
@@ -2326,11 +2380,22 @@ def test_tool_error_does_not_crash_loop():
         assert any("Error" in o["output"] for o in outputs)
 ```
 
+### ▶ Run it now (no API key needed)
+
 Run from the project root — the directory containing both `agent_harness/` and
-`tests/`, laid out as in §9.0:
+`tests/`, laid out as in §8.0:
 
 ```bash
 python -m pytest tests/ -v
+```
+
+You should see:
+
+```text
+tests/test_agent_loop.py::test_tool_call_loop PASSED
+tests/test_agent_loop.py::test_tool_error_does_not_crash_loop PASSED
+
+============================== 2 passed ==============================
 ```
 
 (The `python -m` form guarantees pytest runs under the same interpreter you installed the
@@ -2344,7 +2409,7 @@ because every test drives the real `Agent` through the scripted `FakeClient` in
 
 ---
 
-## 10. Where to Go Next
+## 9. Where to Go Next
 
 **Evals and benchmarks.** Attach [SWE-bench](https://swe-bench.github.io/) or a custom task suite to your harness. Score the agent on real codebases. Evals catch regressions from prompt or model changes before they hit users.
 
@@ -2358,7 +2423,7 @@ because every test drives the real `Agent` through the scripted `FakeClient` in
 
 ---
 
-## 11. Closing Recap — Production Properties to Phases
+## 10. Closing Recap — Production Properties to Phases
 
 | Production property | Foundation phase |
 |---|---|
@@ -2374,7 +2439,54 @@ Every abstraction introduced in earlier phases was chosen so it would slot clean
 
 The result is a harness where each concern is isolated, each component is testable independently, and the whole thing behaves predictably under the conditions that actually matter in production: slow networks, large files, adversarial model outputs, and impatient users who press Ctrl-C.
 
-### What you'll have built — the final checklist
+---
+
+## Pitfalls
+
+> **Watch out for these common mistakes.**
+
+| Pitfall | Consequence | Fix |
+|---|---|---|
+| Appending raw SDK objects (or test fakes) to the transcript | The next iteration's `estimate_tokens()` — and `conversation.save()` — `json.dumps` the transcript and raise `TypeError: Object of type … is not JSON serializable` | Normalize at append time: `model_dump()` for SDK objects, `dataclasses.asdict` for dataclass fakes (the `_to_dict` helper in §6) |
+| Declaring boolean CLI flags with argparse's natural defaults (`store_true` → `False`, `store_false` → `True`) | A flag the user never typed looks like an explicit choice, so `apply_cli_args` silently overrides env vars and `.agentrc` — the documented precedence chain breaks for `verbose`/`debug`/`stream` | Give boolean flags `default=None`; `apply_cli_args` only merges non-`None` values |
+| Sleeping after the *final* failed retry attempt | The harness waits the longest backoff (16 s and up) only to raise anyway — pure dead time | `break` out of the retry loop before sleeping when no attempts remain (Step 0 and §5 both guard this) |
+| Misreading `for … else` in `run_turn` as error handling | You expect the `else:` branch on exceptions; it actually runs when the loop exhausts `max_iterations` without `break` | Read `for … else` as "for … *no-break*" — see the 🟢 gloss after the §6 listing |
+| Building Phase 8 against this phase's aspirational interfaces | A wall of `AttributeError`s (`registry.call`, `Decision.ESCALATE`, instance `conversation.load`, …) when assembling from your real Phase 2–7 code | Use the §0 method-name translation table (§8.0 writes it out as four runnable shim modules), or build against the tested package in `code/agent_harness/` |
+
+---
+
+## Key takeaways
+
+- The gap between a **demo and a production harness** is *not* new agent ideas — it's
+  **reliability, observability, configuration, and clean packaging** around the same loop.
+- **Reliability:** retry transient/rate-limit errors with **exponential backoff**, cap
+  iterations, and handle **Ctrl-C** gracefully.
+- **Observability:** **structured logging** of tool calls, timings, and failures lets you
+  see *inside* a run and debug it.
+- It all assembles into **one CLI** (`argparse`) over the `Conversation`, `ToolRegistry`,
+  and `PermissionPolicy` you've built since Phase 1 — each a separately testable piece.
+
+## Check yourself
+
+1. Name two things that separate a production harness from a demo.
+2. What technique rides out a transient `RateLimitError`?
+3. What does structured logging buy you operationally?
+4. Is this phase mostly new concepts, or hardening of the existing loop?
+
+<details><summary>Answers</summary>
+
+1. Any two of: **retries/reliability**, **observability/logging**, **configuration**, and
+   **packaging/CLI**.
+2. **Retry with exponential backoff** (wait 1s, 2s, 4s… between attempts).
+3. **Visibility** — which tools ran, how long they took, and what failed — so you can
+   diagnose problems instead of guessing.
+4. **Hardening and assembly.** The agent ideas are already in place; Phase 8 makes them
+   reliable, observable, and shippable.
+</details>
+
+---
+
+## What you'll have built — the final checklist
 
 Tick these off. Each line is a capability of the finished harness, the phase whose ladder
 taught it, and the module of the tested package
@@ -2409,49 +2521,35 @@ Claude Code — and you understand every line of it.
 
 ---
 
-## Pitfalls
+## Graduation — run the real thing
 
-> **Watch out for these common mistakes.**
+Don't close the tab on a checklist — close it on a running agent. The consolidated
+package is the maintained form of everything you just built, and it installs, runs, and
+proves itself in three commands:
 
-| Pitfall | Consequence | Fix |
-|---|---|---|
-| Appending raw SDK objects (or test fakes) to the transcript | The next iteration's `estimate_tokens()` — and `conversation.save()` — `json.dumps` the transcript and raise `TypeError: Object of type … is not JSON serializable` | Normalize at append time: `model_dump()` for SDK objects, `dataclasses.asdict` for dataclass fakes (the `_to_dict` helper in §7) |
-| Declaring boolean CLI flags with argparse's natural defaults (`store_true` → `False`, `store_false` → `True`) | A flag the user never typed looks like an explicit choice, so `apply_cli_args` silently overrides env vars and `.agentrc` — the documented precedence chain breaks for `verbose`/`debug`/`stream` | Give boolean flags `default=None`; `apply_cli_args` only merges non-`None` values |
-| Sleeping after the *final* failed retry attempt | The harness waits the longest backoff (16 s and up) only to raise anyway — pure dead time | `break` out of the retry loop before sleeping when no attempts remain (Step 0 and §6 both guard this) |
-| Misreading `for … else` in `run_turn` as error handling | You expect the `else:` branch on exceptions; it actually runs when the loop exhausts `max_iterations` without `break` | Read `for … else` as "for … *no-break*" — see the 🟢 gloss after the §7 listing |
-| Building Phase 8 against this phase's aspirational interfaces | A wall of `AttributeError`s (`registry.call`, `Decision.ESCALATE`, instance `conversation.load`, …) when assembling from your real Phase 2–7 code | Use the §0 method-name translation table (§9.0 writes it out as four runnable shim modules), or build against the tested package in `code/agent_harness/` |
+```bash
+cd code/
+pip install -e ".[dev]"     # one-time install (pulls openai + pytest)
+agent-harness               # the REPL you built — or: python -m agent_harness.cli
+                            # (no OPENAI_API_KEY? you'll meet the missing-credentials
+                            #  error from Step 4's checkpoint — the next command needs
+                            #  no key at all)
+python -m pytest -q         # the full suite: 56 passed, fully offline
+```
 
----
+That quiet green `56 passed` is the whole guide in one line: your seven ladders,
+assembled and proven, without a single network call.
 
-## Key takeaways
+Where to from here — three good next steps:
 
-- The gap between a **demo and a production harness** is *not* new agent ideas — it's
-  **reliability, observability, configuration, and clean packaging** around the same loop.
-- **Reliability:** retry transient/rate-limit errors with **exponential backoff**, cap
-  iterations, and handle **Ctrl-C** gracefully.
-- **Observability:** **structured logging** of tool calls, timings, and failures lets you
-  see *inside* a run and debug it.
-- It all assembles into **one CLI** (`argparse`) over the `Conversation`, `ToolRegistry`,
-  and `PermissionPolicy` you've built since Phase 1 — each a separately testable piece.
-
-## Check yourself
-
-1. Name two things that separate a production harness from a demo.
-2. What technique rides out a transient `RateLimitError`?
-3. What does structured logging buy you operationally?
-4. Is this phase mostly new concepts, or hardening of the existing loop?
-
-<details><summary>Answers</summary>
-
-1. Any two of: **retries/reliability**, **observability/logging**, **configuration**, and
-   **packaging/CLI**.
-2. **Retry with exponential backoff** (wait 1s, 2s, 4s… between attempts).
-3. **Visibility** — which tools ran, how long they took, and what failed — so you can
-   diagnose problems instead of guessing.
-4. **Hardening and assembly.** The agent ideas are already in place; Phase 8 makes them
-   reliable, observable, and shippable.
-</details>
-
----
+- **[Appendix: Library Reference](./09-library-reference.md)** — the lookup companion
+  for the four libraries underneath everything (`openai`, `tiktoken`,
+  `concurrent.futures`, `subprocess`). It is not a ninth phase; keep it open while you
+  build.
+- **[The Capstone exercise](./EXERCISES.md#capstone)** — one project that exercises
+  every phase at once, now that you have all the parts.
+- **[code/README.md](./code/README.md)** — the maintained version of everything built
+  here, with the name-by-name map from guide listings to package modules. When your
+  code and a guide snippet disagree, this is the source of truth.
 
 *End of Phase 8 — and of the guide. You now have a complete, from-scratch implementation of a production coding agent in pure Python.*
