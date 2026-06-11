@@ -194,7 +194,30 @@ Hello there! How are you?
 ```
 
 The exact words vary, but if any five-word greeting appears your API key is valid
-and the client is wired up correctly. Move on only once this works.
+and the client is wired up correctly. If you have a key, get this working before
+moving on — every later checkpoint builds on it. If you don't have a key, see the
+box below: you can still finish every phase.
+
+> 🟢 **No API key? You can still do this guide.** The ▶ Run-it-now scripts call the
+> real API, so without a key they stop immediately with
+> `openai.OpenAIError: Missing credentials` — raised at the `client = OpenAI()`
+> line, *before* any request is even sent. That's expected, and it doesn't lock you
+> out. Use these checkpoints instead:
+>
+> 1. **Read the expected output.** Every ▶ checkpoint shows exactly what success
+>    looks like. Trace the code against that output until you could have predicted
+>    it — that's the same understanding the run would have confirmed.
+> 2. **Run the offline test suite.** From `code/`:
+>    `pip install -e ".[dev]"` once, then `python -m pytest -q` — 56 tests exercise
+>    the same loop, tool handshake, and conversation logic, with **no key and no
+>    network**.
+> 3. **Curious how offline tests are possible?** `code/agent_harness/testing.py`
+>    defines a `FakeClient` that scripts exact Responses-API replies. It works
+>    because the package injects its client instead of calling `OpenAI()` directly
+>    — a design choice Phase 8 returns to.
+>
+> Wherever a checkpoint says "once this works," keyless readers can read it as:
+> "once you could predict the output shown."
 
 ### 0.3.3 Step 2 — `input` as a list of items
 

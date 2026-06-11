@@ -123,6 +123,8 @@ while True:
         })
 ```
 
+> 🟢 **Two small bits of new syntax in Version 1.** (1) `args.get("timezone", "")` reads the `"timezone"` key out of the dict, falling back to `""` if the model omitted it — that's why an empty string means UTC. (2) `[item for item in resp.output if item.type == "function_call"]` is a **list comprehension** — a compact way to filter a list. It's identical to writing a `for` loop with an `if` inside that calls `.append()`. See [`BEGINNER-NOTES.md`](./BEGINNER-NOTES.md) for the full list.
+
 **▶ Run it now**
 
 ```text
@@ -140,7 +142,13 @@ Assistant: The current time in Tokyo is 10:47 PM on Saturday, June 6, 2026 (JST)
 
 The `[tool]` line is printed by your harness — it's not part of the model's response. You can watch the call/result cycle directly.
 
-> 🟢 **Two small bits of new syntax in Version 1.** (1) `args.get("timezone", "")` reads the `"timezone"` key out of the dict, falling back to `""` if the model omitted it — that's why an empty string means UTC. (2) `[item for item in resp.output if item.type == "function_call"]` is a **list comprehension** — a compact way to filter a list. It's identical to writing a `for` loop with an `if` inside that calls `.append()`. See [`BEGINNER-NOTES.md`](./BEGINNER-NOTES.md) for the full list.
+> 🟢 **No API key?** This script (like every ▶ checkpoint in this phase) calls the real
+> API, so without a key it stops at `openai.OpenAIError: Missing credentials`, raised
+> on the `client = OpenAI()` line before any request is made. That's expected — see
+> the **"No API key?" box in [Phase 0](./00-foundations.md)** for the offline
+> alternatives: read the expected output and trace the code against it, run the
+> offline test suite (`python -m pytest -q` from `code/`), or peek at the `FakeClient`
+> in `code/agent_harness/testing.py`.
 
 That's the whole loop. There is genuinely nothing else: ask the model, run any tools it asked for, append the results, ask again. Everything that follows in this phase is the *same* program, reorganized to be more robust and more pleasant to grow.
 
@@ -193,7 +201,7 @@ def get_current_time(timezone=""):
 
 > 🟢 **The `**args` in `get_current_time(**args)`** "spreads" a dict into named arguments, so `get_current_time(**{"timezone": "Asia/Tokyo"})` is exactly the same as `get_current_time(timezone="Asia/Tokyo")`. This is why the model's JSON arguments can drive a normal Python function directly. See [`BEGINNER-NOTES.md`](./BEGINNER-NOTES.md) for more.
 
-**▶ Run it now** — the output is identical to Version 1. Bonus check: open a Python shell and call `get_current_time("Europe/London")` directly. The tool now exists independently of the agent.
+**▶ Run it now** — the output is identical to Version 1. Bonus check: open a Python shell, paste the three-line function in, and call `get_current_time("Europe/London")` directly. The tool now exists independently of the agent. (Paste rather than `import bare_harness`: importing the file also executes its module-level `client = OpenAI()` line, which needs your API key set — see the note in §5.)
 
 ### Step 2 — Extract a `dispatch` helper
 
@@ -347,7 +355,7 @@ Without a cap, a model stuck in a reasoning loop or a buggy tool that always ret
 
 ## 5. The Complete File (Version 2, Polished)
 
-At this point you already have a working harness. The file below is the **same thing, tidied up**: imports grouped at the top, a `SYSTEM_PROMPT` added, `KeyboardInterrupt` handled gracefully, and `if __name__ == "__main__":` added so the file can be imported without running. Nothing here is conceptually new. This is the polished end-state of Version 2 — keep it as your reference copy.
+At this point you already have a working harness. The file below is the **same thing, tidied up**: imports grouped at the top, a `SYSTEM_PROMPT` added, `KeyboardInterrupt` handled gracefully, and `if __name__ == "__main__":` added so that importing the file doesn't start the REPL. (One honest caveat: `client = OpenAI()` still runs at module level, so importing this file *does* still require `OPENAI_API_KEY` to be set — `OpenAI()` raises `openai.OpenAIError: Missing credentials` without it. Version 3 below avoids this by building the client inside `main()`; the same trick works here if you ever need a key-free import.) Nothing here is conceptually new. This is the polished end-state of Version 2 — keep it as your reference copy.
 
 ```python
 #!/usr/bin/env python3
@@ -689,7 +697,8 @@ The second question does not call `get_current_time` at all — the model answer
 | **Returning a non-string from a tool** | The `output` field of `function_call_output` must be a string. Returning an `int`, `dict`, or `None` causes a type error. | Always `return str(...)` or `return json.dumps(...)` from your tool functions. |
 | **No `MAX_ITERATIONS` cap** | A buggy tool that always errors will loop forever, consuming API quota until you kill the process. | Replace `while True` with `for _ in range(MAX_ITERATIONS)` and print a warning when the cap fires. |
 | **Raising an exception from a tool** | Without `try/except`, an unhandled exception kills the whole program with no answer for the user. | Wrap all tool logic in `try/except Exception` and return the error as a string; let the model decide what to do with it. |
-| **Forgetting to export `OPENAI_API_KEY`** | `openai.AuthenticationError` on the first `responses.create` call. | Run `export OPENAI_API_KEY=sk-...` in the same terminal session before running the script. |
+| **Forgetting to export `OPENAI_API_KEY`** | `openai.OpenAIError: Missing credentials` raised at the `client = OpenAI()` line — *before* any request is sent, so the traceback points at the client construction, not at `responses.create`. | Run `export OPENAI_API_KEY=sk-...` in the same terminal session before running the script. |
+| **Key set but wrong/revoked** | `openai.AuthenticationError` (HTTP 401) on the first `responses.create` call — construction succeeds, the API rejects the request. | Re-check `echo $OPENAI_API_KEY`; regenerate the key in your OpenAI dashboard if unsure. |
 | **Using Python < 3.9** | `zoneinfo` is not available; you get `ModuleNotFoundError`. | Run `python --version`. If you see < 3.9, install `backports.zoneinfo` and import from there, or upgrade Python. |
 
 ---
