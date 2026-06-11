@@ -376,7 +376,8 @@ def count_items(items):
 > 🟢 `json.dumps(item)` turns a dict into its JSON text so we can measure its length.
 > For this to work on *every* item, the harness below converts the SDK objects in
 > `resp.output` to plain dicts with **`item.model_dump()`** as it appends them — the
-> same normalization trick `Conversation.to_input_dict()` uses in Phase 3.
+> same normalization trick `Conversation.to_input()` uses in Phase 3. (The tested
+> package's `conversation.py` spells the same method `to_input_dict()`.)
 
 **▶ Run it now** (offline)
 
@@ -681,7 +682,9 @@ where the `Agent` consults the context helpers at the top of every turn.
 
 The API returns ground-truth token counts in `resp.usage` after each call, but we also need *local* estimates to decide whether to compact *before* the next API call.
 
-First, install tiktoken:
+First, install tiktoken — this step is **optional**: as the next paragraph explains, the
+code below falls back to the divide-by-4 heuristic whenever tiktoken is missing or you
+are offline, so you can skip the install and keep going:
 
 ```text
 pip install tiktoken
@@ -748,6 +751,11 @@ except ImportError:
     def count_tokens(text: str) -> int:  # type: ignore[misc]
         return _heuristic(text)
 ```
+
+> 🟢 The comment `# type: ignore[misc]` is for **type checkers only** — Python itself
+> ignores it. It silences the checker's complaint that `count_tokens` is defined twice
+> (once in the `try`, once in the `except`); at runtime exactly one of the two
+> definitions exists, which is the whole point of the fallback.
 
 ### Step 3.2 — `count_items` — serialise the transcript
 
@@ -873,11 +881,12 @@ print(f"Clipped:  ~{count_tokens(safe_output)} tokens")
 print("Last line:", safe_output.splitlines()[-1])
 ```
 
-Expected output:
+Expected output (with the heuristic counter — exact numbers vary slightly with
+tiktoken installed):
 
 ```
 Original: ~3750 tokens
-Clipped:  ~2003 tokens
+Clipped:  ~2009 tokens
 Last line: ... [output truncated to ~2000 tokens]
 ```
 
@@ -1077,9 +1086,10 @@ while True:
 ```
 
 **▶ Run it now** — same conversation as before. With the real `INPUT_BUDGET` (≈124 k
-tokens) pruning won't fire in a short chat; temporarily set `INPUT_BUDGET = 800` in
-`context.py` to watch the same truncation behavior as V2, now with the recency window
-keeping the latest round-trip intact.
+tokens) pruning won't fire in a short chat; to watch the same truncation behavior as V2,
+temporarily *replace the derived line* `INPUT_BUDGET = MAX_CONTEXT_TOKENS -
+RESPONSE_RESERVE` in `context.py` with `INPUT_BUDGET = 800` — now with the recency
+window keeping the latest round-trip intact. (Restore the derived line afterwards.)
 
 ### What changed from V3 → V4
 
@@ -1141,8 +1151,7 @@ Include ALL of the following that are present:
    reference going forward.
 
 Format as terse bullet points under those headings. Do not include conversational \
-filler. Do not truncate any heading just because it is empty — omit empty headings \
-entirely. Maximum 600 tokens.
+filler. Omit any heading whose content is empty. Maximum 600 tokens.
 """
 ```
 
@@ -1364,7 +1373,12 @@ def run_agent(
         # … process resp.output, append items, handle tool calls …
         # (see Phase 2 / Phase 3 for the full turn-processing code)
 
-        if _is_done(resp):
+        # Done when the model issued no function_call items this turn —
+        # the same stop condition every loop in this guide has used.
+        if not any(
+            getattr(item, "type", None) == "function_call"
+            for item in resp.output
+        ):
             break
 ```
 
@@ -1530,6 +1544,13 @@ The memory file is injected once into `instructions` — which is **outside** `i
 
 This is the consolidated module — Versions 3 and 4 in one file, the form that maps onto
 `code/agent_harness/context.py` in the tested package.
+
+> 🟢 One new bit of typing machinery appears in the imports below. The
+> `if TYPE_CHECKING:` block **never runs** — type checkers read it, Python skips it — so
+> we can name the `openai` and `Conversation` types in annotations without importing
+> those modules at runtime. That is also why the annotations are *quoted strings*
+> (`"Conversation"`, `"openai.OpenAI"`): the names don't exist when Python defines the
+> function, but a string annotation is fine — only the type checker ever resolves it.
 
 ```python
 # context.py
@@ -1778,8 +1799,8 @@ Include ALL of the following that are present:
 6. **Critical file paths / identifiers** — anything the agent will need to \
    reference going forward.
 
-Format as terse bullet points under those headings. Omit any heading whose \
-content is empty. Maximum 600 tokens.\
+Format as terse bullet points under those headings. Do not include conversational \
+filler. Omit any heading whose content is empty. Maximum 600 tokens.\
 """
 
 KEEP_RECENT_VERBATIM = 10

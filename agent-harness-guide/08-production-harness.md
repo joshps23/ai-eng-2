@@ -49,6 +49,24 @@ production listing so you always know where you are on the ladder.
 > you go looking in `code/agent_harness/`, use the tables above (and the mapping table
 > in [`code/README.md`](code/README.md)) as your index. When a snippet here and the
 > package disagree, **the package is the source of truth** — it has the passing tests.
+>
+> **…and a note on method names.** The same applies to *interfaces*. The assembled
+> listings in §5 and §7 credit each line to the phase that taught the idea, but several
+> names and signatures are **aspirational** — written for this final shape, not the
+> exact APIs those phases literally built. If you assemble Phase 8 from your own
+> Phase 2–7 files, translate as you go:
+>
+> | Phase 8 writes | The phase it credits actually built |
+> |---|---|
+> | `registry.call(name, args)` | Phase 2's `registry.dispatch(name, arguments_str)` (Phase 7's bridge adds `get` / `schemas` / `dispatch_parallel`, not `call`) |
+> | `run_pre_hooks(...)` / `run_post_hooks(...)` | Phase 5's `run_pre(ctx)` / `run_post(ctx)` methods |
+> | `PermissionPolicy(mode=...).check(...)` with `Decision.ESCALATE` | Phase 5's `PermissionPolicy(rules=[...]).evaluate(...)` with `ALLOW` / `DENY` / `ASK` |
+> | `build_registry(workspace_root=...)` | Phase 2/5's `build_registry()` — no arguments |
+> | public `conversation.items` + instance `conversation.load(path)` | Phase 3's private `_items` + `load` as a *classmethod* returning a new `Conversation` |
+> | `compact_conversation(client, model, items)` from `compaction.py` | Phase 6's `compact(conversation, client, model)` in `context.py` |
+>
+> Same ideas, idealized spellings — either works; pick one and stay consistent. The
+> tested package settles each of these definitively in `code/agent_harness/`.
 
 If you can read each row of the first table and picture the code you wrote for it, you
 are ready. The rest of this phase adds the second table's modules one step at a time,
@@ -88,7 +106,7 @@ Each section below is a self-contained module. All of them plug into `agent_harn
 >   hardcoding them.
 > - **Cost accounting** — add up tokens × price.
 > - **CLI** (`cli.py`) — the `You: ` prompt loop and `/help`-style commands.
-> - **Packaging** (`pyproject.toml`) — so you can type `agent` to start it.
+> - **Packaging** (`pyproject.toml`) — so you can type `agent-harness` to start it.
 >
 > You can run the agent with **none** of this. We will add each piece one at a time,
 > starting with the single most useful piece — retry — written with only the things
@@ -126,13 +144,15 @@ def create_with_retry(client, **kwargs):
         try:
             return client.responses.create(**kwargs)
         except Exception as exc:
-            wait = 2 ** attempt          # 1s, 2s, 4s, 8s, 16s
+            if attempt == 4:             # that was the last attempt —
+                break                    # don't sleep just to give up
+            wait = 2 ** attempt          # 1s, 2s, 4s, 8s
             print(f"API error ({exc}); retrying in {wait}s…")
             time.sleep(wait)
     raise RuntimeError("API still failing after 5 tries")
 ```
 
-That is it. The `2 ** attempt` pattern is called **exponential backoff**: each failure waits twice as long as the last, giving the server time to recover.
+That is it. The `2 ** attempt` pattern is called **exponential backoff**: each failure waits twice as long as the last, giving the server time to recover. (The `if attempt == 4: break` guard matters: without it, the function would sleep a final 16 s after the *last* failure — pure dead time before raising anyway.)
 
 Use `create_with_retry(client, model=..., input=..., tools=...)` anywhere the guide calls `client.responses.create(...)`. That one change captures 90% of the value of the much longer `llm.py` shown later.
 
@@ -173,6 +193,8 @@ def create_with_retry(client, **kwargs):
         try:
             return client.responses.create(**kwargs)
         except Exception as exc:
+            if attempt == 4:
+                break
             wait = 2 ** attempt
             print(f"API error ({exc}); retrying in {wait}s…")
             time.sleep(wait)
@@ -656,7 +678,13 @@ class Settings:
                 setattr(self, key, value)
 
     def apply_cli_args(self, args: Any) -> None:
-        """Merge values from an argparse Namespace, skipping None."""
+        """Merge values from an argparse Namespace, skipping None.
+
+        NOTE: this relies on every *untyped* flag being None. Boolean
+        flags need ``default=None`` in the parser (see cli.py, Step 5) —
+        argparse's store_true/store_false would otherwise default to
+        False/True and look like an explicit user choice here.
+        """
         for attr in vars(self):
             cli_val = getattr(args, attr, None)
             if cli_val is not None:
@@ -692,6 +720,13 @@ An example `.agentrc` file at the project root:
 
 ### ▶ Run it now
 
+One pasteability note first: the listing opens with `from .accounting import
+DEFAULT_PRICE_TABLE` — a *relative* import that only works when `config.py` lives
+inside a package directory (one with an `__init__.py`, like `agent_harness/`) and you
+import it as `from agent_harness.config import Settings`. To paste-test it as a **lone
+file**, replace that one line with `DEFAULT_PRICE_TABLE: dict = {}` — the price table
+only matters for Step 1's cost accounting, not for this check:
+
 ```python
 import os
 os.environ["AGENT_MODEL"] = "gpt-4o"
@@ -702,6 +737,12 @@ print(settings.max_iterations) # 100  (default)
 ```
 
 Any field you do not set stays at its default. The loop now reads `settings.max_iterations` instead of the magic constant `100`.
+
+One subtlety keeps the precedence chain honest for **booleans**: `apply_cli_args` skips
+only `None`, but argparse's `store_true`/`store_false` flags default to `False`/`True` —
+never `None` — so a flag the user *didn't type* would look like an explicit choice and
+silently override env-var and `.agentrc` values. The CLI in Step 5 therefore declares its
+boolean flags with `default=None`.
 
 ---
 
@@ -896,11 +937,14 @@ def make_parser() -> argparse.ArgumentParser:
                    help="Permission mode")
     p.add_argument("--workspace", dest="workspace_root", metavar="DIR",
                    help="Workspace root directory")
+    # Boolean flags: default=None is load-bearing. apply_cli_args treats
+    # None as "flag not typed"; argparse's normal store_true/store_false
+    # defaults (False/True) would silently override env vars and .agentrc.
     p.add_argument("--no-stream", dest="stream", action="store_false",
-                   help="Disable streaming output")
-    p.add_argument("--verbose", action="store_true",
+                   default=None, help="Disable streaming output")
+    p.add_argument("--verbose", action="store_true", default=None,
                    help="INFO-level logging")
-    p.add_argument("--debug", action="store_true",
+    p.add_argument("--debug", action="store_true", default=None,
                    help="DEBUG-level logging")
     p.add_argument("--max-iterations", type=int, metavar="N",
                    help="Hard limit on agent loop iterations")
@@ -1136,6 +1180,8 @@ The `create_with_retry` function from Step 0 is the essential idea. The producti
 2. It honours the `Retry-After` header that rate-limit responses sometimes include.
 3. It adds jitter (a small random amount) to the backoff delay so that multiple agents do not all retry at exactly the same moment.
 
+It keeps Step 0's guard, too: when the *final* attempt fails, it raises immediately rather than sleeping one last backoff for nothing (the tested package's `llm.py` does the same).
+
 ```python
 # agent_harness/llm.py
 """
@@ -1199,9 +1245,9 @@ def _is_retryable(exc: Exception) -> bool:
 def _retry_after(exc: Exception) -> float | None:
     """Return the Retry-After value in seconds if present, else None."""
     if isinstance(exc, RateLimitError):
-        headers = getattr(exc, "response", None)
-        if headers is not None:
-            raw = headers.headers.get("retry-after")
+        response = getattr(exc, "response", None)
+        if response is not None:
+            raw = response.headers.get("retry-after")
             if raw is not None:
                 try:
                     return float(raw)
@@ -1252,6 +1298,8 @@ def create(
             if not _is_retryable(exc):
                 log.error("Non-retryable error: %s", exc)
                 raise
+            if attempt + 1 == max_attempts:
+                break  # out of attempts — raise below, don't sleep first
 
             wait = _retry_after(exc) or _backoff(attempt, base_delay, max_delay, jitter)
             log.warning(
@@ -1306,6 +1354,8 @@ def stream(
             last_exc = exc
             if not _is_retryable(exc):
                 raise
+            if attempt + 1 == max_attempts:
+                break  # out of attempts — raise below, don't sleep first
 
             wait = _retry_after(exc) or _backoff(attempt, base_delay, max_delay, jitter)
             log.warning(
@@ -1401,7 +1451,7 @@ Middleware order (per iteration):
   2. Append pending tool results (from prior iteration)
   3. Stream LLM turn (with retry via llm.py)
   4. Record usage in accounting
-  5. Carry output items into next input
+  5. Carry output items into next input (normalized to plain dicts)
   6. For each function_call item in output:
        a. Pre-use hooks
        b. Permission gate (approve / deny / escalate to user)
@@ -1415,6 +1465,7 @@ Middleware order (per iteration):
 
 from __future__ import annotations
 
+import dataclasses
 import json
 import logging
 import time
@@ -1461,10 +1512,36 @@ class Agent:
         self.turn_count = 0
 
     # ------------------------------------------------------------------
+    # Item normalization — Phase 3 / Phase 6's model_dump() habit
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _to_dict(item: Any) -> dict[str, Any]:
+        """Normalize one output item to a plain dict before it enters
+        the transcript.
+
+        The model's output items arrive as SDK (pydantic) objects — and in
+        tests (§9) as dataclass fakes. If we appended them raw, the very
+        next iteration's estimate_tokens() — json.dumps over the transcript
+        — would raise TypeError, and conversation.save() would too.
+        Normalizing at append time keeps the transcript JSON-serializable,
+        exactly the trick Phases 3 and 6 taught.
+        """
+        if isinstance(item, dict):
+            return item
+        if hasattr(item, "model_dump"):          # real SDK objects
+            return item.model_dump()
+        if dataclasses.is_dataclass(item):       # test fakes (§9.2)
+            return dataclasses.asdict(item)
+        return vars(item)                        # last resort
+
+    # ------------------------------------------------------------------
     # Token estimation (rough; use tiktoken in production)
     # ------------------------------------------------------------------
 
     def estimate_tokens(self) -> int:
+        # Safe to json.dumps: _to_dict() guarantees every appended item
+        # is a plain dict.
         raw = json.dumps(self.conversation.items)
         return len(raw) // 4  # ~4 chars per token
 
@@ -1569,9 +1646,11 @@ class Agent:
 
             # ── Step 5: Carry output items into transcript ────────────
             # The Responses API returns output as a list of typed items.
-            # Append them so future turns see the model's prior output.
+            # Append them — normalized to plain dicts via _to_dict() — so
+            # future turns see the model's prior output AND the transcript
+            # stays JSON-serializable for estimate_tokens()/save().
             for item in resp.output:
-                self.conversation.items.append(item)
+                self.conversation.items.append(self._to_dict(item))
 
             # Collect assistant text for the final return value.
             function_calls = []
@@ -1727,6 +1806,14 @@ class Agent:
         return answer in ("y", "yes")
 ```
 
+> 🟢 **`for … else` is not "on error".** The `else:` clause hanging off `run_turn`'s
+> `for iteration in range(...)` loop runs only if the loop finished **without hitting
+> `break`** — read it as "for … no-break". The loop `break`s as soon as the model stops
+> calling tools, so reaching the `else:` branch means exactly one thing: all
+> `max_iterations` were used up without a clean stop, and we append the
+> `[Agent reached maximum iterations limit]` notice. It is the most misread construct
+> in Python; nothing about it is error handling.
+
 ---
 
 ## 8. Packaging and Operations
@@ -1768,7 +1855,10 @@ trace.jsonl              # auto-saved event log (gitignore this)
 > survives as a small `UsageAccumulator` inside `agent.py` (the price table is an
 > extension you can add); `tracer.py`, `logging_config.py`, and `instructions.py` are
 > production extensions shown here, not separate package modules; and the package adds
-> `testing.py` — the fake client from §9. Compare for yourself: the real tree is in
+> `testing.py` — the fake client from §9. The **console-script name** maps too: the
+> tested package's `pyproject.toml` installs the command as **`agent-harness`**
+> (equivalently `python -m agent_harness.cli`) — wherever prose in this phase shortens
+> it to `agent`, that is the command it means. Compare for yourself: the real tree is in
 > [`code/agent_harness/`](code/agent_harness/) and the name-by-name mapping table is in
 > [`code/README.md`](code/README.md).
 
@@ -1795,7 +1885,10 @@ tiktoken = ["tiktoken>=0.7"]  # accurate token counting
 dev = ["pytest>=8"]
 
 [project.scripts]
-agent = "agent_harness.cli:main"
+# The command name the install creates — the tested package uses the same one
+# (code/pyproject.toml). Run it as `agent-harness`, or without installing the
+# script at all: `python -m agent_harness.cli`.
+agent-harness = "agent_harness.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
@@ -1811,10 +1904,11 @@ pip install -e ".[tiktoken,dev]"
 Run:
 
 ```bash
-agent                              # interactive REPL
-agent -p "Summarise all TODO comments in this repo"
-agent --resume --mode strict
-AGENT_MODEL=gpt-4o agent          # override model via env
+agent-harness                      # interactive REPL
+agent-harness -p "Summarise all TODO comments in this repo"
+agent-harness --resume --mode strict
+AGENT_MODEL=gpt-4o agent-harness   # override model via env
+python -m agent_harness.cli        # same entry point, no console script needed
 ```
 
 ### Running the Bash Tool Safely in Production
@@ -1909,6 +2003,13 @@ class FakeClient:
 ```
 
 ### 9.3 A Loop Test
+
+This test drives a full two-iteration loop — and it passes only because `run_turn`
+normalizes output items at append time (`_to_dict`, §7): the `FakeFunctionCall` /
+`FakeMessage` dataclasses above enter the transcript as plain dicts (via
+`dataclasses.asdict`), so the second iteration's `estimate_tokens()` — a `json.dumps`
+of the whole transcript — and `conversation.save()` work instead of raising
+`TypeError: Object of type FakeFunctionCall is not JSON serializable`.
 
 ```python
 # tests/test_agent_loop.py
@@ -2140,6 +2241,20 @@ Claude Code — and you understand every line of it.
 
 **Practice:** the [Phase 8 exercises](EXERCISES.md#phase-8--the-production-harness)
 (plus the capstone) walk you through hardening and extending this assembly yourself.
+
+---
+
+## Pitfalls
+
+> **Watch out for these common mistakes.**
+
+| Pitfall | Consequence | Fix |
+|---|---|---|
+| Appending raw SDK objects (or test fakes) to the transcript | The next iteration's `estimate_tokens()` — and `conversation.save()` — `json.dumps` the transcript and raise `TypeError: Object of type … is not JSON serializable` | Normalize at append time: `model_dump()` for SDK objects, `dataclasses.asdict` for dataclass fakes (the `_to_dict` helper in §7) |
+| Declaring boolean CLI flags with argparse's natural defaults (`store_true` → `False`, `store_false` → `True`) | A flag the user never typed looks like an explicit choice, so `apply_cli_args` silently overrides env vars and `.agentrc` — the documented precedence chain breaks for `verbose`/`debug`/`stream` | Give boolean flags `default=None`; `apply_cli_args` only merges non-`None` values |
+| Sleeping after the *final* failed retry attempt | The harness waits the longest backoff (16 s and up) only to raise anyway — pure dead time | `break` out of the retry loop before sleeping when no attempts remain (Step 0 and §6 both guard this) |
+| Misreading `for … else` in `run_turn` as error handling | You expect the `else:` branch on exceptions; it actually runs when the loop exhausts `max_iterations` without `break` | Read `for … else` as "for … *no-break*" — see the 🟢 gloss after the §7 listing |
+| Building Phase 8 against this phase's aspirational interfaces | A wall of `AttributeError`s (`registry.call`, `Decision.ESCALATE`, instance `conversation.load`, …) when assembling from your real Phase 2–7 code | Use the §0 method-name translation table, or build against the tested package in `code/agent_harness/` |
 
 ---
 
