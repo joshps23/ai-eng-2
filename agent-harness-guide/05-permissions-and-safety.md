@@ -1,3 +1,5 @@
+[← Phase 4: Real-World Tools](./04-real-tools.md) · [Guide index](./README.md) · [Phase 6: Context Management →](./06-context-management.md)
+
 # Phase 5 — Permissions, Safety & the Hook System
 
 An agent that can write files and run arbitrary shell commands is, in a very real sense, a remote-code-execution endpoint you are handing to a language model. Phase 4 gave you real tools — `bash`, `write_file`, `edit_file`. This phase installs the layer that stands between the model wanting to act and the action actually happening. Without it, a single confused completion can wipe a directory, exfiltrate secrets, or be hijacked by data the model read from an untrusted source.
@@ -19,6 +21,18 @@ Nothing conceptually new appears after Version 1. V2, V3, and V4 are the same
 "decide before you act" idea, reorganized so it scales. Between versions you'll find a
 short **"What changed"** list, so each rung reads as a reorganization — not a brand-new
 program. But first, name what we're defending against.
+
+**Contents:**
+
+- [Threat model](#threat-model)
+- [Version 1 — line-by-line](#version-1--line-by-line-one-inline-if-before-the-tool-runs)
+- [Version 2 — functions](#version-2--functions-a-check_permission-you-can-call-and-test)
+- [Version 3 — policy objects](#version-3--classes-the-same-gate-as-policy-objects)
+- [Version 4 — hooks](#version-4--hooks-functions-you-hand-to-the-harness)
+- [Interlude — sandboxing](#interlude--sandboxing-what-pure-python-can-do)
+- [Interlude — prompt-injection defense](#interlude--prompt-injection-defense)
+- [Version 4, assembled](#version-4-assembled--integrating-everything-into-the-agent-loop)
+- [Pitfalls](#pitfalls)
 
 ---
 
@@ -164,7 +178,7 @@ while True:
 
 ### ▶ Run it now
 
-```
+```bash
 export OPENAI_API_KEY=sk-...
 echo "Hello from Phase 5" > hello.txt
 python agent_v1.py
@@ -180,7 +194,11 @@ degradation is the core contract of this entire phase.
 This eleven-line `if`/`else` block *is* the permission system. Everything that
 follows — modes, policies, hooks — is this block growing up.
 
-### What changed from Version 1 → Version 2
+---
+
+## Version 2 — functions: a `check_permission` you can call and test
+
+### What changed from V1 to V2
 
 - The inline `if "rm -rf" in command` check moves into a named function,
   `check_permission(tool_name, arg)`, that returns `"allow"`, `"deny"`, or `"ask"` —
@@ -192,10 +210,6 @@ follows — modes, policies, hooks — is this block growing up.
 - The tool bodies and the loop become functions too (`read_file`, `bash`, `dispatch`,
   `run_agent`) — the same statements, now with names.
 - Behavior is identical: safe tools pass, blocked patterns are denied, everything else asks.
-
----
-
-## Version 2 — functions: a `check_permission` you can call and test
 
 The same harness, reorganized. The idea is still: **before running a tool, ask
 "is this allowed?" and only run it if the answer is yes** — but now the asking is a
@@ -259,7 +273,8 @@ tool bodies became functions, the dispatch `elif` chain became `dispatch()`, the
 became `run_agent()`, and the safety layer is the three pieces you just read. A
 `write_file` tool is added so the `"caution"` risk level has something to gate.
 
-> ⚠️ **One thing these inline tools deliberately leave out:** Phase 4's `_safe_path`
+> [!WARNING]
+> **One thing these inline tools deliberately leave out:** Phase 4's `_safe_path`
 > workspace confinement. To keep V1–V3 short, `read_file`/`write_file` here accept any
 > path. This version at least *asks* before every `write_file` — but once modes arrive
 > in Step 2.2, the default `auto` mode will auto-approve `caution` tools, so the model
@@ -525,7 +540,7 @@ Run the agent and ask it to `git status`. With the rule in place it should run w
 
 ---
 
-> ## 🟢 Beginner recap: what you've built so far
+> ## Recap: what you've built so far
 >
 > You now have a working, three-layer permission system using only functions, dicts, and lists:
 >
@@ -556,7 +571,9 @@ Run the agent and ask it to `git status`. With the rule in place it should run w
 
 ---
 
-### What changed from Version 2 → Version 3
+## Version 3 — classes: the same gate as policy objects
+
+### What changed from V2 to V3
 
 - The `"safe"`/`"caution"`/`"dangerous"` strings move from a standalone `TOOL_RISK`
   dict onto the tool itself (`Tool.risk`), so risk can't drift out of sync with the tool list.
@@ -570,10 +587,6 @@ Run the agent and ask it to `git status`. With the rule in place it should run w
   denials carry an explanation the model and your logs can read.
 - One genuinely new capability: **session memory** — answering `a`/`d` at the prompt
   remembers your choice for the rest of the run.
-
----
-
-## Version 3 — classes: the same gate as policy objects
 
 This is Version 2, organized. Each of the four steps below upgrades one of the plain
 dicts/functions you already have into its production-shaped form; at the end, the whole
@@ -703,6 +716,12 @@ The harness operates in one of five modes. These mirror the mental model popular
 | Accept edits | `accept-edits` | `safe` and `caution` auto-approved. `dangerous` tools prompt the user (same as `auto` except the intent signal is explicit). |
 | Always allow | `always-allow` | All tool calls auto-approved. No prompts. |
 | Bypass / YOLO | `bypass` | Same as `always-allow` but the harness prints a loud warning at startup. |
+
+> [!WARNING]
+> `always-allow` and `bypass` auto-approve **every** tool call, including `bash`. One
+> confused completion — or one prompt-injected file — can then overwrite files or
+> exfiltrate secrets with no human in the loop. Use these modes only in a throwaway
+> sandbox, never on input or a machine you care about.
 
 > 🟢 **`{"safe"}` below is a *set*, not a dict.** Curly braces around values *without
 > colons* make a `set` — think of it as a list that ignores duplicates and is very fast
@@ -965,12 +984,13 @@ def _ask_user(tool_name: str, args: dict) -> tuple[Decision, str]:
         print("  Please type y, n, a, or d.")
 ```
 
-**The order of the checks is load-bearing.** Hard denials — the mode's hard-deny set and
-the policy's DENY rules — are evaluated *before* session memory. Session memory is filled
-in when the user answers `a` once, for *any* call of that tool, however harmless; if it
-were consulted first, a single `a` on `bash(ls)` would silently re-enable
-`bash(rm -rf /)` for the rest of the session. Convenience layers must never outrank the
-deny list.
+> [!WARNING]
+> **The order of the checks is load-bearing.** Hard denials — the mode's hard-deny set and
+> the policy's DENY rules — are evaluated *before* session memory. Session memory is filled
+> in when the user answers `a` once, for *any* call of that tool, however harmless; if it
+> were consulted first, a single `a` on `bash(ls)` would silently re-enable
+> `bash(rm -rf /)` for the rest of the session. Convenience layers must never outrank the
+> deny list.
 
 > 🟢 **Why is the parameter type written `"Tool"` — in quotes?** A string in a
 > type-hint position is a *forward reference*: at the point this function is defined,
@@ -1221,7 +1241,7 @@ if __name__ == "__main__":
 
 ### ▶ Run it now
 
-```
+```bash
 python agent_v3.py
 ```
 
@@ -1237,7 +1257,9 @@ consults session memory.)
 
 ---
 
-### What changed from Version 3 → Version 4
+## Version 4 — hooks: functions you hand to the harness
+
+### What changed from V3 to V4
 
 - Nothing about *permissions* changes — V4 adds a second, more general mechanism
   *around* the same gate.
@@ -1249,10 +1271,6 @@ consults session memory.)
   `run_pre`/`run_post` and otherwise stays untouched.
 - A new `safe_dispatch()` becomes the single funnel every tool call flows through:
   pre-hooks → permission check → `tool.run` → post-hooks.
-
----
-
-## Version 4 — hooks: functions you hand to the harness
 
 ### Step 4.0 — First, the callback idea (sixty seconds, no API key needed)
 
@@ -1285,7 +1303,7 @@ after every tool.
 
 ### ▶ Run it now
 
-```
+```bash
 python callback_demo.py
 ```
 
@@ -1509,7 +1527,7 @@ def make_output_truncator(max_chars: int = 8000) -> PostHook:
     return _hook
 ```
 
-### ▶ Check your hooks (no API key needed)
+### ▶ Check it now (no API key needed)
 
 Create a `HookRegistry`, add `dangerous_command_blocker` as a pre-hook and `secret_scrubber` as a post-hook. Call `registry.run_pre(ctx)` with a `PreToolContext` whose `args` contain `"command": "rm -rf ."` — you should get a blocked-message string back. Call `registry.run_post(ctx)` with a `PostToolContext` whose `result` contains a fake key like `sk-abc123xyz789abc123xyz789` — you should see `[REDACTED:openai-key]` in the output. As a paste-able script:
 
@@ -1536,7 +1554,7 @@ ctx = PostToolContext(tool_name="bash", args={}, tool_risk="dangerous",
 print(hooks.run_post(ctx))
 ```
 
-```
+```bash
 python check_hooks.py
 ```
 
@@ -1680,7 +1698,7 @@ standardizes on **`"Error: ..."`** (see `code/agent_harness/tools/registry.py` a
 ```python
 # phase5_tools.py — the complete risk-tagged tool set for this phase
 # Needs, in the same folder: risk_tools.py + tool_registry.py (Step 3.1),
-# sandbox.py (above), coding_tools.py (Phase 4 §9), and Phase 2's tools/
+# sandbox.py (above), coding_tools.py (Phase 4's complete reference module), and Phase 2's tools/
 # package (coding_tools imports it).
 import os
 
@@ -1737,7 +1755,7 @@ def build_registry() -> ToolRegistry:
     return registry
 ```
 
-**▶ Check it now (no API key needed)**
+### ▶ Check it now (no API key needed)
 
 ```python
 # check_phase5_tools.py
@@ -1840,6 +1858,11 @@ model emits function_call
 ```
 
 ### `permissions.py` — final complete file
+
+> **Reference copy.** Assembled unchanged from Steps 3.2–3.4 — the five-mode table, the
+> predicate rules and `default_policy()`, and the approval gate with session memory.
+> Nothing new to type here — skim or skip. The maintained version lives in
+> [code/agent_harness/permissions.py](./code/agent_harness/permissions.py).
 
 ```python
 # permissions.py
@@ -2050,6 +2073,11 @@ def _ask_user(tool_name: str, args: dict) -> tuple[Decision, str]:
 
 ### `hooks.py` — final complete file
 
+> **Reference copy.** Assembled unchanged from Steps 4.2–4.4 plus the
+> `injection_detector` from the prompt-injection interlude; the only code you have not
+> seen yet is the small `default_hooks()` factory at the bottom. The maintained version
+> lives in [code/agent_harness/hooks.py](./code/agent_harness/hooks.py).
+
 ```python
 # hooks.py
 from __future__ import annotations
@@ -2241,6 +2269,12 @@ def default_hooks(audit_log: str | pathlib.Path | None = None) -> HookRegistry:
 
 ### `agent_loop.py` — updated safe dispatch and loop
 
+> **Reference copy — with one new function.** The loop is Version 3's, unchanged; what
+> is new is `safe_dispatch()` (the funnel from the flow diagram above) and the wiring
+> that threads `policy`, `mode`, and `hooks` through `run_agent()`. The consolidated
+> package merges this file into
+> [code/agent_harness/agent.py](./code/agent_harness/agent.py).
+
 ```python
 # agent_loop.py
 from __future__ import annotations
@@ -2426,13 +2460,27 @@ if __name__ == "__main__":
 > point of `else` (rather than putting the dispatch inside the `try:`) is that an
 > exception from `safe_dispatch` itself can never be mistaken for a JSON-parsing error.
 
+### ▶ Check it now (no API key needed)
+
+Before spending an API call on the full loop, point the two offline checks you already
+wrote at these final files — together they exercise the safety stack with no key:
+
+```bash
+python check_hooks.py          # Step 4.4's checkpoint: blocker + secret scrubber
+python check_phase5_tools.py   # the sandbox interlude's checkpoint: 7 risk-tagged tools
+```
+
+The expected output is unchanged: three `BLOCKED` lines, one `allowed to proceed`, and
+a `[REDACTED:openai-key]` from `check_hooks.py`; seven `name risk=...` lines and
+`7 schemas ready for the API` from `check_phase5_tools.py`.
+
 ### ▶ Run it now
 
 Save this phase's seven files — `risk_tools.py`, `tool_registry.py`, `permissions.py`,
 `hooks.py`, `sandbox.py`, `phase5_tools.py`, `agent_loop.py` — into the folder that
 already holds Phase 4's `coding_tools.py` and Phase 2's `tools/` package, then:
 
-```
+```bash
 python agent_loop.py
 ```
 
@@ -2441,6 +2489,20 @@ match a policy rule, get auto-approved by the mode, or pause at the `[y/n/a/d]` 
 and every tool result passes through the secret scrubber, the truncator, and into
 `/tmp/agent_audit.jsonl`. `tail -f /tmp/agent_audit.jsonl` in a second terminal to see
 the audit trail grow as the agent works.
+
+---
+
+## Summary of files added in Phase 5
+
+| File | Purpose |
+|---|---|
+| `risk_tools.py` | The risk-aware `Tool` dataclass (`run` + `risk` fields) and the three risk-level constants |
+| `tool_registry.py` | This phase's `ToolRegistry` with `get()`, `all_tools()`, `api_schemas()`, raw `dispatch()` |
+| `permissions.py` | Mode enum, `PermissionPolicy`, `PolicyRule`, `check_permission`, `_ask_user`, session memory |
+| `hooks.py` | `HookRegistry`, `PreToolContext`, `PostToolContext`, built-in hooks, `default_hooks()` |
+| `sandbox.py` | `run_sandboxed()` for hardened subprocess execution with env allowlist and POSIX resource limits |
+| `phase5_tools.py` | `build_registry()` — Phase 4's seven tools adapted with risk tags; `bash` rebuilt on the sandbox |
+| `agent_loop.py` | `safe_dispatch()` and updated `run_agent()` wiring everything together |
 
 ---
 
@@ -2477,24 +2539,6 @@ The injection detector prepends a warning and returns the full (warning + conten
 
 ---
 
-## Summary of Files Added in Phase 5
-
-| File | Purpose |
-|---|---|
-| `risk_tools.py` | The risk-aware `Tool` dataclass (`run` + `risk` fields) and the three risk-level constants |
-| `tool_registry.py` | This phase's `ToolRegistry` with `get()`, `all_tools()`, `api_schemas()`, raw `dispatch()` |
-| `permissions.py` | Mode enum, `PermissionPolicy`, `PolicyRule`, `check_permission`, `_ask_user`, session memory |
-| `hooks.py` | `HookRegistry`, `PreToolContext`, `PostToolContext`, built-in hooks, `default_hooks()` |
-| `sandbox.py` | `run_sandboxed()` for hardened subprocess execution with env allowlist and POSIX resource limits |
-| `phase5_tools.py` | `build_registry()` — Phase 4's seven tools adapted with risk tags; `bash` rebuilt on the sandbox |
-| `agent_loop.py` | `safe_dispatch()` and updated `run_agent()` wiring everything together |
-
-For hands-on practice with the permission gate, policy rules, and hooks, work through the Phase 5 section of [EXERCISES.md](EXERCISES.md).
-
-Phase 6 will add multi-turn conversation management, context-window budgeting, and graceful handling of very long sessions.
-
----
-
 ## Key takeaways
 
 - Start from a **threat model**: the model's tool requests are *untrusted* (prompt
@@ -2524,6 +2568,9 @@ Phase 6 will add multi-turn conversation management, context-window budgeting, a
 4. Any of: an **environment-variable allowlist**, **CPU/memory resource limits**, or a
    restricted **working directory / workspace root**.
 </details>
+
+**Practice first:** for hands-on practice with the permission gate, policy rules, and
+hooks, work through the Phase 5 section of [EXERCISES.md](./EXERCISES.md#phase-5--permissions--safety).
 
 **Next:** [Phase 6 — Context Management](./06-context-management.md) — multi-turn
 conversation management, context-window budgeting (token counting, pruning, compaction),
