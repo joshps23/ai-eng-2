@@ -40,3 +40,37 @@ jobs:
         # python -m pytest (not bare pytest) binds the same interpreter we
         # installed into — the gotcha the README and FAQ call out.
         run: python -m pytest -q
+
+  notebooks:
+    name: execute notebooks (offline)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: agent-harness-guide
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install the package with notebook tooling
+        run: pip install -e "./code[dev,notebooks]"
+
+      - name: Check jupytext pairs are in sync
+        # Notebooks are reviewed as py:percent files; the .ipynb (with committed
+        # FakeClient outputs) must always match its .py pair.
+        run: |
+          jupytext --sync notebooks/*.ipynb
+          git diff --exit-code notebooks/
+
+      - name: Execute every notebook headlessly (FakeClient path)
+        env:
+          OPENAI_API_KEY: ""   # guarantee the offline path
+        run: |
+          for nb in notebooks/*.ipynb; do
+            echo "== $nb"
+            jupyter execute --kernel_name=python3 --timeout=120 "$nb"
+          done
