@@ -111,7 +111,7 @@ Score each phase 1–5 on each axis; the loop revises the lowest-scoring phase n
 
 The evaluator-reviser loop runs **at most 10 times**, then stops on its own.
 
-- Iterations used: **8 / 10** *(reset 2026-06-10 for the version-ladder pass; iterations 4–8 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6, UX designer for 7, Jupyter expert for 8)*
+- Iterations used: **9 / 10** *(reset 2026-06-10 for the version-ladder pass; iterations 4–9 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8)*
 - Per iteration: score all phases on the rubric, pick the weakest, revise it one notch
   more incremental, increment the counter here, log it below, commit, push. Stop when the
   counter hits 10 **or** every phase scores ≥4 on every axis.
@@ -133,6 +133,20 @@ The evaluator-reviser loop runs **at most 10 times**, then stops on its own.
 
 ## Revision log (newest first)
 
+- **2026-06-11 — Iteration 9: beginner-persona pass through the notebooks (cycle 6).**
+  Two fresh "Sam" readers verified the new notebook resource end to end on /tmp
+  copies: discovery from the front door works three ways; the documented setup
+  works; **zero blockers** in all six notebooks; keyless outputs reproduced
+  cell-for-cell against the committed ones; re-run resilience, the kernel-restart
+  save/load flow, the hidden-state lesson, and the hard-stop handoffs all behaved
+  as designed (the readers called 03 "the standout"). Their ~10 fixes landed in one
+  pass: the Exercise 1.1 silent tools-list trap, live-API cells now gated on the
+  USE_REAL_API switch (the README's one-switch contract is now true — no surprise
+  spend), reset-cell rebuild, the unexplained None in self-checks, check-cell idiom
+  boxes, 02's stale re-run-safety claim + self-diagnosing asserts, 06 convention
+  drift, subsection anchors, and a Series-conventions list (defining C1) in
+  notebooks/README.md. Re-verified: all six execute headlessly with no key, pairs
+  in sync, 56 tests green. Cycle ran under a 500k-token budget (≈340k used).
 - **2026-06-11 — Iteration 8: persona dev loop, cycle 5 (Jupyter-expert verification →
   notebook build).** The verification persona became a Jupyter-notebook expert: three
   reviewers (core funnel, advanced phases, notebook engineering) assessed how to turn

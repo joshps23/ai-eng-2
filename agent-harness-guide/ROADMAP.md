@@ -61,6 +61,11 @@ Status: ☐ todo · ◐ in progress · ☑ done
 
 Newest first. One line per shipped iteration.
 
+- **2026-06-11** — Persona dev loop, cycle 6 (beginner through the notebooks): two
+  readers verified all six notebooks keyless — zero blockers, outputs reproduced
+  cell-for-cell; their ~10 fixes (Exercise 1.1 tools-list trap, USE_REAL_API gating
+  on live cells, convention drift) landed in one pass; all six re-executed offline,
+  pairs in sync, tests green.
 - **2026-06-11** — Persona dev loop, cycle 5 (Jupyter expert → build): shipped Item 11 —
   six executed notebook pairs (setup-check, 0, 1, 2, 3, 6) + contract README +
   refresh.sh + offline CI gate + FakeClient instructions= fix, all verified to execute
