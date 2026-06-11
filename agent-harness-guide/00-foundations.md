@@ -41,16 +41,16 @@ compaction, retries) is refinement on top of this loop.
                 ┌─────────────────────────────────────────────┐
                 │                                             │
                 ▼                                             │
-   ┌────────────────────────┐     wants to    ┌──────────────┴───────────────┐
+   ┌────────────────────────┐     wants to     ┌──────────────┴────────────────┐
    │  Send conversation to  │──── call tools ─▶│  Execute tools, append their  │
    │  the model (Responses) │                  │  outputs to the conversation  │
-   └────────────────────────┘                  └──────────────────────────────┘
+   └────────────────────────┘                  └───────────────────────────────┘
                 │
                 │ produced final text
                 ▼
-        ┌───────────────┐
+        ┌────────────────┐
         │  Return answer │
-        └───────────────┘
+        └────────────────┘
 ```
 
 Claude Code, Cursor, and every "coding agent" you've used is — at its core — this
@@ -176,8 +176,11 @@ print(resp.output_text)  # convenience: all text output concatenated
 
 Two important fields on the request:
 
-- **`instructions`** — the system/developer prompt. Equivalent to a `system`
-  message. Prefer this over stuffing a system message into `input`.
+- **`instructions`** — the system/developer prompt: standing directions to the model
+  ("you are a terse assistant") that apply to the whole conversation, as opposed to
+  what the user just said. Equivalent to a `system` message — the older Chat
+  Completions way of sending those same standing directions as a message with
+  `role="system"`. Prefer `instructions` over stuffing a system message into `input`.
 - **`input`** — either a plain string (shorthand for one user message) or a **list
   of input items** (the real, full-control form we use everywhere).
 
@@ -785,9 +788,12 @@ agent_harness/
 ├── __init__.py
 ├── config.py          # MODEL, defaults, env
 ├── llm.py             # thin wrapper around client.responses with retries
+├── conversation.py    # the transcript (Phase 3)
 ├── tools/
-│   ├── __init__.py    # the registry
-│   ├── base.py        # Tool abstraction
+│   ├── __init__.py    # re-exports for convenient imports
+│   ├── base.py        # Tool abstraction + @tool decorator
+│   ├── registry.py    # the registry & safe dispatch
+│   ├── parallel.py    # threaded (parallel) tool dispatch
 │   ├── files.py       # read/write/edit/glob/grep
 │   └── shell.py       # bash
 ├── permissions.py     # approval gates & policy
@@ -795,6 +801,7 @@ agent_harness/
 ├── context.py         # token budgeting & compaction
 ├── agent.py           # the core loop (the "harness")
 ├── subagents.py       # spawning parallel agents
+├── testing.py         # FakeClient — offline tests, no API key
 └── cli.py             # the REPL / entrypoint
 ```
 

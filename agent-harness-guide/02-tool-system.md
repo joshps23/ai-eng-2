@@ -1073,8 +1073,8 @@ def _build_schema(fn: Callable) -> dict:
             in_args = True
             continue
         if in_args:
-            if stripped and not stripped[0].isspace() and stripped.endswith(":"):
-                # New top-level section — stop
+            if stripped and not line.startswith((" ", "\t")):
+                # Un-indented line = new top-level section — stop
                 in_args = False
             elif ":" in stripped:
                 pname, _, pdesc = stripped.partition(":")
@@ -1290,7 +1290,7 @@ def _build_schema(fn: Callable) -> dict:
             in_args = True
             continue
         if in_args:
-            if stripped and not stripped[0].isspace() and stripped.endswith(":"):
+            if stripped and not line.startswith((" ", "\t")):
                 in_args = False
             elif ":" in stripped:
                 pname, _, pdesc = stripped.partition(":")

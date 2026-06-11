@@ -357,6 +357,11 @@ Without a cap, a model stuck in a reasoning loop or a buggy tool that always ret
 
 At this point you already have a working harness. The file below is the **same thing, tidied up**: imports grouped at the top, a `SYSTEM_PROMPT` added, `KeyboardInterrupt` handled gracefully, and `if __name__ == "__main__":` added so that importing the file doesn't start the REPL. (One honest caveat: `client = OpenAI()` still runs at module level, so importing this file *does* still require `OPENAI_API_KEY` to be set — `OpenAI()` raises `openai.OpenAIError: Missing credentials` without it. Version 3 below avoids this by building the client inside `main()`; the same trick works here if you ever need a key-free import.) Nothing here is conceptually new. This is the polished end-state of Version 2 — keep it as your reference copy.
 
+> 🟢 **First sighting of type hints.** The polished file annotates functions like
+> `def get_current_time(timezone: str = "") -> str:` — those `: str` / `-> str` notes are
+> **type hints**. They change nothing at runtime; you can read straight past them. See the
+> **type hints** row in [`BEGINNER-NOTES.md`](./BEGINNER-NOTES.md).
+
 ```python
 #!/usr/bin/env python3
 """

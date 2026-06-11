@@ -394,6 +394,11 @@ print("Loaded session. Turn 2:", resp2.output_text)
 conversation dict was serialized to disk and loaded back.  Open `/tmp/my_session.json`
 in a text editor — you will see the full transcript as plain JSON.
 
+> **Windows note.** `/tmp/...` is a Linux/macOS scratch directory that doesn't exist on
+> Windows. Wherever this phase uses a `/tmp/...` path, substitute any writable path —
+> the simplest is a bare filename like `"my_session.json"` (saved in the folder you run
+> Python from).
+
 ---
 
 ### Step 2.3 — Version 2, complete: `chat_v2.py`
@@ -411,7 +416,7 @@ import os
 from openai import OpenAI
 
 MODEL = "gpt-4o"
-SESSION_PATH = "/tmp/chat_v2_session.json"
+SESSION_PATH = "/tmp/chat_v2_session.json"  # on Windows use e.g. "chat_v2_session.json"
 client = OpenAI()
 
 
@@ -595,6 +600,10 @@ is *exactly the same logic* — just organized.
 > Every one of these maps directly to a plain function in the
 > [beginner box above](#-beginner-track-two-things-to-know-before-you-start); if
 > classes are unfamiliar, use those functions and skip this class entirely.
+> One more newcomer in `save`/`load`: **`pathlib.Path`** is just an object-flavored
+> file path — `pathlib.Path(path)` wraps a path string so you can call helpers like
+> `.parent.mkdir(...)` (create the folder) and `.open(...)` (same as `open(path)`).
+> Phase 4 uses it more heavily.
 
 ```python
 import json
@@ -843,6 +852,16 @@ def run_agent(user_message, instructions, tools_list, registry, max_turns=10):
 
     return conv
 ```
+
+> 🟢 **The `(getattr(item, "type", None) or item.get("type"))` line, unpacked.**
+> `getattr(obj, "type", None)` is just `obj.type` with a fallback: it returns
+> `obj.type` if the attribute exists, or `None` instead of crashing if it doesn't.
+> The `or item.get("type")` part is the second attempt: items in `resp.output` can be
+> **SDK objects** (use dot-access, `item.type`) *or* **plain dicts** (use
+> `item.get("type")`) — for example after a save/load round-trip. So the line reads:
+> "try dot-access first; if that gave `None`, try dict-lookup." It's the same
+> object-vs-dict dance as `item.model_dump() if hasattr(item, "model_dump") else item`
+> two lines above.
 
 Try it with a simple tool:
 
@@ -1816,10 +1835,14 @@ if __name__ == "__main__":
 ### Expected terminal output (conceptual)
 
 The deltas stream in character-by-character; the tool-call lines appear as the model
-generates arguments.  The session is saved to disk after each turn.  (The `🤔 thinking:`
-lines below appear only if you run a reasoning model with the
-`reasoning={"summary": "auto"}` line uncommented; with plain `gpt-4o` you will see the
-tool calls and the final text, but no thinking lines.)
+generates arguments.  The session is saved to disk after each turn.
+
+> **Before you compare your output:** the `🤔 thinking:` lines below appear **only** if
+> you run a *reasoning* model with the `reasoning={"summary": "auto"}` line uncommented.
+> **The canonical run — plain `gpt-4o`, as written — shows no `🤔 thinking:` lines at
+> all.** You will see only the `⚙ calling ...` lines and the assistant text; if that's
+> what you got, nothing is wrong — that *is* the expected `gpt-4o` output. Mentally
+> delete the two `🤔 thinking:` bursts from the transcript below when comparing.
 
 ```text
 User: Please do two things: first, add 1234 and 5678; second, count the words in the
