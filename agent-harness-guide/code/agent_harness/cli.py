@@ -85,8 +85,13 @@ def main() -> None:
         from openai import OpenAI
         client = OpenAI()
     except Exception as exc:
-        print(f"Warning: could not create OpenAI client: {exc}", file=sys.stderr)
-        client = None
+        print(f"Error: could not create OpenAI client: {exc}", file=sys.stderr)
+        print(
+            "The CLI needs a real API key (set the OPENAI_API_KEY environment "
+            "variable). No key is needed for the tests — see FAQ.md.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
     llm = LLMClient(client=client, model=args.model)
 
