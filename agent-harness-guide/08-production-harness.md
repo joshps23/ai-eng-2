@@ -101,7 +101,7 @@ Each section below is a self-contained module. All of them plug into `agent_harn
 > | `@dataclass class Settings` / `SessionAccounting` | a dict with fixed keys; read `settings.model` as `settings["model"]`. |
 > | `@property def total_tokens` | a method you read like a field (`acc.total_tokens`); just returns a computed value. |
 > | `@contextmanager` / `@classmethod` | decorators that adjust how a function is used. Skim past them; the function body is the part that matters. |
-> | `argparse` | reads options typed after the command (`agent --model gpt-5`). Conceptually: fill a settings dict from the command line. |
+> | `argparse` | reads options typed after the command (`agent --model gpt-4o`). Conceptually: fill a settings dict from the command line. |
 > | `logging` | `print()` with on/off levels that can write to a file. |
 > | the typed `except RateLimitError / APIConnectionError` list | "which errors are worth retrying" — the simple version above just retries on *any* error. |
 > | `ThreadPoolExecutor` (again) | run approved tools at the same time; a plain `for` loop over them works identically. |
@@ -577,7 +577,9 @@ class Settings:
     # Context budget (tokens)
     max_context_tokens: int = 180_000
     compact_threshold: float = 0.85        # compact at 85 % of budget
-    compaction_model: str = "gpt-4o-mini"  # cheap model for summary
+    compaction_model: str = "gpt-4o"      # summaries don't need the best model —
+                                          # swap in a cheaper one (e.g. gpt-4o-mini)
+                                          # to cut compaction cost
 
     # Tool execution
     max_tool_concurrency: int = 4
@@ -1114,8 +1116,8 @@ if __name__ == "__main__":
 ```
 
 > **Beginner note on `argparse`:** `argparse` is just a way to read flags from the command
-> line. `p.add_argument("--model", ...)` means: if the user types `agent --model gpt-4.1`,
-> then `args.model` will be `"gpt-4.1"`. You can replicate the whole thing with
+> line. `p.add_argument("--model", ...)` means: if the user types `agent --model gpt-4o`,
+> then `args.model` will be `"gpt-4o"`. You can replicate the whole thing with
 > `sys.argv` and a dict; `argparse` just handles the parsing and `--help` for you.
 
 ---

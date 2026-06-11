@@ -524,6 +524,12 @@ Run the agent and ask it to `git status`. With the rule in place it should run w
 > `@dataclass`, and a `class`-based policy engine. Each new Python feature solves a
 > concrete problem you'd hit if you kept the plain-dict version on a real project.
 >
+> **Beginner track:** if `Enum`, `@dataclass`, and classes are still new to you, this is
+> a perfectly legitimate stopping point — the functions-and-dicts gate above is a
+> complete, working permission system, and it is exactly what Versions 3 and 4
+> reorganize. Read on for the *ideas* (the table below maps each new piece of syntax to
+> the problem it solves) and come back to the code when you are ready.
+>
 > | New thing below | What problem it solves |
 > |---|---|
 > | `class Mode(str, Enum)` | Autocomplete + typo detection: `Mode.PLAN` instead of the string `"plan"` |
