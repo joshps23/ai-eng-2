@@ -394,6 +394,11 @@ print("Loaded session. Turn 2:", resp2.output_text)
 conversation dict was serialized to disk and loaded back.  Open `/tmp/my_session.json`
 in a text editor — you will see the full transcript as plain JSON.
 
+> **Windows note.** `/tmp/...` is a Linux/macOS scratch directory that doesn't exist on
+> Windows. Wherever this phase uses a `/tmp/...` path, substitute any writable path —
+> the simplest is a bare filename like `"my_session.json"` (saved in the folder you run
+> Python from).
+
 ---
 
 ### Step 2.3 — Version 2, complete: `chat_v2.py`
@@ -411,7 +416,7 @@ import os
 from openai import OpenAI
 
 MODEL = "gpt-4o"
-SESSION_PATH = "/tmp/chat_v2_session.json"
+SESSION_PATH = "/tmp/chat_v2_session.json"  # on Windows use e.g. "chat_v2_session.json"
 client = OpenAI()
 
 
@@ -595,6 +600,10 @@ is *exactly the same logic* — just organized.
 > Every one of these maps directly to a plain function in the
 > [beginner box above](#-beginner-track-two-things-to-know-before-you-start); if
 > classes are unfamiliar, use those functions and skip this class entirely.
+> One more newcomer in `save`/`load`: **`pathlib.Path`** is just an object-flavored
+> file path — `pathlib.Path(path)` wraps a path string so you can call helpers like
+> `.parent.mkdir(...)` (create the folder) and `.open(...)` (same as `open(path)`).
+> Phase 4 uses it more heavily.
 
 ```python
 import json
@@ -844,6 +853,16 @@ def run_agent(user_message, instructions, tools_list, registry, max_turns=10):
     return conv
 ```
 
+> 🟢 **The `(getattr(item, "type", None) or item.get("type"))` line, unpacked.**
+> `getattr(obj, "type", None)` is just `obj.type` with a fallback: it returns
+> `obj.type` if the attribute exists, or `None` instead of crashing if it doesn't.
+> The `or item.get("type")` part is the second attempt: items in `resp.output` can be
+> **SDK objects** (use dot-access, `item.type`) *or* **plain dicts** (use
+> `item.get("type")`) — for example after a save/load round-trip. So the line reads:
+> "try dot-access first; if that gave `None`, try dict-lookup." It's the same
+> object-vs-dict dance as `item.model_dump() if hasattr(item, "model_dump") else item`
+> two lines above.
+
 Try it with a simple tool:
 
 ```python
@@ -877,6 +896,11 @@ conv.save("/tmp/phase3-nonstreaming.json")
 print("Saved to /tmp/phase3-nonstreaming.json")
 ```
 
+> 🟢 `lambda a, b: a + b` is just a one-line way to write a function without naming it —
+> exactly the same as `def add(a, b): return a + b` and then using `add`. (See
+> [`GLOSSARY.md`](./GLOSSARY.md) under **`lambda`**.) The complete Version 3 file below
+> uses the same shortcut.
+
 **▶ Run it now.** You should see:
 
 ```text
@@ -894,7 +918,7 @@ item, and the final assistant message.
 > is all you need.  When you want to inspect individual items (e.g. to find tool calls),
 > iterate `resp.output` directly.
 
-### Step 3.5 — Version 3, complete: `agent_v3.py`
+### Step 3.5 — Version 3, complete: `chat_v3.py`
 
 The snippets above introduced the class and the loop separately.  Here is Version 3 as one
 complete file you can paste and run — the `Conversation` class plus the non-streaming agent
@@ -902,8 +926,10 @@ loop plus a tool, nothing else:
 
 ```python
 #!/usr/bin/env python3
-# agent_v3.py — Version 3, complete: the Conversation class + the tool loop.
+# chat_v3.py — Version 3, complete: the Conversation class + the tool loop.
 # Same harness as chat_v2.py, organized into a class — and tools are back.
+# (Named chat_v3.py to continue this phase's chat_v1/chat_v2 ladder — and to
+# avoid colliding with Phase 2's separate agent_v3.py.)
 import json
 import pathlib
 from openai import OpenAI
@@ -1043,12 +1069,12 @@ if __name__ == "__main__":
         registry=REGISTRY,
     )
     print(f"\nTranscript has {len(conv)} items.")
-    conv.save("/tmp/phase3-agent-v3.json")
-    print("Saved to /tmp/phase3-agent-v3.json")
+    conv.save("/tmp/phase3-chat-v3.json")
+    print("Saved to /tmp/phase3-chat-v3.json")
 ```
 
 **▶ Run it now.** Same expected output as the Step 3.4 check (the answer 6912, then a
-4-item transcript).  Open `/tmp/phase3-agent-v3.json` — you can read the entire tool
+4-item transcript).  Open `/tmp/phase3-chat-v3.json` — you can read the entire tool
 handshake (`function_call` → `function_call_output`, matched by `call_id`) in plain JSON.
 This file is the Version 3 harness in full; Version 4 changes exactly one thing about it.
 
@@ -1219,6 +1245,10 @@ def stream_turn(
 
     Does NOT mutate `conversation`; the caller appends resp.output.
     """
+    # These two trackers aren't required for rendering (the deltas are printed
+    # directly as they arrive) — they accumulate the in-flight call's name and
+    # full JSON-arguments string so you can log or inspect a complete call when
+    # its "...arguments.done" event fires. The compact V4 file below omits them.
     _current_tool_name: str | None = None
     _current_tool_args: str = ""
     final = None  # we assemble the final Response ourselves from the events
@@ -1377,14 +1407,20 @@ structural difference is that `stream_turn(...)` replaces the bare
 > 🟢 **The `register(schema)` here is a "decorator that takes an argument," which is
 > why there's a function inside a function.** You can ignore that machinery. It does
 > the same job as the simple `register(name, fn, schema)` from the
-> [Phase 2 beginner track](./02-tool-system.md#-beginner-track-the-same-tool-system-using-only-functions--dicts):
+> [Phase 2 beginner track](./02-tool-system.md#-beginner-track):
 > store the function in a dict under its name, and store its schema in a list. If you
-> built the Phase 2 `TOOLS` dict, keep using it here. Also note `dispatch_parallel`
-> uses **threads** again — the plain `for`-loop `run_tool_calls` from Phase 2 produces
-> identical results if you prefer to avoid threads.
+> built the Phase 2 `TOOLS` dict, you can keep using it here — with **one one-line
+> adaptation**: Phase 2's dict maps a name to `{"fn": ..., "schema": ...}`, while this
+> phase's `_registry` maps a name straight to the function. So where the code below
+> says `fn = _registry.get(fc["name"])`, write
+> `entry = TOOLS.get(fc["name"]); fn = entry["fn"] if entry else None`
+> instead (and build the schema list with Phase 2's `tools_for_api()`). Also note
+> `dispatch_parallel` uses **threads** again — the plain `for`-loop `run_tool_calls`
+> from Phase 2 produces identical results if you prefer to avoid threads.
 
 ```python
 import json
+import sys
 import concurrent.futures
 from typing import Callable, Any
 
@@ -1494,6 +1530,27 @@ def run_agent_streaming(
 
     return conv
 ```
+
+> 🟢 **`for ... else:` is real Python, not a typo.** A `for` loop can have an `else`
+> clause: the `else` block runs **only if the loop finished all its iterations without
+> hitting `break`**. Here that means: if we went through all `max_turns` turns and the
+> model *still* wanted more tool calls (so `break` never fired), print the warning.
+> If the model finished early, `break` skips the `else`. The same effect with a plain
+> flag variable:
+>
+> ```python
+> finished = False
+> for turn in range(max_turns):
+>     ...
+>     if not function_calls:
+>         finished = True
+>         break
+>     ...
+> if not finished:
+>     print(f"[Warning: reached max_turns={max_turns}]", file=sys.stderr)
+> ```
+>
+> The complete Version 4 file below uses the same `for/else` — read it the same way.
 
 **Ordering note:** `conv.extend(resp.output)` must come **before** `dispatch_parallel`.  The
 tool results reference `call_id` values that appear in `function_call` items; those items
@@ -1778,10 +1835,14 @@ if __name__ == "__main__":
 ### Expected terminal output (conceptual)
 
 The deltas stream in character-by-character; the tool-call lines appear as the model
-generates arguments.  The session is saved to disk after each turn.  (The `🤔 thinking:`
-lines below appear only if you run a reasoning model with the
-`reasoning={"summary": "auto"}` line uncommented; with plain `gpt-4o` you will see the
-tool calls and the final text, but no thinking lines.)
+generates arguments.  The session is saved to disk after each turn.
+
+> **Before you compare your output:** the `🤔 thinking:` lines below appear **only** if
+> you run a *reasoning* model with the `reasoning={"summary": "auto"}` line uncommented.
+> **The canonical run — plain `gpt-4o`, as written — shows no `🤔 thinking:` lines at
+> all.** You will see only the `⚙ calling ...` lines and the assistant text; if that's
+> what you got, nothing is wrong — that *is* the expected `gpt-4o` output. Mentally
+> delete the two `🤔 thinking:` bursts from the transcript below when comparing.
 
 ```text
 User: Please do two things: first, add 1234 and 5678; second, count the words in the
@@ -1808,17 +1869,23 @@ The sum of 1234 and 5678 is 6912, and the sentence
 Transcript has 6 items.
 ```
 
-The six items in the saved transcript are:
+The six items in the saved transcript (running on plain `gpt-4o`, which emits no
+`reasoning` items) are:
 
 1. `{"role": "user", "content": "Please do two things..."}` — the initial user message
-2. A `reasoning` item (if using a reasoning model; absent with standard GPT models)
-3. A `function_call` item for `add` (with its `call_id` and `arguments`)
-4. A `function_call` item for `count_words`
-5. A `function_call_output` item for `add` (result: `"6912"`)
-6. A `function_call_output` item for `count_words` (result: `"9"`)
+2. A `function_call` item for `add` (with its `call_id` and `arguments`) — from the
+   first API call
+3. A `function_call` item for `count_words` — also from the first API call
+4. A `function_call_output` item for `add` (result: `"6912"`) — appended by your loop
+5. A `function_call_output` item for `count_words` (result: `"9"`) — appended by your loop
+6. The final assistant `message` item containing the summary sentence — from the
+   second API call, after which the loop terminates because `function_calls` is empty
 
-After the second API call the model produces a `message` item containing the final text,
-which is appended as item 7.  The loop then terminates because `function_calls` is empty.
+On a **reasoning model** (the only case where the `🤔 thinking:` bursts shown above
+actually appear), each API call also emits a `reasoning` item before its other output,
+so the same session saves **8** items: a `reasoning` item slots in before the two
+`function_call` items (between items 1 and 2), and another before the final `message`
+(between items 5 and 6).
 
 ---
 

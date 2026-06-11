@@ -59,6 +59,15 @@ Status: ☐ todo · ◐ in progress · ☑ done
 
 Newest first. One line per shipped iteration.
 
+- **2026-06-11** — Beginner-persona dev loop, cycle 3: re-verification found zero
+  blockers in phases 0–5 and two in Phase 8 (un-runnable §9 tests → new §9.0 shims,
+  execution-verified; dead `--transcript` flag → fixed); closing polish landed across
+  all phases. Loop converged: 13 verified blockers (cycle 1) → 2 (cycle 3) → 0.
+- **2026-06-11** — Beginner-persona dev loop, cycles 1–2: a role-played Python-beginner
+  reader executed every offline checkpoint and filed 13 verified blockers + ~50 smaller
+  issues; all fixed across phases 0–8, entry docs, and one real `code/` bug (keyless CLI
+  traceback). Details in `REVISION-BRIEF.md` (iterations 4–5). Tests green (56).
+
 - **2026-06-09** — Shipped **Item 8**: audited phase snippets vs the canonical package by
   extracting every module/symbol and every `*.py` reference. Found real drift — phases
   name `tools.py`, `agent_loop.py`/`safe_dispatch()`, and `sandbox.py`/`run_sandboxed()`,

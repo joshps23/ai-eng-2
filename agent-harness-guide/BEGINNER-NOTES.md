@@ -29,6 +29,8 @@ Read these once. Each scaffolding box in the guide links back here.
 | **`try` / `except`** | "Try to run this; if it blows up, do that instead, don't crash." This version keeps these tiny and always explains them inline. |
 | **`with ... as x:`** | A way to use something and clean it up automatically afterward. When you see `with client.responses.create(..., stream=True) as stream:`, read it as "open a stream, loop over it, close it when done." |
 | **type hints** (`x: str`, `-> dict`) | Optional notes that say "this is a string" or "this returns a dict." They change nothing at runtime — you can ignore them while reading. |
+| **`from __future__ import annotations`** | A switch at the top of some files that only affects how *type hints* are read (it lets newer hint syntax work on older Pythons). It changes nothing about what the code does — safe to ignore. |
+| **`typing.TYPE_CHECKING`** | A constant that is `False` when your program actually runs; only type-checker tools see it as `True`. An `if TYPE_CHECKING:` block imports things purely for type hints, so at runtime it's skipped — also safe to ignore. |
 | **`*args` / `**kwargs`** | "Accept any extra positional/keyword arguments." `run(**kwargs)` just means "this function accepts named arguments and gathers them into a dict called `kwargs`." |
 | **decorators** (`@something`) | A line starting with `@` above a function that wraps it to add behavior. Where the original used these for convenience, this version shows the plain-function equivalent. |
 | **threads / `ThreadPoolExecutor`** | A way to run several slow things (like API or disk calls) at the same time instead of one after another. The simple, sequential (one-after-another) version is always shown first. |
@@ -38,6 +40,10 @@ Read these once. Each scaffolding box in the guide links back here.
 
 ## 2. Review tracker
 
+> **(For maintainers — readers can skip this section.)** This is bookkeeping from the
+> editorial pass that adapted the guide for beginners. Nothing below is something *you*
+> need to do; if you're here to learn, section 1 above is all you need from this file.
+
 Status legend: ☐ not started · ◐ in progress · ☑ adapted for beginners
 
 | File | Status | Notes |
@@ -46,7 +52,7 @@ Status legend: ☐ not started · ◐ in progress · ☑ adapted for beginners
 | `agent-harness-guide/README.md` | ☑ | Beginner-track pointer in "Who this is for". |
 | `00-foundations.md` | ☑ | Added orientation pointer + scaffolding for dot-access, `json.loads`, JSON Schema, `with`/stream, threads. |
 | `01-bare-harness.md` | ☑ | Scaffolding for type hints, `**args`, `try/except`, list comprehension (with plain-loop equivalent), `__main__`. |
-| `02-tool-system.md` | ☑ | Added full functions-only "beginner track" (tool = fn + schema dict; registry = dict; dispatch + for-loop), plus inline boxes translating classes, the `@tool` decorator/introspection, and threads. |
+| `02-tool-system.md` | ☑ | Functions-only beginner material now lives in the version ladder itself (Versions 1–2 = schema dicts + dict registry + for-loop dispatch), flagged by the "🟢 Beginner track" heading near the top; plus inline boxes translating classes, the `@tool` decorator/introspection, and threads. |
 | `03-conversation-and-streaming.md` | ☑ | Beginner track: `Conversation` as a plain dict + functions (new_conversation/add_user/extend_items/save/load); streaming framed as optional (use non-streaming `create()` + `output_text`). Inline boxes on the class methods and the argument-taking decorator. |
 | `04-real-tools.md` | ☑ | One consolidated box: tools are plain functions; `@tool` is optional (hand-write schemas per Phase 2); plus heads-ups on `pathlib.Path`, `lambda`, f-string format specs, and try/except. |
 | `05-permissions-and-safety.md` | ☑ | Beginner track: full permission check in dicts + if/else (TOOL_RISK, AUTO_OK, check_permission/ask_user); concept table for dataclass≈dict, Enum≈string constants, set≈list, closure, tuple-return, hooks. Inline box reframing hooks as plain functions. |

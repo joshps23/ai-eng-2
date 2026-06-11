@@ -173,7 +173,7 @@ carrying the same `call_id`) before any sub-agent exists.
 
 ```python
 # v1_subagent_inline.py — Step 1.1: orchestrator with a stub task tool
-import json
+import json  # not used yet — Step 1.2 parses the task call's arguments with it
 from openai import OpenAI
 
 client = OpenAI()
@@ -720,6 +720,11 @@ against the registry you already built.
 
 Until now the agent loop lived in a standalone function or script. To support sub-agents we need agents to be *values* — objects you can instantiate, configure, and pass around. The refactor is small but important.
 
+> ⚠️ **File-name collision:** Phase 2's full demo script was *also* called `agent.py`.
+> If you've been following the guide in a single working directory, saving the listing
+> below will silently overwrite it — keep each phase in its own folder (or rename the
+> Phase 2 file first).
+
 ```python
 # agent.py
 from __future__ import annotations
@@ -884,6 +889,12 @@ class Agent:
 
 Key design decisions:
 
+- **`self._conversation.extend(resp.output)` appends the SDK objects raw** — a
+  deliberate shortcut from the `.model_dump()` normalization habit Phases 3 and 6
+  taught. It works here because this `Agent` only ever *resends* the transcript as
+  `input` (the OpenAI SDK serialises its own objects on the way out) and never
+  `json.dumps`-es or saves it. The moment you add token counting or persistence —
+  Phase 8 does both — normalize at append time again.
 - **One transcript per instance.** Calling `.run()` on a fresh `Agent` starts with a clean slate. There is no shared global state between agents.
 - **`depth` is carried from parent to child.** When the orchestrator spawns a sub-agent it passes `depth=self.depth + 1`, allowing the guard to trigger before a recursion goes too deep.
 - **`registry.dispatch_parallel` is the Phase 2 machinery.** Phase 2 already handles running multiple tool calls concurrently; nothing new is needed here.
@@ -963,7 +974,7 @@ a-loop trick, now spelled `Agent(...).run(prompt)`.
 
 ### Step 3.2 — Agent Presets: Named Roles with Fixed Instructions and Tools
 
-> **Why now?** In Step 3.1 you hardcoded the sub-agent's instructions and tool set inside `task_fn`. Once you have more than one role (researcher, coder, reviewer …) you want a lookup table so the orchestrator can ask for a role by name and get the right configuration automatically. That table is all a "preset" is.
+> **Why now?** In Step 3.1 you hardcoded the sub-agent's instructions and tool set inside the `task` tool. Once you have more than one role (researcher, coder, reviewer …) you want a lookup table so the orchestrator can ask for a role by name and get the right configuration automatically. That table is all a "preset" is.
 
 Define a small registry of named roles, each with a system prompt and a list of allowed tool names.
 
@@ -1042,7 +1053,8 @@ AGENT_PRESETS: dict[str, AgentPreset] = {
 | `analyst` | Metric extraction from data/logs | `read_file`, `run_command` |
 | `generic` | Fallback; caller supplies tools | (none by default) |
 
-Now update `task_fn` to do a preset lookup:
+Now rewrite Step 3.1's `task` as `task_fn` — a plain, *undecorated* function for the
+moment (Step 3.3 wires it back up as a tool) — doing a preset lookup:
 
 ```python
 def task_fn(role: str, prompt: str) -> str:
@@ -1066,11 +1078,18 @@ def task_fn(role: str, prompt: str) -> str:
 
 #### ▶ Run it now
 
+One prerequisite before this runs: `task_fn` reads a module-level `full_registry` — a
+`ToolRegistry` holding every tool workers may draw from — which is only *defined* in
+Step 3.3's complete file. To try `task_fn` right now, build it yourself first, exactly
+like `sub_registry` in Step 3.1's `v3_agent_class.py` (registering `read_file` is
+enough for the reviewer; Step 3.3 adds `list_directory`):
+
 ```python
+# Prerequisite: the registry task_fn draws from (Step 3.3 will own this).
+full_registry = ToolRegistry()
+full_registry.register(read_file)
+
 # Quick test: ask a reviewer sub-agent to check a file.
-# `full_registry` is a ToolRegistry holding every tool workers may draw from —
-# build it exactly like sub_registry in Step 3.1's v3_agent_class.py (register
-# read_file there for now; Step 3.3's complete file adds list_directory).
 result = task_fn("reviewer", "Check auth.py for security issues.")
 print(result)
 ```
@@ -1518,6 +1537,7 @@ Add a thin wrapper around `dispatch_subagent` for debugging:
 ```python
 def timed_dispatch(role: str, description: str, task: str, **kwargs) -> tuple[float, str]:
     """Run a sub-agent and time it. Returns (elapsed_seconds, result)."""
+    print(f"    [task] spawning {role!r}: {description}")
     t0 = time.perf_counter()
     result = dispatch_subagent(role=role, task=task, **kwargs)
     elapsed = time.perf_counter() - t0
@@ -1545,7 +1565,10 @@ for future in as_completed(future_to_meta):
     results[meta["call_id"]] = result
 ```
 
-Sample output:
+Sample output — **what `run_subagents_parallel` itself prints** when you call it with a
+three-task batch (directly, or wired into the dispatch step as in Step 4.3). Note that
+the worked example in §5 takes a different route — the `task` *tool* via Phase 2's
+`dispatch_parallel` — so it produces the per-task lines only (see §5.2):
 ```text
   [orchestrator] running 3 sub-agent(s) in parallel (max_workers=3) …
     [task] spawning 'researcher': summarise architecture
@@ -1595,10 +1618,10 @@ from tools.base import tool
 from subagents import (
     AGENT_PRESETS,
     make_task_tool,
-    run_subagents_parallel,
-    dispatch_subagent,
-    MAX_CONCURRENT_SUBAGENTS,
 )
+# (run_subagents_parallel and MAX_CONCURRENT_SUBAGENTS stay in subagents.py —
+# this script doesn't call them directly; make_task_tool's TaskTool covers the
+# fan-out, as the §5.2 transcript note explains.)
 
 # ---------------------------------------------------------------------------
 # Define the "real" tools available to sub-agents
@@ -1728,17 +1751,23 @@ print(f"\nToken usage: {orchestrator.usage}")
 
 ### 5.2 Representative execution transcript
 
+The progress lines below come from `TaskTool.run` (§7): when the orchestrator emits
+three `task` calls in one response, Phase 2's `dispatch_parallel` runs `TaskTool.run`
+on three pool threads, so the three `[task] spawning` lines appear together, then a
+`[done]` line as each worker finishes. (The `[orchestrator] running N sub-agent(s)…`
+banner from `run_subagents_parallel` does *not* appear here — that helper only prints
+when you call it directly or wire it in via Step 4.3.)
+
 ```text
 ============================================================
 Starting repository audit …
 ============================================================
-
-  [orchestrator] running 3 sub-agent(s) in parallel (max_workers=3) …
     [task] spawning 'researcher': summarise repository architecture
     [task] spawning 'analyst': enumerate all TODO and FIXME comments
     [task] spawning 'reviewer': identify security concerns
-
-  [orchestrator] all sub-agents done in 6.2s
+    [done] 'analyst' finished in 4.1s
+    [done] 'reviewer' finished in 5.8s
+    [done] 'researcher' finished in 6.2s
 
 ============================================================
 Audit complete in 8.7s
@@ -2248,13 +2277,23 @@ def make_task_tool(
         }
 
         def run(self, *, role: str, description: str, prompt: str) -> str:
-            return dispatch_subagent(
+            # Progress logging lives here because this is the code path the
+            # worked example (§5) actually takes: Phase 2's dispatch_parallel
+            # calls TaskTool.run on a pool thread for each task call.
+            print(f"    [task] spawning {role!r}: {description}")
+            t0 = time.perf_counter()
+            result = dispatch_subagent(
                 role=role,
                 task=prompt,
                 parent_registry=parent_registry,
                 client=client,
                 depth=parent_depth + 1,
             )
+            print(
+                f"    [done] {role!r} finished in "
+                f"{time.perf_counter() - t0:.1f}s"
+            )
+            return result
 
     return TaskTool()
 

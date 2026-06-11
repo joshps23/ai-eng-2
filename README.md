@@ -62,7 +62,9 @@ the Responses API); `tiktoken` is an optional extra for exact local token counti
   `agent-harness-guide/code`.
 - **No API key needed to learn.** The full test suite runs offline — a `FakeClient`
   stands in for the API. You only need `OPENAI_API_KEY` to actually *chat* with the
-  agent (`agent-harness`).
+  agent (`agent-harness`) or to execute the phases' "▶ Run it now" scripts — without
+  a key those stop at `openai.OpenAIError: Missing credentials`, and the "No API
+  key?" box in Phase 0 shows the offline alternatives (expected output + tests).
 - **`agent-harness: command not found`?** The console script is installed by
   `pip install -e ".[dev]"`; make sure your venv is active, or run it as
   `python -m agent_harness.cli`.

@@ -34,7 +34,11 @@ module directly: `python -m agent_harness.cli`.
 **Q: Do I need an API key just to learn?**
 **No.** The entire guide is readable offline and the full test suite passes with **no
 key and no network** — a `FakeClient` (see `code/agent_harness/testing.py`) stands in
-for the real API. You only need a key to actually *chat* with the agent.
+for the real API. You only need a key to actually *chat* with the agent. One honest
+caveat: the phases' "▶ Run it now" scripts *do* call the real API, so without a key
+they stop at `openai.OpenAIError: Missing credentials` (see below). That's expected —
+the "No API key?" box in Phase 0 gives the keyless alternatives: verify each
+checkpoint against its printed expected output, and run the offline test suite.
 
 ---
 
@@ -47,9 +51,20 @@ environment variable. Set it before running:
 export OPENAI_API_KEY="sk-..."        # Windows (PowerShell): $env:OPENAI_API_KEY="sk-..."
 ```
 
+**Q: `openai.OpenAIError: Missing credentials` (and the traceback points at `client = OpenAI()`).**
+This is the error you get when **no key is set at all**. `OpenAI()` looks for
+`OPENAI_API_KEY` the moment the client is constructed and raises right there — *before*
+any request is sent, which is why the traceback points at the `client = OpenAI()` line
+rather than at `responses.create`. Fix: `export OPENAI_API_KEY="sk-..."` in the same
+terminal, then re-run. (No key and just want to learn? See the previous section — the
+guide and its tests work offline; the phases' "▶ Run it now" boxes explain the keyless
+alternatives.)
+
 **Q: `openai.AuthenticationError` / 401.**
-The key is missing, mistyped, or revoked. Re-check `echo $OPENAI_API_KEY`, regenerate
-it in your OpenAI dashboard if unsure, and confirm your account has billing set up.
+The key is **set but wrong** — mistyped or revoked. (A completely missing key fails
+earlier and differently; see the previous question.) Re-check `echo $OPENAI_API_KEY`,
+regenerate it in your OpenAI dashboard if unsure, and confirm your account has billing
+set up.
 
 **Q: Which model does it use, and how do I change it?**
 The default is **`gpt-4o`** (`MODEL_DEFAULT` in `code/agent_harness/config.py`). Override

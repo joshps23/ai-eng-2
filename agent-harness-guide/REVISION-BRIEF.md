@@ -111,22 +111,60 @@ Score each phase 1–5 on each axis; the loop revises the lowest-scoring phase n
 
 The evaluator-reviser loop runs **at most 10 times**, then stops on its own.
 
-- Iterations used: **3 / 10** *(reset 2026-06-10 for the version-ladder pass)*
+- Iterations used: **6 / 10** *(reset 2026-06-10 for the version-ladder pass; iterations 4–6 ran 2026-06-11 as the beginner-persona dev loop below)*
 - Per iteration: score all phases on the rubric, pick the weakest, revise it one notch
   more incremental, increment the counter here, log it below, commit, push. Stop when the
   counter hits 10 **or** every phase scores ≥4 on every axis.
 
 ### Known issues for the loop to address (seed list)
 
-- **Model-id inconsistency.** Runnable examples mix `MODEL = "gpt-5"`, `"gpt-4o"`, and
-  `gpt-4.1`/`gpt-4o-mini` across phases. Standardize the runnable `MODEL = "..."` constant
-  to one default (**`gpt-4o`**, matching the canonical `code/agent_harness/config.py` and
-  the FAQ), while leaving genuine prose discussion of model *families* intact. (Rubric
-  axis: correct & current.)
-- Re-check that phases whose agents folded the old sidebar 🟢 box into live steps (Phase 2,
-  Phase 5) still carry an explicit beginner-track recap.
+- Phase 3's beginner-track code lives inside a `>` blockquote: renders fine on GitHub,
+  but copying from the *raw* file grabs `> ` prefixes. Decide whether to restructure
+  (carefully — additive-only) or add a one-line "copy from the rendered page" note.
+- Phase 7 Step 4.3's `_dispatch_step` is a `self` method shown without its integration
+  point (`sub_registry_context` never constructed; absent from the §7 consolidated
+  listing) — a beginner can't tell where it goes or who calls it.
+- The `ERROR:` vs `Error:` tool-result convention still differs between Phase 4 and
+  Phase 5 (now documented in-phase; full standardization deliberately deferred).
+- ~~Model-id inconsistency~~ — resolved (cycle 1): runnable snippets standardized on
+  `gpt-4o`; deliberate prose exceptions documented in the 2026-06-11 log entry.
+- ~~Phase 2/5 beginner-track recap check~~ — resolved (cycle 1): Phase 2 already clear;
+  Phase 5 gained an explicit "V1+V2 is a legitimate stopping point" paragraph.
 
 ## Revision log (newest first)
+
+- **2026-06-11 — Iteration 6: beginner-persona dev loop, cycle 3 (verification +
+  closing polish).** A second cold-read pass (three fresh "Sam" readers, same scopes)
+  confirmed every cycle-2 fix held under execution: phases 0–5 had **zero blockers**
+  (all offline checkpoints byte-exact, keyless path honest, the reordered permission
+  gate verified safe), and phases 6–8 had two: Phase 8 §9's tests imported four modules
+  the phase never printed (fixed with a new §9.0 layout + shim listings —
+  execution-verified, 2 passed), and the shown CLI's `--transcript` flag was dropped
+  by an argparse `dest` mismatch (fixed). Remaining confusions/paper cuts across all
+  phases closed in the same pass (getattr-fallback gloss, `_build_schema` agreement,
+  Phase 0 layout diagram, fnmatch brace-glob in a model-facing docstring, first-line-
+  only Args-parsing warning, `prune_to_budget` over-budget-by-design note, etc.).
+  Commits: cycle-3 slices for phases 0–3, 4–5, 6–8. Tests 56 green throughout; the
+  loop's verification method (cold beginner read + execute) is now the recommended
+  acceptance gate for future passes.
+- **2026-06-11 — Iterations 4–5: beginner-persona dev loop (cycles 1–2).** New
+  verification method: after each revision pass, a fresh sub-agent role-plays "Sam," a
+  Python beginner (the assumed five concepts only), reads the repo cold, executes every
+  offline checkpoint, and reports blockers/confusions/paper cuts with file:line; that
+  report seeds the next revision pass. Cycle 1 (iteration 4) closed the old seed list
+  (model ids → `gpt-4o`; Phase 5 stopping-point recap). The beginner pass (three
+  readers: phases 0–3, 4–5, 6–8) then found 13 verified blockers, including: a keyless
+  reader dead-ends at every ▶ checkpoint despite "no key needed to learn" (and the
+  documented missing-key error was wrong); Phase 4's `glob` `**` branch broken in all
+  three copies (`lstrip("**/")` strips chars, not a prefix); Phase 5's hook regex never
+  matched `rm -rf` and session memory silently overrode hard denials (one `a` answer
+  re-enabled `bash(rm -rf /)`); Phase 8's §7 `run_turn` TypeError'd on its own §9.3
+  test; Phase 7's sample transcripts were unproducible by the shown code; Phase 6
+  referenced an undefined `_is_done`. Cycle 2 (iteration 5) fixed all of these plus
+  ~20 confusions and ~30 paper cuts across all phases + entry docs (commits 9d5a6be,
+  a03d9a1, 49b6a62), and one real package bug found by the pass (keyless CLI raw
+  traceback — cf7cc0f, the only `code/` change; tests 56 green throughout). Remaining
+  items carried into the seed list above.
 
 - **2026-06-10 — Eval-loop iteration 3: Phase 5 repaired (27 → 30/30).** Re-diagnosis
   found Phase 5's V3 `Tool` dataclass / `ToolRegistry` are deliberate in-file upgrades

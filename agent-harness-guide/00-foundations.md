@@ -41,16 +41,16 @@ compaction, retries) is refinement on top of this loop.
                 ┌─────────────────────────────────────────────┐
                 │                                             │
                 ▼                                             │
-   ┌────────────────────────┐     wants to    ┌──────────────┴───────────────┐
+   ┌────────────────────────┐     wants to     ┌──────────────┴────────────────┐
    │  Send conversation to  │──── call tools ─▶│  Execute tools, append their  │
    │  the model (Responses) │                  │  outputs to the conversation  │
-   └────────────────────────┘                  └──────────────────────────────┘
+   └────────────────────────┘                  └───────────────────────────────┘
                 │
                 │ produced final text
                 ▼
-        ┌───────────────┐
+        ┌────────────────┐
         │  Return answer │
-        └───────────────┘
+        └────────────────┘
 ```
 
 Claude Code, Cursor, and every "coding agent" you've used is — at its core — this
@@ -176,8 +176,11 @@ print(resp.output_text)  # convenience: all text output concatenated
 
 Two important fields on the request:
 
-- **`instructions`** — the system/developer prompt. Equivalent to a `system`
-  message. Prefer this over stuffing a system message into `input`.
+- **`instructions`** — the system/developer prompt: standing directions to the model
+  ("you are a terse assistant") that apply to the whole conversation, as opposed to
+  what the user just said. Equivalent to a `system` message — the older Chat
+  Completions way of sending those same standing directions as a message with
+  `role="system"`. Prefer `instructions` over stuffing a system message into `input`.
 - **`input`** — either a plain string (shorthand for one user message) or a **list
   of input items** (the real, full-control form we use everywhere).
 
@@ -194,7 +197,30 @@ Hello there! How are you?
 ```
 
 The exact words vary, but if any five-word greeting appears your API key is valid
-and the client is wired up correctly. Move on only once this works.
+and the client is wired up correctly. If you have a key, get this working before
+moving on — every later checkpoint builds on it. If you don't have a key, see the
+box below: you can still finish every phase.
+
+> 🟢 **No API key? You can still do this guide.** The ▶ Run-it-now scripts call the
+> real API, so without a key they stop immediately with
+> `openai.OpenAIError: Missing credentials` — raised at the `client = OpenAI()`
+> line, *before* any request is even sent. That's expected, and it doesn't lock you
+> out. Use these checkpoints instead:
+>
+> 1. **Read the expected output.** Every ▶ checkpoint shows exactly what success
+>    looks like. Trace the code against that output until you could have predicted
+>    it — that's the same understanding the run would have confirmed.
+> 2. **Run the offline test suite.** From `code/`:
+>    `pip install -e ".[dev]"` once, then `python -m pytest -q` — 56 tests exercise
+>    the same loop, tool handshake, and conversation logic, with **no key and no
+>    network**.
+> 3. **Curious how offline tests are possible?** `code/agent_harness/testing.py`
+>    defines a `FakeClient` that scripts exact Responses-API replies. It works
+>    because the package injects its client instead of calling `OpenAI()` directly
+>    — a design choice Phase 8 returns to.
+>
+> Wherever a checkpoint says "once this works," keyless readers can read it as:
+> "once you could predict the output shown."
 
 ### 0.3.3 Step 2 — `input` as a list of items
 
@@ -762,9 +788,12 @@ agent_harness/
 ├── __init__.py
 ├── config.py          # MODEL, defaults, env
 ├── llm.py             # thin wrapper around client.responses with retries
+├── conversation.py    # the transcript (Phase 3)
 ├── tools/
-│   ├── __init__.py    # the registry
-│   ├── base.py        # Tool abstraction
+│   ├── __init__.py    # re-exports for convenient imports
+│   ├── base.py        # Tool abstraction + @tool decorator
+│   ├── registry.py    # the registry & safe dispatch
+│   ├── parallel.py    # threaded (parallel) tool dispatch
 │   ├── files.py       # read/write/edit/glob/grep
 │   └── shell.py       # bash
 ├── permissions.py     # approval gates & policy
@@ -772,6 +801,7 @@ agent_harness/
 ├── context.py         # token budgeting & compaction
 ├── agent.py           # the core loop (the "harness")
 ├── subagents.py       # spawning parallel agents
+├── testing.py         # FakeClient — offline tests, no API key
 └── cli.py             # the REPL / entrypoint
 ```
 

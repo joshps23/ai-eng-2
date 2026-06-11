@@ -18,7 +18,7 @@ stretch task in **[`EXERCISES.md`](./EXERCISES.md)** — do them right after the
 1. **Check Python.** You need 3.10+. Run `python --version`.
 2. **Make a virtual environment and install the code:**
    ```bash
-   cd code
+   cd agent-harness-guide/code   # from the repo root (just `cd code` if you're already in agent-harness-guide/)
    python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
    pip install -e ".[dev]"
    python -m pytest -q          # expect: all tests pass, no API key needed
@@ -27,7 +27,11 @@ stretch task in **[`EXERCISES.md`](./EXERCISES.md)** — do them right after the
    (or **Setup & troubleshooting** in the [top-level README](../README.md)). Getting
    the tests green now means every later "run it" step will just work.
 3. **(Optional, for actually chatting with the agent)** Set `OPENAI_API_KEY`. You do
-   **not** need this to learn — the whole guide and its tests run offline.
+   **not** need this to learn — the whole guide and its tests run offline. (To be
+   precise: the phases' "▶ Run it now" scripts call the real API, so without a key
+   they stop at `openai.OpenAIError: Missing credentials`. That's fine — the
+   "No API key?" box in Phase 0 shows how to verify each checkpoint keylessly:
+   check the printed expected output, and lean on the offline test suite above.)
 
 ---
 

@@ -6,10 +6,17 @@ Phase 1 gave us a working agent loop in roughly 80 lines. The dispatch logic was
 
 ```python
 def dispatch(name: str, arguments: str) -> str:
-    args = json.loads(arguments)
-    if name == "get_current_time":
-        return get_current_time(**args)
-    return f"ERROR: unknown tool '{name}'"   # returns a string, never raises
+    """Route a tool call. Always returns a string; never raises."""
+    try:
+        args = json.loads(arguments)
+    except json.JSONDecodeError as exc:
+        return f"ERROR: could not parse arguments JSON — {exc}"
+    try:
+        if name == "get_current_time":
+            return get_current_time(**args)
+        return f"ERROR: unknown tool '{name}'"
+    except Exception as exc:               # errors become strings, never crashes
+        return f"ERROR: {type(exc).__name__}: {exc}"
 ```
 
 That works for a demo. It does not scale. Every new tool requires editing the dispatch function, the hand-written schema, and the tool list passed to the API. By the end of this phase you will have replaced that approach entirely — but we will do it as a **ladder of complete, runnable versions** of the *same* harness, each one a reorganization of the last, starting even lower than Phase 1 did: a script with no functions at all.
@@ -23,6 +30,8 @@ That works for a demo. It does not scale. Every new tool requires editing the di
 - **Going further (optional)** — parallel tool execution with threads.
 
 You can stop at any version; each one is a complete, working tool system that produces the same answers. Each later version changes *how the code is organized*, never *what the agent does*.
+
+### 🟢 Beginner track
 
 > 🟢 **Beginner track.** If classes and decorators are still new to you, Versions 1 and 2
 > are a perfectly legitimate stopping point — hand-written schema dicts plus a dict
@@ -547,8 +556,6 @@ from __future__ import annotations
 
 import inspect
 import json
-import traceback
-import types
 from typing import Any, Callable, get_type_hints
 
 
@@ -952,6 +959,12 @@ The line `@shout` means exactly `greet = shout(greet)`: define `greet`, pass it 
 
 ### 4.2 Write a function with type hints and a docstring
 
+> **Read, don't run (yet).** The `tool` decorator used in §4.2–4.4 doesn't exist
+> yet — we build it ourselves in §4.5–4.6 below. Pasting this block on its own gives
+> `NameError: name 'tool' is not defined`. Read these three short sections as a
+> preview of the *experience* we're about to build, then run them once `tool` is
+> defined (or use the complete `tools/base.py` listing at the end of the phase).
+
 ```python
 @tool
 def add(a: float, b: float) -> str:
@@ -1060,8 +1073,8 @@ def _build_schema(fn: Callable) -> dict:
             in_args = True
             continue
         if in_args:
-            if stripped and not stripped[0].isspace() and stripped.endswith(":"):
-                # New top-level section — stop
+            if stripped and not line.startswith((" ", "\t")):
+                # Un-indented line = new top-level section — stop
                 in_args = False
             elif ":" in stripped:
                 pname, _, pdesc = stripped.partition(":")
@@ -1277,7 +1290,7 @@ def _build_schema(fn: Callable) -> dict:
             in_args = True
             continue
         if in_args:
-            if stripped and not stripped[0].isspace() and stripped.endswith(":"):
+            if stripped and not line.startswith((" ", "\t")):
                 in_args = False
             elif ":" in stripped:
                 pname, _, pdesc = stripped.partition(":")
@@ -1793,8 +1806,6 @@ from __future__ import annotations
 
 import inspect
 import json
-import traceback
-import types
 from typing import Any, Callable, get_type_hints
 
 
@@ -1905,7 +1916,6 @@ def tool(fn: Callable) -> FunctionTool:
 from __future__ import annotations
 
 import json
-import traceback
 from typing import Any
 
 from .base import Tool

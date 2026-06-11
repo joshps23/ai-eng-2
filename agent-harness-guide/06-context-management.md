@@ -247,7 +247,7 @@ while True:
         estimated = 0
         for item in input_items:
             estimated += len(str(item)) // 4       # ~4 characters per token
-        print(f"[context] ~{estimated} tokens across {len(input_items)} items")
+        print(f"[context] ~{estimated} tokens across {len(input_items)} item(s)")
 
         while estimated > TOKEN_BUDGET and len(input_items) > 1:
             dropped = input_items.pop(0)           # naive: drop the oldest item
@@ -296,17 +296,22 @@ echo "The launch checklist: 1) freeze the schema. 2) tag the release. \
 python harness_v1.py
 ```
 
+(No `OPENAI_API_KEY` set? The script dies immediately at `client = OpenAI()` with a raw
+`openai.OpenAIError: Missing credentials` traceback — that's expected, and it applies to
+every key-requiring script in Phases 6–8. See Phase 0's "No API key?" box for how to
+follow these checkpoints keyless.)
+
 Then have a conversation that involves the file:
 
 ```
 you> Read notes.txt and tell me what step 3 is.
-[context] ~16 tokens across 1 items
+[context] ~16 tokens across 1 item(s)
 [tool] read_file({"path":"notes.txt"}) → 142 chars
-[context] ~213 tokens across 4 items
+[context] ~213 tokens across 4 item(s)
 agent> Step 3 is to run the smoke tests twice.
 
 you> Great. Now explain why smoke tests matter, in detail.
-[context] ~244 tokens across 5 items
+[context] ~244 tokens across 5 item(s)
 agent> ...
 ```
 
@@ -376,14 +381,15 @@ def count_items(items):
 > 🟢 `json.dumps(item)` turns a dict into its JSON text so we can measure its length.
 > For this to work on *every* item, the harness below converts the SDK objects in
 > `resp.output` to plain dicts with **`item.model_dump()`** as it appends them — the
-> same normalization trick `Conversation.to_input_dict()` uses in Phase 3.
+> same normalization trick `Conversation.to_input()` uses in Phase 3. (The tested
+> package's `conversation.py` spells the same method `to_input_dict()`.)
 
 **▶ Run it now** (offline)
 
 ```python
 items = [{"role": "user", "content": "hello"},
          {"role": "assistant", "content": "Hi! " * 50}]
-print(count_items(items))    # ~70 — a number, instantly, no API
+print(count_items(items))    # 68 — a number, instantly, no API
 ```
 
 ### Step 2.2 — Rule 1: pairs travel together
@@ -681,7 +687,9 @@ where the `Agent` consults the context helpers at the top of every turn.
 
 The API returns ground-truth token counts in `resp.usage` after each call, but we also need *local* estimates to decide whether to compact *before* the next API call.
 
-First, install tiktoken:
+First, install tiktoken — this step is **optional**: as the next paragraph explains, the
+code below falls back to the divide-by-4 heuristic whenever tiktoken is missing or you
+are offline, so you can skip the install and keep going:
 
 ```text
 pip install tiktoken
@@ -748,6 +756,11 @@ except ImportError:
     def count_tokens(text: str) -> int:  # type: ignore[misc]
         return _heuristic(text)
 ```
+
+> 🟢 The comment `# type: ignore[misc]` is for **type checkers only** — Python itself
+> ignores it. It silences the checker's complaint that `count_tokens` is defined twice
+> (once in the `try`, once in the `except`); at runtime exactly one of the two
+> definitions exists, which is the whole point of the fallback.
 
 ### Step 3.2 — `count_items` — serialise the transcript
 
@@ -873,11 +886,12 @@ print(f"Clipped:  ~{count_tokens(safe_output)} tokens")
 print("Last line:", safe_output.splitlines()[-1])
 ```
 
-Expected output:
+Expected output (with the heuristic counter — exact numbers vary slightly with
+tiktoken installed):
 
 ```
 Original: ~3750 tokens
-Clipped:  ~2003 tokens
+Clipped:  ~2009 tokens
 Last line: ... [output truncated to ~2000 tokens]
 ```
 
@@ -939,6 +953,9 @@ def prune_to_budget(
       together; neither is dropped without the other.
     - Items with no natural pair (orphaned tool calls, plain messages) may be
       dropped individually once they fall outside the recency window.
+
+    When only protected items remain, pruning stops — so the result may still
+    exceed *budget*. The recency guarantee outranks the budget target.
 
     Returns a new list; does not mutate *items*.
     """
@@ -1046,6 +1063,24 @@ assert calls == outputs, "Orphaned tool call/output detected!"
 print("Pairing check passed — no orphaned tool calls.")
 ```
 
+Expected output (with the heuristic counter; exact numbers shift a little if
+`tiktoken` is installed):
+
+```text
+Before: 10 items, ~1595 tokens
+After:  2 items, ~319 tokens
+Pairing check passed — no orphaned tool calls.
+```
+
+Look closely: the result is **still over the 200-token budget** — and that is correct
+behavior, not a bug. `keep_last_n=2` protects the final
+`function_call`/`function_call_output` pair outright, and protected items can never be
+dropped, so once only protected items remain, pruning stops even though the budget is
+unmet. The budget is a *target*; the recency window is a *guarantee*; when the two
+conflict, the window wins. (In the real harness this is the right trade: sending a
+slightly-too-big input is recoverable, but orphaning the round-trip the model made one
+second ago is not.)
+
 **Tradeoff:** The agent loses access to the full history of what it did and why. For short-horizon tasks this is fine; for long-horizon tasks (e.g. refactoring an entire codebase) the agent may repeat work or contradict earlier decisions. That is where compaction comes in.
 
 ### Step 3.7 — The loop consults the module
@@ -1077,9 +1112,10 @@ while True:
 ```
 
 **▶ Run it now** — same conversation as before. With the real `INPUT_BUDGET` (≈124 k
-tokens) pruning won't fire in a short chat; temporarily set `INPUT_BUDGET = 800` in
-`context.py` to watch the same truncation behavior as V2, now with the recency window
-keeping the latest round-trip intact.
+tokens) pruning won't fire in a short chat; to watch the same truncation behavior as V2,
+temporarily *replace the derived line* `INPUT_BUDGET = MAX_CONTEXT_TOKENS -
+RESPONSE_RESERVE` in `context.py` with `INPUT_BUDGET = 800` — now with the recency
+window keeping the latest round-trip intact. (Restore the derived line afterwards.)
 
 ### What changed from V3 → V4
 
@@ -1141,8 +1177,7 @@ Include ALL of the following that are present:
    reference going forward.
 
 Format as terse bullet points under those headings. Do not include conversational \
-filler. Do not truncate any heading just because it is empty — omit empty headings \
-entirely. Maximum 600 tokens.
+filler. Omit any heading whose content is empty. Maximum 600 tokens.
 """
 ```
 
@@ -1150,8 +1185,12 @@ entirely. Maximum 600 tokens.
 
 ```python
 # context.py  (continued)
-
-import openai  # or however you import the client
+#
+# Deliberately NO module-level `import openai` here: compact() only ever
+# *receives* an already-built client, so the type hint below is written as
+# the string "openai.OpenAI". That keeps context.py importable — and all its
+# offline functions usable — on a machine without the openai package. The
+# consolidated listing at the end of this phase makes the same choice.
 
 # Number of recent items to keep verbatim after compaction.
 # These items will NOT be fed to the summariser — they stay intact.
@@ -1160,7 +1199,7 @@ KEEP_RECENT_VERBATIM = 10
 
 def compact(
     conversation: "Conversation",
-    client: openai.OpenAI,
+    client: "openai.OpenAI",
     model: str,
     *,
     keep_recent: int = KEEP_RECENT_VERBATIM,
@@ -1364,7 +1403,12 @@ def run_agent(
         # … process resp.output, append items, handle tool calls …
         # (see Phase 2 / Phase 3 for the full turn-processing code)
 
-        if _is_done(resp):
+        # Done when the model issued no function_call items this turn —
+        # the same stop condition every loop in this guide has used.
+        if not any(
+            getattr(item, "type", None) == "function_call"
+            for item in resp.output
+        ):
             break
 ```
 
@@ -1530,6 +1574,13 @@ The memory file is injected once into `instructions` — which is **outside** `i
 
 This is the consolidated module — Versions 3 and 4 in one file, the form that maps onto
 `code/agent_harness/context.py` in the tested package.
+
+> 🟢 One new bit of typing machinery appears in the imports below. The
+> `if TYPE_CHECKING:` block **never runs** — type checkers read it, Python skips it — so
+> we can name the `openai` and `Conversation` types in annotations without importing
+> those modules at runtime. That is also why the annotations are *quoted strings*
+> (`"Conversation"`, `"openai.OpenAI"`): the names don't exist when Python defines the
+> function, but a string annotation is fine — only the type checker ever resolves it.
 
 ```python
 # context.py
@@ -1710,7 +1761,8 @@ def prune_to_budget(
     keep_last_n: int = 6,
 ) -> list[dict[str, Any]]:
     """
-    Drop oldest items until count_items(result) <= budget.
+    Drop oldest items until count_items(result) <= budget — or until only
+    protected items remain, in which case the result may still exceed budget.
     Never splits a function_call / function_call_output pair.
     Never drops items in the recency window (last keep_last_n items, plus
     any paired partners that are themselves in the window).
@@ -1778,8 +1830,8 @@ Include ALL of the following that are present:
 6. **Critical file paths / identifiers** — anything the agent will need to \
    reference going forward.
 
-Format as terse bullet points under those headings. Omit any heading whose \
-content is empty. Maximum 600 tokens.\
+Format as terse bullet points under those headings. Do not include conversational \
+filler. Omit any heading whose content is empty. Maximum 600 tokens.\
 """
 
 KEEP_RECENT_VERBATIM = 10
