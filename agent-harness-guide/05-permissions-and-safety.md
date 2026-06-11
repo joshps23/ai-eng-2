@@ -233,19 +233,24 @@ def ask_user(tool_name):
     return "allow" if answer == "y" else "deny"
 ```
 
-Wire it into your dispatch path right before running a tool — these four lines replace the bare `dispatch(...)` call:
+Wire it into your dispatch path right before running a tool — these lines replace the bare `dispatch(...)` call:
 
 ```python
-# Inside your tool-call handling loop (from Phase 2 / Phase 4):
+# Inside your tool-call handling loop, right after args = json.loads(tc.arguments):
 arg = args.get("command", args.get("path", ""))
-decision = check_permission(fc.name, arg)
+decision = check_permission(tc.name, arg)
 if decision == "ask":
-    decision = ask_user(fc.name)
+    decision = ask_user(tc.name)
 if decision == "deny":
     result = "Permission denied by the harness."   # becomes the tool result
 else:
-    result = dispatch(fc.name, fc.arguments)        # run it normally
+    result = dispatch(tc.name, args)               # run it normally
 ```
+
+(This matches the `dispatch(name, args)` defined in the full file below, which takes the
+**parsed dict**. If you are instead wiring the gate into Phase 2/4's
+`ToolRegistry.dispatch`, remember that one takes the **raw JSON string** — pass
+`tc.arguments` there, not `args`.)
 
 That is the entire safety mechanism. A safe tool (`read_file`, `grep`) passes straight through. A dangerous command like `bash("rm -rf .")` is blocked before the shell ever sees it. Anything in between stops to ask you.
 
@@ -253,6 +258,15 @@ Here is Version 2 in full — one paste-able file. It is `agent_v1.py` with name
 tool bodies became functions, the dispatch `elif` chain became `dispatch()`, the loop
 became `run_agent()`, and the safety layer is the three pieces you just read. A
 `write_file` tool is added so the `"caution"` risk level has something to gate.
+
+> ⚠️ **One thing these inline tools deliberately leave out:** Phase 4's `_safe_path`
+> workspace confinement. To keep V1–V3 short, `read_file`/`write_file` here accept any
+> path — and since `write_file` is a `caution` tool, the default `auto` mode
+> auto-approves it, so the model could write anywhere your user account can. The
+> permission layer and the path guard are **different layers** (one decides *whether* a
+> tool runs, the other constrains *where* it can reach) — you want both. Run V1–V3 only
+> in a scratch folder; the confinement returns at the end of the phase, when
+> `phase5_tools.py` re-adopts Phase 4's confined tools.
 
 ```python
 # agent_v2.py — Phase 5, Version 2: the same harness, reorganized into functions.
@@ -591,9 +605,8 @@ The plain `TOOL_RISK` dict works, but in a larger codebase you want risk declare
 ```python
 # risk_tools.py — this phase's risk-aware Tool (an upgraded take on Phase 2's Tool)
 from __future__ import annotations
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Callable
-import json
 
 RISK_SAFE      = "safe"       # read-only, no side effects
 RISK_CAUTION   = "caution"    # writes, but bounded (workspace files only)
@@ -624,7 +637,6 @@ When registering real tools (from Phase 4), declare their risk explicitly:
 ```python
 # tool_registry.py — this phase's registry (Phase 2's idea, plus get/all_tools/api_schemas)
 import json
-import fnmatch
 from typing import Any
 
 from risk_tools import Tool
@@ -688,6 +700,11 @@ The harness operates in one of five modes. These mirror the mental model popular
 | Always allow | `always-allow` | All tool calls auto-approved. No prompts. |
 | Bypass / YOLO | `bypass` | Same as `always-allow` but the harness prints a loud warning at startup. |
 
+> 🟢 **`{"safe"}` below is a *set*, not a dict.** Curly braces around values *without
+> colons* make a `set` — think of it as a list that ignores duplicates and is very fast
+> at `in` checks (`"safe" in {"safe", "caution"}`). `set()` makes an empty one — plain
+> `{}` would make an empty *dict*.
+
 ```python
 # permissions.py
 from __future__ import annotations
@@ -717,7 +734,7 @@ _HARD_DENY_IN_MODE: dict[Mode, set[str]] = {
 
 BYPASS_WARNING = """\
 ╔══════════════════════════════════════════════════════════════╗
-║  WARNING: harness running in BYPASS / YOLO mode.            ║
+║  WARNING: harness running in BYPASS / YOLO mode.             ║
 ║  All tool calls will be auto-approved, including bash.       ║
 ║  Never use this mode on untrusted input or in production.    ║
 ╚══════════════════════════════════════════════════════════════╝"""
@@ -819,9 +836,11 @@ def default_policy() -> PermissionPolicy:
     without prompting; everything else defers to the mode.
     """
     return PermissionPolicy(rules=[
-        # Hard denials — match first, cannot be overridden by later rules
-        PolicyRule(Decision.DENY,  "bash(rm -rf*)",     bash_command_matches("rm -rf*")),
-        PolicyRule(Decision.DENY,  "bash(rm -rf *)",    bash_command_matches("rm -rf *")),
+        # Hard denials — match first, cannot be overridden by later rules.
+        # Note the *leading* wildcard in "*rm -rf*": it matches 'rm -rf' anywhere
+        # in the command, so compounds like 'cd / && rm -rf x' are caught too —
+        # an anchored "bash(rm -rf*)" would miss them.
+        PolicyRule(Decision.DENY,  "bash(*rm -rf*)",    bash_command_matches("*rm -rf*")),
         PolicyRule(Decision.DENY,  "bash(:(){*)",       bash_command_regex(r":\(\)\{")),   # fork bomb
         PolicyRule(Decision.DENY,  "bash(* /dev/sd*)",  bash_command_regex(r"/dev/sd")),
         PolicyRule(Decision.DENY,  "bash(* /dev/nvme*)",bash_command_regex(r"/dev/nvme")),
@@ -834,6 +853,21 @@ def default_policy() -> PermissionPolicy:
         PolicyRule(Decision.ALLOW, "bash(git show*)",   bash_command_matches("git show*")),
     ])
 ```
+
+> 🟢 **Two bits of new syntax in that listing.**
+>
+> 1. **`rules: list[PolicyRule] = field(default_factory=list)`** — in a dataclass you
+>    cannot write `rules: list = []` (Python would share *one* list between every
+>    `PermissionPolicy` instance and refuses with an error). `field(default_factory=list)`
+>    is the standard workaround: "call `list()` to build a fresh empty list for each new
+>    instance."
+> 2. **`bash_command_matches` is a function that *returns a function*.** Calling
+>    `bash_command_matches("rm -rf*")` does not check anything — it builds the little
+>    inner function `_pred` and hands it back, and `_pred` *remembers* the `pattern` it
+>    was built with even after the outer function has returned (Python calls this a
+>    *closure*). The policy stores `_pred` and calls it later, once per tool call. If
+>    "passing a function around as a value" feels alien, Step 4.0 below has a runnable
+>    sixty-second demo of exactly this idea — peek ahead and come back.
 
 ---
 
@@ -866,27 +900,28 @@ def check_permission(
     """
     tool_name = tool.name
 
-    # --- 1. Session memory overrides everything ---
+    # --- 1. Hard denials first: mode, then policy DENY rules. ---
+    # Session memory must NEVER outrank these — "always allow" (the `a` answer)
+    # is a convenience for repeated prompts, not a licence to bypass the deny list.
+    hard_deny_risks = _HARD_DENY_IN_MODE.get(mode, set())
+    if tool.risk in hard_deny_risks:
+        return (
+            Decision.DENY,
+            f"Mode '{mode.value}' does not allow '{tool.risk}' tools. "
+            f"Running in plan/read-only mode."
+        )
+
+    policy_decision = policy.evaluate(tool_name, args)
+    if policy_decision == Decision.DENY:
+        return Decision.DENY, f"Blocked by policy rule matching '{_render_summary(tool_name, args)}'."
+
+    # --- 2. Session memory (only consulted once nothing hard-denies) ---
     if tool_name in _session_always_deny:
         return Decision.DENY, f"Denied for this session (you denied '{tool_name}' earlier)."
     if tool_name in _session_always_allow:
         return Decision.ALLOW, "Allowed by session memory."
 
-    # --- 2. Hard-deny by mode (e.g. plan mode forbids mutations) ---
-    hard_deny_risks = _HARD_DENY_IN_MODE.get(mode, set())
-    if tool.risk in hard_deny_risks:
-        return (
-            Decision.DENY,
-            f"Mode '{mode}' does not allow '{tool.risk}' tools. "
-            f"Running in plan/read-only mode."
-        )
-
-    # --- 3. Policy evaluation ---
-    policy_decision = policy.evaluate(tool_name, args)
-
-    if policy_decision == Decision.DENY:
-        return Decision.DENY, f"Blocked by policy rule matching '{_render_summary(tool_name, args)}'."
-
+    # --- 3. Policy ALLOW ---
     if policy_decision == Decision.ALLOW:
         return Decision.ALLOW, "Explicitly allowed by policy rule."
 
@@ -894,7 +929,7 @@ def check_permission(
 
     # --- 4. Mode auto-approval ---
     if tool.risk in _AUTO_APPROVED.get(mode, set()):
-        return Decision.ALLOW, f"Auto-approved in mode '{mode}' (risk='{tool.risk}')."
+        return Decision.ALLOW, f"Auto-approved in mode '{mode.value}' (risk='{tool.risk}')."
 
     # --- 5. Must ask the user ---
     return _ask_user(tool_name, args)
@@ -925,6 +960,24 @@ def _ask_user(tool_name: str, args: dict) -> tuple[Decision, str]:
             return Decision.DENY, "Denied by user (session)."
         print("  Please type y, n, a, or d.")
 ```
+
+**The order of the checks is load-bearing.** Hard denials — the mode's hard-deny set and
+the policy's DENY rules — are evaluated *before* session memory. Session memory is filled
+in when the user answers `a` once, for *any* call of that tool, however harmless; if it
+were consulted first, a single `a` on `bash(ls)` would silently re-enable
+`bash(rm -rf /)` for the rest of the session. Convenience layers must never outrank the
+deny list.
+
+> 🟢 **Why is the parameter type written `"Tool"` — in quotes?** A string in a
+> type-hint position is a *forward reference*: at the point this function is defined,
+> the `Tool` class lives in another file (or further down the same file), so quoting the
+> name tells Python "don't look this up now — it's only for type checkers." Annotations
+> are never executed at runtime, so this costs nothing. Two related incantations you'll
+> see in the final files: `from __future__ import annotations` (makes *every* annotation
+> behave like a string, so the quotes become optional) and `if TYPE_CHECKING: from
+> risk_tools import Tool` (an import that only happens during static type checking,
+> never at runtime — handy for avoiding circular imports). All three are cosmetic
+> machinery for tooling; the running program ignores them.
 
 **Critical design point:** a DENY does not raise an exception. It returns a `(Decision.DENY, reason)` tuple. The caller converts this into a tool result string and appends it to `input_items`. The model sees "Permission denied by policy: ..." and can adapt — ask for a safer alternative, explain what it was trying to do, or give up gracefully. Crashing or silently skipping would make the loop incoherent.
 
@@ -1024,15 +1077,17 @@ _session_always_deny:  set[str] = set()
 def check_permission(
     tool: "Tool", args: dict, policy: PermissionPolicy, mode: Mode,
 ) -> tuple[Decision, str]:
-    if tool.name in _session_always_deny:
-        return Decision.DENY, f"Denied for this session (you denied '{tool.name}' earlier)."
-    if tool.name in _session_always_allow:
-        return Decision.ALLOW, "Allowed by session memory."
+    # Hard denials first — session memory must never outrank these.
     if tool.risk in _HARD_DENY_IN_MODE.get(mode, set()):
         return Decision.DENY, f"Mode '{mode.value}' does not allow '{tool.risk}' tools."
     decision = policy.evaluate(tool.name, args)
     if decision == Decision.DENY:
         return Decision.DENY, f"Blocked by policy: '{_render_summary(tool.name, args)}'."
+    # Session memory: remembered a/d answers (checked only after the hard denials).
+    if tool.name in _session_always_deny:
+        return Decision.DENY, f"Denied for this session (you denied '{tool.name}' earlier)."
+    if tool.name in _session_always_allow:
+        return Decision.ALLOW, "Allowed by session memory."
     if decision == Decision.ALLOW:
         return Decision.ALLOW, "Explicitly allowed by policy."
     if tool.risk in _AUTO_APPROVED.get(mode, set()):
@@ -1171,7 +1226,10 @@ matches even though `bash` is a dangerous tool. When the model reads `README.md`
 nothing is asked either (safe tool, auto-approved). Now edit the `__main__` task to
 something like `"Run git push"` — no rule matches, `bash` isn't auto-approved in
 `auto` mode, so you get the `[y/n/a/d]` prompt. Answer `d`, then watch any further
-`bash` attempt in the same run get denied instantly by session memory.
+`bash` attempt in the same run get denied instantly by session memory. (Answer `a`
+instead and later harmless `bash` calls run without prompting — but a `rm -rf`-style
+command is *still* blocked, because the gate checks the hard-deny rules before it ever
+consults session memory.)
 
 ---
 
@@ -1258,7 +1316,7 @@ Permissions are one kind of middleware. You also want to observe, transform, and
 ```python
 # hooks.py
 from __future__ import annotations
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Callable
 import json, re, datetime, pathlib
 
@@ -1324,6 +1382,10 @@ class HookRegistry:
         return result
 ```
 
+(One version note: `str | None` in a *runtime* expression like the `PreHook` alias above
+needs **Python 3.10+** — treat that as the version floor for this phase's listings. On
+3.9 you would write `Optional[str]` from `typing` instead.)
+
 ### Step 4.4 — Built-in hooks
 
 #### Hook 1 — Dangerous command blocker (pre-hook)
@@ -1334,8 +1396,13 @@ This is the hook form of the policy rule, useful when you want regex-based block
 # hooks.py  (continued)
 
 _BASH_BLOCKLIST: list[re.Pattern] = [
-    re.compile(r"\brm\s+-[a-z]*r[a-z]*\s+-[a-z]*f"),  # rm -rf variants
-    re.compile(r"\brm\s+-[a-z]*f[a-z]*\s+-[a-z]*r"),  # rm -fr variants
+    # rm with recursive+force.  Two spellings to cover: COMBINED flags
+    # ('rm -rf', 'rm -fr', 'rm -Rf', 'rm -rvf') and SPLIT flags
+    # ('rm -r -f', 'rm -f -r').  One pattern per spelling/order:
+    re.compile(r"\brm\s+-[a-zA-Z]*[rR][a-zA-Z]*f"),               # combined, r before f
+    re.compile(r"\brm\s+-[a-zA-Z]*f[a-zA-Z]*[rR]"),               # combined, f before r
+    re.compile(r"\brm\s+-[a-zA-Z]*[rR][a-zA-Z]*\s+-[a-zA-Z]*f"),  # split: rm -r -f
+    re.compile(r"\brm\s+-[a-zA-Z]*f[a-zA-Z]*\s+-[a-zA-Z]*[rR]"),  # split: rm -f -r
     re.compile(r":\(\)\{"),                              # fork bomb
     re.compile(r">(>?)\s*/dev/(sd|nvme|mmcblk)"),       # block device writes
     re.compile(r"\bsudo\b"),
@@ -1438,9 +1505,41 @@ def make_output_truncator(max_chars: int = 8000) -> PostHook:
     return _hook
 ```
 
-### ▶ Check your hooks
+### ▶ Check your hooks (no API key needed)
 
-Create a `HookRegistry`, add `dangerous_command_blocker` as a pre-hook and `secret_scrubber` as a post-hook. Call `registry.run_pre(ctx)` with a `PreToolContext` whose `args` contain `"command": "rm -rf ."` — you should get a blocked-message string back. Call `registry.run_post(ctx)` with a `PostToolContext` whose `result` contains a fake key like `sk-abc123xyz789abc123xyz789` — you should see `[REDACTED:openai-key]` in the output.
+Create a `HookRegistry`, add `dangerous_command_blocker` as a pre-hook and `secret_scrubber` as a post-hook. Call `registry.run_pre(ctx)` with a `PreToolContext` whose `args` contain `"command": "rm -rf ."` — you should get a blocked-message string back. Call `registry.run_post(ctx)` with a `PostToolContext` whose `result` contains a fake key like `sk-abc123xyz789abc123xyz789` — you should see `[REDACTED:openai-key]` in the output. As a paste-able script:
+
+```python
+# check_hooks.py — exercises the pre- and post-hooks offline.
+from hooks import (
+    HookRegistry, PreToolContext, PostToolContext,
+    dangerous_command_blocker, secret_scrubber,
+)
+
+hooks = HookRegistry()
+hooks.add_pre(dangerous_command_blocker)
+hooks.add_post(secret_scrubber)
+
+# 1. The blocker: combined and split rm flags are all caught.
+for cmd in ["rm -rf .", "rm -fr /tmp/x", "rm -r -f build/", "ls -la"]:
+    ctx = PreToolContext(tool_name="bash", args={"command": cmd}, tool_risk="dangerous")
+    blocked = hooks.run_pre(ctx)
+    print(f"{cmd!r:20} -> {'BLOCKED' if blocked else 'allowed to proceed'}")
+
+# 2. The scrubber: a fake key is redacted from a tool result.
+ctx = PostToolContext(tool_name="bash", args={}, tool_risk="dangerous",
+                      result="token is sk-abc123xyz789abc123xyz789 ok")
+print(hooks.run_post(ctx))
+```
+
+```
+python check_hooks.py
+```
+
+The first three `rm` commands print `BLOCKED` (each `run_pre` returned the
+`Error: command blocked by harness safety policy...` string), `ls -la` prints
+`allowed to proceed` (`run_pre` returned `None`), and the last line prints
+`token is [REDACTED:openai-key] ok`.
 
 ---
 
@@ -1454,8 +1553,6 @@ from __future__ import annotations
 import os
 import sys
 import subprocess
-import resource
-from pathlib import Path
 
 
 # Environment variables allowed to pass into subprocesses.
@@ -1482,6 +1579,11 @@ def _make_preexec(cpu_seconds: int, max_file_bytes: int) -> "Callable[[], None] 
     """
     if sys.platform == "win32":
         return None
+
+    # POSIX-only stdlib module — imported *after* the platform guard so this
+    # file still imports cleanly on Windows (a top-level import would raise
+    # ImportError there before the guard ever ran).
+    import resource
 
     def _preexec() -> None:
         # CPU time: SIGKILL after cpu_seconds of CPU time
@@ -1560,6 +1662,15 @@ dataclass, assigning each the risk level from the Step 3.1 table (same name, sam
 schema, same behaviour; just carrying a risk tag now). Second, it **rebuilds `bash` on
 `run_sandboxed`** instead of Phase 4's bare `subprocess.run`. The `build_registry()` it
 exports is what the final assembly at the end of this phase imports.
+
+One honest wart to acknowledge: this merge puts **two error-string spellings in one
+registry**. Phase 4's tools fail with `"ERROR: ..."` (that phase's stated contract),
+while everything built in this phase — the registry's dispatch errors, the sandbox's
+`Error:` / `[exit N]` outputs, the denial messages — uses `"Error: ..."`. The model
+copes fine (either way it is just text it can read), so we deliberately don't churn
+Phase 4's listings to repaint them here. For the record, the consolidated package
+standardizes on **`"Error: ..."`** (see `code/agent_harness/tools/registry.py` and
+`files.py`); if you want one convention in your own harness, that is the one to pick.
 
 ```python
 # phase5_tools.py — the complete risk-tagged tool set for this phase
@@ -1729,10 +1840,9 @@ model emits function_call
 # permissions.py
 from __future__ import annotations
 
-import sys
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Callable
 import fnmatch
 import re
 
@@ -1772,7 +1882,7 @@ _HARD_DENY_IN_MODE: dict[Mode, set[str]] = {
 
 BYPASS_WARNING = """\
 ╔══════════════════════════════════════════════════════════════╗
-║  WARNING: harness running in BYPASS / YOLO mode.            ║
+║  WARNING: harness running in BYPASS / YOLO mode.             ║
 ║  All tool calls will be auto-approved, including bash.       ║
 ║  Never use this mode on untrusted input or in production.    ║
 ╚══════════════════════════════════════════════════════════════╝"""
@@ -1845,8 +1955,9 @@ class PermissionPolicy:
 
 def default_policy() -> PermissionPolicy:
     return PermissionPolicy(rules=[
-        PolicyRule(Decision.DENY,  "bash(rm -rf*)",      bash_command_matches("rm -rf*")),
-        PolicyRule(Decision.DENY,  "bash(rm -rf *)",     bash_command_matches("rm -rf *")),
+        # Leading '*' so 'rm -rf' is caught anywhere in the command
+        # (e.g. 'cd / && rm -rf x'), not just at the start.
+        PolicyRule(Decision.DENY,  "bash(*rm -rf*)",     bash_command_matches("*rm -rf*")),
         PolicyRule(Decision.DENY,  "bash(:(){*)",        bash_command_regex(r":\(\)\{")),
         PolicyRule(Decision.DENY,  "bash(* /dev/sd*)",   bash_command_regex(r"/dev/sd")),
         PolicyRule(Decision.DENY,  "bash(* /dev/nvme*)", bash_command_regex(r"/dev/nvme")),
@@ -1879,26 +1990,30 @@ def check_permission(
 ) -> tuple[Decision, str]:
     tool_name = tool.name
 
-    if tool_name in _session_always_deny:
-        return Decision.DENY, f"Denied for this session (user denied '{tool_name}' earlier)."
-    if tool_name in _session_always_allow:
-        return Decision.ALLOW, "Allowed by session memory."
-
+    # Hard denials first (mode, then policy DENY rules) — session memory
+    # must never outrank these.
     hard_deny_risks = _HARD_DENY_IN_MODE.get(mode, set())
     if tool.risk in hard_deny_risks:
         return (
             Decision.DENY,
-            f"Mode '{mode}' does not allow '{tool.risk}' tools (read-only plan mode).",
+            f"Mode '{mode.value}' does not allow '{tool.risk}' tools (read-only plan mode).",
         )
 
     policy_decision = policy.evaluate(tool_name, args)
     if policy_decision == Decision.DENY:
         return Decision.DENY, f"Blocked by policy: '{_render_summary(tool_name, args)}'."
+
+    # Session memory — remembered a/d answers, consulted only after hard denials.
+    if tool_name in _session_always_deny:
+        return Decision.DENY, f"Denied for this session (user denied '{tool_name}' earlier)."
+    if tool_name in _session_always_allow:
+        return Decision.ALLOW, "Allowed by session memory."
+
     if policy_decision == Decision.ALLOW:
         return Decision.ALLOW, "Explicitly allowed by policy."
 
     if tool.risk in _AUTO_APPROVED.get(mode, set()):
-        return Decision.ALLOW, f"Auto-approved (mode='{mode}', risk='{tool.risk}')."
+        return Decision.ALLOW, f"Auto-approved (mode='{mode.value}', risk='{tool.risk}')."
 
     return _ask_user(tool_name, args)
 
@@ -2004,8 +2119,11 @@ class HookRegistry:
 # ---------------------------------------------------------------------------
 
 _BASH_BLOCKLIST: list[re.Pattern] = [
-    re.compile(r"\brm\s+-[a-z]*r[a-z]*\s+-[a-z]*f"),
-    re.compile(r"\brm\s+-[a-z]*f[a-z]*\s+-[a-z]*r"),
+    # rm with recursive+force: combined flags (-rf/-fr/-Rf/-rvf) and split (-r -f / -f -r)
+    re.compile(r"\brm\s+-[a-zA-Z]*[rR][a-zA-Z]*f"),
+    re.compile(r"\brm\s+-[a-zA-Z]*f[a-zA-Z]*[rR]"),
+    re.compile(r"\brm\s+-[a-zA-Z]*[rR][a-zA-Z]*\s+-[a-zA-Z]*f"),
+    re.compile(r"\brm\s+-[a-zA-Z]*f[a-zA-Z]*\s+-[a-zA-Z]*[rR]"),
     re.compile(r":\(\)\{"),
     re.compile(r">(>?)\s*/dev/(sd|nvme|mmcblk)"),
     re.compile(r"\bsudo\b"),
@@ -2191,7 +2309,9 @@ def run_agent(
     policy: PermissionPolicy | None = None,
     hooks: HookRegistry | None = None,
     model: str = "gpt-4o",
-    max_iterations: int = 50,
+    max_iterations: int = 50,   # the cap Phases 0-3 called max_turns — renamed because
+                                # one iteration can answer several tool calls; this is
+                                # also the "runaway cost" defense from the threat table
     audit_log: str | None = None,
 ) -> str:
     if mode == Mode.BYPASS:
@@ -2322,6 +2442,9 @@ If `check_permission` raises or the loop discards the denied item, the model's t
 **Policy ordering: deny beats allow — only if you put deny rules first.**
 `PermissionPolicy.evaluate` is first-match-wins. If you add an `ALLOW("bash(*)")` rule before your `DENY("bash(rm *)")` rules, the allow fires first. Put your hard denials at the top of the rules list.
 
+**Session memory must never outrank deny rules.**
+`_session_always_allow` is populated when the user types `a` once — for *any* call of that tool, however harmless (`bash(ls)` counts). If `check_permission` consulted session memory before the hard denials, that single `a` would silently re-enable `bash(rm -rf /)` for the rest of the session — the deny rule would never even be evaluated. That is why the gate checks mode hard-denies and policy DENY rules *first* and looks at session memory only afterwards. If you ever refactor the gate, preserve this order; it is the difference between "skip a redundant prompt" and "bypass the safety net."
+
 **Session approvals survive the session, not the model's reasoning.**
 `_session_always_allow` and `_session_always_deny` are module-level sets that persist for the Python process lifetime. They are reset on restart. Do not persist them to disk without careful thought — a saved "always allow bash" is a footgun.
 
@@ -2389,3 +2512,7 @@ Phase 6 will add multi-turn conversation management, context-window budgeting, a
 4. Any of: an **environment-variable allowlist**, **CPU/memory resource limits**, or a
    restricted **working directory / workspace root**.
 </details>
+
+**Next:** [Phase 6 — Context Management](./06-context-management.md) — multi-turn
+conversation management, context-window budgeting (token counting, pruning, compaction),
+and graceful handling of very long sessions.

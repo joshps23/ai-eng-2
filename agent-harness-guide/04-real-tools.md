@@ -16,7 +16,7 @@
 > nothing trips you up:
 >
 > - **`@tool` above each function** is the decorator from
->   [Phase 2](./02-tool-system.md#-beginner-track-the-same-tool-system-using-only-functions--dicts).
+>   [Phase 2](./02-tool-system.md#-beginner-track).
 >   It only auto-writes the schema dict. You can delete the `@tool` lines and register
 >   each function the simple way — `register("read_file", read_file, read_file_schema)`
 >   with a hand-written schema dict — exactly as in the Phase 2 beginner box. The
@@ -435,6 +435,12 @@ def list_dir(path: str = ".") -> str:
         return f"ERROR: {exc}"
 ```
 
+> 🟢 **The tuple sort key, decoded.** `key=lambda e: (e.is_file(), e.name.lower())`
+> hands `sorted` a *pair* for each entry. Python compares tuples element by element:
+> first by `e.is_file()` — and since `False < True`, directories (`is_file()` is
+> `False`) sort before files — then ties are broken by the lowercased name. One line,
+> two sort criteria.
+
 ### `glob`
 
 ```python
@@ -444,10 +450,9 @@ def glob(pattern: str, path: str = ".") -> str:
         base = pathlib.Path(path)
         if not base.is_dir():
             return f"ERROR: Directory not found: {path}"
-        if "**" in pattern:
-            matches = list(base.rglob(pattern.lstrip("**/").lstrip("/")))
-        else:
-            matches = list(base.glob(pattern))
+        # Path.glob understands '**' natively (it means "this directory and
+        # everything below it"), so '**/*.py' just works — no special casing.
+        matches = list(base.glob(pattern))
         files = sorted([str(m) for m in matches if m.is_file()])
         if not files:
             return f"No files match '{pattern}' under '{path}'."
@@ -456,8 +461,47 @@ def glob(pattern: str, path: str = ".") -> str:
         return f"ERROR: {exc}"
 ```
 
-Wire both into the harness by adding their schemas to the `tools=[...]` list and
-dispatching them in the same `for tc in tool_calls:` loop:
+Both functions need a schema dict, just like `READ_FILE_SCHEMA` — and both introduce
+something new: an **optional parameter**. The rule is simple: a parameter with a default
+value (`path: str = "."`) still goes in `"properties"` (so the model knows it exists and
+what it means), but is **left out of `"required"`**. If every parameter is optional,
+`"required"` is just the empty list `[]`. Describe the default in the description text so
+the model knows what happens when it omits the argument.
+
+```python
+LIST_DIR_SCHEMA = {
+    "type": "function",
+    "name": "list_dir",
+    "description": "List the files and directories at a path, one entry per line.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "path": {"type": "string", "description": "Directory to list. Default '.'."},
+        },
+        "required": [],          # path is optional — it has a default
+    },
+}
+
+GLOB_SCHEMA = {
+    "type": "function",
+    "name": "glob",
+    "description": (
+        "Find files matching a glob pattern, e.g. '*.py' or '**/*.py' "
+        "(use '**' for recursive matching). Returns matching paths, one per line."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "pattern": {"type": "string", "description": "Glob pattern to match."},
+            "path": {"type": "string", "description": "Directory to search. Default '.'."},
+        },
+        "required": ["pattern"],   # pattern is mandatory; path is optional
+    },
+}
+```
+
+Wire both into the harness by adding `LIST_DIR_SCHEMA` and `GLOB_SCHEMA` to the
+`tools=[...]` list and dispatching them in the same `for tc in tool_calls:` loop:
 
 ```python
 # Inside the tool-call loop, replace the single read_file call with:
@@ -527,7 +571,33 @@ def grep(pattern: str, path: str = ".", glob_filter: str = None) -> str:
     return "\n".join(results)
 ```
 
-Add it to the `tools=[...]` list and the dispatch dict, then:
+Its schema follows the same optional-parameter rule from Step 2.1 — two of the three
+parameters have defaults, so only `pattern` is `"required"`:
+
+```python
+GREP_SCHEMA = {
+    "type": "function",
+    "name": "grep",
+    "description": (
+        "Search file contents for a Python regular expression. Returns matching "
+        "lines as 'filepath:linenum: line'. Searches recursively when given a directory."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "pattern": {"type": "string", "description": "Regex to search for."},
+            "path": {"type": "string", "description": "File or directory to search. Default '.'."},
+            "glob_filter": {
+                "type": "string",
+                "description": "Only search files whose name matches this glob, e.g. '*.py'. Default: search all files.",
+            },
+        },
+        "required": ["pattern"],
+    },
+}
+```
+
+Add `GREP_SCHEMA` to the `tools=[...]` list and `grep` to the dispatch dict, then:
 
 ### ▶ Run it now
 
@@ -794,13 +864,15 @@ def edit_file(
         return f"ERROR: Cannot write file: {exc}"
 
     replacements = count if replace_all else 1
-    lines_before = original.count("\n")
-    lines_after = updated.count("\n")
+    # splitlines() counts actual lines correctly whether or not the file
+    # ends with a trailing newline (count("\n") + 1 would over-report by one).
+    lines_before = len(original.splitlines())
+    lines_after = len(updated.splitlines())
     delta = lines_after - lines_before
     delta_str = f"+{delta}" if delta >= 0 else str(delta)
     return (
         f"Edited '{path}': replaced {replacements} occurrence(s). "
-        f"File now has {lines_after + 1} lines ({delta_str} from before)."
+        f"File now has {lines_after} lines ({delta_str} from before)."
     )
 ```
 
@@ -1048,6 +1120,7 @@ def list_dir(path: str = ".") -> str:
         return f"ERROR: Directory not found: {path}"
     if not p.is_dir():
         return f"ERROR: '{path}' is a file, not a directory."
+    # Tuple sort key: False < True, so dirs (is_file()=False) come first, then by name.
     entries = sorted(p.iterdir(), key=lambda e: (e.is_file(), e.name.lower()))
     lines = []
     for e in entries:
@@ -1196,8 +1269,12 @@ python harness_v2.py
 
 You should see a short tool-call chain — `list_dir`, then `write_file`, then `bash` —
 ending with an answer confirming `notes.txt` contains `hello`. Also re-try the Version 1
-escape: ask it to read `/etc/hostname` and watch `_safe_path` turn the attempt into an
-`ERROR:` string the model can see and explain.
+escape: ask it to read `../../etc/passwd` and watch `_safe_path` turn the attempt into an
+`ERROR: Path ... resolves outside the workspace root` string the model can see and
+explain. (An absolute path like `/etc/hostname` behaves differently: `_safe_path`
+*re-roots* it under the workspace — `/etc/hostname` becomes `<workspace>/etc/hostname` —
+so that attempt fails with an ordinary `ERROR: File not found` instead of tripping the
+guard. Either way, nothing outside the workspace is read.)
 
 ---
 
@@ -1312,6 +1389,15 @@ The `ToolRegistry` class from Phase 2 already knows how to produce the flat tool
 list and dispatch by name. All we do here is register every `@tool`-decorated function.
 The `@tool` decorator extracted the JSON schema from type hints and the docstring when
 the function was defined, so there is nothing more to do.
+
+> 🟢 **What `global WORKSPACE_ROOT` does.** Normally, assigning to a name inside a
+> function creates a *new local variable* that vanishes when the function returns. The
+> `global WORKSPACE_ROOT` line tells Python "no — when I assign to `WORKSPACE_ROOT` in
+> here, change the *module-level* variable at the top of the file." That is the whole
+> mechanism by which `make_default_registry(workspace=...)` re-points every tool at a
+> new workspace: all the tools read the same module-level `WORKSPACE_ROOT`, and this one
+> assignment changes what they all see. (Reading a global never needs the keyword —
+> only *assigning* to one does.)
 
 ---
 
@@ -1593,13 +1679,15 @@ def edit_file(
         return f"ERROR: Cannot write file: {exc}"
 
     replacements = count if replace_all else 1
-    lines_before = original.count("\n")
-    lines_after = updated.count("\n")
+    # splitlines() counts actual lines correctly whether or not the file
+    # ends with a trailing newline (count("\n") + 1 would over-report by one).
+    lines_before = len(original.splitlines())
+    lines_after = len(updated.splitlines())
     delta = lines_after - lines_before
     delta_str = f"+{delta}" if delta >= 0 else str(delta)
     return (
         f"Edited '{path}': replaced {replacements} occurrence(s). "
-        f"File now has {lines_after + 1} lines ({delta_str} from before)."
+        f"File now has {lines_after} lines ({delta_str} from before)."
     )
 ```
 
@@ -1700,11 +1788,9 @@ def glob(pattern: str, path: str = ".") -> str:
         return f"ERROR: Not a directory: {path}"
 
     try:
-        # rglob handles '**'; plain glob handles the rest.
-        if "**" in pattern:
-            matches = list(base.rglob(pattern.lstrip("**/").lstrip("/")))
-        else:
-            matches = list(base.glob(pattern))
+        # Path.glob handles '**' natively (recursive match), so '**/*.py'
+        # finds Python files at every depth — no special-casing needed.
+        matches = list(base.glob(pattern))
     except (OSError, ValueError) as exc:
         return f"ERROR: Glob failed: {exc}"
 
@@ -1909,9 +1995,6 @@ def list_dir(path: str = ".") -> str:
 
     if not p.exists():
         return f"ERROR: Directory not found: {path}"
-    if not p.is_file():
-        # It's a directory — proceed.
-        pass
     if p.is_file():
         return f"ERROR: '{path}' is a file, not a directory. Use read_file() to read it."
 
@@ -2013,8 +2096,10 @@ the function was defined, so there is nothing more to do.
 ## 6. End-to-End Demo
 
 The following demo is **Version 3 running end-to-end**: it wires the tool registry into
-the Phase 3 streaming loop and sends the agent a real task — find all TODO comments in a
-small project and summarize them.
+the agent loop you built in Phase 3 (the plain, non-streaming form — swapping in
+Phase 3's streaming variant is a good exercise, but it would only change how the text
+arrives, not what the agent does) and sends the agent a real task — find all TODO
+comments in a small project and summarize them.
 
 ### 6.1 Setup
 
@@ -2106,7 +2191,9 @@ def run_demo():
         print(f"TASK: {task}\n{'='*60}")
 
         iteration = 0
-        max_iterations = 20
+        max_iterations = 20   # the same runaway-loop cap Phase 2 called max_turns —
+                              # renamed because one iteration can answer several tool calls
+        got_final_answer = False
 
         while iteration < max_iterations:
             iteration += 1
@@ -2138,6 +2225,7 @@ def run_demo():
                         for block in item.content:
                             if getattr(block, "type", None) == "output_text":
                                 print(f"\nAGENT ANSWER:\n{block.text}")
+                got_final_answer = True
                 break
 
             # Execute each tool call and append results.
@@ -2156,7 +2244,9 @@ def run_demo():
                     "output": result,
                 })
 
-        if iteration >= max_iterations:
+        # A flag, not `iteration >= max_iterations`: an answer that arrives on
+        # exactly the last iteration would otherwise print this error too.
+        if not got_final_answer:
             print("ERROR: max_iterations reached without a final answer.")
 
 
@@ -2362,12 +2452,10 @@ Step 3.0 bridge for the three-file folder layout):
 from __future__ import annotations
 
 import fnmatch
-import json
 import os
 import pathlib
 import re
 import subprocess
-from typing import Optional
 
 from tools import tool, ToolRegistry   # Phase 2's tools/ package
 
@@ -2541,10 +2629,10 @@ def edit_file(path: str, old_string: str, new_string: str, replace_all: bool = F
     except OSError as exc:
         return f"ERROR: Cannot write file: {exc}"
     reps = count if replace_all else 1
-    delta = updated.count("\n") - original.count("\n")
+    delta = len(updated.splitlines()) - len(original.splitlines())
     return (
         f"Edited '{path}': replaced {reps} occurrence(s). "
-        f"File now has {updated.count(chr(10)) + 1} lines "
+        f"File now has {len(updated.splitlines())} lines "
         f"({'+' if delta >= 0 else ''}{delta} from before)."
     )
 
@@ -2607,10 +2695,8 @@ def glob(pattern: str, path: str = ".") -> str:
     if not base.is_dir():
         return f"ERROR: Not a directory: {path}"
     try:
-        if "**" in pattern:
-            matches = list(base.rglob(pattern.lstrip("**/").lstrip("/")))
-        else:
-            matches = list(base.glob(pattern))
+        # Path.glob handles '**' natively, so '**/*.py' recurses as advertised.
+        matches = list(base.glob(pattern))
     except (OSError, ValueError) as exc:
         return f"ERROR: Glob failed: {exc}"
     files = sorted([m for m in matches if m.is_file()], key=str)
@@ -2851,3 +2937,6 @@ whichever feels more comfortable).
    workspace root — so the model can see the problem and the harness stays safe.
 4. In **`make_default_registry()`**.
 </details>
+
+**Next:** [Phase 5 — Permissions, Safety & the Hook System](./05-permissions-and-safety.md)
+— the layer that decides which of these tool calls is actually allowed to run.
