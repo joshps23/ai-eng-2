@@ -111,7 +111,7 @@ Score each phase 1–5 on each axis; the loop revises the lowest-scoring phase n
 
 The evaluator-reviser loop runs **at most 10 times**, then stops on its own.
 
-- Iterations used: **7 / 10** *(reset 2026-06-10 for the version-ladder pass; iterations 4–7 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6, UX-designer persona for 7)*
+- Iterations used: **8 / 10** *(reset 2026-06-10 for the version-ladder pass; iterations 4–8 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6, UX designer for 7, Jupyter expert for 8)*
 - Per iteration: score all phases on the rubric, pick the weakest, revise it one notch
   more incremental, increment the counter here, log it below, commit, push. Stop when the
   counter hits 10 **or** every phase scores ≥4 on every axis.
@@ -133,6 +133,25 @@ The evaluator-reviser loop runs **at most 10 times**, then stops on its own.
 
 ## Revision log (newest first)
 
+- **2026-06-11 — Iteration 8: persona dev loop, cycle 5 (Jupyter-expert verification →
+  notebook build).** The verification persona became a Jupyter-notebook expert: three
+  reviewers (core funnel, advanced phases, notebook engineering) assessed how to turn
+  the guide into a notebook resource, each shipping an *executed* proof of concept.
+  Consensus: notebooks are companion runnables that import the tested package (never a
+  third diverging copy); FakeClient makes the keyless path primary; review happens on
+  jupytext py:percent pairs with committed deterministic outputs; CI executes every
+  notebook headlessly with no key. Their PoCs surfaced real traps now codified in
+  CLAUDE.md's notebook rules: notebook input() raises StdinNotImplementedError (Phase
+  5's EOFError guard misses it), FakeClient.create() required instructions= (fixed in
+  testing.py — the cycle's one code/ change, 56 tests green), and importlib.reload
+  resets WORKSPACE_ROOT, silently un-confining the file tools. The build pass then
+  shipped: notebooks/ with six executed jupytext pairs (setup-check, 00, 01, 02
+  pre-package half, 03 transcript half, 06), notebooks/README.md contract +
+  refresh.sh, a 'notebooks' extras group, a CI job (pair-sync check + offline
+  execution), FAQ kernel entries, and link lines in the covered phases. Acceptance
+  gate re-verified independently: all six execute offline, pairs in sync, links
+  resolve, tests green. Deferred to the backlog: companion notebooks for phases
+  4/5/7/8 (per the expert v1-scope verdict: hybrid/thin slices only).
 - **2026-06-11 — Iteration 7: persona dev loop, cycle 4 (UX-designer verification).**
   The verification persona switched from "Python beginner" (correctness) to "senior
   UX/content designer" (reading experience): three reviewers covered the entry funnel,
