@@ -31,7 +31,9 @@
 >   entries by their lowercased name.
 > - **Fancy f-strings** like `f"{n:.0f}"` or `f"{e.name:<40s}"` just control formatting
 >   (decimal places, column width). The `{...}` still means "drop a value in here"; the
->   part after `:` is cosmetic. You can ignore the details.
+>   part after `:` is cosmetic. You can ignore the details. One twist appears later in
+>   `read_file`: the width can itself be a variable — `f"{x:{width}d}"` fills in
+>   `width` first, then right-aligns the integer `x` in that many columns.
 > - **`try:` / `except:`** appears throughout — see the
 >   [Phase 1 box](./01-bare-harness.md) if you need the refresher: "try this; if it
 >   errors, return an error string instead of crashing."
@@ -534,7 +536,7 @@ It is still read-only — no risk of data loss.
 ```python
 import re
 
-def grep(pattern: str, path: str = ".", glob_filter: str = None) -> str:
+def grep(pattern: str, path: str = ".", glob_filter: str | None = None) -> str:
     """Search file contents for a regular expression."""
     try:
         compiled = re.compile(pattern)
@@ -609,7 +611,12 @@ with open("notes.py", "w") as f:
 run("Find every TODO comment in the current directory's Python files.")
 ```
 
-The model should call `grep("TODO", ".", "*.py")` and return the two matches.
+The model should call `grep("TODO", ".", "*.py")` and find the two matches in
+`notes.py` — plus, surprise, one or two more from your harness script itself: it is a
+`.py` file in the same directory, and the task string above (and the `f.write` line, if
+you kept it in the same file) contain the word "TODO". Those extra hits are not a bug;
+they are your first taste of the agent's tools seeing *everything* in the workspace,
+including the agent's own source file.
 
 ---
 
@@ -1357,6 +1364,15 @@ In the full `coding_tools.py` module (Section 9 below), every tool function carr
 docstring and automatically writes the schema dict — so you do not have to maintain
 `READ_FILE_SCHEMA` by hand any more.
 
+> ⚠️ **What the model actually sees of your docstrings.** Phase 2's
+> `_parse_google_docstring` keeps only the **first line** of each `Args:` entry — the
+> indented continuation lines under a parameter never make it into the schema. So in
+> the lovingly multi-line docstrings below, only each parameter's first line reaches
+> the model; put the load-bearing facts (defaults, units, gotchas) there, and treat the
+> continuation lines as documentation for *humans* reading the source. To check what
+> the model receives, print it — e.g. `from coding_tools import grep` then
+> `print(grep.parameters)` — and you will see exactly where each description is cut.
+
 ### Step 3.2 — `make_default_registry`
 
 ```python
@@ -1423,13 +1439,11 @@ All I/O is pure stdlib. No third-party packages.
 
 from __future__ import annotations
 
-import json
+import fnmatch
 import os
 import pathlib
 import re
 import subprocess
-import sys
-from typing import Optional
 
 from tools import tool, ToolRegistry   # Phase 2's tools/ package (base.py + registry.py)
 
@@ -1836,7 +1850,7 @@ permission needed. Reserve `bash` for operations that genuinely require the shel
 
 ```python
 @tool
-def grep(pattern: str, path: str = ".", glob_filter: str = None) -> str:
+def grep(pattern: str, path: str = ".", glob_filter: str | None = None) -> str:
     """
     Search file contents for a regular expression pattern.
 
@@ -1847,7 +1861,7 @@ def grep(pattern: str, path: str = ".", glob_filter: str = None) -> str:
                      If a file, searches that file only.
                      If a directory, searches recursively.  Default '.'.
         glob_filter: If given, only files whose name matches this glob are
-                     searched, e.g. '*.py', '*.{ts,tsx}'.  Only the filename
+                     searched, e.g. '*.py'.  Only the filename
                      (not the full path) is matched.
 
     Returns:
@@ -2119,7 +2133,6 @@ import pathlib
 import tempfile
 import textwrap
 import json
-import os
 
 from openai import OpenAI
 from coding_tools import make_default_registry   # Section 9's module (pulls in Phase 2)
@@ -2717,7 +2730,7 @@ def glob(pattern: str, path: str = ".") -> str:
 
 
 @tool
-def grep(pattern: str, path: str = ".", glob_filter: str = None) -> str:
+def grep(pattern: str, path: str = ".", glob_filter: str | None = None) -> str:
     """
     Search file contents for a regular expression.
 
@@ -2881,6 +2894,12 @@ Note the second argument to `dispatch` is a **JSON string**, exactly what the mo
 sends as `tc.arguments`. If you see the count `7`, a directory listing, and a clean
 `ERROR:` string (not a traceback), Version 3 is fully wired — `demo_phase4.py` in
 Section 6 is the same plumbing plus the model.
+
+(Experiment further and you will notice two error spellings living side by side:
+this module's tools return `"ERROR: ..."` — the Section 1.1(d) contract — while
+Phase 2's registry says `"Error: ..."` for *its* failures: unknown tool, bad JSON,
+an exception escaping a tool. The model reads either just fine; Phase 5 acknowledges
+and reconciles the mismatch.)
 
 ---
 

@@ -261,12 +261,13 @@ became `run_agent()`, and the safety layer is the three pieces you just read. A
 
 > ⚠️ **One thing these inline tools deliberately leave out:** Phase 4's `_safe_path`
 > workspace confinement. To keep V1–V3 short, `read_file`/`write_file` here accept any
-> path — and since `write_file` is a `caution` tool, the default `auto` mode
-> auto-approves it, so the model could write anywhere your user account can. The
-> permission layer and the path guard are **different layers** (one decides *whether* a
-> tool runs, the other constrains *where* it can reach) — you want both. Run V1–V3 only
-> in a scratch folder; the confinement returns at the end of the phase, when
-> `phase5_tools.py` re-adopts Phase 4's confined tools.
+> path. This version at least *asks* before every `write_file` — but once modes arrive
+> in Step 2.2, the default `auto` mode will auto-approve `caution` tools, so the model
+> could write anywhere your user account can. The permission layer and the path guard
+> are **different layers** (one decides *whether* a tool runs, the other constrains
+> *where* it can reach) — you want both. Run V1–V3 only in a scratch folder; the
+> confinement returns at the end of the phase, when `phase5_tools.py` re-adopts
+> Phase 4's confined tools.
 
 ```python
 # agent_v2.py — Phase 5, Version 2: the same harness, reorganized into functions.
@@ -646,6 +647,9 @@ class ToolRegistry:
         self._tools: dict[str, Tool] = {}
 
     def register(self, tool: Tool) -> None:
+        # One quiet difference from Phase 2's ToolRegistry: registering the same
+        # name twice silently overwrites here (last registration wins), where
+        # Phase 2 raised ValueError.  Convenient for this phase's experiments.
         self._tools[tool.name] = tool
 
     def get(self, name: str) -> Tool | None:
@@ -1553,6 +1557,7 @@ from __future__ import annotations
 import os
 import sys
 import subprocess
+from typing import Callable   # used in the _make_preexec return annotation
 
 
 # Environment variables allowed to pass into subprocesses.
@@ -2413,6 +2418,13 @@ if __name__ == "__main__":
     )
     print(answer)
 ```
+
+> 🟢 **`try` / `except` / `else`** (in the tool-call loop above). An `else:` after an
+> `except:` means "run this only if the `try:` block finished **without** raising."
+> Read it as: *try* to parse the arguments; if that failed, the `except` branch builds
+> an error result; *else* — parsing succeeded — go ahead and dispatch the tool. The
+> point of `else` (rather than putting the dispatch inside the `try:`) is that an
+> exception from `safe_dispatch` itself can never be mistaken for a JSON-parsing error.
 
 ### ▶ Run it now
 
