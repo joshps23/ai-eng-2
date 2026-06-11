@@ -47,8 +47,8 @@ def make_client(turns):
     return FakeClient(turns)
 
 
-print("Mode:", "REAL API" if USE_REAL_API and os.environ.get("OPENAI_API_KEY")
-      else "offline (FakeClient — no key needed)")
+OFFLINE = not (USE_REAL_API and os.environ.get("OPENAI_API_KEY"))
+print("Mode:", "OFFLINE (FakeClient — no key needed)" if OFFLINE else "REAL API")
 
 # %% [markdown]
 # ## Version 1 — inline `if/elif` dispatch
@@ -213,7 +213,10 @@ print(add(2, 3), "/", word_count("one two three"))  # plain functions — call t
 # The registry is just a dict mapping a tool's name to its function **and** its schema
 # ([§2.2](../02-tool-system.md#22-register-them-in-a-plain-dict)–[§2.3](../02-tool-system.md#23-build-the-list-the-api-needs)).
 # The phase's `TOOLS` dict is `TOOLS_V2` here, because V1's `TOOLS` was a *list*. The cell
-# rebuilds and re-registers in one go, so re-running it is always safe.
+# rebuilds and re-registers in one go, so re-running it is safe — with one caveat: the
+# `@tool` section near the end rebinds `add` (and `word_count`) to `FunctionTool` objects.
+# After you've run that section, re-run the V2 function-definition cell above first, so
+# this cell registers the plain functions again and not the FunctionTools.
 
 # %%
 # The registry maps a tool name -> {"fn": the function, "schema": the dict}.
@@ -332,11 +335,17 @@ print(answer)
 # output as Version 1* — only the organization changed.
 
 # %%
-assert isinstance(TOOLS_V1, list) and isinstance(TOOLS_V2, dict)  # the type change V1 -> V2
-assert dispatch("add", '{"a": 2, "b": 3}') == "5"
-assert dispatch("add", '{"a": 2}').startswith("Error")            # readable error, no crash
-assert dispatch("nope", '{}').startswith("Error")
-assert len(tools_for_api()) == 2
+assert isinstance(TOOLS_V1, list) and isinstance(TOOLS_V2, dict), \
+    "TOOLS_V1 is a list, TOOLS_V2 a dict — the type change IS the V1 -> V2 step"
+assert dispatch("add", '{"a": 2, "b": 3}') == "5", (
+    "dispatch should call the plain add function — if you re-ran the registry cell "
+    "after the @tool section, re-run the V2 function-definition cell first"
+)
+assert dispatch("add", '{"a": 2}').startswith("Error"), \
+    "a missing argument should come back as a readable Error string, not a crash"
+assert dispatch("nope", '{}').startswith("Error"), \
+    "an unknown tool should come back as a readable Error string"
+assert len(tools_for_api()) == 2, "the registry should expose exactly two schemas"
 assert answer == final_answer, "V2 must produce the same answer as V1 — that is the point"
 print("V2 checks passed")
 
@@ -485,6 +494,8 @@ try:
 except NameError as exc:
     print(f"NameError: {exc}")
     print("(expected — we build the `tool` decorator in the next cell, then re-run this idea)")
+else:
+    print("(no error this time — `tool` now exists; it rebound `add` as a FunctionTool)")
 
 # %% [markdown]
 # Now build what was missing:
@@ -693,7 +704,7 @@ print("All checks passed")
 # then read the tested versions in `code/agent_harness/tools/`.
 
 # %%
-if os.environ.get("OPENAI_API_KEY"):
+if USE_REAL_API and os.environ.get("OPENAI_API_KEY"):
     from openai import OpenAI
     client = OpenAI()            # run_agent reads the module-level `client`
     print(run_agent(
@@ -701,7 +712,8 @@ if os.environ.get("OPENAI_API_KEY"):
         "Also, how many words are in: 'The quick brown fox jumps over the lazy dog'?"
     ))
 else:
-    print("(skipped — no API key; the FakeClient cells above are the real lesson)")
+    print("(skipped — needs USE_REAL_API = True in the parameters cell AND an "
+          "OPENAI_API_KEY; the FakeClient cells above are the real lesson)")
 
 # %% [markdown]
 # ## Key takeaways

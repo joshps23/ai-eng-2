@@ -145,7 +145,16 @@ v1_items = input_items   # snapshot for the self-check
 
 # %% [markdown]
 # **▶ Self-check** — where the phase says *"you should see something like…"*, we
-# assert the structural facts instead.
+# assert the structural facts instead. The `None` at the start of the printed type
+# list is the user message: it's a plain dict with only a `role` (no `type`
+# attribute), so the helper reports `None` for it.
+#
+# > 🟢 **Reading the check cells.** Three idioms recur in every ▶ self-check:
+# > `getattr(x, "type", None) or x.get("type")` reads a field from either an SDK
+# > *object* (dot access) or a plain *dict* (key access); `{... for c in calls}` is a
+# > set comprehension (a list comprehension that builds a `set`, handy for comparing
+# > "the same ids on both sides"); and `assert A or B` passes when *either* condition
+# > holds. More Python refreshers: [BEGINNER-NOTES.md](../BEGINNER-NOTES.md).
 
 # %%
 def item_type(item):
@@ -183,7 +192,7 @@ print(get_current_time("Europe/London"))
 assert "T" in get_current_time("Europe/London"), "ISO-8601 timestamp expected"
 
 # %% [markdown]
-# **Step 2 — extract `dispatch`** ([§4 Step 2](../01-bare-harness.md#4-version-2--functions-the-same-harness-named-in-pieces)):
+# **Step 2 — extract `dispatch`** ([§4 Step 2](../01-bare-harness.md#step-2--extract-a-dispatch-helper)):
 # errors become strings the model can read — the loop never crashes. All three
 # probes below are deterministic and keyless.
 
@@ -280,7 +289,7 @@ assert ({getattr(c, "call_id", None) or c.get("call_id") for c in calls}
 print("V2 checks passed")
 
 # %% [markdown]
-# **Step 4 — the `MAX_ITERATIONS` cap** ([§4 Step 4](../01-bare-harness.md#4-version-2--functions-the-same-harness-named-in-pieces)).
+# **Step 4 — the `MAX_ITERATIONS` cap** ([§4 Step 4](../01-bare-harness.md#step-4--add-a-max_iterations-cap)).
 # The phase can only *describe* a runaway loop; a scripted model can get stuck on
 # demand. This demo always uses `FakeClient` directly — five `function_call` turns
 # in a row — so you can watch the cap fire, offline.
@@ -424,9 +433,16 @@ v3_items = agent.input_items   # snapshot for the final check
 
 # %%
 # Reset the persistence demo: the agent above is spent (its scripted client has no
-# turns left). Re-run the three cells above, in order, to replay it.
-agent = None
-print("agent reset — the v3_items snapshot is kept for the final check below")
+# turns left). Rebuild a fresh agent with the same script, so the two turn cells
+# above can be re-run, in order, to replay the demo.
+agent = Agent(make_client([
+    [fake_function_call("get_current_time", {"timezone": "Asia/Tokyo"}, "call_a1")],
+    [fake_message("It is currently the time shown above in Tokyo.")],
+    [fake_function_call("get_current_time", {"timezone": "Europe/London"}, "call_a2")],
+    [fake_message("And in London it is the time shown above — same moment, different zone.")],
+]), [GET_CURRENT_TIME_SCHEMA])
+print("agent rebuilt with a fresh script — re-run the two turn cells above, in order,")
+print("to replay the demo (the v3_items snapshot is kept for the final check below)")
 
 # %% [markdown]
 # **▶ Final self-check** — every rung of the ladder, machine-checked.
@@ -450,11 +466,12 @@ print("All checks passed")
 # **Optional — the same harness against the real API** (needs `OPENAI_API_KEY`):
 
 # %%
-if os.environ.get("OPENAI_API_KEY"):
+if USE_REAL_API and os.environ.get("OPENAI_API_KEY"):
     from openai import OpenAI
     live_items = run_agent("What time is it in Tokyo right now?", OpenAI())
 else:
-    print("(skipped — no API key; the FakeClient cells above are the real lesson)")
+    print("(skipped — needs USE_REAL_API = True in the parameters cell AND an "
+          "OPENAI_API_KEY; the FakeClient cells above are the real lesson)")
 
 # %% [markdown]
 # ## Key takeaways
@@ -479,6 +496,9 @@ print("Correct — call_id is the correlation key; id is just the item's identit
 # Exercise 1.1 (warm-up): add a second tool — get_weather(city) returning a fixed
 # string. Extend dispatch, write GET_WEATHER_SCHEMA, then script a FakeClient turn
 # that calls it and run it through run_agent.
+# Remember: run_agent sends tools=[GET_CURRENT_TIME_SCHEMA] — make it send your new
+# schema too (e.g. tools=[GET_CURRENT_TIME_SCHEMA, GET_WEATHER_SCHEMA]), or a real
+# API run would never see your tool (the FakeClient ignores tools, so it can't catch this).
 # your code here
 
 # assert dispatch("get_weather", '{"city": "Paris"}') == "Sunny, 21°C in Paris"  # uncomment when ready

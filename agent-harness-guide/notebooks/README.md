@@ -22,11 +22,13 @@ jupyter lab ../notebooks/
 ```
 
 The `ipykernel install` line registers **the venv that has `agent_harness` installed**
-as a named kernel. If a notebook hits `ModuleNotFoundError: No module named
-'agent_harness'`, your kernel isn't that venv — pick **Python (agent-harness)** from the
-Kernel menu (this is the notebook analog of the `python -m pytest` vs bare `pytest`
-gotcha; see the [FAQ](../FAQ.md)). VS Code's notebook UI works identically — it
-discovers the same kernelspec.
+as a named kernel. **After opening a notebook, pick the "Python (agent-harness)"
+kernel** — in JupyterLab via *Kernel → Change Kernel…*, in VS Code via the kernel
+picker in the top-right of the notebook (it discovers the same kernelspec). If a
+notebook hits `ModuleNotFoundError: No module named 'agent_harness'`, your kernel
+isn't that venv — switch to **Python (agent-harness)** the same way (this is the
+notebook analog of the `python -m pytest` vs bare `pytest` gotcha; see the
+[FAQ](../FAQ.md)).
 
 ## No API key needed (the `USE_REAL_API` switch)
 
@@ -41,11 +43,24 @@ Have a key and want the live API? `export OPENAI_API_KEY="sk-..."`, flip
 on both paths — the duality lives in that single cell, which is itself a curriculum
 point (client injection).
 
-## Conventions
+## Series conventions
+
+The notebooks refer back to these by name (e.g. Phase 3's notebook cites "rule C1"):
 
 - **Run top-to-bottom.** When in doubt (or after experimenting): **Kernel → Restart &
   Run All**. The notebooks are written for strict top-to-bottom execution, and every one
   must pass that headlessly with no API key — CI enforces it on every push.
+- **C1 — the cell that appends/consumes also creates.** Every state-owning cell rebuilds
+  its own state: a cell that appends to a transcript creates that transcript at its own
+  top, and a cell that consumes a scripted `FakeClient` builds that client in the same
+  cell. That's what makes re-running any single cell safe. (The few cells that
+  deliberately *break* this rule, to demonstrate persistence, say so in a ⚠️ warning and
+  are followed by a reset cell.)
+- **Check-cell idioms.** Every ▶ self-check cell asserts structural facts using a small,
+  recurring vocabulary — `getattr(x, "type", None) or x.get("type")` (read a field from
+  an SDK object *or* a plain dict), set comprehensions, and `assert A or B`. The first
+  self-check in each of 00/01 has a 🟢 box unpacking these; the broader Python
+  refreshers live in [BEGINNER-NOTES.md](../BEGINNER-NOTES.md).
 - Each notebook ends in an assertion cell printing `All checks passed`.
 
 ## Editing rule (contributors)

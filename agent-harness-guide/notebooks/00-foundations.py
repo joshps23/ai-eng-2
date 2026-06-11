@@ -54,7 +54,7 @@ print("Mode:", "OFFLINE (FakeClient — no key needed)" if OFFLINE else "REAL AP
 # %% [markdown]
 # ## Version 1 — the whole handshake, line by line
 #
-# [§0.3.2 Step 1](../00-foundations.md#03-version-1--the-whole-handshake-line-by-line):
+# [§0.3.2 Step 1](../00-foundations.md#032-step-1--the-simplest-possible-call-text-in-text-out):
 # the simplest possible call — text in, text out. The client is built *inside* the
 # cell, so re-running it is always safe.
 
@@ -71,7 +71,7 @@ print(resp.output_text)  # convenience: all text output concatenated
 assert resp.output_text, "Step 1: the model should have said something"
 
 # %% [markdown]
-# **Step 2** ([§0.3.3](../00-foundations.md#03-version-1--the-whole-handshake-line-by-line)):
+# **Step 2** ([§0.3.3](../00-foundations.md#033-step-2--input-as-a-list-of-items)):
 # `input` as a **list of items** — the full-control form the harness owns and appends to.
 
 # %%
@@ -85,7 +85,7 @@ print(resp.output_text)
 assert "Paris" in resp.output_text
 
 # %% [markdown]
-# **Step 3** ([§0.3.5](../00-foundations.md#03-version-1--the-whole-handshake-line-by-line)):
+# **Step 3** ([§0.3.5](../00-foundations.md#035-step-3--defining-a-tool-and-seeing-the-model-request-it)):
 # define one tool and watch the model *not* answer in text — it asks you to run
 # `get_weather` instead. `resp.output` is a list of **typed items**.
 
@@ -121,7 +121,7 @@ assert any(item.type == "function_call" for item in resp.output), \
 
 # %% [markdown]
 # **Step 4 — Version 1, complete**
-# ([§0.3.6](../00-foundations.md#03-version-1--the-whole-handshake-line-by-line)):
+# ([§0.3.6](../00-foundations.md#036-step-4--the-tool-call--result-handshake-the-critical-step)):
 # the whole two-turn handshake, straight-line, no `def`. The tool is one inlined
 # f-string; the `call_id` echo is the glue.
 
@@ -162,7 +162,17 @@ v1_answer = resp.output_text
 # %% [markdown]
 # **▶ Self-check** — in the phase this checkpoint says *"you should see something
 # like…"*; here we **assert** the structural facts that must hold no matter which
-# client ran.
+# client ran. One thing to expect in the printout: the `None` at the start of the
+# type list is the user message — it's a plain dict with only a `role`, no `type`
+# attribute, so the helper reports `None` for it.
+#
+# > 🟢 **Reading the check cells.** Three idioms recur in every ▶ self-check:
+# > `getattr(x, "type", None) or x.get("type")` reads a field from either an SDK
+# > *object* (dot access) or a plain *dict* (key access); `{... for c in calls}` is a
+# > set comprehension (a list comprehension that builds a `set`, handy for comparing
+# > "the same ids on both sides"); and `assert A or B` passes when *either* condition
+# > holds (used to relax exact-match checks when the real API ran). More Python
+# > refreshers: [BEGINNER-NOTES.md](../BEGINNER-NOTES.md).
 
 # %%
 def item_type(item):
@@ -221,7 +231,7 @@ assert OFFLINE is False or resp.output_text == v1_answer, "same program, one new
 
 # %% [markdown]
 # **Step 2 — `run_tool`**
-# ([§0.4.2](../00-foundations.md#04-version-2--the-same-handshake-organized-into-functions)):
+# ([§0.4.2](../00-foundations.md#042-step-2--name-the-tools-work-run_tool)):
 # the part that *is* the tool, separated from the bookkeeping. It returns a
 # **string** — and reports failures as strings too, never raising.
 
@@ -242,7 +252,7 @@ assert run_tool("teleport", {}).startswith("Error:")
 
 # %% [markdown]
 # **Step 3 — `handle_tool_calls`**
-# ([§0.4.3](../00-foundations.md#04-version-2--the-same-handshake-organized-into-functions)):
+# ([§0.4.3](../00-foundations.md#043-step-3--name-the-handshake-bookkeeping-handle_tool_calls)):
 # pure protocol — decode `arguments`, run the tool, echo the **same `call_id`**.
 # Name it once and stop thinking about it.
 
@@ -263,7 +273,7 @@ print("handle_tool_calls defined.")
 
 # %% [markdown]
 # **The complete Version 2**
-# ([§0.4.4](../00-foundations.md#04-version-2--the-same-handshake-organized-into-functions)):
+# ([§0.4.4](../00-foundations.md#044-the-complete-version-2-program)):
 # the top-level script now tells the story in four lines.
 
 # %%
@@ -307,7 +317,7 @@ print("All checks passed")
 # **Optional — the same Step 1 against the real API** (needs `OPENAI_API_KEY`):
 
 # %%
-if os.environ.get("OPENAI_API_KEY"):
+if USE_REAL_API and os.environ.get("OPENAI_API_KEY"):
     from openai import OpenAI
     live = OpenAI()
     live_resp = live.responses.create(
@@ -317,7 +327,8 @@ if os.environ.get("OPENAI_API_KEY"):
     )
     print(live_resp.output_text)
 else:
-    print("(skipped — no API key; the FakeClient cells above are the real lesson)")
+    print("(skipped — needs USE_REAL_API = True in the parameters cell AND an "
+          "OPENAI_API_KEY; the FakeClient cells above are the real lesson)")
 
 # %% [markdown]
 # ## Key takeaways
@@ -337,6 +348,8 @@ else:
 # add a `multiply` tool to run_tool. Script your own client, e.g.:
 #   make_client([[fake_function_call("add", {"a": 21, "b": 21}, "call_1")],
 #                [fake_message("21 + 21 = 42")]])
+# Remember: the model only sees tools whose schema dicts are in the `tools` list you
+# pass to create() — write add/multiply schemas too, or a real API run never calls them.
 # your code here
 
 # assert run_tool("multiply", {"a": 6, "b": 7}) == "42"   # uncomment when ready

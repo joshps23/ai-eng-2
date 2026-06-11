@@ -23,7 +23,11 @@
 # > Every cell below runs WITHOUT an API key.
 
 # %%
-import sys, agent_harness; print(sys.executable)
+import sys
+import agent_harness
+
+print(sys.executable)
+print("agent_harness:", agent_harness.__file__)
 
 # %% tags=["parameters"]
 import os
@@ -38,6 +42,10 @@ def make_client(turns):
         return OpenAI()
     from agent_harness.testing import FakeClient
     return FakeClient(turns)
+
+
+OFFLINE = not (USE_REAL_API and os.environ.get("OPENAI_API_KEY"))
+print("Mode:", "OFFLINE (FakeClient — no key needed)" if OFFLINE else "REAL API")
 
 # %% [markdown]
 # ## 1. Feel the growth
@@ -135,7 +143,9 @@ assert count_items(items) == 68   # deterministic: the heuristic needs no networ
 # ([Step 3.1](../06-context-management.md#step-31--counting-tokens-exactly-tiktoken-with-a-tiered-fallback)'s tiered fallback).
 # In this committed run **tiktoken is not installed**, so the heuristic path is the one
 # executing below — that is the fallback *working as designed*, not a degraded demo.
-# Install tiktoken and re-run to see the exact counter take over.
+# Install tiktoken and re-run to see the exact counter take over. (`_get_encoder` is a
+# private, underscore-prefixed function — we poke it deliberately here, purely as a
+# diagnostic.)
 
 # %%
 import agent_harness.context as ctx
@@ -343,7 +353,7 @@ print("All checks passed")
 # our script. Safe to run keyless: it skips itself.
 
 # %%
-if os.environ.get("OPENAI_API_KEY"):
+if USE_REAL_API and os.environ.get("OPENAI_API_KEY"):
     from openai import OpenAI
 
     live_items = [{"role": "user", "content": "Refactor the billing module."}]
@@ -359,7 +369,8 @@ if os.environ.get("OPENAI_API_KEY"):
     print(f"{len(live_items)} items -> {len(live_compacted)} items")
     print(live_compacted[0]["content"][:600])
 else:
-    print("(skipped — no API key; the FakeClient cells above are the real lesson)")
+    print("(skipped — needs USE_REAL_API = True in the parameters cell AND an "
+          "OPENAI_API_KEY; the FakeClient cells above are the real lesson)")
 
 # %% [markdown]
 # ## Key takeaways
@@ -370,7 +381,7 @@ else:
 # - Compaction trades one API call for a summary that keeps the *gist* of dropped turns.
 #
 # Quiz yourself with the phase's [Check yourself](../06-context-management.md#check-yourself),
-# then try [`EXERCISES.md` — Phase 6](../EXERCISES.md). Two scaffolds below.
+# then try [`EXERCISES.md` — Phase 6](../EXERCISES.md#phase-6--context-management). Two scaffolds below.
 
 # %%
 # Exercise 1 (phase Step 3.5): implement clip_output — bound a tool result BEFORE it

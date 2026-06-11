@@ -49,8 +49,8 @@ def make_client(turns):
     return FakeClient(turns)
 
 
-print("Mode:", "REAL API" if USE_REAL_API and os.environ.get("OPENAI_API_KEY")
-      else "offline (FakeClient — no key needed)")
+OFFLINE = not (USE_REAL_API and os.environ.get("OPENAI_API_KEY"))
+print("Mode:", "OFFLINE (FakeClient — no key needed)" if OFFLINE else "REAL API")
 
 # %% [markdown]
 # ## Version 1 — two turns, fully inline
@@ -190,7 +190,8 @@ print(json.dumps(input_items, indent=2))
 print("user messages in the transcript:", len(input_items), "<- double-append!")
 
 # %% [markdown]
-# The fix is this notebook series' rule C1: **the cell that appends also creates the
+# The fix is this notebook series' rule C1 (see the conventions in this folder's
+# [README](./README.md#series-conventions)): **the cell that appends also creates the
 # list.** (Try it for real: copy the append into its own cell and run it twice — then fix
 # it the same way.)
 
@@ -474,7 +475,7 @@ print("All checks passed")
 # in the phase.
 
 # %%
-if os.environ.get("OPENAI_API_KEY"):
+if USE_REAL_API and os.environ.get("OPENAI_API_KEY"):
     from openai import OpenAI
     real = OpenAI()
     conv_live = Conversation(instructions="You are a helpful assistant.")
@@ -487,7 +488,8 @@ if os.environ.get("OPENAI_API_KEY"):
                                input=conv_live.to_input())
     print("Turn 2 (real model):", r2.output_text)
 else:
-    print("(skipped — no API key; the FakeClient cells above are the real lesson)")
+    print("(skipped — needs USE_REAL_API = True in the parameters cell AND an "
+          "OPENAI_API_KEY; the FakeClient cells above are the real lesson)")
 
 # %% [markdown]
 # ## Key takeaways

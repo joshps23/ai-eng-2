@@ -30,8 +30,9 @@ print("agent_harness :", agent_harness.__file__)
 
 # %% [markdown]
 # If the import above fails, your Jupyter kernel is not the environment where you ran
-# `pip install -e ".[dev]"` (from `agent-harness-guide/code/`) — the notebook analog of
-# the guide's "always `python -m pytest`" rule.
+# `pip install -e ".[dev,notebooks]"` (from `agent-harness-guide/code/`) — the notebook
+# analog of the guide's "always `python -m pytest`" rule. See the
+# [FAQ — Setup & installation](../FAQ.md#setup--installation) for the fix.
 
 # %%
 import openai
@@ -39,7 +40,7 @@ print("openai SDK    :", openai.__version__)
 
 # %% tags=["parameters"]
 import os
-from agent_harness.testing import FakeClient, fake_function_call, fake_message
+from agent_harness.testing import FakeClient, fake_message
 
 USE_REAL_API = False  # flip to True (with OPENAI_API_KEY set) to talk to the real API
 
