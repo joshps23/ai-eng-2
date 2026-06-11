@@ -59,6 +59,11 @@ Status: ☐ todo · ◐ in progress · ☑ done
 
 Newest first. One line per shipped iteration.
 
+- **2026-06-11** — Persona dev loop, cycle 4 (UX): three UX-designer reviewers audited
+  the entry funnel, in-phase pacing, and cross-guide consistency; a shared design
+  contract was applied by four agents (single front-door CTA, nav headers + mini-TOCs,
+  uniform checkpoints, Reference-copy banners, Phase 4/8 numbering repairs, Phase 8
+  Graduation ending, Appendix identity). Links/anchors 0 broken; tests green.
 - **2026-06-11** — Beginner-persona dev loop, cycle 3: re-verification found zero
   blockers in phases 0–5 and two in Phase 8 (un-runnable §9 tests → new §9.0 shims,
   execution-verified; dead `--transcript` flag → fixed); closing polish landed across

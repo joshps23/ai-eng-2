@@ -111,7 +111,7 @@ Score each phase 1–5 on each axis; the loop revises the lowest-scoring phase n
 
 The evaluator-reviser loop runs **at most 10 times**, then stops on its own.
 
-- Iterations used: **6 / 10** *(reset 2026-06-10 for the version-ladder pass; iterations 4–6 ran 2026-06-11 as the beginner-persona dev loop below)*
+- Iterations used: **7 / 10** *(reset 2026-06-10 for the version-ladder pass; iterations 4–7 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6, UX-designer persona for 7)*
 - Per iteration: score all phases on the rubric, pick the weakest, revise it one notch
   more incremental, increment the counter here, log it below, commit, push. Stop when the
   counter hits 10 **or** every phase scores ≥4 on every axis.
@@ -133,6 +133,22 @@ The evaluator-reviser loop runs **at most 10 times**, then stops on its own.
 
 ## Revision log (newest first)
 
+- **2026-06-11 — Iteration 7: persona dev loop, cycle 4 (UX-designer verification).**
+  The verification persona switched from "Python beginner" (correctness) to "senior
+  UX/content designer" (reading experience): three reviewers covered the entry funnel,
+  the in-phase experience (with measurements: code:prose ratios, checkpoint gaps up to
+  999 lines, longest code blocks), and the late-guide/consistency axis (a component ×
+  phase matrix). Their conflicting suggestions were resolved into a binding design
+  contract (checkpoints as `### ▶ Run it now` H3s; a nav header on every phase; linked
+  mini-TOCs; Reference-copy banners + offline Check-it-nows over consolidated listings;
+  one closing-block template ending in a linked Next; 🟢 restricted to gloss/track;
+  `> [!WARNING]` only for destructive-op sites; Phase 4's colliding dual numbering and
+  Phase 8's ghost-§5 repaired). Front door rebuilt around a single Learning Path CTA;
+  BEGINNER-NOTES became the "Python Concepts Cheat-Sheet" (its maintainer tracker moved
+  to this file's appendix); Phase 8 now ends on a Graduation section instead of a
+  fade-out; Appendix 09 got an explicit identity and inbound links. Verified after:
+  repo-wide link/anchor check 0 problems, snippet-parse regressions 0, tests 56 green,
+  `code/` untouched.
 - **2026-06-11 — Iteration 6: beginner-persona dev loop, cycle 3 (verification +
   closing polish).** A second cold-read pass (three fresh "Sam" readers, same scopes)
   confirmed every cycle-2 fix held under execution: phases 0–5 had **zero blockers**
