@@ -24,7 +24,7 @@
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
 <nav class="sidebar" aria-label="Guide pages">
-<p class="site-mark"><span class="site-mark-glyph" aria-hidden="true">⟲</span> Agent Harness Guide</p>
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
 <p class="sidebar-heading">Start here</p>
 <ul>
 <li><a href="index.html">Guide hub</a></li>
@@ -68,20 +68,15 @@
 <li class="toc-h2"><a href="#version-1--line-by-line-the-transcript-is-just-a-list">Version 1 — Line-by-Line: the Transcript Is Just a List</a>
 <ul>
 <li class="toc-h3"><a href="#step-11--two-turns-fully-inline">Step 1.1 — Two turns, fully inline</a></li>
-<li class="toc-h3"><a href="#-run-it-now">▶ Run it now — Step 1.1</a></li>
 <li class="toc-h3"><a href="#step-12--a-chat-repl-the-same-two-turn-script-in-a-while-loop">Step 1.2 — A chat REPL: the same two-turn script, in a while loop</a></li>
-<li class="toc-h3"><a href="#-run-it-now-1">▶ Run it now — Step 1.2</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#version-2--functions-name-the-moves">Version 2 — Functions: Name the Moves</a>
 <ul>
 <li class="toc-h3"><a href="#what-changed-from-v1-to-v2">What changed from V1 to V2</a></li>
 <li class="toc-h3"><a href="#step-21--add-small-helper-functions">Step 2.1 — Add Small Helper Functions</a></li>
-<li class="toc-h3"><a href="#-run-it-now-2">▶ Run it now — Step 2.1</a></li>
 <li class="toc-h3"><a href="#step-22--save-and-load-the-transcript">Step 2.2 — Save and Load the Transcript</a></li>
-<li class="toc-h3"><a href="#-run-it-now-3">▶ Run it now — Step 2.2</a></li>
 <li class="toc-h3"><a href="#step-23--version-2-complete-chat_v2py">Step 2.3 — Version 2, complete: chat_v2.py</a></li>
-<li class="toc-h3"><a href="#-run-it-now-4">▶ Run it now — Step 2.3</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#interlude--transcript-management-deep-dive">Interlude — Transcript Management Deep-Dive</a>
@@ -95,24 +90,19 @@
 <ul>
 <li class="toc-h3"><a href="#what-changed-from-v2-to-v3">What changed from V2 to V3</a></li>
 <li class="toc-h3"><a href="#step-31--the-conversation-class">Step 3.1 — The Conversation Class</a></li>
-<li class="toc-h3"><a href="#-run-it-now-5">▶ Run it now — Step 3.1</a></li>
 <li class="toc-h3"><a href="#step-32--reasoning-items-and-encrypted_content">Step 3.2 — Reasoning Items and encrypted_content</a></li>
 <li class="toc-h3"><a href="#step-33--the-instructions-field">Step 3.3 — The instructions Field</a></li>
 <li class="toc-h3"><a href="#step-34--a-non-streaming-agent-loop-primary-path">Step 3.4 — A Non-Streaming Agent Loop (Primary Path)</a></li>
-<li class="toc-h3"><a href="#-run-it-now-6">▶ Run it now — Step 3.4</a></li>
 <li class="toc-h3"><a href="#step-35--version-3-complete-chat_v3py">Step 3.5 — Version 3, complete: chat_v3.py</a></li>
-<li class="toc-h3"><a href="#-run-it-now-7">▶ Run it now — Step 3.5</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#version-4--streaming-the-same-harness-live-optional">Version 4 — Streaming: the Same Harness, Live (optional)</a>
 <ul>
 <li class="toc-h3"><a href="#what-changed-from-v3-to-v4">What changed from V3 to V4</a></li>
 <li class="toc-h3"><a href="#step-41--what-an-event-stream-is">Step 4.1 — What an Event Stream Is</a></li>
-<li class="toc-h3"><a href="#-run-it-now-8">▶ Run it now — Step 4.1</a></li>
 <li class="toc-h3"><a href="#step-42--why-stream">Step 4.2 — Why Stream?</a></li>
 <li class="toc-h3"><a href="#step-43--event-reference">Step 4.3 — Event Reference</a></li>
 <li class="toc-h3"><a href="#step-44--stream_turn-full-implementation">Step 4.4 — stream_turn(): Full Implementation</a></li>
-<li class="toc-h3"><a href="#-run-it-now-9">▶ Run it now — Step 4.4</a></li>
 <li class="toc-h3"><a href="#step-45--a-simpler-renderer-no-ansi">Step 4.5 — A Simpler Renderer (No ANSI)</a></li>
 <li class="toc-h3"><a href="#step-46--the-integrated-run_agent_streaming-loop">Step 4.6 — The Integrated run_agent_streaming Loop</a></li>
 <li class="toc-h3"><a href="#step-47--version-4-complete-the-full-streaming-harness">Step 4.7 — Version 4, complete: the Full Streaming Harness</a></li>
@@ -131,7 +121,7 @@
 </details>
 </header>
 <article>
-<p><a href="02-tool-system.html">← Phase 2: A Real Tool System</a> · <a href="index.html">Guide index</a> · <a href="04-real-tools.html">Phase 4: Real-World Tools →</a></p>
+<p class="md-breadcrumb"><a href="02-tool-system.html">← Phase 2: A Real Tool System</a> · <a href="index.html">Guide index</a> · <a href="04-real-tools.html">Phase 4: Real-World Tools →</a></p>
 <h1 id="phase-3--conversation-state--streaming">Phase 3 — Conversation State &amp; Streaming</h1>
 <p>This phase addresses two tightly related concerns that every production agent harness must
 solve: owning and persisting the transcript correctly, and streaming model output to give
@@ -228,7 +218,6 @@ you specifically want a live-typing UI.</p>
 <blockquote>
 <p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/03-conversation-and-streaming.ipynb" title="Opens the notebook on GitHub — or use its Open-in-Colab badge"><code>notebooks/03-conversation-and-streaming.ipynb</code></a> executes this phase's checkpoints offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
 </blockquote>
-<hr>
 <h2 id="two-orthogonal-concerns">Two Orthogonal Concerns<a aria-label="Permalink to this section" class="hanchor" href="#two-orthogonal-concerns">¶</a></h2>
 <p><strong>Transcript management</strong> determines what you send in <code>input</code> on each call.  You have two
 options:</p>
@@ -240,7 +229,6 @@ options:</p>
 </ol>
 <p><strong>Streaming</strong> is independent of which state strategy you pick.  You can stream with either
 approach.</p>
-<hr>
 <h2 id="version-1--line-by-line-the-transcript-is-just-a-list">Version 1 — Line-by-Line: the Transcript Is Just a List<a aria-label="Permalink to this section" class="hanchor" href="#version-1--line-by-line-the-transcript-is-just-a-list">¶</a></h2>
 <p>The first rung is the whole idea of this phase with <strong>no <code>def</code> and no classes</strong> — just
 statements, a list, and (in Step 1.2) a <code>while</code> loop. If you understand Version 1 you
@@ -368,7 +356,6 @@ Goodbye — the transcript held 4 items.
 <p>As an experiment, move <code>input_items = []</code> to the top of the loop body (so the list is
 recreated every turn) and run it again — the model instantly "forgets" your name. Memory
 lives in that one line's placement.</p>
-<hr>
 <h2 id="version-2--functions-name-the-moves">Version 2 — Functions: Name the Moves<a aria-label="Permalink to this section" class="hanchor" href="#version-2--functions-name-the-moves">¶</a></h2>
 <h3 id="what-changed-from-v1-to-v2">What changed from V1 to V2<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v1-to-v2">¶</a></h3>
 <ul>
@@ -593,7 +580,6 @@ session exists the chat <strong>resumes</strong> it on startup.</p>
 <code>What is my name?</code>. It remembers — across a full process restart — because the transcript
 was sitting in <code>/tmp/chat_v2_session.json</code> the whole time. (Delete that file to start
 fresh.) Compare the <code>while</code> loop body to <code>chat_v1.py</code>: the same three moves, now named.</p>
-<hr>
 <h2 id="interlude--transcript-management-deep-dive">Interlude — Transcript Management Deep-Dive<a aria-label="Permalink to this section" class="hanchor" href="#interlude--transcript-management-deep-dive">¶</a></h2>
 <p>Before climbing to Version 3, a short detour into the design decisions behind what you
 just built. No new code to run here — this is the "why" behind owning the list.</p>
@@ -679,7 +665,6 @@ produced by the API:</p>
 
 <p>This is intentionally minimal.  The API silently ignores unknown fields in input items, so
 including extra fields from <code>model_dump()</code> is harmless.</p>
-<hr>
 <h2 id="version-3--classes-the-conversation-object">Version 3 — Classes: the <code>Conversation</code> Object<a aria-label="Permalink to this section" class="hanchor" href="#version-3--classes-the-conversation-object">¶</a></h2>
 <h3 id="what-changed-from-v2-to-v3">What changed from V2 to V3<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v2-to-v3">¶</a></h3>
 <ul>
@@ -1169,7 +1154,6 @@ loop plus a tool, nothing else:</p>
 4-item transcript).  Open <code>/tmp/phase3-chat-v3.json</code> — you can read the entire tool
 handshake (<code>function_call</code> → <code>function_call_output</code>, matched by <code>call_id</code>) in plain JSON.
 This file is the Version 3 harness in full; Version 4 changes exactly one thing about it.</p>
-<hr>
 <h2 id="version-4--streaming-the-same-harness-live-optional">Version 4 — Streaming: the Same Harness, Live (optional)<a aria-label="Permalink to this section" class="hanchor" href="#version-4--streaming-the-same-harness-live-optional">¶</a></h2>
 <blockquote>
 <p><strong>This entire version is optional</strong> — the beginner box at the top of this phase
@@ -2031,7 +2015,6 @@ actually appear), each API call also emits a <code>reasoning</code> item before 
 so the same session saves <strong>8</strong> items: a <code>reasoning</code> item slots in before the two
 <code>function_call</code> items (between items 1 and 2), and another before the final <code>message</code>
 (between items 5 and 6).</p>
-<hr>
 <h2 id="pitfalls">Pitfalls<a aria-label="Permalink to this section" class="hanchor" href="#pitfalls">¶</a></h2>
 <blockquote>
 <p><strong>Pitfall 1 — Losing the final structured response</strong></p>
@@ -2087,7 +2070,6 @@ closes the stream.  If your loop only handles text and function-call events, the
 is silently swallowed.  Always handle <code>response.error</code> — at minimum print it to stderr
 and break, or raise an exception.</p>
 </blockquote>
-<hr>
 <h2 id="key-takeaways">Key takeaways<a aria-label="Permalink to this section" class="hanchor" href="#key-takeaways">¶</a></h2>
 <ul>
 <li>This phase separates <strong>two orthogonal concerns</strong>: <em>owning the transcript</em> (state) and
@@ -2163,7 +2145,6 @@ and break, or raise an exception.</p>
    It's a UX feature.</li>
 </ol>
 </details>
-<hr>
 <h2 id="exercises">Exercises<a aria-label="Permalink to this section" class="hanchor" href="#exercises">¶</a></h2>
 <p><strong>Practice:</strong> see <a href="exercises.html#phase-3--conversation--streaming"><code>EXERCISES.md</code> — Phase 3</a>
 for hands-on exercises (session persistence, replay, and streaming renderers) before
@@ -2186,10 +2167,16 @@ moving on.</p>
 <script>
 (function () {
   /* On narrow screens the stacked sidebar would push content below the
-     fold on every load — start it collapsed there. */
-  if (matchMedia('(max-width: 800px)').matches) {
-    var sb = document.querySelector('.sidebar-wrap');
-    if (sb) { sb.removeAttribute('open'); }
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
   }
 
   /* Print: open every <details> (answers, TOC) and revert afterwards. */

@@ -30,7 +30,7 @@
     --border: #2A2F3C;
     --border-strong: #3A4150;
     --accent: #8C9BFF;        /* 7.47:1 on bg, 6.82:1 on code-bg; dark text on it: 7.47:1 */
-    --accent-deep: #8C9BFF;   /* same in dark; 6.19:1 on 10% accent tint */
+    --accent-deep: #A5B0FF;   /* hover step up: 9.28:1 on bg, 8.49:1 on code-bg */
     --code-bg: #171A23;
     --sidebar-bg: #12141C;
     --green: #3FB950;         /* 7.49:1 on bg, 6.68:1 on its 9% tint */
@@ -67,19 +67,34 @@ body {
   border-right: 1px solid var(--border);
 }
 .sidebar-toggle {
-  cursor: pointer; padding: 0.75rem 1rem; font-weight: 600;
+  cursor: pointer; padding: 0.875rem 1rem; font-weight: 600;
   list-style: none; display: block;
+  font-family: var(--font-mono); font-size: 0.75rem;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--muted); /* 5.88:1 on sidebar-bg */
+  border-bottom: 1px solid var(--border);
 }
 .sidebar-toggle::-webkit-details-marker { display: none; }
-.sidebar { padding: 0 1rem 1rem; font-size: 0.875rem; line-height: 1.5; }
-.site-mark {
-  font-weight: 700; font-size: 0.9375rem; letter-spacing: -0.01em;
-  margin: 0.75rem 0 0.25rem; color: var(--fg);
+.sidebar-toggle::after { content: " ▾"; color: var(--muted); }
+details[open] > .sidebar-toggle::after { content: " ▴"; }
+/* The sidebar is always expanded on desktop (the JS re-opens it above the
+   breakpoint), so the "Guide navigation" chrome is redundant there — the
+   site mark becomes the sidebar's first line.  <details> content stays
+   rendered: visibility follows the [open] attribute, not the summary. */
+@media (min-width: 801px) {
+  .sidebar-toggle { display: none; }
 }
-.site-mark-glyph { color: var(--accent); }
+.sidebar { padding: 0 1rem 1rem; font-size: 0.875rem; line-height: 1.5; }
+/* typographic site mark: mono `agent-harness/`, the slash in accent */
+.site-mark {
+  font-family: var(--font-mono); font-weight: 700; font-size: 0.875rem;
+  letter-spacing: 0; margin: 0.875rem 0 0.25rem; color: var(--fg);
+}
+.site-mark .mark-slash { color: var(--accent); }
 .sidebar .sidebar-heading {
-  font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.05em; color: var(--muted); margin: 1.25em 0 0.25em;
+  font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted);
+  margin: 1.25em 0 0.25em;
 }
 .sidebar ul { list-style: none; margin: 0; padding: 0; }
 .sidebar li { margin: 0; }
@@ -99,8 +114,18 @@ article { max-width: 75ch; font-size: 1.0625rem; line-height: 1.7; }
 article p, article ul, article ol { margin: 0 0 1.25rem; }
 article blockquote > :last-child, article .admonition > :last-child,
 article details > :last-child { margin-bottom: 0; }
+/* tablet: a 250px rail + 2rem padding pinches the article to ~55ch at 834w;
+   give the text back ~6ch.  Must precede the 800px block so the stacked-
+   layout rules below win the cascade at phone widths. */
+@media (max-width: 1000px) {
+  .sidebar-wrap { flex-basis: 220px; }
+  main { padding: 1.5rem; }
+}
 @media (max-width: 800px) {
   .layout { flex-direction: column; }
+  /* column flex: align-items flex-start would shrink main to max-content
+     (~80ch), clipping at narrow viewports — found by the Playwright pass */
+  main { width: 100%; }
   .sidebar-wrap { position: static; flex: none; width: 100%; max-height: none;
     border-right: none; border-bottom: 1px solid var(--border); }
   main { padding: 1rem; }
@@ -108,6 +133,7 @@ article details > :last-child { margin-bottom: 0; }
   .page-footer { padding-bottom: 3.5rem; }
 }
 h1, h2, h3, h4 { scroll-margin-top: 1.25rem; }
+.md-breadcrumb { font-size: 0.8125rem; color: var(--muted); }
 h1 {
   font-size: 2.25rem; line-height: 1.15; font-weight: 800;
   letter-spacing: -0.022em; margin: 0 0 1rem;
@@ -137,9 +163,11 @@ table { border-collapse: collapse; width: 100%; font-size: 0.9375rem; }
 th, td { border: 0; border-bottom: 1px solid var(--border);
   padding: 0.5em 0.875em; text-align: left; }
 th { background: transparent; border-bottom: 2px solid var(--border-strong);
-  font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;
-  color: var(--muted); }
-tbody tr:hover td { background: color-mix(in srgb, var(--fg) 3%, transparent); }
+  font-family: var(--font-mono); font-size: 0.75rem;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+/* hover paint only where rows lead somewhere: the index phase table */
+.page-index tbody tr:hover td {
+  background: color-mix(in srgb, var(--fg) 3%, transparent); }
 code, pre, kbd {
   font-family: var(--font-mono);
   font-size: 0.875em;
@@ -164,12 +192,15 @@ div.highlight pre::-webkit-scrollbar-track { background: transparent; }
   position: absolute; top: 0.5rem; right: 0.5rem;
   padding: 0.25em 0.7em; font-size: 0.75rem; font-family: var(--font-sans);
   cursor: pointer; border: 1px solid var(--border-strong); border-radius: 6px;
-  background: var(--bg); color: var(--muted); opacity: 0;
+  background: var(--bg); color: var(--muted);
+  /* always visible (a long block scrolls the corner out of reach before a
+     hover reveal could help); dimmed until hovered/focused */
+  opacity: 0.7;
   transition: opacity 120ms ease-out, color 120ms ease-out;
 }
-div.highlight:hover .copy-btn, .copy-btn:focus-visible { opacity: 1; }
+div.highlight:hover .copy-btn, .copy-btn:hover,
+.copy-btn:focus-visible { opacity: 1; }
 .copy-btn:hover { color: var(--fg); }
-@media (hover: none) { .copy-btn { opacity: 0.7; } }  /* touch: always visible */
 blockquote {
   margin: 1.25rem 0; padding: 0.75rem 1.25rem; color: var(--muted);
   border-left: 3px solid var(--border-strong); border-radius: 0 8px 8px 0;
@@ -212,8 +243,9 @@ article details:not(.page-toc) {
   border-radius: 10px; padding: 0.625rem 1rem; font-size: 0.875rem;
 }
 .page-toc > summary {
-  color: var(--muted); font-weight: 600; font-size: 0.8125rem;
-  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--muted); font-weight: 600;
+  font-family: var(--font-mono); font-size: 0.75rem;
+  text-transform: uppercase; letter-spacing: 0.08em;
 }
 .page-toc ul { list-style: none; padding-left: 0; margin: 0.5em 0; }
 .page-toc ul ul { padding-left: 1.5em; margin: 0; }
@@ -236,9 +268,9 @@ ul.contains-task-list { list-style: none; padding-left: 1em; }
 .prevnext .prev::before { content: "Previous"; }
 .prevnext .next::before { content: "Next"; }
 .prevnext a::before {
-  display: block; font-size: 0.6875rem; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted);
-  margin-bottom: 0.2rem;
+  display: block; font-family: var(--font-mono); font-size: 0.6875rem;
+  font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--muted); margin-bottom: 0.2rem;
 }
 .prevnext .next { margin-left: auto; text-align: right; }
 .generated-note { color: var(--muted); font-size: 0.8125rem; line-height: 1.5; }
@@ -260,10 +292,11 @@ a.repo-file::after { content: " ↗"; font-size: 0.85em; }
 /* ---- index landing page (body.page-index only) ---- */
 .hero { padding: 1.5rem 0 0.5rem; }
 .hero .hero-eyebrow {
-  font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.08em; color: var(--accent-deep); margin: 0 0 0.75rem;
+  font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--accent-deep); margin: 0 0 0.75rem;
 }
-.page-index h1 { font-size: clamp(2rem, 4.5vw, 2.75rem); }
+.page-index h1 { font-size: clamp(2rem, 4.5vw, 2.75rem); text-wrap: balance; }
 .hero blockquote {
   border: 0; padding: 0; background: transparent;
   font-size: 1.1875rem; line-height: 1.6; color: #444B5A;  /* 8.61:1 on bg */
@@ -278,7 +311,6 @@ a.repo-file::after { content: " ↗"; font-size: 0.85em; }
 .btn-primary:hover { background: var(--accent-deep); }     /* white on it: 7.90:1 */
 .btn-ghost { border: 1px solid var(--border-strong); color: var(--fg); }
 .btn-ghost:hover { border-color: var(--accent); color: var(--accent-deep); }
-.page-index .hero + hr { display: none; }
 .page-index .page-header { display: none; }
 .page-index .table-wrap td:first-child strong {
   font-size: 1.25rem; color: var(--accent-deep);
@@ -296,89 +328,93 @@ a.repo-file::after { content: " ↗"; font-size: 0.85em; }
     background: color-mix(in srgb, var(--accent) 10%, var(--bg)); }
 }
 @media print {
-  .sidebar-wrap, .skip-link, .copy-btn, .page-header, .prevnext,
-  .back-to-top, .hanchor, .hero-cta, .source-link { display: none !important; }
+  .sidebar-wrap, .skip-link, .copy-btn, .page-header, .page-toc, .prevnext,
+  .back-to-top, .hanchor, .hero-cta, .source-link,
+  .md-breadcrumb { display: none !important; }
+  /* use the sheet: drop the screen column, center the text at a book-like
+     measure instead of hugging the left half of the page */
+  .layout { max-width: none; }
+  main { max-width: none; }
+  article { max-width: 65ch; margin: 0 auto; }
+  article a { color: inherit; }
   div.highlight pre { white-space: pre-wrap; overflow-x: visible; }
   .table-wrap { overflow-x: visible; }
   th, td { word-break: break-word; }
 }
 
-/* pygments: light */
-pre { line-height: 125%; }
-td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
-span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
-td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
-span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
-.highlight .hll { background-color: #ffffcc }
-.highlight { background: #f8f8f8; }
-.highlight .c { color: #3D7B7B; font-style: italic } /* Comment */
-.highlight .err { border: 1px solid #F00 } /* Error */
-.highlight .k { color: #008000; font-weight: bold } /* Keyword */
-.highlight .o { color: #666 } /* Operator */
-.highlight .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
-.highlight .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
-.highlight .cp { color: #9C6500 } /* Comment.Preproc */
-.highlight .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
-.highlight .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
-.highlight .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
-.highlight .gd { color: #A00000 } /* Generic.Deleted */
+/* pygments: light (GitHub-Light, hand-tuned — see LIGHT_PYGMENTS) */
+.highlight .hll { background-color: #FFF8C5 }
+.highlight .c { color: #59626E; font-style: italic } /* Comment */
+.highlight .err { color: #82071E } /* Error */
+.highlight .k { color: #CF222E } /* Keyword */
+.highlight .n { color: #1B1F27 } /* Name */
+.highlight .o { color: #CF222E; font-weight: bold } /* Operator */
+.highlight .p { color: #1B1F27 } /* Punctuation */
+.highlight .ch { color: #59626E; font-style: italic } /* Comment.Hashbang */
+.highlight .cm { color: #59626E; font-style: italic } /* Comment.Multiline */
+.highlight .cp { color: #59626E } /* Comment.Preproc */
+.highlight .cpf { color: #59626E; font-style: italic } /* Comment.PreprocFile */
+.highlight .c1 { color: #59626E; font-style: italic } /* Comment.Single */
+.highlight .cs { color: #59626E; font-style: italic } /* Comment.Special */
+.highlight .gd { color: #82071E } /* Generic.Deleted */
 .highlight .ge { font-style: italic } /* Generic.Emph */
 .highlight .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
-.highlight .gr { color: #E40000 } /* Generic.Error */
-.highlight .gh { color: #000080; font-weight: bold } /* Generic.Heading */
-.highlight .gi { color: #008400 } /* Generic.Inserted */
-.highlight .go { color: #717171 } /* Generic.Output */
-.highlight .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.highlight .gr { color: #82071E } /* Generic.Error */
+.highlight .gh { color: #0A3069; font-weight: bold } /* Generic.Heading */
+.highlight .gi { color: #116329 } /* Generic.Inserted */
+.highlight .go { color: #59626E } /* Generic.Output */
+.highlight .gp { color: #59626E } /* Generic.Prompt */
 .highlight .gs { font-weight: bold } /* Generic.Strong */
-.highlight .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
-.highlight .gt { color: #04D } /* Generic.Traceback */
-.highlight .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
-.highlight .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
-.highlight .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
-.highlight .kp { color: #008000 } /* Keyword.Pseudo */
-.highlight .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
-.highlight .kt { color: #B00040 } /* Keyword.Type */
-.highlight .m { color: #666 } /* Literal.Number */
-.highlight .s { color: #BA2121 } /* Literal.String */
-.highlight .na { color: #687822 } /* Name.Attribute */
-.highlight .nb { color: #008000 } /* Name.Builtin */
-.highlight .nc { color: #00F; font-weight: bold } /* Name.Class */
-.highlight .no { color: #800 } /* Name.Constant */
-.highlight .nd { color: #A2F } /* Name.Decorator */
-.highlight .ni { color: #717171; font-weight: bold } /* Name.Entity */
-.highlight .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
-.highlight .nf { color: #00F } /* Name.Function */
-.highlight .nl { color: #767600 } /* Name.Label */
-.highlight .nn { color: #00F; font-weight: bold } /* Name.Namespace */
-.highlight .nt { color: #008000; font-weight: bold } /* Name.Tag */
-.highlight .nv { color: #19177C } /* Name.Variable */
-.highlight .ow { color: #A2F; font-weight: bold } /* Operator.Word */
-.highlight .w { color: #BBB } /* Text.Whitespace */
-.highlight .mb { color: #666 } /* Literal.Number.Bin */
-.highlight .mf { color: #666 } /* Literal.Number.Float */
-.highlight .mh { color: #666 } /* Literal.Number.Hex */
-.highlight .mi { color: #666 } /* Literal.Number.Integer */
-.highlight .mo { color: #666 } /* Literal.Number.Oct */
-.highlight .sa { color: #BA2121 } /* Literal.String.Affix */
-.highlight .sb { color: #BA2121 } /* Literal.String.Backtick */
-.highlight .sc { color: #BA2121 } /* Literal.String.Char */
-.highlight .dl { color: #BA2121 } /* Literal.String.Delimiter */
-.highlight .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
-.highlight .s2 { color: #BA2121 } /* Literal.String.Double */
-.highlight .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
-.highlight .sh { color: #BA2121 } /* Literal.String.Heredoc */
-.highlight .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
-.highlight .sx { color: #008000 } /* Literal.String.Other */
-.highlight .sr { color: #A45A77 } /* Literal.String.Regex */
-.highlight .s1 { color: #BA2121 } /* Literal.String.Single */
-.highlight .ss { color: #19177C } /* Literal.String.Symbol */
-.highlight .bp { color: #008000 } /* Name.Builtin.Pseudo */
-.highlight .fm { color: #00F } /* Name.Function.Magic */
-.highlight .vc { color: #19177C } /* Name.Variable.Class */
-.highlight .vg { color: #19177C } /* Name.Variable.Global */
-.highlight .vi { color: #19177C } /* Name.Variable.Instance */
-.highlight .vm { color: #19177C } /* Name.Variable.Magic */
-.highlight .il { color: #666 } /* Literal.Number.Integer.Long */
+.highlight .gu { color: #0A3069; font-weight: bold } /* Generic.Subheading */
+.highlight .gt { color: #0550AE } /* Generic.Traceback */
+.highlight .kc { color: #0550AE } /* Keyword.Constant */
+.highlight .kd { color: #CF222E } /* Keyword.Declaration */
+.highlight .kn { color: #CF222E } /* Keyword.Namespace */
+.highlight .kp { color: #0550AE } /* Keyword.Pseudo */
+.highlight .kr { color: #CF222E } /* Keyword.Reserved */
+.highlight .kt { color: #CF222E } /* Keyword.Type */
+.highlight .m { color: #0550AE } /* Literal.Number */
+.highlight .s { color: #0A3069 } /* Literal.String */
+.highlight .na { color: #0550AE } /* Name.Attribute */
+.highlight .nb { color: #1B1F27 } /* Name.Builtin */
+.highlight .nc { color: #953800; font-weight: bold } /* Name.Class */
+.highlight .no { color: #0550AE } /* Name.Constant */
+.highlight .nd { color: #8250DF; font-weight: bold } /* Name.Decorator */
+.highlight .ni { color: #59626E; font-weight: bold } /* Name.Entity */
+.highlight .ne { color: #953800; font-weight: bold } /* Name.Exception */
+.highlight .nf { color: #8250DF; font-weight: bold } /* Name.Function */
+.highlight .nl { color: #953800 } /* Name.Label */
+.highlight .nn { color: #CF222E } /* Name.Namespace */
+.highlight .nt { color: #116329 } /* Name.Tag */
+.highlight .nv { color: #953800 } /* Name.Variable */
+.highlight .ow { color: #CF222E; font-weight: bold } /* Operator.Word */
+.highlight .w { color: #59626E } /* Text.Whitespace */
+.highlight .mb { color: #0550AE } /* Literal.Number.Bin */
+.highlight .mf { color: #0550AE } /* Literal.Number.Float */
+.highlight .mh { color: #0550AE } /* Literal.Number.Hex */
+.highlight .mi { color: #0550AE } /* Literal.Number.Integer */
+.highlight .mo { color: #0550AE } /* Literal.Number.Oct */
+.highlight .sa { color: #0550AE } /* Literal.String.Affix */
+.highlight .sb { color: #0A3069 } /* Literal.String.Backtick */
+.highlight .sc { color: #0A3069 } /* Literal.String.Char */
+.highlight .dl { color: #0A3069 } /* Literal.String.Delimiter */
+.highlight .sd { color: #0A3069; font-style: italic } /* Literal.String.Doc */
+.highlight .s2 { color: #0A3069 } /* Literal.String.Double */
+.highlight .se { color: #0550AE } /* Literal.String.Escape */
+.highlight .sh { color: #0A3069 } /* Literal.String.Heredoc */
+.highlight .si { color: #0A3069 } /* Literal.String.Interpol */
+.highlight .sx { color: #0A3069 } /* Literal.String.Other */
+.highlight .sr { color: #0A3069 } /* Literal.String.Regex */
+.highlight .s1 { color: #0A3069 } /* Literal.String.Single */
+.highlight .ss { color: #0550AE } /* Literal.String.Symbol */
+.highlight .bp { color: #1B1F27 } /* Name.Builtin.Pseudo */
+.highlight .fm { color: #8250DF; font-weight: bold } /* Name.Function.Magic */
+.highlight .vc { color: #953800 } /* Name.Variable.Class */
+.highlight .vg { color: #953800 } /* Name.Variable.Global */
+.highlight .vi { color: #953800 } /* Name.Variable.Instance */
+.highlight .vm { color: #0550AE } /* Name.Variable.Magic */
+.highlight .il { color: #0550AE } /* Literal.Number.Integer.Long */
+
 /* pygments: dark */
 @media (prefers-color-scheme: dark) {
   pre { line-height: 125%; }

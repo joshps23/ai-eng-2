@@ -24,7 +24,7 @@
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
 <nav class="sidebar" aria-label="Guide pages">
-<p class="site-mark"><span class="site-mark-glyph" aria-hidden="true">⟲</span> Agent Harness Guide</p>
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
 <p class="sidebar-heading">Start here</p>
 <ul>
 <li><a href="index.html">Guide hub</a></li>
@@ -72,14 +72,10 @@
 <ul>
 <li class="toc-h3"><a href="#031-installation--client">0.3.1 Installation &amp; client</a></li>
 <li class="toc-h3"><a href="#032-step-1--the-simplest-possible-call-text-in-text-out">0.3.2 Step 1 — the simplest possible call (text in, text out)</a></li>
-<li class="toc-h3"><a href="#-run-it-now">▶ Run it now — 0.3.2 Step 1</a></li>
 <li class="toc-h3"><a href="#033-step-2--input-as-a-list-of-items">0.3.3 Step 2 — input as a list of items</a></li>
-<li class="toc-h3"><a href="#-run-it-now-1">▶ Run it now — 0.3.3 Step 2</a></li>
 <li class="toc-h3"><a href="#034-the-output-a-list-of-typed-items">0.3.4 The output: a list of typed items</a></li>
 <li class="toc-h3"><a href="#035-step-3--defining-a-tool-and-seeing-the-model-request-it">0.3.5 Step 3 — defining a tool and seeing the model request it</a></li>
-<li class="toc-h3"><a href="#-run-it-now-2">▶ Run it now — 0.3.5 Step 3</a></li>
 <li class="toc-h3"><a href="#036-step-4--the-tool-call--result-handshake-the-critical-step">0.3.6 Step 4 — the tool call → result handshake (the critical step)</a></li>
-<li class="toc-h3"><a href="#-run-it-now-3">▶ Run it now — 0.3.6 Step 4</a></li>
 <li class="toc-h3"><a href="#037-carrying-model-output-back-into-the-conversation">0.3.7 Carrying model output back into the conversation</a></li>
 </ul>
 </li>
@@ -87,11 +83,9 @@
 <ul>
 <li class="toc-h3"><a href="#what-changed-from-v1-to-v2">What changed from V1 to V2</a></li>
 <li class="toc-h3"><a href="#041-step-1--name-the-model-call-call_model">0.4.1 Step 1 — name the model call: call_model</a></li>
-<li class="toc-h3"><a href="#-run-it-now-4">▶ Run it now — 0.4.1 Step 1</a></li>
 <li class="toc-h3"><a href="#042-step-2--name-the-tools-work-run_tool">0.4.2 Step 2 — name the tool&#x27;s work: run_tool</a></li>
 <li class="toc-h3"><a href="#043-step-3--name-the-handshake-bookkeeping-handle_tool_calls">0.4.3 Step 3 — name the handshake bookkeeping: handle_tool_calls</a></li>
 <li class="toc-h3"><a href="#044-the-complete-version-2-program">0.4.4 The complete Version 2 program</a></li>
-<li class="toc-h3"><a href="#-run-it-now-5">▶ Run it now — 0.4.4 The complete Version 2 program</a></li>
 <li class="toc-h3"><a href="#045-where-is-version-3">0.4.5 Where is Version 3?</a></li>
 </ul>
 </li>
@@ -109,9 +103,6 @@
 </ul>
 </li>
 <li class="toc-h2"><a href="#08-sanity-check-script">0.8 Sanity-check script</a>
-<ul>
-<li class="toc-h3"><a href="#-run-it-now-6">▶ Run it now — 0.8 Sanity-check script</a></li>
-</ul>
 </li>
 <li class="toc-h2"><a href="#key-takeaways">Key takeaways</a>
 </li>
@@ -123,7 +114,7 @@
 </details>
 </header>
 <article>
-<p><a href="index.html">Guide index</a> · <a href="01-bare-harness.html">Phase 1: A Bare Harness in ~80 Lines →</a></p>
+<p class="md-breadcrumb"><a href="index.html">Guide index</a> · <a href="01-bare-harness.html">Phase 1: A Bare Harness in ~80 Lines →</a></p>
 <h1 id="phase-0--foundations-the-agent-loop-and-the-responses-api">Phase 0 — Foundations: The Agent Loop and the Responses API</h1>
 <blockquote>
 <p><strong>Goal of this phase:</strong> Understand <em>what an agent harness actually is</em>, learn the
@@ -158,7 +149,6 @@ comes up.</p>
 <blockquote>
 <p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/00-foundations.ipynb" title="Opens the notebook on GitHub — or use its Open-in-Colab badge"><code>notebooks/00-foundations.ipynb</code></a> executes this phase's checkpoints offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
 </blockquote>
-<hr>
 <h2 id="01-what-is-an-agent-harness">0.1 What is an "agent harness"?<a aria-label="Permalink to this section" class="hanchor" href="#01-what-is-an-agent-harness">¶</a></h2>
 <p>An LLM by itself is a <strong>pure function</strong>: text in, text out. It cannot read a file,
 run a command, call an API, or remember anything between calls. It is frozen.</p>
@@ -250,7 +240,6 @@ that polish phase by phase.</p>
 </tbody>
 </table></div>
 <p>Each phase is runnable on its own and builds directly on the previous one.</p>
-<hr>
 <h2 id="02-why-the-responses-api-and-not-chat-completions">0.2 Why the Responses API (and not Chat Completions)?<a aria-label="Permalink to this section" class="hanchor" href="#02-why-the-responses-api-and-not-chat-completions">¶</a></h2>
 <p>OpenAI has two surfaces for talking to its models:</p>
 <ul>
@@ -277,7 +266,6 @@ agent loop:</p>
 <p>If you only know Chat Completions, the mental shift is: <em>stop thinking "a list of
 messages" and start thinking "a running list of typed items."</em></p>
 </blockquote>
-<hr>
 <h2 id="03-version-1--the-whole-handshake-line-by-line">0.3 Version 1 — the whole handshake, line by line<a aria-label="Permalink to this section" class="hanchor" href="#03-version-1--the-whole-handshake-line-by-line">¶</a></h2>
 <p>This section is the <strong>single source of truth</strong> every later phase relies on. We
 introduce each piece one at a time, with a working checkpoint after each new idea.
@@ -657,7 +645,6 @@ is the key line that makes the conversation grow correctly.</p>
 <p>That completes <strong>Version 1</strong>: every concept of this phase, in one straight-line
 file. Next we climb one rung of the ladder — the <em>same</em> program, reorganized into
 functions.</p>
-<hr>
 <h2 id="04-version-2--the-same-handshake-organized-into-functions">0.4 Version 2 — the same handshake, organized into functions<a aria-label="Permalink to this section" class="hanchor" href="#04-version-2--the-same-handshake-organized-into-functions">¶</a></h2>
 <p>Version 1 works, and you should keep it — it is the version where nothing is
 hidden. But it has a cost you'll feel the moment the program grows: everything is
@@ -836,7 +823,6 @@ versions yourself — <strong>Phase 1</strong> previews a minimal <code>Agent</c
 its own ladder, and <strong>Phase 2</strong> introduces the <code>Tool</code> abstraction, the
 <code>ToolRegistry</code>, and (as its Version 4) the <code>@tool</code> decorator. When you meet
 them, remember they are this same handshake, climbing the same ladder.</p>
-<hr>
 <h2 id="05-preview-streaming-full-treatment-in-phase-3">0.5 Preview: streaming (full treatment in Phase 3)<a aria-label="Permalink to this section" class="hanchor" href="#05-preview-streaming-full-treatment-in-phase-3">¶</a></h2>
 <blockquote>
 <p><strong>This section is optional for now.</strong> Skip it on your first pass. Come back after
@@ -872,7 +858,6 @@ higher-level <code>client.responses.stream()</code> helper that does this for yo
 purpose — the harness drives the event loop itself.) Key event types you'll use:
 <code>response.output_text.delta</code>, <code>response.function_call_arguments.delta</code>,
 <code>response.output_item.added</code>, <code>response.completed</code>. Phase 3 builds a full streaming renderer.</p>
-<hr>
 <h2 id="06-preview-usage--cost-full-treatment-in-phase-6">0.6 Preview: usage &amp; cost (full treatment in Phase 6)<a aria-label="Permalink to this section" class="hanchor" href="#06-preview-usage--cost-full-treatment-in-phase-6">¶</a></h2>
 <blockquote>
 <p><strong>This section is optional for now.</strong> Skip it on your first pass. Token accounting
@@ -886,7 +871,6 @@ working.</p>
 </code></pre></div>
 
 <p>We track these in Phase 6 (context budgeting) and Phase 8 (observability).</p>
-<hr>
 <h2 id="07-project-conventions-used-by-every-phase">0.7 Project conventions (used by every phase)<a aria-label="Permalink to this section" class="hanchor" href="#07-project-conventions-used-by-every-phase">¶</a></h2>
 <p>To keep eight phases coherent, we fix these conventions now.</p>
 <h3 id="071-repository-layout">0.7.1 Repository layout<a aria-label="Permalink to this section" class="hanchor" href="#071-repository-layout">¶</a></h3>
@@ -956,7 +940,6 @@ one is mostly waiting (for the network, the disk, a command). Until Phase 7 ever
 example runs the simple one-after-another way, and when threads appear, this version
 shows the sequential version first so you can see they produce the same result.</p>
 </blockquote>
-<hr>
 <h2 id="08-sanity-check-script">0.8 Sanity-check script<a aria-label="Permalink to this section" class="hanchor" href="#08-sanity-check-script">¶</a></h2>
 <p>Before moving to Phase 1, confirm your environment works end to end. This script is
 a variant of <code>version1_handshake.py</code> (§0.3.6) that swaps the weather stub for an
@@ -1015,7 +998,6 @@ Version 2 function shape (and adding a <code>multiply</code> tool) is the Phase 
 
 <p>If that prints a sentence containing "42", your key, model access, and understanding of the
 handshake are all good. <strong>You now have everything you need to build the loop.</strong></p>
-<hr>
 <h2 id="key-takeaways">Key takeaways<a aria-label="Permalink to this section" class="hanchor" href="#key-takeaways">¶</a></h2>
 <ul>
 <li>An LLM is <strong>stateless</strong>: text in, text out. The harness supplies the two things it
@@ -1049,7 +1031,6 @@ handshake are all good. <strong>You now have everything you need to build the lo
    the model's prior output items is exactly what preserves the conversation.</li>
 </ol>
 </details>
-<hr>
 <h2 id="exercises">Exercises<a aria-label="Permalink to this section" class="hanchor" href="#exercises">¶</a></h2>
 <p>See <a href="exercises.html#phase-0--foundations"><code>EXERCISES.md</code> — Phase 0</a>: reorganize the <code>check_setup.py</code>
 sanity script (§0.8) into the Version 2 function shape and add a <code>multiply</code> tool.</p>
@@ -1070,10 +1051,16 @@ sanity script (§0.8) into the Version 2 function shape and add a <code>multiply
 <script>
 (function () {
   /* On narrow screens the stacked sidebar would push content below the
-     fold on every load — start it collapsed there. */
-  if (matchMedia('(max-width: 800px)').matches) {
-    var sb = document.querySelector('.sidebar-wrap');
-    if (sb) { sb.removeAttribute('open'); }
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
   }
 
   /* Print: open every <details> (answers, TOC) and revert afterwards. */

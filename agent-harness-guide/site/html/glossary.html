@@ -24,7 +24,7 @@
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
 <nav class="sidebar" aria-label="Guide pages">
-<p class="site-mark"><span class="site-mark-glyph" aria-hidden="true">⟲</span> Agent Harness Guide</p>
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
 <p class="sidebar-heading">Start here</p>
 <ul>
 <li><a href="index.html">Guide hub</a></li>
@@ -78,7 +78,6 @@ dicts, operators, <code>client.responses.create(...)</code>), defined in plain l
 Terms are grouped, then alphabetical within a group. 🟢 marks the most
 beginner-essential entries.</p>
 </blockquote>
-<hr>
 <h2 id="harness--agent-concepts">Harness &amp; agent concepts<a aria-label="Permalink to this section" class="hanchor" href="#harness--agent-concepts">¶</a></h2>
 <p><strong>Agent</strong> 🟢 — An LLM wrapped in a loop that lets it <em>act</em>: call tools, read the
 results, and decide what to do next, repeatedly, until the task is done. The model
@@ -126,7 +125,6 @@ runs) so you can add behavior — logging, blocking, modifying — without chang
 core loop (Phase 5).</p>
 <p><strong>Sandbox</strong> — Restricting what tools can touch (e.g. only files under one
 directory, no network) so a misbehaving model can't do damage.</p>
-<hr>
 <h2 id="model-api--token-concepts">Model, API &amp; token concepts<a aria-label="Permalink to this section" class="hanchor" href="#model-api--token-concepts">¶</a></h2>
 <p><strong>LLM (large language model)</strong> 🟢 — The text-prediction model (e.g. GPT-class).
 Think of it as a pure function: text in, text out. It can't remember anything
@@ -162,7 +160,6 @@ smaller/faster models alike.</p>
 it returns an error; production harnesses retry with backoff (Phase 8).</p>
 <p><strong>Retry / backoff</strong> — Re-sending a failed request after waiting, with the wait
 growing each time (1s, 2s, 4s…), to ride out transient errors and rate limits.</p>
-<hr>
 <h2 id="python-youll-meet-beyond-your-five">Python you'll meet (beyond your five)<a aria-label="Permalink to this section" class="hanchor" href="#python-youll-meet-beyond-your-five">¶</a></h2>
 <p><strong><code>class</code> / method / instance</strong> 🟢 — A <code>class</code> bundles related data with the
 functions that act on it (its <em>methods</em>); an <em>instance</em> is one such bundle.
@@ -254,10 +251,16 @@ edits take effect immediately.</p>
 <script>
 (function () {
   /* On narrow screens the stacked sidebar would push content below the
-     fold on every load — start it collapsed there. */
-  if (matchMedia('(max-width: 800px)').matches) {
-    var sb = document.querySelector('.sidebar-wrap');
-    if (sb) { sb.removeAttribute('open'); }
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
   }
 
   /* Print: open every <details> (answers, TOC) and revert afterwards. */

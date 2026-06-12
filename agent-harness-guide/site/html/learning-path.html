@@ -24,7 +24,7 @@
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
 <nav class="sidebar" aria-label="Guide pages">
-<p class="site-mark"><span class="site-mark-glyph" aria-hidden="true">⟲</span> Agent Harness Guide</p>
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
 <p class="sidebar-heading">Start here</p>
 <ul>
 <li><a href="index.html">Guide hub</a></li>
@@ -108,7 +108,6 @@ tab. If you're newer to Python, read the
   destructive-operation warning (the model touching disk unguarded,
   bypass modes, runaway recursion). Slow down when you see one.</li>
 </ul>
-<hr>
 <h2 id="before-you-start-15-min-once">Before you start (15 min, once)<a aria-label="Permalink to this section" class="hanchor" href="#before-you-start-15-min-once">¶</a></h2>
 <ol>
 <li><strong>Install and test the code</strong> (Python 3.10+; from the repo root):
@@ -134,7 +133,6 @@ companion <strong>Jupyter notebooks</strong> — run-top-to-bottom checkpoint ru
 phases carry the explanations. Setup and the list:
 <a href="notebooks.html"><code>notebooks/README.md</code></a>.</p>
 </blockquote>
-<hr>
 <h2 id="pick-your-track">Pick your track<a aria-label="Permalink to this section" class="hanchor" href="#pick-your-track">¶</a></h2>
 <div class="table-wrap"><table>
 <thead>
@@ -169,7 +167,6 @@ phases carry the explanations. Setup and the list:
 <p>The time estimates are rough and everyone's pace is different — taking longer than a
 track suggests means nothing about you. You can stop at the end of any phase and have
 something that runs. Nothing later is required to make earlier phases work.</p>
-<hr>
 <h2 id="the-full-path-phase-by-phase">The full path, phase by phase<a aria-label="Permalink to this section" class="hanchor" href="#the-full-path-phase-by-phase">¶</a></h2>
 <p>Each phase below lists <strong>what you'll build</strong>, <strong>what to do</strong>, and a <strong>checkpoint</strong> —
 a concrete sign you've understood it before moving on. The <strong>Do</strong> and <strong>Checkpoint</strong>
@@ -239,7 +236,6 @@ GitHub issue or a notes file) and tick them off to keep your place between sessi
 <ul>
 <li><strong>Use as needed:</strong> look up any <code>openai</code> / <code>tiktoken</code> / stdlib method the guide uses.</li>
 </ul>
-<hr>
 <h2 id="when-youre-done">When you're done<a aria-label="Permalink to this section" class="hanchor" href="#when-youre-done">¶</a></h2>
 <p>You'll have built — and understood from the inside — a Claude-Code-shaped harness:
 a loop, a sandboxed toolset, an approval system, automatic context compaction, and
@@ -263,10 +259,16 @@ parallel sub-agents. The canonical, tested version of all of it lives in
 <script>
 (function () {
   /* On narrow screens the stacked sidebar would push content below the
-     fold on every load — start it collapsed there. */
-  if (matchMedia('(max-width: 800px)').matches) {
-    var sb = document.querySelector('.sidebar-wrap');
-    if (sb) { sb.removeAttribute('open'); }
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
   }
 
   /* Print: open every <details> (answers, TOC) and revert afterwards. */

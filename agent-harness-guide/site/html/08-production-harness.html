@@ -24,7 +24,7 @@
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
 <nav class="sidebar" aria-label="Guide pages">
-<p class="site-mark"><span class="site-mark-glyph" aria-hidden="true">⟲</span> Agent Harness Guide</p>
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
 <p class="sidebar-heading">Start here</p>
 <ul>
 <li><a href="index.html">Guide hub</a></li>
@@ -68,32 +68,19 @@
 <li class="toc-h2"><a href="#-beginner-track-this-phase-is-polish-not-new-core-ideas">🟢 Beginner track: this phase is polish, not new core ideas</a>
 </li>
 <li class="toc-h2"><a href="#step-0--the-smallest-reliability-win-retry-with-backoff">Step 0 — The Smallest Reliability Win: Retry with Backoff</a>
-<ul>
-<li class="toc-h3"><a href="#-run-it-now">▶ Run it now — Step 0</a></li>
-</ul>
 </li>
 <li class="toc-h2"><a href="#step-1--observability-know-what-your-agent-is-doing">Step 1 — Observability: Know What Your Agent Is Doing</a>
 <ul>
-<li class="toc-h3"><a href="#-run-it-now-1">▶ Run it now — Step 1</a></li>
 <li class="toc-h3"><a href="#1b--graduating-to-stdlib-logging">1b — Graduating to stdlib logging</a></li>
 <li class="toc-h3"><a href="#1c--the-jsonl-tracer">1c — The JSONL Tracer</a></li>
 <li class="toc-h3"><a href="#1d--cost-and-token-accounting">1d — Cost and Token Accounting</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#step-2--configuration-no-more-magic-constants">Step 2 — Configuration: No More Magic Constants</a>
-<ul>
-<li class="toc-h3"><a href="#-run-it-now-2">▶ Run it now — Step 2</a></li>
-</ul>
 </li>
 <li class="toc-h2"><a href="#step-3--system-prompt-engineering">Step 3 — System Prompt Engineering</a>
-<ul>
-<li class="toc-h3"><a href="#-run-it-now-3">▶ Run it now — Step 3</a></li>
-</ul>
 </li>
 <li class="toc-h2"><a href="#step-4--the-cli--repl-the-face-of-the-harness">Step 4 — The CLI / REPL: The Face of the Harness</a>
-<ul>
-<li class="toc-h3"><a href="#-run-it-now-4">▶ Run it now — Step 4</a></li>
-</ul>
 </li>
 <li class="toc-h2"><a href="#5-reliability-production-shape-llmpy">5. Reliability (Production Shape: llm.py)</a>
 <ul>
@@ -116,7 +103,6 @@
 <li class="toc-h3"><a href="#81-guiding-principles">8.1 Guiding Principles</a></li>
 <li class="toc-h3"><a href="#82-a-fake-client">8.2 A Fake Client</a></li>
 <li class="toc-h3"><a href="#83-a-loop-test">8.3 A Loop Test</a></li>
-<li class="toc-h3"><a href="#-run-it-now-no-api-key-needed">▶ Run it now (no API key needed)</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#9-where-to-go-next">9. Where to Go Next</a>
@@ -137,11 +123,10 @@
 </details>
 </header>
 <article>
-<p><a href="07-subagents-orchestration.html">← Phase 7: Sub-Agents &amp; Orchestration</a> · <a href="index.html">Guide index</a> · <a href="09-library-reference.html">Appendix: Library Reference →</a></p>
+<p class="md-breadcrumb"><a href="07-subagents-orchestration.html">← Phase 7: Sub-Agents &amp; Orchestration</a> · <a href="index.html">Guide index</a> · <a href="09-library-reference.html">Appendix: Library Reference →</a></p>
 <h1 id="phase-8--the-production-harness-assembling-claude-code">Phase 8 — The Production Harness: Assembling Claude Code</h1>
 <p>You have built every organ of the system. Phase 2 gave you tools and parallel dispatch. Phase 3 gave you conversation persistence and streaming. Phase 4 gave you real filesystem and shell tools. Phase 5 gave you permissions and hooks. Phase 6 gave you token budgeting and compaction. Phase 7 gave you agent orchestration and sub-agents.</p>
 <p>This phase wires all of that into a harness you could ship: reliable under network chaos, observable when something goes wrong, configurable without code edits, and pleasant to use from a terminal. The gap between a weekend demo and a production coding agent is almost entirely about these properties. We will close that gap, component by component.</p>
-<hr>
 <h2 id="0-youve-already-built-all-of-this--the-ladder-to-package-map">0. You've Already Built All of This — the Ladder-to-Package Map<a aria-label="Permalink to this section" class="hanchor" href="#0-youve-already-built-all-of-this--the-ladder-to-package-map">¶</a></h2>
 <p>Every previous phase climbed the same <strong>version ladder</strong>: V1 line-by-line (no <code>def</code>, no
 classes), V2 functions, V3 classes, and — where the phase taught it — V4 decorators or
@@ -273,7 +258,6 @@ tested package settles each of these definitively in <code>code/agent_harness/</
 <p>If you can read each row of the first table and picture the code you wrote for it, you
 are ready. The rest of this phase adds the second table's modules one step at a time,
 then shows the fully assembled <code>Agent.run_turn</code> where every row plugs in.</p>
-<hr>
 <h2 id="1-what-separates-a-demo-from-a-production-harness">1. What Separates a Demo from a Production Harness<a aria-label="Permalink to this section" class="hanchor" href="#1-what-separates-a-demo-from-a-production-harness">¶</a></h2>
 <p>A demo works when the network is fast, the model cooperates on the first try, no file is large, and you are watching. A production harness must handle:</p>
 <div class="table-wrap"><table>
@@ -399,7 +383,6 @@ need to build every module to have a working agent — you already do.</p>
 <p>One more thing you may have noticed: there are fewer green boxes from here on — not
 because the material got harder, but because you know the patterns now.</p>
 </blockquote>
-<hr>
 <h2 id="step-0--the-smallest-reliability-win-retry-with-backoff">Step 0 — The Smallest Reliability Win: Retry with Backoff<a aria-label="Permalink to this section" class="hanchor" href="#step-0--the-smallest-reliability-win-retry-with-backoff">¶</a></h2>
 <p><strong>Why now?</strong> Networks are unreliable. The OpenAI API sometimes returns a 429 (rate limit) or a 500 (server error). Without retry logic, your agent dies on the first hiccup. With it, the agent waits a moment and tries again — the user never notices.</p>
 <p>Here is the complete retry wrapper using only a <code>for</code> loop, <code>try</code>/<code>except</code>, and <code>time.sleep</code> — no new imports beyond <code>time</code>:</p>
@@ -475,7 +458,6 @@ API error (Simulated network error (attempt 2)); retrying in 2s…
 Success on attempt 3
 </code></pre></div></p>
 <p>Once this works, every call in your loop is retry-safe. The rest of this phase wraps the same loop in progressively more production machinery.</p>
-<hr>
 <h2 id="step-1--observability-know-what-your-agent-is-doing">Step 1 — Observability: Know What Your Agent Is Doing<a aria-label="Permalink to this section" class="hanchor" href="#step-1--observability-know-what-your-agent-is-doing">¶</a></h2>
 <p><strong>Why now?</strong> Once retry is in place, the next failure mode is: <em>the agent runs but does the wrong thing and you have no idea why</em>. Structured logging turns invisible behaviour into a visible record.</p>
 <p>The simplest upgrade is to add <code>print()</code> statements with consistent labels. Replace bare <code>print()</code> calls with a tiny helper:</p>
@@ -791,7 +773,6 @@ without parentheses: <code>acc.total_tokens</code> calls the function and return
 The function bodies are what matter; skim the decorators.</p>
 </blockquote>
 <p>Pass a single <code>SessionAccounting</code> instance into the <code>Agent</code> and every sub-agent so all usage rolls up to one object.</p>
-<hr>
 <h2 id="step-2--configuration-no-more-magic-constants">Step 2 — Configuration: No More Magic Constants<a aria-label="Permalink to this section" class="hanchor" href="#step-2--configuration-no-more-magic-constants">¶</a></h2>
 <p><strong>Why now?</strong> After adding retry and logging, you will want to change the model name, the max iterations, or the workspace path without editing source. A single <code>Settings</code> object collects every tunable in one place and reads from environment variables, a project file, and CLI flags — in that order of precedence.</p>
 <p>The plain-dict equivalent is just:</p>
@@ -973,7 +954,6 @@ only <code>None</code>, but argparse's <code>store_true</code>/<code>store_false
 never <code>None</code> — so a flag the user <em>didn't type</em> would look like an explicit choice and
 silently override env-var and <code>.agentrc</code> values. The CLI in Step 4 therefore declares its
 boolean flags with <code>default=None</code>.</p>
-<hr>
 <h2 id="step-3--system-prompt-engineering">Step 3 — System Prompt Engineering<a aria-label="Permalink to this section" class="hanchor" href="#step-3--system-prompt-engineering">¶</a></h2>
 <p><strong>Why now?</strong> With retry, logging, and config in place, the next lever is the instructions string. The right system prompt prevents whole classes of model mistakes before they happen: the agent knows its working directory, its permission mode, and whether the project has special conventions.</p>
 <p>Here is a production-grade prompt for a coding agent, with explanations of each section:</p>
@@ -1088,7 +1068,6 @@ built in <code>cli.py</code> and handed to <code>Agent</code> — remember the f
 </code></pre></div>
 
 <p>The model will now know exactly where it is and what it is allowed to do, without you having to repeat it in every user message.</p>
-<hr>
 <h2 id="step-4--the-cli--repl-the-face-of-the-harness">Step 4 — The CLI / REPL: The Face of the Harness<a aria-label="Permalink to this section" class="hanchor" href="#step-4--the-cli--repl-the-face-of-the-harness">¶</a></h2>
 <p><strong>Why now?</strong> With reliability, observability, and config in place, the last piece is a user interface you would actually want to use. The REPL is just a <code>while True</code> loop that reads a line, calls <code>agent.run_turn()</code>, and handles <code>/help</code>-style commands. The argparse layer adds <code>--model</code>, <code>--debug</code>, and <code>-p</code> (one-shot mode for CI).</p>
 <p>The full <code>cli.py</code> wires together everything built above. Read it as the final assembly step:</p>
@@ -1414,7 +1393,6 @@ You: List the files in this directory and pick the most interesting one.
 <p>Type <code>/help</code> first — every slash-command in it is a feature you built — then give it one
 real prompt and watch the full stack fire: permission gate, tool call, streamed answer.
 <code>/cost</code> shows you Step 1d's accounting; <code>/quit</code> exits.</p>
-<hr>
 <h2 id="5-reliability-production-shape-llmpy">5. Reliability (Production Shape: <code>llm.py</code>)<a aria-label="Permalink to this section" class="hanchor" href="#5-reliability-production-shape-llmpy">¶</a></h2>
 <blockquote>
 <p><strong>Which rung is this?</strong> The listing below is the <strong>hardened V2 — functions</strong> form: the
@@ -1652,7 +1630,6 @@ agent<span class="w"> </span>--resume<span class="w"> </span>--transcript<span c
 </code></pre></div>
 
 <p>On resume, the harness loads the transcript and prints a one-line summary (<code>"Resuming from N messages, last saved at &lt;timestamp&gt;"</code>), then drops straight back into the REPL. No special bookkeeping required: the transcript <em>is</em> the state.</p>
-<hr>
 <h2 id="6-the-definitive-agentrun_turn-loop">6. The Definitive <code>Agent.run_turn</code> Loop<a aria-label="Permalink to this section" class="hanchor" href="#6-the-definitive-agentrun_turn-loop">¶</a></h2>
 <p>This is the fully-annotated reference implementation. It wires every middleware component in the correct order. Read it as the canonical specification.</p>
 <blockquote>
@@ -2070,7 +2047,6 @@ calling tools, so reaching the <code>else:</code> branch means exactly one thing
 <code>[Agent reached maximum iterations limit]</code> notice. It is the most misread construct
 in Python; nothing about it is error handling.</p>
 </blockquote>
-<hr>
 <h2 id="7-packaging-and-operations">7. Packaging and Operations<a aria-label="Permalink to this section" class="hanchor" href="#7-packaging-and-operations">¶</a></h2>
 <h3 id="project-layout">Project Layout<a aria-label="Permalink to this section" class="hanchor" href="#project-layout">¶</a></h3>
 <div class="highlight nocopy"><pre><span></span><code>agent_harness/
@@ -2166,7 +2142,6 @@ python<span class="w"> </span>-m<span class="w"> </span>agent_harness.cli<span c
 <li><strong><code>timeout</code> prefix</strong>: wrap every bash invocation with <code>timeout 30 &lt;cmd&gt;</code> to prevent runaway commands.</li>
 </ul>
 <p>The harness does not enforce sandboxing itself; that is an infrastructure concern. Document your threat model and choose accordingly.</p>
-<hr>
 <h2 id="8-testing-the-harness">8. Testing the Harness<a aria-label="Permalink to this section" class="hanchor" href="#8-testing-the-harness">¶</a></h2>
 <h3 id="80-before-you-run-the-layout-and-the-four-shim-modules">8.0 Before You Run: the Layout and the Four Shim Modules<a aria-label="Permalink to this section" class="hanchor" href="#80-before-you-run-the-layout-and-the-four-shim-modules">¶</a></h3>
 <p>The test files in §8.2–§8.3 are real, runnable code — but they import four modules
@@ -2564,14 +2539,12 @@ the project root on <code>sys.path</code> so <code>tests.fake_client</code> reso
 <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/tree/main/agent-harness-guide/code" title="Opens this repository file on GitHub"><code>code/</code></a>, <code>python -m pytest -q</code> runs the full suite offline — no API key needed,
 because every test drives the real <code>Agent</code> through the scripted <code>FakeClient</code> in
 <code>testing.py</code>. Your seven ladders, assembled and proven, without a single network call.</p>
-<hr>
 <h2 id="9-where-to-go-next">9. Where to Go Next<a aria-label="Permalink to this section" class="hanchor" href="#9-where-to-go-next">¶</a></h2>
 <p><strong>Evals and benchmarks.</strong> Attach <a href="https://swe-bench.github.io/">SWE-bench</a> or a custom task suite to your harness. Score the agent on real codebases. Evals catch regressions from prompt or model changes before they hit users.</p>
 <p><strong>MCP-style external tool servers.</strong> The Model Context Protocol defines a JSON-RPC interface for serving tools from a separate process (or remote host). Replace the in-process <code>ToolRegistry</code> with an MCP client, and tools become independently deployable and language-agnostic.</p>
 <p><strong>Multi-model routing.</strong> Use a cheap model (<code>gpt-4.1-mini</code>) for tool-call-heavy iterations and a powerful model (<code>gpt-5</code>) only for reasoning-intensive turns. The <code>Settings.model</code> field can be changed per-turn based on heuristics (e.g., how many tokens remain, what kind of task is active).</p>
 <p><strong>Prompt caching and <code>previous_response_id</code>.</strong> If you pass <code>previous_response_id</code> instead of managing <code>input_items</code> yourself, the API handles state server-side and can cache the system prompt prefix cheaply. Useful when the instructions are large and stable. The trade-off: you lose offline resumability from a local transcript.</p>
 <p><strong>Richer TUI.</strong> Replace <code>print()</code> calls with <a href="https://github.com/Textualize/rich">Rich</a> for live progress panels, syntax-highlighted diffs, and tool-call spinners. The streaming renderer from Phase 3 is the right hook point.</p>
-<hr>
 <h2 id="10-closing-recap--production-properties-to-phases">10. Closing Recap — Production Properties to Phases<a aria-label="Permalink to this section" class="hanchor" href="#10-closing-recap--production-properties-to-phases">¶</a></h2>
 <div class="table-wrap"><table>
 <thead>
@@ -2613,7 +2586,6 @@ because every test drives the real <code>Agent</code> through the scripted <code
 </table></div>
 <p>Every abstraction introduced in earlier phases was chosen so it would slot cleanly into this final assembly. The <code>Conversation</code> owns the transcript as a plain list. The <code>ToolRegistry</code> produces JSON schemas on demand. The <code>PermissionPolicy</code> is a pure function of tool name and args. The <code>Agent</code> is a thin coordinator that calls each collaborator in a fixed order.</p>
 <p>The result is a harness where each concern is isolated, each component is testable independently, and the whole thing behaves predictably under the conditions that actually matter in production: slow networks, large files, adversarial model outputs, and impatient users who press Ctrl-C.</p>
-<hr>
 <h2 id="pitfalls">Pitfalls<a aria-label="Permalink to this section" class="hanchor" href="#pitfalls">¶</a></h2>
 <blockquote>
 <p><strong>Watch out for these common mistakes.</strong></p>
@@ -2654,7 +2626,6 @@ because every test drives the real <code>Agent</code> through the scripted <code
 </tr>
 </tbody>
 </table></div>
-<hr>
 <h2 id="key-takeaways">Key takeaways<a aria-label="Permalink to this section" class="hanchor" href="#key-takeaways">¶</a></h2>
 <ul>
 <li>The gap between a <strong>demo and a production harness</strong> is <em>not</em> new agent ideas — it's
@@ -2685,7 +2656,6 @@ because every test drives the real <code>Agent</code> through the scripted <code
    reliable, observable, and shippable.</li>
 </ol>
 </details>
-<hr>
 <h2 id="what-youll-have-built--the-final-checklist">What you'll have built — the final checklist<a aria-label="Permalink to this section" class="hanchor" href="#what-youll-have-built--the-final-checklist">¶</a></h2>
 <p>Tick these off. Each line is a capability of the finished harness, the phase whose ladder
 taught it, and the module of the tested package
@@ -2716,7 +2686,6 @@ taught it, and the module of the tested package
 Claude Code — and you understand every line of it.</p>
 <p><strong>Practice:</strong> the <a href="exercises.html#phase-8--the-production-harness">Phase 8 exercises</a>
 (plus the capstone) walk you through hardening and extending this assembly yourself.</p>
-<hr>
 <h2 id="graduation--run-the-real-thing">Graduation — run the real thing<a aria-label="Permalink to this section" class="hanchor" href="#graduation--run-the-real-thing">¶</a></h2>
 <p>Don't close the tab on a checklist — close it on a running agent. The consolidated
 package is the maintained form of everything you just built, and it installs, runs, and
@@ -2760,10 +2729,16 @@ assembled and proven, without a single network call.</p>
 <script>
 (function () {
   /* On narrow screens the stacked sidebar would push content below the
-     fold on every load — start it collapsed there. */
-  if (matchMedia('(max-width: 800px)').matches) {
-    var sb = document.querySelector('.sidebar-wrap');
-    if (sb) { sb.removeAttribute('open'); }
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
   }
 
   /* Print: open every <details> (answers, TOC) and revert afterwards. */
