@@ -118,6 +118,12 @@ The evaluator-reviser loop runs **at most 50 times**, then stops on its own.
 
 ### Known issues for the loop to address (seed list)
 
+- **(User-seeded, 2026-06-12, for the next cycle.)** Each phase of the course should
+  be spread over bite-sized pages to sustain the learner's attention. This supersedes
+  the cycle-17 designer's page-splitting rejection as a product decision — but the
+  engineering constraints stand: existing GitHub-parity deep links into the phase
+  pages must keep working, and the markdown remains the source of truth.
+
 - Content diagrams the markdown genuinely lacks (a Phase 0 handshake sequence, a
   Phase 6 pruning picture): add them to the md as `text` fences first — the site's
   figure mechanism will then pick them up (per the cycle-17 designer's doctrine).
