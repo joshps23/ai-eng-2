@@ -35,15 +35,15 @@
 </ul>
 <p class="sidebar-heading">Phases</p>
 <ul>
-<li><a href="00-foundations.html">Phase 0 — Foundations</a></li>
-<li><a href="01-bare-harness.html">Phase 1 — Bare Harness</a></li>
-<li><a href="02-tool-system.html">Phase 2 — Tool System</a></li>
-<li><a href="03-conversation-and-streaming.html">Phase 3 — Conversation &amp; Streaming</a></li>
-<li><a href="04-real-tools.html">Phase 4 — Real Tools</a></li>
-<li><a href="05-permissions-and-safety.html">Phase 5 — Permissions &amp; Safety</a></li>
-<li><a href="06-context-management.html">Phase 6 — Context Management</a></li>
-<li class="current"><a href="07-subagents-orchestration.html" aria-current="page">Phase 7 — Sub-agents</a></li>
-<li><a href="08-production-harness.html">Phase 8 — Production Harness</a></li>
+<li><a href="00-foundations-1.html">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness-1.html">Phase 1 — Bare Harness</a></li>
+<li><a href="02-tool-system-1.html">Phase 2 — Tool System</a></li>
+<li><a href="03-conversation-and-streaming-1.html">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools-1.html">Phase 4 — Real Tools</a></li>
+<li><a href="05-permissions-and-safety-1.html">Phase 5 — Permissions &amp; Safety</a></li>
+<li><a href="06-context-management-1.html">Phase 6 — Context Management</a></li>
+<li class="current"><a href="07-subagents-orchestration-1.html" aria-current="true">Phase 7 — Sub-agents</a></li>
+<li><a href="08-production-harness-1.html">Phase 8 — Production Harness</a></li>
 </ul>
 <p class="sidebar-heading">Appendix</p>
 <ul>
@@ -62,6 +62,7 @@
 <p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">7</span><span class="phase-kicker">Phase 7 of 8</span></p>
 <nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety.html" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management.html" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration.html" aria-current="page" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness.html" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
 <nav class="ladder" aria-label="Version ladder"><a class="ladder-rung" href="#version-1--line-by-line-the-same-loop-pasted-twice"><span class="ladder-medallion">V1</span> Line-by-Line</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="#version-2--functions-the-duplication-collapses"><span class="ladder-medallion">V2</span> Functions</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="#version-3--classes-the-same-harness-organized"><span class="ladder-medallion">V3</span> Classes</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="#version-4--threads-parallel-sub-agents-optional-speed-up"><span class="ladder-medallion">V4</span> Threads</a></nav>
+<p class="lesson-strip">This phase is also available as 11 lessons of ~10 min — <a href="07-subagents-orchestration-1.html">start Lesson 1 →</a> <span class="lesson-strip-note">(this single page is best for printing)</span></p>
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
@@ -152,7 +153,7 @@
 <blockquote>
 <p><strong>Series context:</strong> Phases 0–6 built a complete, production-grade single-agent harness: a working loop, a typed tool system with <code>@tool</code> and <code>ToolRegistry</code>, streaming, conversation management, permission hooks, and structured outputs. This phase is the headline feature: turning that single agent into an <strong>orchestrator</strong> that spawns worker agents at runtime, fans them out in parallel, and synthesises their results. Read the earlier phases first; this phase builds on every concept they introduced without repeating them.</p>
 </blockquote>
-<h2 id="1-why-one-agent-is-not-enough">1. Why One Agent Is Not Enough<a aria-label="Permalink to this section" class="hanchor" href="#1-why-one-agent-is-not-enough">¶</a></h2>
+<h2 id="1-why-one-agent-is-not-enough">1. Why One Agent Is Not Enough<a aria-label="Permalink to this section" class="hanchor" href="#1-why-one-agent-is-not-enough">¶</a><a class="lesson-link" href="07-subagents-orchestration-1.html" title="Read this section in lesson view (Lesson 1 of 11)">lesson 1</a></h2>
 <p>A single agent loop is surprisingly capable, but three hard limits surface quickly in real workloads.</p>
 <h3 id="11-context-window-pressure">1.1 Context-window pressure<a aria-label="Permalink to this section" class="hanchor" href="#11-context-window-pressure">¶</a></h3>
 <p>Every tool call and its output accumulates in <code>input_items</code>. A thorough web search, a large file read, or a detailed code analysis can produce thousands of tokens — most of which the agent never needs again after it has extracted the key fact. Those tokens sit in every subsequent API call, consuming quota, increasing latency, and eventually hitting the model's context limit.</p>
@@ -234,7 +235,7 @@
 </details>
 </figure>
 <p>The critical insight is that the orchestrator <strong>decides at runtime</strong> how many workers to spawn and what each does. This is a <em>dynamic</em> workflow, not a hardcoded pipeline. The model looks at the task, reasons about how to decompose it, and emits the appropriate <code>task</code> tool calls. If the task only warrants one worker, one is spawned. If it warrants seven, seven run in parallel.</p>
-<h2 id="2-the-key-trick--and-the-plan-for-this-phase">2. The Key Trick — and the Plan for This Phase<a aria-label="Permalink to this section" class="hanchor" href="#2-the-key-trick--and-the-plan-for-this-phase">¶</a></h2>
+<h2 id="2-the-key-trick--and-the-plan-for-this-phase">2. The Key Trick — and the Plan for This Phase<a aria-label="Permalink to this section" class="hanchor" href="#2-the-key-trick--and-the-plan-for-this-phase">¶</a><a class="lesson-link" href="07-subagents-orchestration-1.html" title="Read this section in lesson view (Lesson 1 of 11)">lesson 1</a></h2>
 <blockquote>
 <p><strong>Why now?</strong> Before any classes or config, you need to see the core idea working. Everything else in this phase is just that one idea, better organized.</p>
 </blockquote>
@@ -357,7 +358,7 @@ code just runs them at the same time to save wall-clock time. Start sequential.<
 <p>Read the rest of the phase for the ideas (isolated context, depth limits, disjoint
 file scopes). Build it with the functions above.</p>
 </blockquote>
-<h2 id="version-1--line-by-line-the-same-loop-pasted-twice">Version 1 — Line-by-Line: the Same Loop, Pasted Twice<a aria-label="Permalink to this section" class="hanchor" href="#version-1--line-by-line-the-same-loop-pasted-twice">¶</a></h2>
+<h2 id="version-1--line-by-line-the-same-loop-pasted-twice">Version 1 — Line-by-Line: the Same Loop, Pasted Twice<a aria-label="Permalink to this section" class="hanchor" href="#version-1--line-by-line-the-same-loop-pasted-twice">¶</a><a class="lesson-link" href="07-subagents-orchestration-2.html" title="Read this section in lesson view (Lesson 2 of 11)">lesson 2</a></h2>
 <blockquote>
 <p><strong>Why this version first?</strong> Because the entire phase rests on one claim — <em>a sub-agent
 is just the same loop run again</em> — and the most convincing proof is to literally paste
@@ -573,7 +574,7 @@ synthesised answer. Two complete agent loops ran — one inside the other's disp
 <p>The pasted copy works, but it should also bother you: if you wanted the orchestrator to
 have <em>two</em> tools, or sub-agents that can spawn sub-sub-agents, you'd be pasting loops
 inside loops inside loops. That itch is exactly what Version 2 scratches.</p>
-<h2 id="version-2--functions-the-duplication-collapses">Version 2 — Functions: the Duplication Collapses<a aria-label="Permalink to this section" class="hanchor" href="#version-2--functions-the-duplication-collapses">¶</a></h2>
+<h2 id="version-2--functions-the-duplication-collapses">Version 2 — Functions: the Duplication Collapses<a aria-label="Permalink to this section" class="hanchor" href="#version-2--functions-the-duplication-collapses">¶</a><a class="lesson-link" href="07-subagents-orchestration-3.html" title="Read this section in lesson view (Lesson 3 of 11)">lesson 3</a></h2>
 <h3 id="what-changed-from-v1-to-v2">What changed from V1 to V2<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v1-to-v2">¶</a></h3>
 <ul>
 <li>The <strong>inner pasted loop becomes a plain function</strong>, <code>run_subagent(task_description) -&gt; str</code>,
@@ -790,7 +791,7 @@ once — <code>run_agent(instructions, task, tools_dict)</code> — and call it 
 </code></pre></div>
 <p>You should see one <code>[task] spawning sub-agent...</code> line appear while the orchestrator is running, then <code>[task] sub-agent finished.</code>, and finally the orchestrator's synthesised answer. The sub-agent ran a completely separate conversation with its own tool calls, returned plain text, and that text became the tool output the orchestrator reasoned about.</p>
 <p><strong>What you've just seen:</strong> one call to <code>run_agent</code> (the orchestrator) caused another call to <code>run_agent</code> (the sub-agent) through the <code>task</code> tool. That's the entire mechanism. Everything that follows is making this more organized and capable.</p>
-<h2 id="version-3--classes-the-same-harness-organized">Version 3 — Classes: the Same Harness, Organized<a aria-label="Permalink to this section" class="hanchor" href="#version-3--classes-the-same-harness-organized">¶</a></h2>
+<h2 id="version-3--classes-the-same-harness-organized">Version 3 — Classes: the Same Harness, Organized<a aria-label="Permalink to this section" class="hanchor" href="#version-3--classes-the-same-harness-organized">¶</a><a class="lesson-link" href="07-subagents-orchestration-4.html" title="Read this section in lesson view (Lesson 4 of 11)">lesson 4</a></h2>
 <h3 id="what-changed-from-v2-to-v3">What changed from V2 to V3<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v2-to-v3">¶</a></h3>
 <ul>
 <li><code>run_agent</code>'s parameters (<code>instructions</code>, the tool set, plus model and client) become
@@ -1481,7 +1482,7 @@ enough for the reviewer; Step 3.3 adds <code>list_directory</code>):</p>
 </code></pre></div>
 
 <p>The orchestrator will call <code>task("reviewer", ..., "Check auth.py ...")</code>. Your harness intercepts that, runs a reviewer sub-agent with only <code>read_file</code> and <code>list_directory</code>, and returns the text. The model then synthesises the final report.</p>
-<h2 id="version-4--threads-parallel-sub-agents-optional-speed-up">Version 4 — Threads: Parallel Sub-Agents (Optional Speed-Up)<a aria-label="Permalink to this section" class="hanchor" href="#version-4--threads-parallel-sub-agents-optional-speed-up">¶</a></h2>
+<h2 id="version-4--threads-parallel-sub-agents-optional-speed-up">Version 4 — Threads: Parallel Sub-Agents (Optional Speed-Up)<a aria-label="Permalink to this section" class="hanchor" href="#version-4--threads-parallel-sub-agents-optional-speed-up">¶</a><a class="lesson-link" href="07-subagents-orchestration-8.html" title="Read this section in lesson view (Lesson 8 of 11)">lesson 8</a></h2>
 <h3 id="what-changed-from-v3-to-v4">What changed from V3 to V4<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v3-to-v4">¶</a></h3>
 <ul>
 <li>Nothing about a <em>single</em> sub-agent changes — same <code>Agent</code>, same presets, same
@@ -1718,7 +1719,7 @@ bridge methods), those three files are the whole Version 4 harness. Save
 them side by side, point <code>REPO_PATH</code> at a real repository, and run:</p>
 <div class="highlight nocopy"><pre><span></span><code>python example_orchestrator.py
 </code></pre></div>
-<h2 id="5-a-complete-worked-example--dynamic-fan-out">5. A Complete Worked Example — Dynamic Fan-Out<a aria-label="Permalink to this section" class="hanchor" href="#5-a-complete-worked-example--dynamic-fan-out">¶</a></h2>
+<h2 id="5-a-complete-worked-example--dynamic-fan-out">5. A Complete Worked Example — Dynamic Fan-Out<a aria-label="Permalink to this section" class="hanchor" href="#5-a-complete-worked-example--dynamic-fan-out">¶</a><a class="lesson-link" href="07-subagents-orchestration-9.html" title="Read this section in lesson view (Lesson 9 of 11)">lesson 9</a></h2>
 <p>This example demonstrates the full pattern end-to-end — it is <strong>Version 4 running for real</strong>. The orchestrator receives a repository audit task and autonomously decides to fan it out into three parallel workers.</p>
 <h3 id="51-setup">5.1 Setup<a aria-label="Permalink to this section" class="hanchor" href="#51-setup">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="c1"># example_orchestrator.py</span>
@@ -1929,7 +1930,7 @@ No circular imports were found.
 Token usage: UsageSummary(in=14823, out=2341, total=17164)
 </code></pre></div>
 <p>The three workers ran concurrently (6.2 s wall time vs. ~18 s serial) and the orchestrator spent 2.5 s synthesising the final report. The parent's transcript contains only three tool outputs — the summaries — rather than the raw file contents each worker processed.</p>
-<h2 id="6-design-considerations">6. Design Considerations<a aria-label="Permalink to this section" class="hanchor" href="#6-design-considerations">¶</a></h2>
+<h2 id="6-design-considerations">6. Design Considerations<a aria-label="Permalink to this section" class="hanchor" href="#6-design-considerations">¶</a><a class="lesson-link" href="07-subagents-orchestration-10.html" title="Read this section in lesson view (Lesson 10 of 11)">lesson 10</a></h2>
 <h3 id="61-depth-limits-and-recursion-guards">6.1 Depth limits and recursion guards<a aria-label="Permalink to this section" class="hanchor" href="#61-depth-limits-and-recursion-guards">¶</a></h3>
 <p>Sub-agents can spawn sub-sub-agents if their role allows the <code>task</code> tool. Without a guard this creates a fork bomb that multiplies cost exponentially.</p>
 <div class="highlight nocopy"><pre><span></span><code>depth 0: orchestrator spawns 3 workers
@@ -2052,7 +2053,7 @@ git<span class="w"> </span>worktree<span class="w"> </span>add<span class="w"> <
 <p><strong>Sequential execution.</strong> If disjoint scoping is impractical and worktrees are overkill, just run the coder agents one after another. You lose the parallelism benefit but gain correctness.</p>
 </li>
 </ol>
-<h2 id="7-full-code--subagentspy">7. Full Code — <code>subagents.py</code><a aria-label="Permalink to this section" class="hanchor" href="#7-full-code--subagentspy">¶</a></h2>
+<h2 id="7-full-code--subagentspy">7. Full Code — <code>subagents.py</code><a aria-label="Permalink to this section" class="hanchor" href="#7-full-code--subagentspy">¶</a><a class="lesson-link" href="07-subagents-orchestration-10.html" title="Read this section in lesson view (Lesson 10 of 11)">lesson 10</a></h2>
 <details class="refsection"><summary>Show the reference copy <span class="refsection-hint">consolidated re-read — skim or skip</span></summary><p>This is the consolidated file the version ladder was building toward: the Version 3
 machinery (presets, <code>dispatch_subagent</code>, <code>make_task_tool</code>) and the Version 4 parallel
 runner in one place. It mirrors the shape of the tested package
@@ -2447,7 +2448,7 @@ skim or skip. The maintained version lives in
     <span class="p">)</span>
 </code></pre></div>
 </details>
-<h2 id="8-async-alternative">8. Async Alternative<a aria-label="Permalink to this section" class="hanchor" href="#8-async-alternative">¶</a></h2>
+<h2 id="8-async-alternative">8. Async Alternative<a aria-label="Permalink to this section" class="hanchor" href="#8-async-alternative">¶</a><a class="lesson-link" href="07-subagents-orchestration-10.html" title="Read this section in lesson view (Lesson 10 of 11)">lesson 10</a></h2>
 <p>The guide uses <code>ThreadPoolExecutor</code> throughout because it works with the standard <code>OpenAI</code> client, requires no <code>asyncio</code> knowledge, and maps naturally to the I/O-bound nature of LLM calls. For completeness, here is the async equivalent.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># async_orchestrator.py (sketch)</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
@@ -2481,7 +2482,7 @@ skim or skip. The maintained version lives in
 
 <p><code>asyncio.gather</code> is the async analogue of <code>ThreadPoolExecutor</code> + <code>as_completed</code>. The semantics are identical: all coroutines are scheduled concurrently, <code>return_exceptions=True</code> prevents one failure from cancelling siblings, and results map back to call IDs in order.</p>
 <p>For HTTP-heavy workloads (many parallel sub-agents all making long-running API calls), the async approach is more efficient because it does not consume OS threads. For CPU-light, I/O-bound workloads like this one, the threaded approach is simpler and adequate.</p>
-<h2 id="whats-next">What's next<a aria-label="Permalink to this section" class="hanchor" href="#whats-next">¶</a></h2>
+<h2 id="whats-next">What's next<a aria-label="Permalink to this section" class="hanchor" href="#whats-next">¶</a><a class="lesson-link" href="07-subagents-orchestration-10.html" title="Read this section in lesson view (Lesson 10 of 11)">lesson 10</a></h2>
 <p>Phase 7 completes the orchestration story. One phase remains:</p>
 <ul>
 <li><strong>Phase 8 — The production harness:</strong> the final assembly. Reliability (retries with
@@ -2493,7 +2494,7 @@ skim or skip. The maintained version lives in
 <p>The architecture you have now — a loop, a typed tool system, permissions, streaming,
 structured output, and multi-agent orchestration — is production-grade. Phase 8 hardens,
 packages, and ships it.</p>
-<h2 id="pitfalls">Pitfalls<a aria-label="Permalink to this section" class="hanchor" href="#pitfalls">¶</a></h2>
+<h2 id="pitfalls">Pitfalls<a aria-label="Permalink to this section" class="hanchor" href="#pitfalls">¶</a><a class="lesson-link" href="07-subagents-orchestration-11.html" title="Read this section in lesson view (Lesson 11 of 11)">lesson 11</a></h2>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p><p><strong>Fork-bomb recursion.</strong> The single most dangerous failure mode. If a sub-agent's role includes the <code>task</code> tool and its prompt encourages decomposition, each generation spawns multiple children. At depth 4 with a fan-out of 3, you have 3⁴ = 81 concurrent agents, each making multiple API calls. <strong>Always cap depth and max-concurrent workers in harness code, not just in the prompt.</strong></p>
 </div>
@@ -2522,7 +2523,7 @@ packages, and ships it.</p>
 <blockquote>
 <p><strong>Transcript reuse between tasks.</strong> If you call <code>agent.run(task)</code> twice on the same <code>Agent</code> instance, the second call sees the first task's conversation. Call <code>agent.reset()</code> between tasks, or instantiate a fresh <code>Agent</code> for each independent use — which is what <code>dispatch_subagent</code> does.</p>
 </blockquote>
-<h2 id="key-takeaways">Key takeaways<a aria-label="Permalink to this section" class="hanchor" href="#key-takeaways">¶</a></h2>
+<h2 id="key-takeaways">Key takeaways<a aria-label="Permalink to this section" class="hanchor" href="#key-takeaways">¶</a><a class="lesson-link" href="07-subagents-orchestration-11.html" title="Read this section in lesson view (Lesson 11 of 11)">lesson 11</a></h2>
 <ul>
 <li><strong>One agent isn't enough</strong> for large jobs; the fix is to let the agent <strong>delegate</strong> to
   focused sub-agents.</li>
@@ -2534,7 +2535,7 @@ packages, and ships it.</p>
 <li>Give each sub-agent a <strong>narrow brief and limited tools</strong>, then combine their results —
   this keeps each context small and the blast radius contained.</li>
 </ul>
-<h2 id="check-yourself">Check yourself<a aria-label="Permalink to this section" class="hanchor" href="#check-yourself">¶</a></h2>
+<h2 id="check-yourself">Check yourself<a aria-label="Permalink to this section" class="hanchor" href="#check-yourself">¶</a><a class="lesson-link" href="07-subagents-orchestration-11.html" title="Read this section in lesson view (Lesson 11 of 11)">lesson 11</a></h2>
 <ol>
 <li>In one sentence, what <em>is</em> a sub-agent in this design?</li>
 <li>How does the <em>main</em> agent decide to delegate work to a sub-agent?</li>
@@ -2554,7 +2555,7 @@ packages, and ships it.</p>
    keeps each sub-agent's <strong>context small</strong> (cheaper, clearer reasoning).</li>
 </ol>
 </details>
-<h2 id="exercises">Exercises<a aria-label="Permalink to this section" class="hanchor" href="#exercises">¶</a></h2>
+<h2 id="exercises">Exercises<a aria-label="Permalink to this section" class="hanchor" href="#exercises">¶</a><a class="lesson-link" href="07-subagents-orchestration-11.html" title="Read this section in lesson view (Lesson 11 of 11)">lesson 11</a></h2>
 <p>See <a href="exercises.html#phase-7--sub-agents--orchestration"><code>EXERCISES.md</code> — Phase 7</a> for
 hands-on practice:</p>
 <ul>

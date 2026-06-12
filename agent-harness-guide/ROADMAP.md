@@ -61,6 +61,10 @@ Status: ☐ todo · ◐ in progress · ☑ done
 
 Newest first. One line per shipped iteration.
 
+- **2026-06-12** — Cycle 18 (user-seeded): bite-sized lesson delivery — 76 ~10-minute
+  lesson pages with hubs, Continue cards, time estimates, and a lesson rail, specced
+  by a learning-science persona and gated on anchor parity (full pages id-identical),
+  partition completeness, link integrity, and word ceilings.
 - **2026-06-12** — Cycle 17 (user-seeded): pages-too-long/too-few-visuals — Reference
   sections collapse with anchor-safe auto-expand (Phase 4 −33.5%), the three ASCII
   diagrams now render as designed SVGs (Item 9 ◐ — site half done; md-side diagrams

@@ -35,15 +35,15 @@
 </ul>
 <p class="sidebar-heading">Phases</p>
 <ul>
-<li><a href="00-foundations.html">Phase 0 — Foundations</a></li>
-<li><a href="01-bare-harness.html">Phase 1 — Bare Harness</a></li>
-<li><a href="02-tool-system.html">Phase 2 — Tool System</a></li>
-<li><a href="03-conversation-and-streaming.html">Phase 3 — Conversation &amp; Streaming</a></li>
-<li><a href="04-real-tools.html">Phase 4 — Real Tools</a></li>
-<li><a href="05-permissions-and-safety.html">Phase 5 — Permissions &amp; Safety</a></li>
-<li class="current"><a href="06-context-management.html" aria-current="page">Phase 6 — Context Management</a></li>
-<li><a href="07-subagents-orchestration.html">Phase 7 — Sub-agents</a></li>
-<li><a href="08-production-harness.html">Phase 8 — Production Harness</a></li>
+<li><a href="00-foundations-1.html">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness-1.html">Phase 1 — Bare Harness</a></li>
+<li><a href="02-tool-system-1.html">Phase 2 — Tool System</a></li>
+<li><a href="03-conversation-and-streaming-1.html">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools-1.html">Phase 4 — Real Tools</a></li>
+<li><a href="05-permissions-and-safety-1.html">Phase 5 — Permissions &amp; Safety</a></li>
+<li class="current"><a href="06-context-management-1.html" aria-current="true">Phase 6 — Context Management</a></li>
+<li><a href="07-subagents-orchestration-1.html">Phase 7 — Sub-agents</a></li>
+<li><a href="08-production-harness-1.html">Phase 8 — Production Harness</a></li>
 </ul>
 <p class="sidebar-heading">Appendix</p>
 <ul>
@@ -62,6 +62,7 @@
 <p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">6</span><span class="phase-kicker">Phase 6 of 8</span></p>
 <nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety.html" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management.html" aria-current="page" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration.html" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness.html" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
 <nav class="ladder" aria-label="Version ladder"><a class="ladder-rung" href="#version-1--line-by-line-watch-the-window-fill-up"><span class="ladder-medallion">V1</span> line-by-line</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="#version-2--functions-count_tokens-and-prune_to_budget"><span class="ladder-medallion">V2</span> functions</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="#version-3--the-organized-form-a-contextpy-module-the-loop-consults"><span class="ladder-medallion">V3</span> the organized form</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="#version-4--compact-spend-one-api-call-to-buy-back-context"><span class="ladder-medallion">V4</span> compact</a></nav>
+<p class="lesson-strip">This phase is also available as 8 lessons of ~12 min — <a href="06-context-management-1.html">start Lesson 1 →</a> <span class="lesson-strip-note">(this single page is best for printing)</span></p>
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
@@ -193,7 +194,7 @@ version is missing. <strong>Version 3</strong> moves those functions into a <cod
 loop consults each turn (and upgrades counting and clipping). <strong>Version 4</strong> adds
 tactic 3, <code>compact</code>. You can stop and run the harness at every rung.</p>
 </blockquote>
-<h2 id="how-this-phase-climbs-the-version-ladder">How this phase climbs (the version ladder)<a aria-label="Permalink to this section" class="hanchor" href="#how-this-phase-climbs-the-version-ladder">¶</a></h2>
+<h2 id="how-this-phase-climbs-the-version-ladder">How this phase climbs (the version ladder)<a aria-label="Permalink to this section" class="hanchor" href="#how-this-phase-climbs-the-version-ladder">¶</a><a class="lesson-link" href="06-context-management-1.html" title="Read this section in lesson view (Lesson 1 of 8)">lesson 1</a></h2>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -241,7 +242,7 @@ tactic 3, <code>compact</code>. You can stop and run the harness at every rung.<
 <blockquote>
 <p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/06-context-management.ipynb" title="Opens the notebook on GitHub — or use its Open-in-Colab badge"><code>notebooks/06-context-management.ipynb</code></a> executes this phase's checkpoints offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
 </blockquote>
-<h2 id="the-problem-in-numbers">The Problem in Numbers<a aria-label="Permalink to this section" class="hanchor" href="#the-problem-in-numbers">¶</a></h2>
+<h2 id="the-problem-in-numbers">The Problem in Numbers<a aria-label="Permalink to this section" class="hanchor" href="#the-problem-in-numbers">¶</a><a class="lesson-link" href="06-context-management-1.html" title="Read this section in lesson view (Lesson 1 of 8)">lesson 1</a></h2>
 <p>A model with a 128 k-token window sounds enormous, but consider a session where:</p>
 <ul>
 <li>The system instructions are 800 tokens.</li>
@@ -255,7 +256,7 @@ tactic 3, <code>compact</code>. You can stop and run the harness at every rung.<
 = 52 800 tokens
 </code></pre></div>
 <p>That is already 41 % of a 128 k window — and the session has only begun. Without management the harness will eventually fail.</p>
-<h2 id="version-1--line-by-line-watch-the-window-fill-up">Version 1 — line-by-line: watch the window fill up<a aria-label="Permalink to this section" class="hanchor" href="#version-1--line-by-line-watch-the-window-fill-up">¶</a></h2>
+<h2 id="version-1--line-by-line-watch-the-window-fill-up">Version 1 — line-by-line: watch the window fill up<a aria-label="Permalink to this section" class="hanchor" href="#version-1--line-by-line-watch-the-window-fill-up">¶</a><a class="lesson-link" href="06-context-management-2.html" title="Read this section in lesson view (Lesson 2 of 8)">lesson 2</a></h2>
 <p>No <code>def</code>, no classes — the whole harness straight down the page, with the token
 estimate and the truncation written inline where they run. First a tiny offline warm-up
 so you can see the <em>growth</em> without an API key, then the real harness.</p>
@@ -469,7 +470,7 @@ bigger file) until the estimate crosses 800 and you see
 <p>Both bugs come from the same root cause: the truncation treats the transcript as a flat
 list of interchangeable items, when really it has <em>structure</em> (a pinned goal, and pairs
 that must travel together). Encoding that structure is exactly what Version 2 does.</p>
-<h2 id="version-2--functions-count_tokens-and-prune_to_budget">Version 2 — functions: <code>count_tokens</code> and <code>prune_to_budget</code><a aria-label="Permalink to this section" class="hanchor" href="#version-2--functions-count_tokens-and-prune_to_budget">¶</a></h2>
+<h2 id="version-2--functions-count_tokens-and-prune_to_budget">Version 2 — functions: <code>count_tokens</code> and <code>prune_to_budget</code><a aria-label="Permalink to this section" class="hanchor" href="#version-2--functions-count_tokens-and-prune_to_budget">¶</a><a class="lesson-link" href="06-context-management-3.html" title="Read this section in lesson view (Lesson 3 of 8)">lesson 3</a></h2>
 <h3 id="what-changed-from-v1-to-v2">What changed from V1 to V2<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v1-to-v2">¶</a></h3>
 <ul>
 <li>The inline estimate gets a name: <code>count_tokens(text)</code> plus <code>count_items(items)</code> for a
@@ -763,7 +764,7 @@ orphaned-pair <code>400</code> error.</p>
 <p>One rough edge remains, and it's worth seeing: with a brutally small budget, pruning can
 drop the tool round-trip the model <em>just</em> made — there's no notion of "recent items are
 precious" yet. Version 3 fixes that with a recency window.</p>
-<h2 id="version-3--the-organized-form-a-contextpy-module-the-loop-consults">Version 3 — the organized form: a <code>context.py</code> module the loop consults<a aria-label="Permalink to this section" class="hanchor" href="#version-3--the-organized-form-a-contextpy-module-the-loop-consults">¶</a></h2>
+<h2 id="version-3--the-organized-form-a-contextpy-module-the-loop-consults">Version 3 — the organized form: a <code>context.py</code> module the loop consults<a aria-label="Permalink to this section" class="hanchor" href="#version-3--the-organized-form-a-contextpy-module-the-loop-consults">¶</a><a class="lesson-link" href="06-context-management-4.html" title="Read this section in lesson view (Lesson 4 of 8)">lesson 4</a></h2>
 <h3 id="what-changed-from-v2-to-v3">What changed from V2 to V3<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v2-to-v3">¶</a></h3>
 <ul>
 <li>The functions move out of the harness file into their own <strong><code>context.py</code> module</strong>;
@@ -1178,7 +1179,7 @@ tokens) pruning won't fire in a short chat; to watch the same truncation behavio
 temporarily <em>replace the derived line</em> <code>INPUT_BUDGET = MAX_CONTEXT_TOKENS -
 RESPONSE_RESERVE</code> in <code>context.py</code> with <code>INPUT_BUDGET = 800</code> — now with the recency
 window keeping the latest round-trip intact. (Restore the derived line afterwards.)</p>
-<h2 id="version-4--compact-spend-one-api-call-to-buy-back-context">Version 4 — <code>compact</code>: spend one API call to buy back context<a aria-label="Permalink to this section" class="hanchor" href="#version-4--compact-spend-one-api-call-to-buy-back-context">¶</a></h2>
+<h2 id="version-4--compact-spend-one-api-call-to-buy-back-context">Version 4 — <code>compact</code>: spend one API call to buy back context<a aria-label="Permalink to this section" class="hanchor" href="#version-4--compact-spend-one-api-call-to-buy-back-context">¶</a><a class="lesson-link" href="06-context-management-6.html" title="Read this section in lesson view (Lesson 6 of 8)">lesson 6</a></h2>
 <h3 id="what-changed-from-v3-to-v4">What changed from V3 to V4<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v3-to-v4">¶</a></h3>
 <ul>
 <li>One new function in <code>context.py</code>: <strong><code>compact(conversation, client, model)</code></strong> — it
@@ -1462,7 +1463,7 @@ call is for: one turn of API spend that shrinks every future turn.</p>
 <code>COMPACT_TRIGGER = 800</code> and <code>KEEP_RECENT_VERBATIM = 4</code>, chat for a few file-reading
 turns, and watch the <code>[compact]</code> lines appear. Then ask the agent what it did earlier:
 unlike pruning, it can answer from the summary.</p>
-<h2 id="beyond-the-ladder-keep-tokens-out-of-the-window-entirely">Beyond the ladder: keep tokens out of the window entirely<a aria-label="Permalink to this section" class="hanchor" href="#beyond-the-ladder-keep-tokens-out-of-the-window-entirely">¶</a></h2>
+<h2 id="beyond-the-ladder-keep-tokens-out-of-the-window-entirely">Beyond the ladder: keep tokens out of the window entirely<a aria-label="Permalink to this section" class="hanchor" href="#beyond-the-ladder-keep-tokens-out-of-the-window-entirely">¶</a><a class="lesson-link" href="06-context-management-7.html" title="Read this section in lesson view (Lesson 7 of 8)">lesson 7</a></h2>
 <h3 id="tactic-d-externalised-memory-filesystem-as-a-cache">Tactic D: Externalised Memory (Filesystem as a Cache)<a aria-label="Permalink to this section" class="hanchor" href="#tactic-d-externalised-memory-filesystem-as-a-cache">¶</a></h3>
 <p><strong>Why now?</strong> Even with pruning and compaction, some content shouldn't live in the
 transcript at all. Large artefacts — file contents, grep output, test logs — occupy the
@@ -1486,7 +1487,7 @@ write them to disk immediately and keep only a path in the transcript.</p>
 <p>After adding <code>clip_output</code> and the filesystem rule to your tools, run a
 session and check <code>resp.usage.input_tokens</code> each turn. It should grow much more slowly
 than before.</p>
-<h2 id="what-to-preserve-vs-drop">What to Preserve vs Drop<a aria-label="Permalink to this section" class="hanchor" href="#what-to-preserve-vs-drop">¶</a></h2>
+<h2 id="what-to-preserve-vs-drop">What to Preserve vs Drop<a aria-label="Permalink to this section" class="hanchor" href="#what-to-preserve-vs-drop">¶</a><a class="lesson-link" href="06-context-management-7.html" title="Read this section in lesson view (Lesson 7 of 8)">lesson 7</a></h2>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -1538,7 +1539,7 @@ than before.</p>
 </tr>
 </tbody>
 </table></div>
-<h2 id="persistent-memory-across-sessions">Persistent Memory Across Sessions<a aria-label="Permalink to this section" class="hanchor" href="#persistent-memory-across-sessions">¶</a></h2>
+<h2 id="persistent-memory-across-sessions">Persistent Memory Across Sessions<a aria-label="Permalink to this section" class="hanchor" href="#persistent-memory-across-sessions">¶</a><a class="lesson-link" href="06-context-management-7.html" title="Read this section in lesson view (Lesson 7 of 8)">lesson 7</a></h2>
 <p><strong>Why this step?</strong> All the tactics so far manage context <em>within</em> a session. But
 tool-call history vanishes when the process exits. For a long-running project the agent
 needs a way to remember decisions made in previous sessions.</p>
@@ -1627,7 +1628,7 @@ needs a way to remember decisions made in previous sessions.</p>
 </code></pre></div>
 
 <p>The memory file is injected once into <code>instructions</code> — which is <strong>outside</strong> <code>input_items</code> — so it costs tokens every call but is never lost to compaction.</p>
-<h2 id="the-production-shape-full-contextpy">The production shape: full <code>context.py</code><a aria-label="Permalink to this section" class="hanchor" href="#the-production-shape-full-contextpy">¶</a></h2>
+<h2 id="the-production-shape-full-contextpy">The production shape: full <code>context.py</code><a aria-label="Permalink to this section" class="hanchor" href="#the-production-shape-full-contextpy">¶</a><a class="lesson-link" href="06-context-management-7.html" title="Read this section in lesson view (Lesson 7 of 8)">lesson 7</a></h2>
 <details class="refsection"><summary>Show the reference copy <span class="refsection-hint">consolidated re-read — skim or skip</span></summary><p>This is the consolidated module — Versions 3 and 4 in one file, the form that maps onto
 <code>code/agent_harness/context.py</code> in the tested package.</p>
 <blockquote class="refcopy">
@@ -2011,7 +2012,7 @@ pairs grouped, first user message pinned — rather than the recency-window walk
 above. Both satisfy the same two correctness rules; as ever, when a guide snippet and
 the package disagree, the package is the source of truth.</p>
 </blockquote></details>
-<h2 id="pitfalls">Pitfalls<a aria-label="Permalink to this section" class="hanchor" href="#pitfalls">¶</a></h2>
+<h2 id="pitfalls">Pitfalls<a aria-label="Permalink to this section" class="hanchor" href="#pitfalls">¶</a><a class="lesson-link" href="06-context-management-8.html" title="Read this section in lesson view (Lesson 8 of 8)">lesson 8</a></h2>
 <blockquote>
 <p><strong>Watch out for these common mistakes.</strong></p>
 </blockquote>
@@ -2061,7 +2062,7 @@ the package disagree, the package is the source of truth.</p>
 </tr>
 </tbody>
 </table></div>
-<h2 id="key-takeaways">Key takeaways<a aria-label="Permalink to this section" class="hanchor" href="#key-takeaways">¶</a></h2>
+<h2 id="key-takeaways">Key takeaways<a aria-label="Permalink to this section" class="hanchor" href="#key-takeaways">¶</a><a class="lesson-link" href="06-context-management-8.html" title="Read this section in lesson view (Lesson 8 of 8)">lesson 8</a></h2>
 <p>The five mechanisms at a glance:</p>
 <div class="table-wrap"><table>
 <thead>
@@ -2119,7 +2120,7 @@ the package disagree, the package is the source of truth.</p>
 <li><strong>Preserve vs drop:</strong> always keep the system prompt, the most recent turns, and
   task-critical facts; drop stale, reconstructable detail first.</li>
 </ul>
-<h2 id="check-yourself">Check yourself<a aria-label="Permalink to this section" class="hanchor" href="#check-yourself">¶</a></h2>
+<h2 id="check-yourself">Check yourself<a aria-label="Permalink to this section" class="hanchor" href="#check-yourself">¶</a><a class="lesson-link" href="06-context-management-8.html" title="Read this section in lesson view (Lesson 8 of 8)">lesson 8</a></h2>
 <ol>
 <li>Why must a long agentic session eventually summarise or drop history?</li>
 <li>Give two ways to count tokens, and when you'd use each.</li>
@@ -2139,7 +2140,7 @@ the package disagree, the package is the source of truth.</p>
    detail instead.</li>
 </ol>
 </details>
-<h2 id="exercises">Exercises<a aria-label="Permalink to this section" class="hanchor" href="#exercises">¶</a></h2>
+<h2 id="exercises">Exercises<a aria-label="Permalink to this section" class="hanchor" href="#exercises">¶</a><a class="lesson-link" href="06-context-management-8.html" title="Read this section in lesson view (Lesson 8 of 8)">lesson 8</a></h2>
 <p>See <a href="exercises.html"><code>EXERCISES.md</code> — Phase 6</a> for hands-on practice:</p>
 <ul>
 <li><strong>6.1 (warm-up):</strong> Set an artificially tiny token budget and run a long chat. Watch old turns get pruned/compacted. Confirm the system prompt and recent turns survive.</li>

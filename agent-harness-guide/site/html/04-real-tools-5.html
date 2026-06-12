@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<!-- GENERATED from 04-real-tools.md — do not edit; run site/build_site.py -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Why now? write_file overwrites a file completely. For modifying existing files the safer approach is to replace only the part that needs changing — which is…">
+<link rel="canonical" href="https://joshps23.github.io/ai-eng-2/04-real-tools.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://joshps23.github.io/ai-eng-2/04-real-tools-5.html">
+<meta property="og:site_name" content="Agent Harness Guide">
+<meta property="og:title" content="Phase 4 · Lesson 5 — Add edit_file — the… — Agent Harness Guide">
+<meta property="og:description" content="Why now? write_file overwrites a file completely. For modifying existing files the safer approach is to replace only the part that needs changing — which is…">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#FDFDFE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
+<title>Phase 4 · Lesson 5 — Add edit_file — the… — Agent Harness Guide</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body>
+<div class="progress-bar" aria-hidden="true"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="layout">
+<details class="sidebar-wrap" open>
+<summary class="sidebar-toggle">Guide navigation</summary>
+<nav class="sidebar" aria-label="Guide pages">
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
+<p class="sidebar-heading">Start here</p>
+<ul>
+<li><a href="index.html">Guide hub</a></li>
+<li><a href="learning-path.html">Learning Path</a></li>
+<li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
+<li><a href="faq.html">Setup &amp; FAQ</a></li>
+</ul>
+<p class="sidebar-heading">Phases</p>
+<ul>
+<li><a href="00-foundations-1.html">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness-1.html">Phase 1 — Bare Harness</a></li>
+<li><a href="02-tool-system-1.html">Phase 2 — Tool System</a></li>
+<li><a href="03-conversation-and-streaming-1.html">Phase 3 — Conversation &amp; Streaming</a></li>
+<li class="current"><a href="04-real-tools-1.html" aria-current="true">Phase 4 — Real Tools</a></li>
+<li><a href="05-permissions-and-safety-1.html">Phase 5 — Permissions &amp; Safety</a></li>
+<li><a href="06-context-management-1.html">Phase 6 — Context Management</a></li>
+<li><a href="07-subagents-orchestration-1.html">Phase 7 — Sub-agents</a></li>
+<li><a href="08-production-harness-1.html">Phase 8 — Production Harness</a></li>
+</ul>
+<p class="sidebar-heading">Appendix</p>
+<ul>
+<li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
+</ul>
+<p class="sidebar-heading">Practice</p>
+<ul>
+<li><a href="exercises.html">Exercises</a></li>
+<li><a href="glossary.html">Glossary</a></li>
+<li><a href="notebooks.html">Notebooks</a></li>
+</ul>
+</nav>
+</details>
+<main id="main">
+<header class="page-header">
+<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">4</span><span class="phase-kicker">Phase 4 · Lesson 5 of 11</span><span class="lesson-time">~14 min</span><span class="lesson-cp">2 <span aria-hidden="true">▶</span> checkpoints</span></p>
+<nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations-1.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness-1.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system-1.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming-1.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools-1.html" aria-current="true" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety-1.html" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management-1.html" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration-1.html" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness-1.html" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
+<nav class="lesson-rail" aria-label="Lessons in this phase"><a class="lesson-tick" href="04-real-tools-1.html" title="Lesson 1: Real-World Tools (the… (~9 min)" aria-label="Lesson 1: Real-World Tools (the… (~9 min)">1</a><a class="lesson-tick" href="04-real-tools-2.html" title="Lesson 2: line-by-line (~7 min)" aria-label="Lesson 2: line-by-line (~7 min)">2</a><a class="lesson-tick" href="04-real-tools-3.html" title="Lesson 3: functions (~14 min)" aria-label="Lesson 3: functions (~14 min)">3</a><a class="lesson-tick" href="04-real-tools-4.html" title="Lesson 4: Add grep (still read-only… (~16 min)" aria-label="Lesson 4: Add grep (still read-only… (~16 min)">4</a><a class="lesson-tick" href="04-real-tools-5.html" aria-current="page" title="Lesson 5: Add edit_file — the… (~14 min)" aria-label="Lesson 5: Add edit_file — the… (~14 min)">5</a><a class="lesson-tick" href="04-real-tools-6.html" title="Lesson 6: Version 2, complete (~10 min)" aria-label="Lesson 6: Version 2, complete (~10 min)">6</a><a class="lesson-tick" href="04-real-tools-7.html" title="Lesson 7: the organized toolset (~3 min)" aria-label="Lesson 7: the organized toolset (~3 min)">7</a><a class="lesson-tick" href="04-real-tools-8.html" title="Lesson 8: A two-minute bridge (~6 min)" aria-label="Lesson 8: A two-minute bridge (~6 min)">8</a><a class="lesson-tick" href="04-real-tools-9.html" title="Lesson 9: module layout and shared… (~13 min)" aria-label="Lesson 9: module layout and shared… (~13 min)">9</a><a class="lesson-tick" href="04-real-tools-10.html" title="Lesson 10: output-size discipline (~3 min)" aria-label="Lesson 10: output-size discipline (~3 min)">10</a><a class="lesson-tick" href="04-real-tools-11.html" title="Wrap-up: Pitfalls (~6 min)" aria-label="Wrap-up: Pitfalls (~6 min)">11</a></nav>
+<nav class="ladder" aria-label="Version ladder"><a class="ladder-rung" href="04-real-tools-2.html#version-1--line-by-line-the-agent-touches-your-disk-no-def-no-classes"><span class="ladder-medallion">V1</span> line-by-line</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="04-real-tools-3.html#version-2--functions-the-toolset-grows-one-tool-at-a-time"><span class="ladder-medallion">V2</span> functions</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="04-real-tools-7.html#version-3--the-organized-toolset-the-same-idea-organized"><span class="ladder-medallion">V3</span> the organized toolset</a></nav>
+</header>
+<article>
+<h2 id="step-25--add-edit_file--the-surgical-edit-tool-medium-risk">Step 2.5 — Add <code>edit_file</code> — the Surgical Edit Tool (medium risk)<a aria-label="Permalink to this section" class="hanchor" href="04-real-tools.html#step-25--add-edit_file--the-surgical-edit-tool-medium-risk">¶</a></h2>
+<p><strong>Why now?</strong> <code>write_file</code> overwrites a file completely. For modifying existing files the
+safer approach is to replace only the part that needs changing — which is exactly what
+<code>edit_file</code> does.</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">edit_file</span><span class="p">(</span>
+    <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">old_string</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">new_string</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">replace_all</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Replace an exact string in a file with a new string.</span>
+
+<span class="sd">    The tool reads the file, verifies that old_string appears in the content,</span>
+<span class="sd">    and writes the file back with old_string replaced by new_string.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path:        Path to the file, relative to the workspace root.</span>
+<span class="sd">        old_string:  The exact text to find and replace.  Must match the file</span>
+<span class="sd">                     contents character-for-character, including whitespace and</span>
+<span class="sd">                     indentation.  Include enough surrounding context (e.g. the</span>
+<span class="sd">                     full function signature plus a few lines) to make the match</span>
+<span class="sd">                     unique.</span>
+<span class="sd">        new_string:  The text to substitute in place of old_string.</span>
+<span class="sd">        replace_all: If False (default), the tool returns an error if old_string</span>
+<span class="sd">                     appears more than once in the file — ambiguous edits are</span>
+<span class="sd">                     rejected.  If True, all occurrences are replaced.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A confirmation string, or one of:</span>
+<span class="sd">          ERROR: File not found          — path does not exist</span>
+<span class="sd">          ERROR: old_string not found    — no match; check whitespace/indentation</span>
+<span class="sd">          ERROR: old_string is ambiguous — N matches found, replace_all=False</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">_safe_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;ERROR: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">p</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;ERROR: File not found: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">p</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;ERROR: Not a regular file: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">original</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;replace&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;ERROR: Cannot read file: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="n">count</span> <span class="o">=</span> <span class="n">original</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">old_string</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># Give the model actionable guidance.</span>
+        <span class="n">snippet</span> <span class="o">=</span> <span class="nb">repr</span><span class="p">(</span><span class="n">old_string</span><span class="p">[:</span><span class="mi">120</span><span class="p">])</span> <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;...&quot;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">old_string</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">120</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;ERROR: old_string not found in &#39;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&#39;.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Searched for: </span><span class="si">{</span><span class="n">snippet</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;Check that whitespace and indentation exactly match the file contents. &quot;</span>
+            <span class="s2">&quot;Use read_file() to inspect the exact bytes.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">replace_all</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;ERROR: old_string is ambiguous — found </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2"> occurrences in &#39;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&#39;. &quot;</span>
+            <span class="s2">&quot;Provide more surrounding context to make old_string unique, &quot;</span>
+            <span class="s2">&quot;or pass replace_all=True to replace every occurrence.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">updated</span> <span class="o">=</span> <span class="n">original</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">old_string</span><span class="p">,</span> <span class="n">new_string</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">updated</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;ERROR: Cannot write file: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="n">replacements</span> <span class="o">=</span> <span class="n">count</span> <span class="k">if</span> <span class="n">replace_all</span> <span class="k">else</span> <span class="mi">1</span>
+    <span class="c1"># splitlines() counts actual lines correctly whether or not the file</span>
+    <span class="c1"># ends with a trailing newline (count(&quot;\n&quot;) + 1 would over-report by one).</span>
+    <span class="n">lines_before</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">original</span><span class="o">.</span><span class="n">splitlines</span><span class="p">())</span>
+    <span class="n">lines_after</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">updated</span><span class="o">.</span><span class="n">splitlines</span><span class="p">())</span>
+    <span class="n">delta</span> <span class="o">=</span> <span class="n">lines_after</span> <span class="o">-</span> <span class="n">lines_before</span>
+    <span class="n">delta_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;+</span><span class="si">{</span><span class="n">delta</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">delta</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Edited &#39;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&#39;: replaced </span><span class="si">{</span><span class="n">replacements</span><span class="si">}</span><span class="s2"> occurrence(s). &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;File now has </span><span class="si">{</span><span class="n">lines_after</span><span class="si">}</span><span class="s2"> lines (</span><span class="si">{</span><span class="n">delta_str</span><span class="si">}</span><span class="s2"> from before).&quot;</span>
+    <span class="p">)</span>
+</code></pre></div>
+<p><strong>Why exact-match string replacement beats line-number patches.</strong></p>
+<p>Line-number patches (<code>diff</code> / <code>patch</code> format) seem natural — you say "replace lines
+42–55 with this block". But they are fragile in an agentic context:</p>
+<ul>
+<li>The model's mental model of line numbers can drift between tool calls (an earlier
+  edit shifts every subsequent line number by N).</li>
+<li>If two tool calls run close together and both reference the same region, one can
+  silently corrupt the other's target.</li>
+<li>The model often miscounts lines when composing a patch over a long context.</li>
+</ul>
+<p>Exact-match string replacement anchors the edit to <em>content</em>, not <em>position</em>. As long
+as the old string is present and unique, the edit is correct regardless of what other
+edits ran before it. The uniqueness check is load-bearing: if <code>old_string</code> matches in
+two places, we do not know which one the model intended, so we reject the operation and
+ask for more context. This is a conservative, correct default.</p>
+<p>Claude Code uses this exact approach. The technique is sometimes called
+<strong>positional-free patching</strong> or <strong>semantic patching</strong>.</p>
+<h3 id="-run-it-now-5">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="04-real-tools.html#-run-it-now-5">¶</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Create a file to edit</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;greeting.py&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;def greet(name):</span><span class="se">\n</span><span class="s1">    return &quot;Hello, &quot; + name</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="n">run</span><span class="p">(</span><span class="s1">&#39;In greeting.py, change the greeting from &quot;Hello&quot; to &quot;Hi&quot;.&#39;</span><span class="p">)</span>
+</code></pre></div>
+<p>Then verify:</p>
+<div class="highlight"><pre><span></span><code><span class="n">run</span><span class="p">(</span><span class="s2">&quot;Show me the current contents of greeting.py.&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="step-26--add-bash-high-risk--arbitrary-execution">Step 2.6 — Add <code>bash</code> (high risk — arbitrary execution)<a aria-label="Permalink to this section" class="hanchor" href="04-real-tools.html#step-26--add-bash-high-risk--arbitrary-execution">¶</a></h2>
+<p><strong>Why now?</strong> You have all the safe, targeted tools. <code>bash</code> is the escape hatch — it lets
+the agent run any shell command, including tests, package installs, and build scripts.
+We add it last because it carries the highest risk. Once you understand its power and
+danger, the Phase 5 permission layer (coming next) will make sense.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">bash</span><span class="p">(</span><span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">120</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Run a shell command and return its output (stdout and stderr combined).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        command: The shell command to execute.  Runs under /bin/sh so shell</span>
+<span class="sd">                 features (pipes, redirects, &amp;&amp;, subshells) work normally.</span>
+<span class="sd">        timeout: Maximum seconds to wait for the command to finish.  Default</span>
+<span class="sd">                 120.  Commands that exceed this are killed and an error is</span>
+<span class="sd">                 returned.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A string of the form:</span>
+<span class="sd">            Exit code: 0</span>
+<span class="sd">            ---</span>
+<span class="sd">            &lt;combined stdout + stderr&gt;</span>
+
+<span class="sd">        On timeout:</span>
+<span class="sd">            ERROR: Command timed out after N seconds: &lt;command&gt;</span>
+
+<span class="sd">    IMPORTANT — SECURITY:</span>
+<span class="sd">        This tool executes arbitrary shell commands with the permissions of the</span>
+<span class="sd">        agent process.  Do not expose it to untrusted input without a permission</span>
+<span class="sd">        layer (Phase 5).  It runs with shell=True so shell injection is possible</span>
+<span class="sd">        if user-supplied data is interpolated into the command string.</span>
+
+<span class="sd">    IMPORTANT — BLOCKING:</span>
+<span class="sd">        Interactive commands (e.g. &#39;python3 -i&#39;, &#39;vim&#39;) will hang until the</span>
+<span class="sd">        timeout fires because stdin is closed.  Use non-interactive invocations:</span>
+<span class="sd">        &#39;python3 script.py&#39; not &#39;python3 -i&#39;.</span>
+
+<span class="sd">    Working directory:</span>
+<span class="sd">        Commands run with cwd=WORKSPACE_ROOT so relative paths in the command</span>
+<span class="sd">        work as expected within the project.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="n">command</span><span class="p">,</span>
+            <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>                   <span class="c1"># We want a real shell for pipes etc.</span>
+            <span class="n">cwd</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">WORKSPACE_ROOT</span><span class="p">),</span>
+            <span class="n">stdin</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">DEVNULL</span><span class="p">,</span>     <span class="c1"># Never block waiting for input.</span>
+            <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+            <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">,</span>     <span class="c1"># Merge stderr into stdout.</span>
+            <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+            <span class="c1"># Do NOT use text=True here; some commands emit binary (e.g. xxd).</span>
+            <span class="c1"># Decode ourselves with errors=&#39;replace&#39;.</span>
+        <span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;replace&quot;</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">_truncate</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;bash(</span><span class="si">{</span><span class="n">command</span><span class="p">[:</span><span class="mi">60</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Exit code: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="si">}</span><span class="se">\n</span><span class="s2">---</span><span class="se">\n</span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">TimeoutExpired</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;ERROR: Command timed out after </span><span class="si">{</span><span class="n">timeout</span><span class="si">}</span><span class="s2"> seconds: </span><span class="si">{</span><span class="n">command</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;ERROR: Failed to start command: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
+</code></pre></div>
+<p><strong>The big danger: <code>shell=True</code>.</strong></p>
+<p><code>subprocess.run(..., shell=True)</code> passes the command string to <code>/bin/sh -c</code>. This is
+exactly what we want — shell pipelines, redirection, variable expansion, and compound
+commands all work. But it means <strong>every character of <code>command</code> is interpreted by the
+shell</strong>. If the model ever constructs a command by interpolating untrusted user input,
+shell injection is trivially possible:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># DANGEROUS if user_input comes from outside the agent:</span>
+<span class="n">bash</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;grep </span><span class="si">{</span><span class="n">user_input</span><span class="si">}</span><span class="s2"> /src/main.py&quot;</span><span class="p">)</span>
+<span class="c1"># A user_input of &#39;; rm -rf /&#39; becomes a catastrophe.</span>
+</code></pre></div>
+<p>In a coding agent the model constructs the commands, and the model is (mostly) trusted.
+But Phase 5 introduces a permission system that shows the user every <code>bash</code> call before
+it runs. That second pair of eyes is the real safety net — <code>shell=True</code> vs <code>shell=False</code>
+is a secondary concern. Document the risk loudly; do not paper over it.</p>
+<p><strong>Interactive commands and stdin.</strong></p>
+<p><code>stdin=subprocess.DEVNULL</code> closes stdin immediately. Any command that tries to read
+from stdin will see EOF and exit (or error). This is correct: an interactive Python
+REPL waiting for input would block until the <code>timeout</code> fires, burning 120 seconds and
+returning nothing useful. The model should know to use <code>python3 script.py</code> not
+<code>python3 -i</code>, and the docstring says so.</p>
+<p><strong>Working directory.</strong></p>
+<p>Setting <code>cwd=WORKSPACE_ROOT</code> means the model can write <code>bash("ls src/")</code> and get the
+right listing without needing to know the absolute path. It mirrors how a developer
+would open a terminal in the project root.</p>
+<h3 id="-run-it-now-6">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="04-real-tools.html#-run-it-now-6">¶</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">run</span><span class="p">(</span><span class="s2">&quot;Run &#39;echo Hello from bash&#39; as a shell command and tell me what it printed.&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>You should see <code>bash</code> called with that command and the output echoed back.</p>
+</article>
+<footer class="page-footer">
+<nav class="continue" aria-label="Continue">
+<a class="continue-card" href="04-real-tools-6.html" rel="next">
+<span class="continue-kicker">Next · Lesson 6 of 11</span>
+<span class="continue-title">Version 2, complete<span class="continue-time">~10 min</span><span class="continue-arrow" aria-hidden="true">→</span></span>
+</a>
+<p class="continue-aux">
+<a href="04-real-tools-4.html" rel="prev">← Lesson 4 · Add grep (still read-only…</a>
+<a class="continue-fullpage" href="04-real-tools.html#step-25--add-edit_file--the-surgical-edit-tool-medium-risk">View this lesson on the single page</a>
+</p>
+</nav>
+<p class="generated-note">Generated from <code>04-real-tools.md</code> — lesson 5 of 11 in the derived lesson view (boundaries may move when the markdown changes; the <a href="04-real-tools.html">single page</a> is the permanent address).</p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/04-real-tools.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
+</footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
+</main>
+</div>
+<script>
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards.
+     diagram-text mirrors are excluded — print hides them entirely (the SVG
+     figure already prints; opening the ASCII would print the diagram twice). */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not(.diagram-text):not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
+  });
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
+
+  /* Reading progress: the fixed 3px accent bar tracks scroll position.
+     Without JS the element simply stays at width 0 — invisible, harmless. */
+  var pbar = document.querySelector('.progress-bar');
+  if (pbar) {
+    var setProgress = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      pbar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    };
+    window.addEventListener('scroll', setProgress, { passive: true });
+    setProgress();
+  }
+
+  /* Deep links into collapsed sections: open every <details> ancestor of the
+     target, and the refsection that immediately follows a target heading.
+     Re-scroll only if something actually opened (the layout above the target
+     just changed), and instantly — the CSS smooth scroll would crawl across
+     tens of thousands of pixels on the long phase pages. */
+  function openForHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) { return; }
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    var opened = false;
+    var d = el.closest('details');
+    while (d) {
+      if (!d.hasAttribute('open')) { d.setAttribute('open', ''); opened = true; }
+      d = d.parentElement && d.parentElement.closest('details');
+    }
+    var sib = el.nextElementSibling;
+    if (sib && sib.matches('details.refsection') && !sib.hasAttribute('open')) {
+      sib.setAttribute('open', '');
+      opened = true;
+    }
+    if (!opened) { return; }
+    var jump = function () {
+      var y = el.getBoundingClientRect().top + window.scrollY - 16;
+      try { window.scrollTo({ top: y, behavior: 'instant' }); }
+      catch (e) { window.scrollTo(0, y); }
+    };
+    jump();
+    /* the browser's own fragment scroll was computed against the collapsed
+       layout and may still be animating (CSS smooth) — re-assert once, which
+       cancels it */
+    setTimeout(jump, 100);
+  }
+  window.addEventListener('hashchange', openForHash);
+  openForHash();
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
+</script>
+</body>
+</html>

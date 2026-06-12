@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<!-- GENERATED from 08-production-harness.md — do not edit; run site/build_site.py -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="The create_with_retry function from Step 0 is the essential idea. The production llm.py below is the same idea with three additions:">
+<link rel="canonical" href="https://joshps23.github.io/ai-eng-2/08-production-harness.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://joshps23.github.io/ai-eng-2/08-production-harness-6.html">
+<meta property="og:site_name" content="Agent Harness Guide">
+<meta property="og:title" content="Phase 8 · Lesson 6 — 5. Reliability (Production… — Agent Harness Guide">
+<meta property="og:description" content="The create_with_retry function from Step 0 is the essential idea. The production llm.py below is the same idea with three additions:">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#FDFDFE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
+<title>Phase 8 · Lesson 6 — 5. Reliability (Production… — Agent Harness Guide</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body>
+<div class="progress-bar" aria-hidden="true"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="layout">
+<details class="sidebar-wrap" open>
+<summary class="sidebar-toggle">Guide navigation</summary>
+<nav class="sidebar" aria-label="Guide pages">
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
+<p class="sidebar-heading">Start here</p>
+<ul>
+<li><a href="index.html">Guide hub</a></li>
+<li><a href="learning-path.html">Learning Path</a></li>
+<li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
+<li><a href="faq.html">Setup &amp; FAQ</a></li>
+</ul>
+<p class="sidebar-heading">Phases</p>
+<ul>
+<li><a href="00-foundations-1.html">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness-1.html">Phase 1 — Bare Harness</a></li>
+<li><a href="02-tool-system-1.html">Phase 2 — Tool System</a></li>
+<li><a href="03-conversation-and-streaming-1.html">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools-1.html">Phase 4 — Real Tools</a></li>
+<li><a href="05-permissions-and-safety-1.html">Phase 5 — Permissions &amp; Safety</a></li>
+<li><a href="06-context-management-1.html">Phase 6 — Context Management</a></li>
+<li><a href="07-subagents-orchestration-1.html">Phase 7 — Sub-agents</a></li>
+<li class="current"><a href="08-production-harness-1.html" aria-current="true">Phase 8 — Production Harness</a></li>
+</ul>
+<p class="sidebar-heading">Appendix</p>
+<ul>
+<li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
+</ul>
+<p class="sidebar-heading">Practice</p>
+<ul>
+<li><a href="exercises.html">Exercises</a></li>
+<li><a href="glossary.html">Glossary</a></li>
+<li><a href="notebooks.html">Notebooks</a></li>
+</ul>
+</nav>
+</details>
+<main id="main">
+<header class="page-header">
+<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">8</span><span class="phase-kicker">Phase 8 · Lesson 6 of 10</span><span class="lesson-time">~8 min</span></p>
+<nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations-1.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness-1.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system-1.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming-1.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools-1.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety-1.html" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management-1.html" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration-1.html" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness-1.html" aria-current="true" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
+<nav class="lesson-rail" aria-label="Lessons in this phase"><a class="lesson-tick" href="08-production-harness-1.html" title="Lesson 1: The Production Harness (~11 min)" aria-label="Lesson 1: The Production Harness (~11 min)">1</a><a class="lesson-tick" href="08-production-harness-2.html" title="Lesson 2: The Smallest Reliability Win (~6 min)" aria-label="Lesson 2: The Smallest Reliability Win (~6 min)">2</a><a class="lesson-tick" href="08-production-harness-3.html" title="Lesson 3: Observability (~12 min)" aria-label="Lesson 3: Observability (~12 min)">3</a><a class="lesson-tick" href="08-production-harness-4.html" title="Lesson 4: Configuration (~15 min)" aria-label="Lesson 4: Configuration (~15 min)">4</a><a class="lesson-tick" href="08-production-harness-5.html" title="Lesson 5: The CLI / REPL (~11 min)" aria-label="Lesson 5: The CLI / REPL (~11 min)">5</a><a class="lesson-tick" href="08-production-harness-6.html" aria-current="page" title="Lesson 6: 5. Reliability (Production… (~8 min)" aria-label="Lesson 6: 5. Reliability (Production… (~8 min)">6</a><a class="lesson-tick" href="08-production-harness-7.html" title="Lesson 7: 6. The Definitive… (~11 min)" aria-label="Lesson 7: 6. The Definitive… (~11 min)">7</a><a class="lesson-tick" href="08-production-harness-8.html" title="Lesson 8: 7. Packaging and Operations (~4 min)" aria-label="Lesson 8: 7. Packaging and Operations (~4 min)">8</a><a class="lesson-tick" href="08-production-harness-9.html" title="Lesson 9: 8. Testing the Harness (~17 min)" aria-label="Lesson 9: 8. Testing the Harness (~17 min)">9</a><a class="lesson-tick" href="08-production-harness-10.html" title="Wrap-up: Pitfalls (~7 min)" aria-label="Wrap-up: Pitfalls (~7 min)">10</a></nav>
+<details class="page-toc">
+<summary>On this page</summary>
+<ul>
+<li class="toc-h2"><a href="#5-reliability-production-shape-llmpy">5. Reliability (Production Shape: llm.py)</a>
+<ul>
+<li class="toc-h3"><a href="#52-timeouts-and-keyboardinterrupt-handling">5.2 Timeouts and KeyboardInterrupt Handling</a></li>
+<li class="toc-h3"><a href="#53-idempotency-and-crash-resumability">5.3 Idempotency and Crash Resumability</a></li>
+</ul>
+</li>
+</ul>
+</details>
+</header>
+<article>
+<h2 id="5-reliability-production-shape-llmpy">5. Reliability (Production Shape: <code>llm.py</code>)<a aria-label="Permalink to this section" class="hanchor" href="08-production-harness.html#5-reliability-production-shape-llmpy">¶</a></h2>
+<blockquote>
+<p><strong>Which rung is this?</strong> The listing below is the <strong>hardened V2 — functions</strong> form: the
+same rung as Step 0, with better error sorting. It is a hardening pass, not a climb.
+The consolidated package then makes one last short climb to <strong>V3</strong>: it wraps these
+functions in an <code>LLMClient</code> class whose only state is the OpenAI client it holds —
+so tests can hand it a <code>FakeClient</code> instead (§8). Same retry logic either way.</p>
+</blockquote>
+<p>The <code>create_with_retry</code> function from Step 0 is the essential idea. The production <code>llm.py</code> below is the same idea with three additions:</p>
+<ol>
+<li>It distinguishes <em>retryable</em> errors (rate limits, network blips, server errors) from <em>fatal</em> ones (wrong API key, bad model name) — fatal errors are raised immediately without retrying.</li>
+<li>It honours the <code>Retry-After</code> header that rate-limit responses sometimes include.</li>
+<li>It adds jitter (a small random amount) to the backoff delay so that multiple agents do not all retry at exactly the same moment.</li>
+</ol>
+<p>It keeps Step 0's guard, too: when the <em>final</em> attempt fails, it raises immediately rather than sleeping one last backoff for nothing (the tested package's <code>llm.py</code> does the same).</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># agent_harness/llm.py</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Thin resilient wrapper around client.responses.create (including stream=True).</span>
+
+<span class="sd">Retryable:</span>
+<span class="sd">  - RateLimitError (429)           — honour Retry-After header when present</span>
+<span class="sd">  - APIConnectionError             — network blip</span>
+<span class="sd">  - InternalServerError (5xx)      — transient backend fault</span>
+<span class="sd">  - APIStatusError with status&gt;=500</span>
+
+<span class="sd">Fatal (raise immediately):</span>
+<span class="sd">  - AuthenticationError (401)</span>
+<span class="sd">  - PermissionDeniedError (403)</span>
+<span class="sd">  - NotFoundError (404)</span>
+<span class="sd">  - UnprocessableEntityError (422) — our payload is wrong</span>
+<span class="sd">  - Any other 4xx</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Generator</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">openai</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">openai</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">APIConnectionError</span><span class="p">,</span>
+    <span class="n">APIStatusError</span><span class="p">,</span>
+    <span class="n">AuthenticationError</span><span class="p">,</span>
+    <span class="n">InternalServerError</span><span class="p">,</span>
+    <span class="n">NotFoundError</span><span class="p">,</span>
+    <span class="n">OpenAI</span><span class="p">,</span>
+    <span class="n">PermissionDeniedError</span><span class="p">,</span>
+    <span class="n">RateLimitError</span><span class="p">,</span>
+    <span class="n">UnprocessableEntityError</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Retry configuration</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<span class="n">DEFAULT_MAX_ATTEMPTS</span> <span class="o">=</span> <span class="mi">6</span>
+<span class="n">DEFAULT_BASE_DELAY</span> <span class="o">=</span> <span class="mf">1.0</span>      <span class="c1"># seconds</span>
+<span class="n">DEFAULT_MAX_DELAY</span> <span class="o">=</span> <span class="mf">60.0</span>      <span class="c1"># seconds</span>
+<span class="n">DEFAULT_JITTER</span> <span class="o">=</span> <span class="mf">0.25</span>         <span class="c1"># fraction of computed delay added randomly</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_retryable</span><span class="p">(</span><span class="n">exc</span><span class="p">:</span> <span class="ne">Exception</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="p">(</span><span class="n">RateLimitError</span><span class="p">,</span> <span class="n">APIConnectionError</span><span class="p">,</span> <span class="n">InternalServerError</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="n">APIStatusError</span><span class="p">)</span> <span class="ow">and</span> <span class="n">exc</span><span class="o">.</span><span class="n">status_code</span> <span class="o">&gt;=</span> <span class="mi">500</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_retry_after</span><span class="p">(</span><span class="n">exc</span><span class="p">:</span> <span class="ne">Exception</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the Retry-After value in seconds if present, else None.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="n">RateLimitError</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="s2">&quot;response&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">response</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">raw</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;retry-after&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">raw</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                    <span class="k">pass</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_backoff</span><span class="p">(</span><span class="n">attempt</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">base</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">cap</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">jitter</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="n">delay</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">base</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="n">attempt</span><span class="p">),</span> <span class="n">cap</span><span class="p">)</span>
+    <span class="n">delay</span> <span class="o">+=</span> <span class="n">delay</span> <span class="o">*</span> <span class="n">jitter</span> <span class="o">*</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">delay</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Public API</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">create</span><span class="p">(</span>
+    <span class="n">client</span><span class="p">:</span> <span class="n">OpenAI</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">max_attempts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_MAX_ATTEMPTS</span><span class="p">,</span>
+    <span class="n">base_delay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_BASE_DELAY</span><span class="p">,</span>
+    <span class="n">max_delay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_MAX_DELAY</span><span class="p">,</span>
+    <span class="n">jitter</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_JITTER</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Call client.responses.create(**kwargs) with retry + backoff.</span>
+
+<span class="sd">    Passes **kwargs straight through so callers can set any parameter</span>
+<span class="sd">    (model, input, instructions, tools, store, etc.).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">last_exc</span><span class="p">:</span> <span class="ne">Exception</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_attempts</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">responses</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="p">(</span><span class="n">AuthenticationError</span><span class="p">,</span> <span class="n">PermissionDeniedError</span><span class="p">,</span>
+                <span class="n">NotFoundError</span><span class="p">,</span> <span class="n">UnprocessableEntityError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="c1"># Fatal — bad credentials, wrong model name, bad payload</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Fatal API error (not retrying): </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span>
+            <span class="k">raise</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="n">last_exc</span> <span class="o">=</span> <span class="n">exc</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">_is_retryable</span><span class="p">(</span><span class="n">exc</span><span class="p">):</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Non-retryable error: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span>
+                <span class="k">raise</span>
+            <span class="k">if</span> <span class="n">attempt</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="n">max_attempts</span><span class="p">:</span>
+                <span class="k">break</span>  <span class="c1"># out of attempts — raise below, don&#39;t sleep first</span>
+
+            <span class="n">wait</span> <span class="o">=</span> <span class="n">_retry_after</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span> <span class="ow">or</span> <span class="n">_backoff</span><span class="p">(</span><span class="n">attempt</span><span class="p">,</span> <span class="n">base_delay</span><span class="p">,</span> <span class="n">max_delay</span><span class="p">,</span> <span class="n">jitter</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;Retryable error on attempt </span><span class="si">%d</span><span class="s2">/</span><span class="si">%d</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">). Sleeping </span><span class="si">%.1f</span><span class="s2">s.&quot;</span><span class="p">,</span>
+                <span class="n">attempt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">max_attempts</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">wait</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">wait</span><span class="p">)</span>
+
+    <span class="c1"># Exhausted all attempts</span>
+    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;API call failed after </span><span class="si">{</span><span class="n">max_attempts</span><span class="si">}</span><span class="s2"> attempts&quot;</span>
+    <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">last_exc</span>
+
+
+<span class="nd">@contextmanager</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">stream</span><span class="p">(</span>
+    <span class="n">client</span><span class="p">:</span> <span class="n">OpenAI</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">max_attempts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_MAX_ATTEMPTS</span><span class="p">,</span>
+    <span class="n">base_delay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_BASE_DELAY</span><span class="p">,</span>
+    <span class="n">max_delay</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_MAX_DELAY</span><span class="p">,</span>
+    <span class="n">jitter</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_JITTER</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Context manager: yields a streaming response with the same retry policy.</span>
+
+<span class="sd">    We stay on the low-level primitive: this is just</span>
+<span class="sd">    ``client.responses.create(stream=True, **kwargs)``, which returns an</span>
+<span class="sd">    iterator of typed events (and is itself a context manager, so the HTTP</span>
+<span class="sd">    connection closes cleanly). We deliberately do NOT use the higher-level</span>
+<span class="sd">    ``client.responses.stream()`` helper — driving the event loop and</span>
+<span class="sd">    assembling the final response is the whole point of the harness.</span>
+
+<span class="sd">    Because streaming errors often surface only after the first chunk,</span>
+<span class="sd">    we retry at the connection / open stage. Mid-stream errors propagate as-is.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">last_exc</span><span class="p">:</span> <span class="ne">Exception</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_attempts</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">client</span><span class="o">.</span><span class="n">responses</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">s</span>
+            <span class="k">return</span>  <span class="c1"># clean exit from context manager</span>
+
+        <span class="k">except</span> <span class="p">(</span><span class="n">AuthenticationError</span><span class="p">,</span> <span class="n">PermissionDeniedError</span><span class="p">,</span>
+                <span class="n">NotFoundError</span><span class="p">,</span> <span class="n">UnprocessableEntityError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Fatal API error (stream, not retrying): </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span>
+            <span class="k">raise</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="n">last_exc</span> <span class="o">=</span> <span class="n">exc</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">_is_retryable</span><span class="p">(</span><span class="n">exc</span><span class="p">):</span>
+                <span class="k">raise</span>
+            <span class="k">if</span> <span class="n">attempt</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="n">max_attempts</span><span class="p">:</span>
+                <span class="k">break</span>  <span class="c1"># out of attempts — raise below, don&#39;t sleep first</span>
+
+            <span class="n">wait</span> <span class="o">=</span> <span class="n">_retry_after</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span> <span class="ow">or</span> <span class="n">_backoff</span><span class="p">(</span><span class="n">attempt</span><span class="p">,</span> <span class="n">base_delay</span><span class="p">,</span> <span class="n">max_delay</span><span class="p">,</span> <span class="n">jitter</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;Stream retryable error attempt </span><span class="si">%d</span><span class="s2">/</span><span class="si">%d</span><span class="s2"> (</span><span class="si">%s</span><span class="s2">). Sleeping </span><span class="si">%.1f</span><span class="s2">s.&quot;</span><span class="p">,</span>
+                <span class="n">attempt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">max_attempts</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">wait</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">wait</span><span class="p">)</span>
+
+    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Streaming API call failed after </span><span class="si">{</span><span class="n">max_attempts</span><span class="si">}</span><span class="s2"> attempts&quot;</span>
+    <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">last_exc</span>
+</code></pre></div>
+<p>Call sites replace bare <code>client.responses.create(...)</code> with <code>llm.create(client, ...)</code> and the streaming form <code>client.responses.create(..., stream=True)</code> with <code>llm.stream(client, ...)</code>.</p>
+<h3 id="52-timeouts-and-keyboardinterrupt-handling">5.2 Timeouts and KeyboardInterrupt Handling<a aria-label="Permalink to this section" class="hanchor" href="08-production-harness.html#52-timeouts-and-keyboardinterrupt-handling">¶</a></h3>
+<p>A long-running turn should not lock up the REPL. Wrap each turn in a try/except for <code>KeyboardInterrupt</code> and let the thread finish cleanly:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Inside the REPL turn handler (see cli.py section)</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">agent</span><span class="o">.</span><span class="n">run_turn</span><span class="p">(</span><span class="n">user_text</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">[Turn cancelled. Transcript preserved. Type your next message.]&quot;</span><span class="p">)</span>
+    <span class="c1"># The agent&#39;s input_items list is still valid — the partial turn was</span>
+    <span class="c1"># never committed because we always append *after* a successful response.</span>
+</code></pre></div>
+<p>The key invariant: <strong>append to <code>input_items</code> only after success</strong>. If we crash mid-turn, the transcript stays at the last clean state and the next turn re-runs cleanly.</p>
+<p>For the OpenAI client specifically, you can also set a per-request timeout:</p>
+<div class="highlight"><pre><span></span><code><span class="n">response</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+    <span class="n">client</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">MODEL</span><span class="p">,</span>
+    <span class="n">instructions</span><span class="o">=</span><span class="n">instructions</span><span class="p">,</span>
+    <span class="nb">input</span><span class="o">=</span><span class="n">input_items</span><span class="p">,</span>
+    <span class="n">tools</span><span class="o">=</span><span class="n">tool_schemas</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span>          <span class="c1"># httpx timeout in seconds, passed through</span>
+<span class="p">)</span>
+</code></pre></div>
+<h3 id="53-idempotency-and-crash-resumability">5.3 Idempotency and Crash Resumability<a aria-label="Permalink to this section" class="hanchor" href="08-production-harness.html#53-idempotency-and-crash-resumability">¶</a></h3>
+<p>From Phase 3, <code>Conversation.save(path)</code> serialises <code>input_items</code> to JSON. Call it after every step:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># At the bottom of each loop iteration, before sleeping/continuing:</span>
+<span class="n">conversation</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">transcript_path</span><span class="p">)</span>
+</code></pre></div>
+<p>The CLI exposes <code>--resume</code>:</p>
+<div class="highlight"><pre><span></span><code>agent<span class="w"> </span>--resume<span class="w">                      </span><span class="c1"># loads from default transcript path</span>
+agent<span class="w"> </span>--resume<span class="w"> </span>--transcript<span class="w"> </span>foo.json<span class="w">  </span><span class="c1"># loads from explicit path</span>
+</code></pre></div>
+<p>On resume, the harness loads the transcript and prints a one-line summary (<code>"Resuming from N messages, last saved at &lt;timestamp&gt;"</code>), then drops straight back into the REPL. No special bookkeeping required: the transcript <em>is</em> the state.</p>
+</article>
+<footer class="page-footer">
+<nav class="continue" aria-label="Continue">
+<a class="continue-card" href="08-production-harness-7.html" rel="next">
+<span class="continue-kicker">Next · Lesson 7 of 10</span>
+<span class="continue-title">6. The Definitive…<span class="continue-time">~11 min</span><span class="continue-arrow" aria-hidden="true">→</span></span>
+</a>
+<p class="continue-aux">
+<a href="08-production-harness-5.html" rel="prev">← Lesson 5 · The CLI / REPL</a>
+<a class="continue-fullpage" href="08-production-harness.html#5-reliability-production-shape-llmpy">View this lesson on the single page</a>
+</p>
+</nav>
+<p class="generated-note">Generated from <code>08-production-harness.md</code> — lesson 6 of 10 in the derived lesson view (boundaries may move when the markdown changes; the <a href="08-production-harness.html">single page</a> is the permanent address).</p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/08-production-harness.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
+</footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
+</main>
+</div>
+<script>
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards.
+     diagram-text mirrors are excluded — print hides them entirely (the SVG
+     figure already prints; opening the ASCII would print the diagram twice). */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not(.diagram-text):not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
+  });
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
+
+  /* Reading progress: the fixed 3px accent bar tracks scroll position.
+     Without JS the element simply stays at width 0 — invisible, harmless. */
+  var pbar = document.querySelector('.progress-bar');
+  if (pbar) {
+    var setProgress = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      pbar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    };
+    window.addEventListener('scroll', setProgress, { passive: true });
+    setProgress();
+  }
+
+  /* Deep links into collapsed sections: open every <details> ancestor of the
+     target, and the refsection that immediately follows a target heading.
+     Re-scroll only if something actually opened (the layout above the target
+     just changed), and instantly — the CSS smooth scroll would crawl across
+     tens of thousands of pixels on the long phase pages. */
+  function openForHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) { return; }
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    var opened = false;
+    var d = el.closest('details');
+    while (d) {
+      if (!d.hasAttribute('open')) { d.setAttribute('open', ''); opened = true; }
+      d = d.parentElement && d.parentElement.closest('details');
+    }
+    var sib = el.nextElementSibling;
+    if (sib && sib.matches('details.refsection') && !sib.hasAttribute('open')) {
+      sib.setAttribute('open', '');
+      opened = true;
+    }
+    if (!opened) { return; }
+    var jump = function () {
+      var y = el.getBoundingClientRect().top + window.scrollY - 16;
+      try { window.scrollTo({ top: y, behavior: 'instant' }); }
+      catch (e) { window.scrollTo(0, y); }
+    };
+    jump();
+    /* the browser's own fragment scroll was computed against the collapsed
+       layout and may still be animating (CSS smooth) — re-assert once, which
+       cancels it */
+    setTimeout(jump, 100);
+  }
+  window.addEventListener('hashchange', openForHash);
+  openForHash();
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
+</script>
+</body>
+</html>

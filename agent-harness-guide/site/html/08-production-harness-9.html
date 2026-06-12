@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<!-- GENERATED from 08-production-harness.md — do not edit; run site/build_site.py -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="The test files in §8.2–§8.3 are real, runnable code — but they import four modules this phase never prints: permissions, hooks, conversation, and tools. You…">
+<link rel="canonical" href="https://joshps23.github.io/ai-eng-2/08-production-harness.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://joshps23.github.io/ai-eng-2/08-production-harness-9.html">
+<meta property="og:site_name" content="Agent Harness Guide">
+<meta property="og:title" content="Phase 8 · Lesson 9 — 8. Testing the Harness — Agent Harness Guide">
+<meta property="og:description" content="The test files in §8.2–§8.3 are real, runnable code — but they import four modules this phase never prints: permissions, hooks, conversation, and tools. You…">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#FDFDFE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
+<title>Phase 8 · Lesson 9 — 8. Testing the Harness — Agent Harness Guide</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body>
+<div class="progress-bar" aria-hidden="true"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="layout">
+<details class="sidebar-wrap" open>
+<summary class="sidebar-toggle">Guide navigation</summary>
+<nav class="sidebar" aria-label="Guide pages">
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
+<p class="sidebar-heading">Start here</p>
+<ul>
+<li><a href="index.html">Guide hub</a></li>
+<li><a href="learning-path.html">Learning Path</a></li>
+<li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
+<li><a href="faq.html">Setup &amp; FAQ</a></li>
+</ul>
+<p class="sidebar-heading">Phases</p>
+<ul>
+<li><a href="00-foundations-1.html">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness-1.html">Phase 1 — Bare Harness</a></li>
+<li><a href="02-tool-system-1.html">Phase 2 — Tool System</a></li>
+<li><a href="03-conversation-and-streaming-1.html">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools-1.html">Phase 4 — Real Tools</a></li>
+<li><a href="05-permissions-and-safety-1.html">Phase 5 — Permissions &amp; Safety</a></li>
+<li><a href="06-context-management-1.html">Phase 6 — Context Management</a></li>
+<li><a href="07-subagents-orchestration-1.html">Phase 7 — Sub-agents</a></li>
+<li class="current"><a href="08-production-harness-1.html" aria-current="true">Phase 8 — Production Harness</a></li>
+</ul>
+<p class="sidebar-heading">Appendix</p>
+<ul>
+<li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
+</ul>
+<p class="sidebar-heading">Practice</p>
+<ul>
+<li><a href="exercises.html">Exercises</a></li>
+<li><a href="glossary.html">Glossary</a></li>
+<li><a href="notebooks.html">Notebooks</a></li>
+</ul>
+</nav>
+</details>
+<main id="main">
+<header class="page-header">
+<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">8</span><span class="phase-kicker">Phase 8 · Lesson 9 of 10</span><span class="lesson-time">~17 min</span><span class="lesson-cp">1 <span aria-hidden="true">▶</span> checkpoint</span></p>
+<nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations-1.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness-1.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system-1.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming-1.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools-1.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety-1.html" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management-1.html" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration-1.html" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness-1.html" aria-current="true" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
+<nav class="lesson-rail" aria-label="Lessons in this phase"><a class="lesson-tick" href="08-production-harness-1.html" title="Lesson 1: The Production Harness (~11 min)" aria-label="Lesson 1: The Production Harness (~11 min)">1</a><a class="lesson-tick" href="08-production-harness-2.html" title="Lesson 2: The Smallest Reliability Win (~6 min)" aria-label="Lesson 2: The Smallest Reliability Win (~6 min)">2</a><a class="lesson-tick" href="08-production-harness-3.html" title="Lesson 3: Observability (~12 min)" aria-label="Lesson 3: Observability (~12 min)">3</a><a class="lesson-tick" href="08-production-harness-4.html" title="Lesson 4: Configuration (~15 min)" aria-label="Lesson 4: Configuration (~15 min)">4</a><a class="lesson-tick" href="08-production-harness-5.html" title="Lesson 5: The CLI / REPL (~11 min)" aria-label="Lesson 5: The CLI / REPL (~11 min)">5</a><a class="lesson-tick" href="08-production-harness-6.html" title="Lesson 6: 5. Reliability (Production… (~8 min)" aria-label="Lesson 6: 5. Reliability (Production… (~8 min)">6</a><a class="lesson-tick" href="08-production-harness-7.html" title="Lesson 7: 6. The Definitive… (~11 min)" aria-label="Lesson 7: 6. The Definitive… (~11 min)">7</a><a class="lesson-tick" href="08-production-harness-8.html" title="Lesson 8: 7. Packaging and Operations (~4 min)" aria-label="Lesson 8: 7. Packaging and Operations (~4 min)">8</a><a class="lesson-tick" href="08-production-harness-9.html" aria-current="page" title="Lesson 9: 8. Testing the Harness (~17 min)" aria-label="Lesson 9: 8. Testing the Harness (~17 min)">9</a><a class="lesson-tick" href="08-production-harness-10.html" title="Wrap-up: Pitfalls (~7 min)" aria-label="Wrap-up: Pitfalls (~7 min)">10</a></nav>
+<details class="page-toc">
+<summary>On this page</summary>
+<ul>
+<li class="toc-h2"><a href="#8-testing-the-harness">8. Testing the Harness</a>
+<ul>
+<li class="toc-h3"><a href="#80-before-you-run-the-layout-and-the-four-shim-modules">8.0 Before You Run: the Layout and the Four Shim Modules</a></li>
+<li class="toc-h3"><a href="#81-guiding-principles">8.1 Guiding Principles</a></li>
+<li class="toc-h3"><a href="#82-a-fake-client">8.2 A Fake Client</a></li>
+<li class="toc-h3"><a href="#83-a-loop-test">8.3 A Loop Test</a></li>
+</ul>
+</li>
+<li class="toc-h2"><a href="#9-where-to-go-next">9. Where to Go Next</a>
+</li>
+<li class="toc-h2"><a href="#10-closing-recap--production-properties-to-phases">10. Closing Recap — Production Properties to Phases</a>
+</li>
+</ul>
+</details>
+</header>
+<article>
+<h2 id="8-testing-the-harness">8. Testing the Harness<a aria-label="Permalink to this section" class="hanchor" href="08-production-harness.html#8-testing-the-harness">¶</a></h2>
+<h3 id="80-before-you-run-the-layout-and-the-four-shim-modules">8.0 Before You Run: the Layout and the Four Shim Modules<a aria-label="Permalink to this section" class="hanchor" href="08-production-harness.html#80-before-you-run-the-layout-and-the-four-shim-modules">¶</a></h3>
+<p>The test files in §8.2–§8.3 are real, runnable code — but they import four modules
+this phase never prints: <code>permissions</code>, <code>hooks</code>, <code>conversation</code>, and <code>tools</code>. You
+<em>built</em> all four ideas in Phases 2, 3, and 5, under different spellings
+(<code>dispatch(name, arguments_str)</code>, a private <code>_items</code> list, <code>evaluate()</code> returning
+<code>ALLOW</code>/<code>DENY</code>/<code>ASK</code>). The listings below are the <strong>aspirational interfaces from the
+§0 translation table</strong>, written out as four tiny shims — just enough for §8's tests to
+pass against §6's <code>agent.py</code> exactly as printed. They are honest stand-ins, not the
+real thing: the tested package spells each of these differently (and far more
+completely) in <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/tree/main/agent-harness-guide/code/agent_harness" title="Opens this repository file on GitHub"><code>code/agent_harness/</code></a>.</p>
+<p>Lay the project out like this — note that <code>agent_harness/__init__.py</code> can be a
+completely <strong>empty file</strong>; its only job is to mark the directory as a package:</p>
+<div class="highlight nocopy"><pre><span></span><code>yourproject/
+├── agent_harness/
+│   ├── __init__.py        # empty file is fine
+│   ├── accounting.py      # Step 1d
+│   ├── agent.py           # §6
+│   ├── config.py          # Step 2 (keep its real `from .accounting import …` line)
+│   ├── llm.py             # §5
+│   ├── tracer.py          # Step 1c
+│   ├── permissions.py     # shim — below
+│   ├── hooks.py           # shim — below
+│   ├── conversation.py    # shim — below
+│   └── tools.py           # shim — below
+└── tests/
+    ├── fake_client.py     # §8.2
+    └── test_agent_loop.py # §8.3
+</code></pre></div>
+<p>and run the tests <strong>from the project root</strong> (<code>yourproject/</code>):</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>tests/<span class="w"> </span>-v<span class="w">        </span><span class="c1"># 2 passed</span>
+</code></pre></div>
+<p>Running from the root matters: the <code>python -m</code> form puts the current directory on
+<code>sys.path</code>, which is what lets both <code>from agent_harness.agent import Agent</code> and
+<code>from tests.fake_client import …</code> resolve. (You do need <code>pip install openai pytest</code>
+once — <code>llm.py</code> imports the SDK's exception types — but <strong>no API key</strong>: nothing in
+this section touches the network.)</p>
+<p>The four shims:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># agent_harness/permissions.py  (shim — Phase 5&#39;s policy, §0&#39;s idealized spelling)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Decision</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">ALLOW</span> <span class="o">=</span> <span class="s2">&quot;allow&quot;</span>
+    <span class="n">DENY</span> <span class="o">=</span> <span class="s2">&quot;deny&quot;</span>
+    <span class="n">ESCALATE</span> <span class="o">=</span> <span class="s2">&quot;escalate&quot;</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">PermissionPolicy</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;default&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>                   <span class="c1"># &quot;default&quot; | &quot;strict&quot; | &quot;yolo&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Decision</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;yolo&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">ALLOW</span>          <span class="c1"># run everything, never ask</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;strict&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">ESCALATE</span>       <span class="c1"># ask the user before every tool</span>
+        <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">ALLOW</span>              <span class="c1"># &quot;default&quot;: permissive shim — Phase 5&#39;s</span>
+                                           <span class="c1"># per-tool rule list would slot in here</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># agent_harness/hooks.py  (shim — Phase 5&#39;s hooks, as the two functions §6 imports)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_pre_hooks</span><span class="p">(</span><span class="n">tool_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">pass</span>   <span class="c1"># Phase 5&#39;s PreToolUse observers would fire here</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">run_post_hooks</span><span class="p">(</span><span class="n">tool_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">pass</span>   <span class="c1"># ...and its PostToolUse observers here</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># agent_harness/conversation.py  (shim — public .items, instance load();</span>
+<span class="c1"># Phase 3 built private _items and load() as a classmethod)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Conversation</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>              <span class="c1"># public, plain list of dicts</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>    <span class="c1"># instance method, mutates in place</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="c1"># agent_harness/tools.py  (shim — @tool + ToolRegistry with the idealized</span>
+<span class="c1"># .schemas() / .call(name, args_dict) / public .tools spellings;</span>
+<span class="c1"># Phase 2 built to_openai_schema() and dispatch(name, arguments_str))</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="n">_JSON_TYPES</span> <span class="o">=</span> <span class="p">{</span><span class="nb">str</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">:</span> <span class="s2">&quot;number&quot;</span><span class="p">,</span> <span class="nb">bool</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">}</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Tool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fn</span> <span class="o">=</span> <span class="n">fn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">fn</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="n">doc</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getdoc</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">doc</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span>
+        <span class="n">props</span> <span class="o">=</span> <span class="p">{</span><span class="n">p</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">_JSON_TYPES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="n">p</span><span class="p">]</span><span class="o">.</span><span class="n">annotation</span><span class="p">,</span> <span class="s2">&quot;string&quot;</span><span class="p">)}</span>
+                 <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schema</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
+            <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span> <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="n">props</span><span class="p">,</span>
+                           <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">props</span><span class="p">)},</span>
+        <span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">tool</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tool</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">Tool</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ToolRegistry</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tools</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tool</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>   <span class="c1"># public, name -&gt; Tool</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">Tool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tools</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">schemas</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">schema</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tools</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Error: unknown tool &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tools</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">fn</span><span class="p">(</span><span class="o">**</span><span class="n">args</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">result</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
+</code></pre></div>
+<p>That is all four — under a hundred lines total, and each one is the smallest object
+honoring the interface §6's <code>agent.py</code> and §8.3's tests expect. When you outgrow them,
+either swap in your real Phase 2/3/5 modules (translating method names with the §0
+table) or read the package's <code>tools/</code>, <code>conversation.py</code>, <code>permissions.py</code>, and
+<code>hooks.py</code> for the production form of each.</p>
+<h3 id="81-guiding-principles">8.1 Guiding Principles<a aria-label="Permalink to this section" class="hanchor" href="08-production-harness.html#81-guiding-principles">¶</a></h3>
+<ul>
+<li><strong>Unit-test tools directly</strong>: call <code>read_file({"path": "..."})</code> and assert the output. No LLM involved.</li>
+<li><strong>Mock the OpenAI client</strong> for loop tests: return canned responses.</li>
+<li><strong>Scripted tool calls</strong>: make the fake model emit known <code>function_call</code> items so you can assert the tool was called and the result fed back correctly.</li>
+</ul>
+<h3 id="82-a-fake-client">8.2 A Fake Client<a aria-label="Permalink to this section" class="hanchor" href="08-production-harness.html#82-a-fake-client">¶</a></h3>
+<blockquote>
+<p><strong>Which rung is this?</strong> You met the V1 of this idea back in Step 0's ▶ Run it now — a
+fake client that fails twice then succeeds, written inline to test retry. This is its
+<strong>V3</strong>: the same trick (an object with a <code>.responses.create(...)</code> that returns scripted
+answers instead of calling the network) organized into reusable dataclasses. The tested
+package ships this as <code>testing.py</code>, and it only works because the client is <em>injectable</em>
+— the <code>Agent</code> takes a <code>client</code> argument rather than constructing <code>OpenAI()</code> itself.</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="c1"># tests/fake_client.py</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">A minimal fake that replaces the real OpenAI client.</span>
+<span class="sd">Each call to responses.create() pops from a script of pre-defined responses.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FakeUsage</span><span class="p">:</span>
+    <span class="n">input_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="n">output_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span>
+    <span class="n">total_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">150</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FakeOutputText</span><span class="p">:</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;output_text&quot;</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Done.&quot;</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FakeFunctionCall</span><span class="p">:</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;function_call&quot;</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">call_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">arguments</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FakeMessage</span><span class="p">:</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;message&quot;</span>
+    <span class="n">content</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FakeResponse</span><span class="p">:</span>
+    <span class="n">output</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">usage</span><span class="p">:</span> <span class="n">FakeUsage</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">FakeUsage</span><span class="p">)</span>
+    <span class="n">stop_reason</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;end_turn&quot;</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">FakeResponses</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">script</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">FakeResponse</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_script</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">script</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FakeResponse</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_script</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;FakeClient script exhausted&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_script</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">FakeClient</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">script</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">FakeResponse</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">responses</span> <span class="o">=</span> <span class="n">FakeResponses</span><span class="p">(</span><span class="n">script</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="83-a-loop-test">8.3 A Loop Test<a aria-label="Permalink to this section" class="hanchor" href="08-production-harness.html#83-a-loop-test">¶</a></h3>
+<p>This test drives a full two-iteration loop — and it passes only because <code>run_turn</code>
+normalizes output items at append time (<code>_to_dict</code>, §6): the <code>FakeFunctionCall</code> /
+<code>FakeMessage</code> dataclasses above enter the transcript as plain dicts (via
+<code>dataclasses.asdict</code>), so the second iteration's <code>estimate_tokens()</code> — a <code>json.dumps</code>
+of the whole transcript — and <code>conversation.save()</code> work instead of raising
+<code>TypeError: Object of type FakeFunctionCall is not JSON serializable</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># tests/test_agent_loop.py</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">agent_harness.agent</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">agent_harness.accounting</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionAccounting</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">agent_harness.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">Settings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">agent_harness.permissions</span><span class="w"> </span><span class="kn">import</span> <span class="n">PermissionPolicy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">agent_harness.tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">ToolRegistry</span><span class="p">,</span> <span class="n">tool</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">agent_harness.tracer</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tracer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tests.fake_client</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">FakeClient</span><span class="p">,</span> <span class="n">FakeResponse</span><span class="p">,</span> <span class="n">FakeFunctionCall</span><span class="p">,</span>
+    <span class="n">FakeMessage</span><span class="p">,</span> <span class="n">FakeOutputText</span><span class="p">,</span> <span class="n">FakeUsage</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="c1"># A trivial echo tool for testing</span>
+<span class="nd">@tool</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">echo</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Echo the message back.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;echo: </span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">&quot;</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">make_agent</span><span class="p">(</span><span class="n">script</span><span class="p">,</span> <span class="n">workspace</span><span class="p">):</span>
+    <span class="n">registry</span> <span class="o">=</span> <span class="n">ToolRegistry</span><span class="p">()</span>
+    <span class="n">registry</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">echo</span><span class="p">)</span>
+
+    <span class="c1"># Turn 1: model calls echo(&quot;hello&quot;)</span>
+    <span class="c1"># Turn 2: model says &quot;Done.&quot; with no tool calls</span>
+    <span class="n">settings</span> <span class="o">=</span> <span class="n">Settings</span><span class="p">(</span>
+        <span class="n">workspace_root</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">workspace</span><span class="p">),</span>
+        <span class="n">transcript_path</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">workspace</span> <span class="o">/</span> <span class="s2">&quot;transcript.json&quot;</span><span class="p">),</span>
+        <span class="n">trace_path</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">workspace</span> <span class="o">/</span> <span class="s2">&quot;trace.jsonl&quot;</span><span class="p">),</span>
+        <span class="n">stream</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">max_iterations</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">Agent</span><span class="p">(</span>
+        <span class="n">client</span><span class="o">=</span><span class="n">FakeClient</span><span class="p">(</span><span class="n">script</span><span class="p">),</span>
+        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4o&quot;</span><span class="p">,</span>
+        <span class="n">instructions</span><span class="o">=</span><span class="s2">&quot;You are a test agent.&quot;</span><span class="p">,</span>
+        <span class="n">registry</span><span class="o">=</span><span class="n">registry</span><span class="p">,</span>
+        <span class="n">policy</span><span class="o">=</span><span class="n">PermissionPolicy</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;yolo&quot;</span><span class="p">),</span>  <span class="c1"># no approval prompts</span>
+        <span class="n">accounting</span><span class="o">=</span><span class="n">SessionAccounting</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4o&quot;</span><span class="p">),</span>
+        <span class="n">tracer</span><span class="o">=</span><span class="n">Tracer</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">),</span>              <span class="c1"># no file output</span>
+        <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_tool_call_loop</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Verify: model calls echo → harness executes → feeds result back →</span>
+<span class="sd">    model replies with text → run_turn returns that text.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
+        <span class="n">workspace</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+
+        <span class="c1"># Script: first response has a function_call; second has text.</span>
+        <span class="n">script</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">FakeResponse</span><span class="p">(</span>
+                <span class="n">output</span><span class="o">=</span><span class="p">[</span>
+                    <span class="n">FakeFunctionCall</span><span class="p">(</span>
+                        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;echo&quot;</span><span class="p">,</span>
+                        <span class="n">call_id</span><span class="o">=</span><span class="s2">&quot;call_001&quot;</span><span class="p">,</span>
+                        <span class="n">arguments</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;hello&quot;</span><span class="p">}),</span>
+                    <span class="p">)</span>
+                <span class="p">],</span>
+                <span class="n">usage</span><span class="o">=</span><span class="n">FakeUsage</span><span class="p">(</span><span class="n">input_tokens</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">output_tokens</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">total_tokens</span><span class="o">=</span><span class="mi">70</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="n">FakeResponse</span><span class="p">(</span>
+                <span class="n">output</span><span class="o">=</span><span class="p">[</span>
+                    <span class="n">FakeMessage</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="p">[</span><span class="n">FakeOutputText</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;All done.&quot;</span><span class="p">)])</span>
+                <span class="p">],</span>
+                <span class="n">usage</span><span class="o">=</span><span class="n">FakeUsage</span><span class="p">(</span><span class="n">input_tokens</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">output_tokens</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">total_tokens</span><span class="o">=</span><span class="mi">90</span><span class="p">),</span>
+            <span class="p">),</span>
+        <span class="p">]</span>
+
+        <span class="n">agent</span> <span class="o">=</span> <span class="n">make_agent</span><span class="p">(</span><span class="n">script</span><span class="p">,</span> <span class="n">workspace</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">run_turn</span><span class="p">(</span><span class="s2">&quot;Call echo with hello.&quot;</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="s2">&quot;All done.&quot;</span> <span class="ow">in</span> <span class="n">result</span>
+        <span class="c1"># The transcript should contain: user msg, function_call, function_call_output, message</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">conversation</span><span class="o">.</span><span class="n">items</span>
+        <span class="n">types</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="s2">&quot;?&quot;</span><span class="p">)</span>
+                 <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="s2">&quot;function_call_output&quot;</span> <span class="ow">in</span> <span class="n">types</span>
+
+        <span class="c1"># Cost accounting should have both turns</span>
+        <span class="k">assert</span> <span class="n">agent</span><span class="o">.</span><span class="n">accounting</span><span class="o">.</span><span class="n">turns</span> <span class="o">==</span> <span class="mi">2</span>
+        <span class="k">assert</span> <span class="n">agent</span><span class="o">.</span><span class="n">accounting</span><span class="o">.</span><span class="n">tool_calls</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="k">assert</span> <span class="n">agent</span><span class="o">.</span><span class="n">accounting</span><span class="o">.</span><span class="n">input_tokens</span> <span class="o">==</span> <span class="mi">130</span>
+        <span class="k">assert</span> <span class="n">agent</span><span class="o">.</span><span class="n">accounting</span><span class="o">.</span><span class="n">output_tokens</span> <span class="o">==</span> <span class="mi">30</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_tool_error_does_not_crash_loop</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A tool that raises must not crash run_turn — the harness catches it.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nd">@tool</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">exploding_tool</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Always raises.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;boom&quot;</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
+        <span class="n">workspace</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+
+        <span class="n">script</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">FakeResponse</span><span class="p">(</span>
+                <span class="n">output</span><span class="o">=</span><span class="p">[</span>
+                    <span class="n">FakeFunctionCall</span><span class="p">(</span>
+                        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;exploding_tool&quot;</span><span class="p">,</span>
+                        <span class="n">call_id</span><span class="o">=</span><span class="s2">&quot;call_002&quot;</span><span class="p">,</span>
+                        <span class="n">arguments</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}),</span>
+                    <span class="p">)</span>
+                <span class="p">],</span>
+            <span class="p">),</span>
+            <span class="n">FakeResponse</span><span class="p">(</span>
+                <span class="n">output</span><span class="o">=</span><span class="p">[</span><span class="n">FakeMessage</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="p">[</span><span class="n">FakeOutputText</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Caught it.&quot;</span><span class="p">)])],</span>
+            <span class="p">),</span>
+        <span class="p">]</span>
+
+        <span class="n">settings</span> <span class="o">=</span> <span class="n">Settings</span><span class="p">(</span>
+            <span class="n">workspace_root</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">workspace</span><span class="p">),</span>
+            <span class="n">transcript_path</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">workspace</span> <span class="o">/</span> <span class="s2">&quot;transcript.json&quot;</span><span class="p">),</span>
+            <span class="n">stream</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">registry</span> <span class="o">=</span> <span class="n">ToolRegistry</span><span class="p">()</span>
+        <span class="n">registry</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">exploding_tool</span><span class="p">)</span>
+
+        <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span>
+            <span class="n">client</span><span class="o">=</span><span class="n">FakeClient</span><span class="p">(</span><span class="n">script</span><span class="p">),</span>
+            <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4o&quot;</span><span class="p">,</span>
+            <span class="n">instructions</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">,</span>
+            <span class="n">registry</span><span class="o">=</span><span class="n">registry</span><span class="p">,</span>
+            <span class="n">policy</span><span class="o">=</span><span class="n">PermissionPolicy</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;yolo&quot;</span><span class="p">),</span>
+            <span class="n">accounting</span><span class="o">=</span><span class="n">SessionAccounting</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4o&quot;</span><span class="p">),</span>
+            <span class="n">tracer</span><span class="o">=</span><span class="n">Tracer</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">),</span>
+            <span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">run_turn</span><span class="p">(</span><span class="s2">&quot;Do the thing.&quot;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="s2">&quot;Caught it.&quot;</span> <span class="ow">in</span> <span class="n">result</span>
+
+        <span class="c1"># Confirm the error was returned as a function_call_output string</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">item</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">agent</span><span class="o">.</span><span class="n">conversation</span><span class="o">.</span><span class="n">items</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;function_call_output&quot;</span>
+        <span class="p">]</span>
+        <span class="k">assert</span> <span class="nb">any</span><span class="p">(</span><span class="s2">&quot;Error&quot;</span> <span class="ow">in</span> <span class="n">o</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="-run-it-now-no-api-key-needed">▶ Run it now (no API key needed)<a aria-label="Permalink to this section" class="hanchor" href="08-production-harness.html#-run-it-now-no-api-key-needed">¶</a></h3>
+<p>Run from the project root — the directory containing both <code>agent_harness/</code> and
+<code>tests/</code>, laid out as in §8.0:</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>tests/<span class="w"> </span>-v
+</code></pre></div>
+<p>You should see:</p>
+<div class="highlight nocopy"><pre><span></span><code>tests/test_agent_loop.py::test_tool_call_loop PASSED
+tests/test_agent_loop.py::test_tool_error_does_not_crash_loop PASSED
+
+============================== 2 passed ==============================
+</code></pre></div>
+<p>(The <code>python -m</code> form guarantees pytest runs under the same interpreter you installed the
+package into — a bare <code>pytest</code> on your PATH might belong to a different Python — and puts
+the project root on <code>sys.path</code> so <code>tests.fake_client</code> resolves.)</p>
+<p>This is also exactly how the consolidated package is verified: from
+<a class="repo-file" href="https://github.com/joshps23/ai-eng-2/tree/main/agent-harness-guide/code" title="Opens this repository file on GitHub"><code>code/</code></a>, <code>python -m pytest -q</code> runs the full suite offline — no API key needed,
+because every test drives the real <code>Agent</code> through the scripted <code>FakeClient</code> in
+<code>testing.py</code>. Your seven ladders, assembled and proven, without a single network call.</p>
+<h2 id="9-where-to-go-next">9. Where to Go Next<a aria-label="Permalink to this section" class="hanchor" href="08-production-harness.html#9-where-to-go-next">¶</a></h2>
+<p><strong>Evals and benchmarks.</strong> Attach <a href="https://swe-bench.github.io/">SWE-bench</a> or a custom task suite to your harness. Score the agent on real codebases. Evals catch regressions from prompt or model changes before they hit users.</p>
+<p><strong>MCP-style external tool servers.</strong> The Model Context Protocol defines a JSON-RPC interface for serving tools from a separate process (or remote host). Replace the in-process <code>ToolRegistry</code> with an MCP client, and tools become independently deployable and language-agnostic.</p>
+<p><strong>Multi-model routing.</strong> Use a cheap model (<code>gpt-4.1-mini</code>) for tool-call-heavy iterations and a powerful model (<code>gpt-5</code>) only for reasoning-intensive turns. The <code>Settings.model</code> field can be changed per-turn based on heuristics (e.g., how many tokens remain, what kind of task is active).</p>
+<p><strong>Prompt caching and <code>previous_response_id</code>.</strong> If you pass <code>previous_response_id</code> instead of managing <code>input_items</code> yourself, the API handles state server-side and can cache the system prompt prefix cheaply. Useful when the instructions are large and stable. The trade-off: you lose offline resumability from a local transcript.</p>
+<p><strong>Richer TUI.</strong> Replace <code>print()</code> calls with <a href="https://github.com/Textualize/rich">Rich</a> for live progress panels, syntax-highlighted diffs, and tool-call spinners. The streaming renderer from Phase 3 is the right hook point.</p>
+<h2 id="10-closing-recap--production-properties-to-phases">10. Closing Recap — Production Properties to Phases<a aria-label="Permalink to this section" class="hanchor" href="08-production-harness.html#10-closing-recap--production-properties-to-phases">¶</a></h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th scope="col">Production property</th>
+<th scope="col">Foundation phase</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tool execution, parallel dispatch</td>
+<td>Phase 2 — Tool system</td>
+</tr>
+<tr>
+<td>Conversation persistence, streaming</td>
+<td>Phase 3 — Conversation and streaming</td>
+</tr>
+<tr>
+<td>Filesystem and shell tools</td>
+<td>Phase 4 — Real tools</td>
+</tr>
+<tr>
+<td>Permission gate, approval hooks</td>
+<td>Phase 5 — Permissions and hooks</td>
+</tr>
+<tr>
+<td>Token budgeting, auto-compaction</td>
+<td>Phase 6 — Context management</td>
+</tr>
+<tr>
+<td>Agent class, sub-agents, <code>task</code> tool</td>
+<td>Phase 7 — Orchestration</td>
+</tr>
+<tr>
+<td>Retry/backoff, Tracer, Settings, CLI</td>
+<td><strong>Phase 8 — This phase</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>Every abstraction introduced in earlier phases was chosen so it would slot cleanly into this final assembly. The <code>Conversation</code> owns the transcript as a plain list. The <code>ToolRegistry</code> produces JSON schemas on demand. The <code>PermissionPolicy</code> is a pure function of tool name and args. The <code>Agent</code> is a thin coordinator that calls each collaborator in a fixed order.</p>
+<p>The result is a harness where each concern is isolated, each component is testable independently, and the whole thing behaves predictably under the conditions that actually matter in production: slow networks, large files, adversarial model outputs, and impatient users who press Ctrl-C.</p>
+</article>
+<footer class="page-footer">
+<nav class="continue" aria-label="Continue">
+<a class="continue-card" href="08-production-harness-10.html" rel="next">
+<span class="continue-kicker">Next · Wrap-up · Lesson 10 of 10</span>
+<span class="continue-title">Pitfalls<span class="continue-time">~7 min</span><span class="continue-arrow" aria-hidden="true">→</span></span>
+</a>
+<p class="continue-aux">
+<a href="08-production-harness-8.html" rel="prev">← Lesson 8 · 7. Packaging and Operations</a>
+<a class="continue-fullpage" href="08-production-harness.html#8-testing-the-harness">View this lesson on the single page</a>
+</p>
+</nav>
+<p class="generated-note">Generated from <code>08-production-harness.md</code> — lesson 9 of 10 in the derived lesson view (boundaries may move when the markdown changes; the <a href="08-production-harness.html">single page</a> is the permanent address).</p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/08-production-harness.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
+</footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
+</main>
+</div>
+<script>
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards.
+     diagram-text mirrors are excluded — print hides them entirely (the SVG
+     figure already prints; opening the ASCII would print the diagram twice). */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not(.diagram-text):not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
+  });
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
+
+  /* Reading progress: the fixed 3px accent bar tracks scroll position.
+     Without JS the element simply stays at width 0 — invisible, harmless. */
+  var pbar = document.querySelector('.progress-bar');
+  if (pbar) {
+    var setProgress = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      pbar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    };
+    window.addEventListener('scroll', setProgress, { passive: true });
+    setProgress();
+  }
+
+  /* Deep links into collapsed sections: open every <details> ancestor of the
+     target, and the refsection that immediately follows a target heading.
+     Re-scroll only if something actually opened (the layout above the target
+     just changed), and instantly — the CSS smooth scroll would crawl across
+     tens of thousands of pixels on the long phase pages. */
+  function openForHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) { return; }
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    var opened = false;
+    var d = el.closest('details');
+    while (d) {
+      if (!d.hasAttribute('open')) { d.setAttribute('open', ''); opened = true; }
+      d = d.parentElement && d.parentElement.closest('details');
+    }
+    var sib = el.nextElementSibling;
+    if (sib && sib.matches('details.refsection') && !sib.hasAttribute('open')) {
+      sib.setAttribute('open', '');
+      opened = true;
+    }
+    if (!opened) { return; }
+    var jump = function () {
+      var y = el.getBoundingClientRect().top + window.scrollY - 16;
+      try { window.scrollTo({ top: y, behavior: 'instant' }); }
+      catch (e) { window.scrollTo(0, y); }
+    };
+    jump();
+    /* the browser's own fragment scroll was computed against the collapsed
+       layout and may still be animating (CSS smooth) — re-assert once, which
+       cancels it */
+    setTimeout(jump, 100);
+  }
+  window.addEventListener('hashchange', openForHash);
+  openForHash();
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
+</script>
+</body>
+</html>

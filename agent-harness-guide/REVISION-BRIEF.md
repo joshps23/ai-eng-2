@@ -111,12 +111,28 @@ Score each phase 1–5 on each axis; the loop revises the lowest-scoring phase n
 
 The evaluator-reviser loop runs **at most 50 times**, then stops on its own.
 
-- Iterations used: **20 / 50** *(cap raised 10 → 20, then 20 → 50 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
+- Iterations used: **21 / 50** *(cap raised 10 → 20, then 20 → 50 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
 - Per iteration: score all phases on the rubric, pick the weakest, revise it one notch
   more incremental, increment the counter here, log it below, commit, push. Stop when the
   counter hits 50 **or** every phase scores ≥4 on every axis.
 
 ### Known issues for the loop to address (seed list)
+
+- **Markdown-side follow-ups from the cycle-18 learning-science spec** (the lesson
+  splitter is generated-side only; these need authored prose): (D1) one-line "In this
+  lesson you will…" objectives per Version/major-Step h2 (suggested: a liftable
+  blockquote convention); (D2) micro-recaps for versions ending without a closing
+  beat; (D3) checkpoints for the 13 checkpoint-less stretches the build now lists as
+  warnings (notably Phase 4's Step 3.0–3.2 bridge); (D4) Phase 0 lacks a Pitfalls h2;
+  (D5, cosmetic) Phase 4's Step-2.x h2s could nest under the Version 2 h2; (D6)
+  calibrate the words/130 + 2×checkpoint time-estimate constants after learner
+  feedback.
+
+- **(User-seeded, 2026-06-12, for the next cycle.)** Each phase of the course should
+  be spread over bite-sized pages to sustain the learner's attention. This supersedes
+  the cycle-17 designer's page-splitting rejection as a product decision — but the
+  engineering constraints stand: existing GitHub-parity deep links into the phase
+  pages must keep working, and the markdown remains the source of truth.
 
 - Content diagrams the markdown genuinely lacks (a Phase 0 handshake sequence, a
   Phase 6 pruning picture): add them to the md as `text` fences first — the site's
@@ -141,6 +157,20 @@ The evaluator-reviser loop runs **at most 50 times**, then stops on its own.
   Phase 5 gained an explicit "V1+V2 is a legitimate stopping point" paragraph.
 
 ## Revision log (newest first)
+
+- **2026-06-12 — Iteration 21: bite-sized lesson pages (cycle 18, user-seeded).** A
+  learning-science professor persona ("Prof. Okafor") turned the feedback into a
+  binding spec — segmenting principle + cognitive load + the course's own
+  one-idea-per-step doctrine → ~10-minute lessons split at Version boundaries with
+  measured word budgets, a dedicated wrap-up lesson per phase (testing effect),
+  bridges kept as advance organizers, Continue cards (goal-gradient), and the
+  dual-view anchor contract (full pages stay id-identical; lesson URLs are a reading
+  path, not an address). Implemented: 76 lesson pages + hubs with generated lesson
+  plans, four build-failing gates (anchor parity vs a pinned baseline, partition
+  completeness, link integrity, word ceiling), pixel checks (max lesson 16,615px at
+  390w vs 73,000 before). Deviations: 76 vs ≈72 lessons (three oversize sections
+  measured larger than the spec's two-fragment assumption). Markdown-side follow-ups
+  recorded as seeds D1–D6 above.
 
 - **2026-06-12 — Iteration 20: pages-too-long / too-few-visuals (cycle 17,
   user-seeded).** An information-design persona measured the problem (Phase 4:

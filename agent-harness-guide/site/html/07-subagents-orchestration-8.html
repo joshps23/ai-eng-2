@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<!-- GENERATED from 07-subagents-orchestration.md — do not edit; run site/build_site.py -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="First, why bother. A sub-agent spends almost all of its wall-clock time waiting for the network — the request is sent, and your Python process sits idle unti…">
+<link rel="canonical" href="https://joshps23.github.io/ai-eng-2/07-subagents-orchestration.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://joshps23.github.io/ai-eng-2/07-subagents-orchestration-8.html">
+<meta property="og:site_name" content="Agent Harness Guide">
+<meta property="og:title" content="Phase 7 · Lesson 8 — Threads — Agent Harness Guide">
+<meta property="og:description" content="First, why bother. A sub-agent spends almost all of its wall-clock time waiting for the network — the request is sent, and your Python process sits idle unti…">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#FDFDFE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
+<title>Phase 7 · Lesson 8 — Threads — Agent Harness Guide</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body>
+<div class="progress-bar" aria-hidden="true"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="layout">
+<details class="sidebar-wrap" open>
+<summary class="sidebar-toggle">Guide navigation</summary>
+<nav class="sidebar" aria-label="Guide pages">
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
+<p class="sidebar-heading">Start here</p>
+<ul>
+<li><a href="index.html">Guide hub</a></li>
+<li><a href="learning-path.html">Learning Path</a></li>
+<li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
+<li><a href="faq.html">Setup &amp; FAQ</a></li>
+</ul>
+<p class="sidebar-heading">Phases</p>
+<ul>
+<li><a href="00-foundations-1.html">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness-1.html">Phase 1 — Bare Harness</a></li>
+<li><a href="02-tool-system-1.html">Phase 2 — Tool System</a></li>
+<li><a href="03-conversation-and-streaming-1.html">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools-1.html">Phase 4 — Real Tools</a></li>
+<li><a href="05-permissions-and-safety-1.html">Phase 5 — Permissions &amp; Safety</a></li>
+<li><a href="06-context-management-1.html">Phase 6 — Context Management</a></li>
+<li class="current"><a href="07-subagents-orchestration-1.html" aria-current="true">Phase 7 — Sub-agents</a></li>
+<li><a href="08-production-harness-1.html">Phase 8 — Production Harness</a></li>
+</ul>
+<p class="sidebar-heading">Appendix</p>
+<ul>
+<li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
+</ul>
+<p class="sidebar-heading">Practice</p>
+<ul>
+<li><a href="exercises.html">Exercises</a></li>
+<li><a href="glossary.html">Glossary</a></li>
+<li><a href="notebooks.html">Notebooks</a></li>
+</ul>
+</nav>
+</details>
+<main id="main">
+<header class="page-header">
+<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">7</span><span class="phase-kicker">Phase 7 · Lesson 8 of 11</span><span class="lesson-time">~13 min</span><span class="lesson-cp">1 <span aria-hidden="true">▶</span> checkpoint</span></p>
+<nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations-1.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness-1.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system-1.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming-1.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools-1.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety-1.html" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management-1.html" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration-1.html" aria-current="true" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness-1.html" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
+<nav class="lesson-rail" aria-label="Lessons in this phase"><a class="lesson-tick" href="07-subagents-orchestration-1.html" title="Lesson 1: Sub-Agents &amp; Dynamic… (~11 min)" aria-label="Lesson 1: Sub-Agents &amp; Dynamic… (~11 min)">1</a><a class="lesson-tick" href="07-subagents-orchestration-2.html" title="Lesson 2: Line-by-Line (~12 min)" aria-label="Lesson 2: Line-by-Line (~12 min)">2</a><a class="lesson-tick" href="07-subagents-orchestration-3.html" title="Lesson 3: Functions (~12 min)" aria-label="Lesson 3: Functions (~12 min)">3</a><a class="lesson-tick" href="07-subagents-orchestration-4.html" title="Lesson 4: Classes · part 1 of 4 (~6 min)" aria-label="Lesson 4: Classes · part 1 of 4 (~6 min)">4</a><a class="lesson-tick" href="07-subagents-orchestration-5.html" title="Lesson 5: Classes · part 2 of 4 (~11 min)" aria-label="Lesson 5: Classes · part 2 of 4 (~11 min)">5</a><a class="lesson-tick" href="07-subagents-orchestration-6.html" title="Lesson 6: Classes · part 3 of 4 (~7 min)" aria-label="Lesson 6: Classes · part 3 of 4 (~7 min)">6</a><a class="lesson-tick" href="07-subagents-orchestration-7.html" title="Lesson 7: Classes · part 4 of 4 (~10 min)" aria-label="Lesson 7: Classes · part 4 of 4 (~10 min)">7</a><a class="lesson-tick" href="07-subagents-orchestration-8.html" aria-current="page" title="Lesson 8: Threads (~13 min)" aria-label="Lesson 8: Threads (~13 min)">8</a><a class="lesson-tick" href="07-subagents-orchestration-9.html" title="Lesson 9: Dynamic Fan-Out (~7 min)" aria-label="Lesson 9: Dynamic Fan-Out (~7 min)">9</a><a class="lesson-tick" href="07-subagents-orchestration-10.html" title="Lesson 10: 6. Design Considerations (~9 min)" aria-label="Lesson 10: 6. Design Considerations (~9 min)">10</a><a class="lesson-tick" href="07-subagents-orchestration-11.html" title="Wrap-up: Pitfalls (~5 min)" aria-label="Wrap-up: Pitfalls (~5 min)">11</a></nav>
+<nav class="ladder" aria-label="Version ladder"><a class="ladder-rung" href="07-subagents-orchestration-2.html#version-1--line-by-line-the-same-loop-pasted-twice"><span class="ladder-medallion">V1</span> Line-by-Line</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="07-subagents-orchestration-3.html#version-2--functions-the-duplication-collapses"><span class="ladder-medallion">V2</span> Functions</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="07-subagents-orchestration-4.html#version-3--classes-the-same-harness-organized"><span class="ladder-medallion">V3</span> Classes</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="07-subagents-orchestration-8.html#version-4--threads-parallel-sub-agents-optional-speed-up"><span class="ladder-medallion">V4</span> Threads</a></nav>
+<details class="page-toc">
+<summary>On this page</summary>
+<ul>
+<li class="toc-h2"><a href="#version-4--threads-parallel-sub-agents-optional-speed-up">Version 4 — Threads: Parallel Sub-Agents (Optional Speed-Up)</a>
+<ul>
+<li class="toc-h3"><a href="#what-changed-from-v3-to-v4">What changed from V3 to V4</a></li>
+<li class="toc-h3"><a href="#step-41--why-threads-and-what-a-thread-even-is">Step 4.1 — Why threads, and what a thread even is</a></li>
+</ul>
+</li>
+<li class="toc-h2"><a href="#-beginner-track-what-a-thread-is">🟢 Beginner track: what a thread is</a>
+<ul>
+<li class="toc-h3"><a href="#step-42--a-parallel-batch-runner">Step 4.2 — A parallel batch runner</a></li>
+<li class="toc-h3"><a href="#step-43--integrating-parallel-dispatch-into-toolregistry">Step 4.3 — Integrating parallel dispatch into ToolRegistry</a></li>
+<li class="toc-h3"><a href="#step-44--why-this-is-safe">Step 4.4 — Why this is safe</a></li>
+<li class="toc-h3"><a href="#step-45--making-the-parallelism-visible--timestamps">Step 4.5 — Making the parallelism visible — timestamps</a></li>
+</ul>
+</li>
+</ul>
+</details>
+</header>
+<article>
+<h2 id="version-4--threads-parallel-sub-agents-optional-speed-up">Version 4 — Threads: Parallel Sub-Agents (Optional Speed-Up)<a aria-label="Permalink to this section" class="hanchor" href="07-subagents-orchestration.html#version-4--threads-parallel-sub-agents-optional-speed-up">¶</a></h2>
+<h3 id="what-changed-from-v3-to-v4">What changed from V3 to V4<a aria-label="Permalink to this section" class="hanchor" href="07-subagents-orchestration.html#what-changed-from-v3-to-v4">¶</a></h3>
+<ul>
+<li>Nothing about a <em>single</em> sub-agent changes — same <code>Agent</code>, same presets, same
+  <code>dispatch_subagent</code>. What changes is <strong>how a batch of <code>task</code> calls is executed</strong>:
+  simultaneously instead of one after another.</li>
+<li>A <code>ThreadPoolExecutor</code> runs each <code>dispatch_subagent</code> call <strong>in its own thread</strong>;
+  <code>as_completed</code> collects results as workers finish.</li>
+<li>Results are gathered into a dict keyed by <code>call_id</code>, then emitted as the usual
+  <code>function_call_output</code> items <strong>in the original order</strong> — the API contract is untouched;
+  the model can't even tell the workers ran in parallel.</li>
+<li>A crashed worker becomes an <code>[error] ...</code> string for <em>its</em> <code>call_id</code>; siblings keep
+  running (failure isolation).</li>
+<li>A cap, <code>MAX_CONCURRENT_SUBAGENTS</code>, bounds the pool so a fan-out of 50 doesn't fire 50
+  simultaneous agents.</li>
+</ul>
+<blockquote>
+<p><strong>Why now?</strong> Everything so far works serially — sub-agents run one at a time. If the orchestrator issues multiple <code>task</code> calls in a single response, Phase 2's <code>dispatch_parallel</code> already runs them concurrently via <code>ThreadPoolExecutor</code>. This version makes that visible, adds per-worker timing, and explains when it helps. <strong>You can skip this version</strong> and everything still works; you just wait longer.</p>
+</blockquote>
+<h3 id="step-41--why-threads-and-what-a-thread-even-is">Step 4.1 — Why threads, and what a thread even is<a aria-label="Permalink to this section" class="hanchor" href="07-subagents-orchestration.html#step-41--why-threads-and-what-a-thread-even-is">¶</a></h3>
+<p>First, why bother. A sub-agent spends almost all of its wall-clock time <strong>waiting for the
+network</strong> — the request is sent, and your Python process sits idle until OpenAI's servers
+respond. If three workers each take four seconds and you run them one after another,
+you wait twelve seconds while your CPU does essentially nothing. Running them <em>at the
+same time</em> means you wait only as long as the slowest one: four seconds.</p>
+<blockquote class="beginner">
+<h2 id="-beginner-track-what-a-thread-is">🟢 Beginner track: what a thread is<a aria-label="Permalink to this section" class="hanchor" href="07-subagents-orchestration.html#-beginner-track-what-a-thread-is">¶</a></h2>
+<p>A <strong>thread</strong> is a second line of execution inside your one Python program. Your script
+normally runs one statement at a time, top to bottom — that's the <em>main thread</em>. When
+you create more threads, the operating system interleaves them: while thread A is
+blocked waiting on a network reply, thread B gets to run. For I/O-heavy work like LLM
+calls, this overlap is nearly free speed.</p>
+<p>You rarely manage threads by hand. The standard library's
+<a href="09-library-reference.html#3-concurrentfutures--running-tools-in-parallel"><code>concurrent.futures</code></a>
+module (its <code>ThreadPoolExecutor</code>, documented in depth in the Appendix) does it for you:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThreadPoolExecutor</span><span class="p">,</span> <span class="n">as_completed</span>
+
+<span class="k">with</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+    <span class="n">futures</span> <span class="o">=</span> <span class="p">[</span><span class="n">pool</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">some_function</span><span class="p">,</span> <span class="n">arg</span><span class="p">)</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">as_completed</span><span class="p">(</span><span class="n">futures</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">())</span>     <span class="c1"># results arrive as each thread finishes</span>
+</code></pre></div>
+<ul>
+<li><code>pool.submit(fn, x)</code> says "run <code>fn(x)</code> on a spare thread" and immediately returns a
+  <strong>future</strong> — a receipt you can later redeem for the result.</li>
+<li><code>as_completed(futures)</code> yields each future <em>as its thread finishes</em> — fastest first,
+  not submission order.</li>
+<li><code>future.result()</code> gives you the return value (or re-raises the exception the thread
+  hit — which is why the code below wraps it in <code>try/except</code>).</li>
+</ul>
+<p>Two rules keep threaded code safe here: <strong>threads must not share mutable state</strong> (each
+sub-agent owns its own transcript, so they don't), and <strong>every <code>call_id</code> must still get
+exactly one string answer</strong> — whichever thread finishes first, results are stored in a
+dict keyed by <code>call_id</code> and appended to the transcript in the original order. Parallelism
+changes <em>when</em> the work happens, never <em>what</em> the model sees.</p>
+</blockquote>
+<p>One more reassurance before the code: a plain <code>for</code> loop over the same <code>task</code> calls gives
+<strong>identical results</strong> — threads only change the wall-clock time. If threading ever
+confuses you, fall back to sequential dispatch and nothing breaks.</p>
+<h3 id="step-42--a-parallel-batch-runner">Step 4.2 — A parallel batch runner<a aria-label="Permalink to this section" class="hanchor" href="07-subagents-orchestration.html#step-42--a-parallel-batch-runner">¶</a></h3>
+<p>When the orchestrator emits <strong>multiple <code>task</code> tool calls in a single response</strong>, Phase 2's <code>dispatch_parallel</code> runs them concurrently via <code>ThreadPoolExecutor</code>. Each sub-agent makes its own independent OpenAI HTTP calls and maintains its own transcript, so there is zero interference between workers.</p>
+<p>The mechanism is already built. This section shows it explicitly and adds a small wrapper that makes the concurrency visible and handles per-worker failure isolation.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># subagents.py (continued)</span>
+
+<span class="n">MAX_CONCURRENT_SUBAGENTS</span> <span class="o">=</span> <span class="mi">8</span>   <span class="c1"># cap the thread pool for sub-agent work</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">run_subagents_parallel</span><span class="p">(</span>
+    <span class="n">tasks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span>   <span class="c1"># list of {&quot;role&quot;: ..., &quot;description&quot;: ..., &quot;prompt&quot;: ..., &quot;call_id&quot;: ...}</span>
+    <span class="n">parent_registry</span><span class="p">:</span> <span class="n">ToolRegistry</span><span class="p">,</span>
+    <span class="n">client</span><span class="p">:</span> <span class="n">OpenAI</span><span class="p">,</span>
+    <span class="n">parent_depth</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Run a batch of sub-agent tasks concurrently.</span>
+
+<span class="sd">    Returns a list of ``function_call_output`` dicts ready for appending</span>
+<span class="sd">    to the parent&#39;s transcript, in the SAME ORDER as the input list.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">results</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>   <span class="c1"># call_id -&gt; result string</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tasks</span><span class="p">)</span>
+    <span class="n">workers</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">MAX_CONCURRENT_SUBAGENTS</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">  [orchestrator] running </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> sub-agent(s) in parallel &quot;</span>
+          <span class="sa">f</span><span class="s2">&quot;(max_workers=</span><span class="si">{</span><span class="n">workers</span><span class="si">}</span><span class="s2">) …&quot;</span><span class="p">)</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+
+    <span class="k">with</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="n">workers</span><span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+        <span class="n">future_to_id</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">pool</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
+                <span class="n">dispatch_subagent</span><span class="p">,</span>
+                <span class="n">role</span><span class="o">=</span><span class="n">t</span><span class="p">[</span><span class="s2">&quot;role&quot;</span><span class="p">],</span>
+                <span class="n">task</span><span class="o">=</span><span class="n">t</span><span class="p">[</span><span class="s2">&quot;prompt&quot;</span><span class="p">],</span>
+                <span class="n">parent_registry</span><span class="o">=</span><span class="n">parent_registry</span><span class="p">,</span>
+                <span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span>
+                <span class="n">depth</span><span class="o">=</span><span class="n">parent_depth</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="p">):</span> <span class="n">t</span><span class="p">[</span><span class="s2">&quot;call_id&quot;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tasks</span>
+        <span class="p">}</span>
+
+        <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">as_completed</span><span class="p">(</span><span class="n">future_to_id</span><span class="p">):</span>
+            <span class="n">call_id</span> <span class="o">=</span> <span class="n">future_to_id</span><span class="p">[</span><span class="n">future</span><span class="p">]</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">results</span><span class="p">[</span><span class="n">call_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>  <span class="c1"># noqa: BLE001</span>
+                <span class="c1"># One worker failing must not cancel siblings.</span>
+                <span class="n">results</span><span class="p">[</span><span class="n">call_id</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;[error] Worker crashed unexpectedly: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  [orchestrator] all sub-agents done in </span><span class="si">{</span><span class="n">elapsed</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Return outputs in the original order (preserves call_id alignment)</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function_call_output&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;call_id&quot;</span><span class="p">:</span> <span class="n">t</span><span class="p">[</span><span class="s2">&quot;call_id&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="n">results</span><span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="s2">&quot;call_id&quot;</span><span class="p">]],</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tasks</span>
+    <span class="p">]</span>
+</code></pre></div>
+<h3 id="step-43--integrating-parallel-dispatch-into-toolregistry">Step 4.3 — Integrating parallel dispatch into <code>ToolRegistry</code><a aria-label="Permalink to this section" class="hanchor" href="07-subagents-orchestration.html#step-43--integrating-parallel-dispatch-into-toolregistry">¶</a></h3>
+<p>Phase 2's <code>ToolRegistry.dispatch_parallel</code> already uses <code>ThreadPoolExecutor</code>. The only addition needed is separating <code>task</code> tool calls from regular tool calls so that <code>run_subagents_parallel</code> handles the former.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># In the agent loop — augmented dispatch step</span>
+<span class="c1"># (inside Agent.run, replacing the existing dispatch_parallel call)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_dispatch_step</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">tool_calls</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+    <span class="n">sub_registry_context</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Dispatch a mixed batch of tool calls:</span>
+<span class="sd">    - ``task`` calls go to ``run_subagents_parallel``</span>
+<span class="sd">    - everything else goes to ``self.registry.dispatch_parallel``</span>
+
+<span class="sd">    ``sub_registry_context`` carries the parent_registry and depth</span>
+<span class="sd">    needed to launch sub-agents; None means sub-agent spawning is</span>
+<span class="sd">    not available for this agent (leaf worker).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">task_calls</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">regular_calls</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">tc</span> <span class="ow">in</span> <span class="n">tool_calls</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">tc</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;task&quot;</span> <span class="ow">and</span> <span class="n">sub_registry_context</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">tc</span><span class="o">.</span><span class="n">arguments</span><span class="p">)</span>
+            <span class="n">task_calls</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;role&quot;</span><span class="p">,</span> <span class="s2">&quot;generic&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;prompt&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;call_id&quot;</span><span class="p">:</span> <span class="n">tc</span><span class="o">.</span><span class="n">call_id</span><span class="p">,</span>
+            <span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">regular_calls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tc</span><span class="p">)</span>
+
+    <span class="n">outputs</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="n">regular_calls</span><span class="p">:</span>
+        <span class="n">outputs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">registry</span><span class="o">.</span><span class="n">dispatch_parallel</span><span class="p">(</span><span class="n">regular_calls</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">task_calls</span> <span class="ow">and</span> <span class="n">sub_registry_context</span><span class="p">:</span>
+        <span class="n">outputs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+            <span class="n">run_subagents_parallel</span><span class="p">(</span>
+                <span class="n">task_calls</span><span class="p">,</span>
+                <span class="n">parent_registry</span><span class="o">=</span><span class="n">sub_registry_context</span><span class="p">[</span><span class="s2">&quot;registry&quot;</span><span class="p">],</span>
+                <span class="n">client</span><span class="o">=</span><span class="n">sub_registry_context</span><span class="p">[</span><span class="s2">&quot;client&quot;</span><span class="p">],</span>
+                <span class="n">parent_depth</span><span class="o">=</span><span class="n">sub_registry_context</span><span class="p">[</span><span class="s2">&quot;depth&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">outputs</span>
+</code></pre></div>
+<h3 id="step-44--why-this-is-safe">Step 4.4 — Why this is safe<a aria-label="Permalink to this section" class="hanchor" href="07-subagents-orchestration.html#step-44--why-this-is-safe">¶</a></h3>
+<p>Each sub-agent is an independent Python object in its own thread. There is no shared mutable state between workers because:</p>
+<ul>
+<li>Each <code>Agent</code> instance owns its own <code>_conversation</code> list.</li>
+<li>The <code>OpenAI</code> client is thread-safe for concurrent reads (HTTP/2 multiplexing or connection-per-thread depending on <code>httpx</code> version).</li>
+<li>Tool results are accumulated in a local <code>dict</code> keyed by <code>call_id</code> and only merged back into the parent after all futures complete.</li>
+<li>A worker crash is caught by the <code>except</code> in <code>as_completed</code> and becomes an error string, not a propagated exception.</li>
+</ul>
+<p>The pattern is identical to Phase 2's parallel tool execution. The only difference is that each "tool" is itself an LLM call — potentially spawning further tool calls internally.</p>
+<h3 id="step-45--making-the-parallelism-visible--timestamps">Step 4.5 — Making the parallelism visible — timestamps<a aria-label="Permalink to this section" class="hanchor" href="07-subagents-orchestration.html#step-45--making-the-parallelism-visible--timestamps">¶</a></h3>
+<p>Add a thin wrapper around <code>dispatch_subagent</code> for debugging:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">timed_dispatch</span><span class="p">(</span><span class="n">role</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">description</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run a sub-agent and time it. Returns (elapsed_seconds, result).&quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    [task] spawning </span><span class="si">{</span><span class="n">role</span><span class="si">!r}</span><span class="s2">: </span><span class="si">{</span><span class="n">description</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">dispatch_subagent</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="n">role</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+    <span class="k">return</span> <span class="n">elapsed</span><span class="p">,</span> <span class="n">result</span>
+
+
+<span class="c1"># In run_subagents_parallel, replace the submit call:</span>
+<span class="n">future_to_meta</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">pool</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
+        <span class="n">timed_dispatch</span><span class="p">,</span>
+        <span class="n">role</span><span class="o">=</span><span class="n">t</span><span class="p">[</span><span class="s2">&quot;role&quot;</span><span class="p">],</span>
+        <span class="n">description</span><span class="o">=</span><span class="n">t</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">],</span>
+        <span class="n">task</span><span class="o">=</span><span class="n">t</span><span class="p">[</span><span class="s2">&quot;prompt&quot;</span><span class="p">],</span>
+        <span class="n">parent_registry</span><span class="o">=</span><span class="n">parent_registry</span><span class="p">,</span>
+        <span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span>
+        <span class="n">depth</span><span class="o">=</span><span class="n">parent_depth</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">):</span> <span class="n">t</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tasks</span>
+<span class="p">}</span>
+
+<span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">as_completed</span><span class="p">(</span><span class="n">future_to_meta</span><span class="p">):</span>
+    <span class="n">meta</span> <span class="o">=</span> <span class="n">future_to_meta</span><span class="p">[</span><span class="n">future</span><span class="p">]</span>
+    <span class="n">elapsed</span><span class="p">,</span> <span class="n">result</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    [done] </span><span class="si">{</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;role&#39;</span><span class="p">]</span><span class="si">!r}</span><span class="s2"> finished in </span><span class="si">{</span><span class="n">elapsed</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+    <span class="n">results</span><span class="p">[</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;call_id&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">result</span>
+</code></pre></div>
+<p>Sample output — <strong>what <code>run_subagents_parallel</code> itself prints</strong> when you call it with a
+three-task batch (directly, or wired into the dispatch step as in Step 4.3). Note that
+the worked example in §5 takes a different route — the <code>task</code> <em>tool</em> via Phase 2's
+<code>dispatch_parallel</code> — so it produces the per-task lines only (see §5.2):
+<div class="highlight nocopy"><pre><span></span><code>  [orchestrator] running 3 sub-agent(s) in parallel (max_workers=3) …
+    [task] spawning &#39;researcher&#39;: summarise architecture
+    [task] spawning &#39;analyst&#39;: TODO inventory
+    [task] spawning &#39;reviewer&#39;: security concerns
+    [done] &#39;analyst&#39; finished in 4.1s
+    [done] &#39;reviewer&#39; finished in 5.8s
+    [done] &#39;researcher&#39; finished in 6.2s
+  [orchestrator] all sub-agents done in 6.2s
+</code></pre></div></p>
+<p>The wall time equals the slowest worker (researcher at 6.2 s), not their sum (16.1 s).</p>
+<h3 id="-run-it-now-7">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="07-subagents-orchestration.html#-run-it-now-7">¶</a></h3>
+<p>Version 4's complete runnable program is the worked example in §5 below
+(<code>example_orchestrator.py</code>), driven by the full <code>subagents.py</code> listing in §7 — together
+with <code>agent.py</code> from Step 3.1 (and your Phase 2 <code>tools/</code> package carrying the Step 3.0
+bridge methods), those three files are the whole Version 4 harness. Save
+them side by side, point <code>REPO_PATH</code> at a real repository, and run:</p>
+<div class="highlight nocopy"><pre><span></span><code>python example_orchestrator.py
+</code></pre></div>
+</article>
+<footer class="page-footer">
+<nav class="continue" aria-label="Continue">
+<a class="continue-card" href="07-subagents-orchestration-9.html" rel="next">
+<span class="continue-kicker">Next · Lesson 9 of 11</span>
+<span class="continue-title">Dynamic Fan-Out<span class="continue-time">~7 min</span><span class="continue-arrow" aria-hidden="true">→</span></span>
+</a>
+<p class="continue-aux">
+<a href="07-subagents-orchestration-7.html" rel="prev">← Lesson 7 · Classes · part 4 of 4</a>
+<a class="continue-fullpage" href="07-subagents-orchestration.html#version-4--threads-parallel-sub-agents-optional-speed-up">View this lesson on the single page</a>
+</p>
+</nav>
+<p class="generated-note">Generated from <code>07-subagents-orchestration.md</code> — lesson 8 of 11 in the derived lesson view (boundaries may move when the markdown changes; the <a href="07-subagents-orchestration.html">single page</a> is the permanent address).</p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/07-subagents-orchestration.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
+</footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
+</main>
+</div>
+<script>
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards.
+     diagram-text mirrors are excluded — print hides them entirely (the SVG
+     figure already prints; opening the ASCII would print the diagram twice). */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not(.diagram-text):not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
+  });
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
+
+  /* Reading progress: the fixed 3px accent bar tracks scroll position.
+     Without JS the element simply stays at width 0 — invisible, harmless. */
+  var pbar = document.querySelector('.progress-bar');
+  if (pbar) {
+    var setProgress = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      pbar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    };
+    window.addEventListener('scroll', setProgress, { passive: true });
+    setProgress();
+  }
+
+  /* Deep links into collapsed sections: open every <details> ancestor of the
+     target, and the refsection that immediately follows a target heading.
+     Re-scroll only if something actually opened (the layout above the target
+     just changed), and instantly — the CSS smooth scroll would crawl across
+     tens of thousands of pixels on the long phase pages. */
+  function openForHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) { return; }
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    var opened = false;
+    var d = el.closest('details');
+    while (d) {
+      if (!d.hasAttribute('open')) { d.setAttribute('open', ''); opened = true; }
+      d = d.parentElement && d.parentElement.closest('details');
+    }
+    var sib = el.nextElementSibling;
+    if (sib && sib.matches('details.refsection') && !sib.hasAttribute('open')) {
+      sib.setAttribute('open', '');
+      opened = true;
+    }
+    if (!opened) { return; }
+    var jump = function () {
+      var y = el.getBoundingClientRect().top + window.scrollY - 16;
+      try { window.scrollTo({ top: y, behavior: 'instant' }); }
+      catch (e) { window.scrollTo(0, y); }
+    };
+    jump();
+    /* the browser's own fragment scroll was computed against the collapsed
+       layout and may still be animating (CSS smooth) — re-assert once, which
+       cancels it */
+    setTimeout(jump, 100);
+  }
+  window.addEventListener('hashchange', openForHash);
+  openForHash();
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
+</script>
+</body>
+</html>

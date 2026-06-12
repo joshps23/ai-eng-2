@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<!-- GENERATED from 06-context-management.md — do not edit; run site/build_site.py -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Nothing conceptually new at this rung — it&#x27;s Version 2&#x27;s functions, organized: moved into a module, hardened with exact counting, named constants, clipping,…">
+<link rel="canonical" href="https://joshps23.github.io/ai-eng-2/06-context-management.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://joshps23.github.io/ai-eng-2/06-context-management-4.html">
+<meta property="og:site_name" content="Agent Harness Guide">
+<meta property="og:title" content="Phase 6 · Lesson 4 — the organized form · part 1 of 2 — Agent Harness Guide">
+<meta property="og:description" content="Nothing conceptually new at this rung — it&#x27;s Version 2&#x27;s functions, organized: moved into a module, hardened with exact counting, named constants, clipping,…">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#FDFDFE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
+<title>Phase 6 · Lesson 4 — the organized form · part 1 of 2 — Agent Harness Guide</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body>
+<div class="progress-bar" aria-hidden="true"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="layout">
+<details class="sidebar-wrap" open>
+<summary class="sidebar-toggle">Guide navigation</summary>
+<nav class="sidebar" aria-label="Guide pages">
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
+<p class="sidebar-heading">Start here</p>
+<ul>
+<li><a href="index.html">Guide hub</a></li>
+<li><a href="learning-path.html">Learning Path</a></li>
+<li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
+<li><a href="faq.html">Setup &amp; FAQ</a></li>
+</ul>
+<p class="sidebar-heading">Phases</p>
+<ul>
+<li><a href="00-foundations-1.html">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness-1.html">Phase 1 — Bare Harness</a></li>
+<li><a href="02-tool-system-1.html">Phase 2 — Tool System</a></li>
+<li><a href="03-conversation-and-streaming-1.html">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools-1.html">Phase 4 — Real Tools</a></li>
+<li><a href="05-permissions-and-safety-1.html">Phase 5 — Permissions &amp; Safety</a></li>
+<li class="current"><a href="06-context-management-1.html" aria-current="true">Phase 6 — Context Management</a></li>
+<li><a href="07-subagents-orchestration-1.html">Phase 7 — Sub-agents</a></li>
+<li><a href="08-production-harness-1.html">Phase 8 — Production Harness</a></li>
+</ul>
+<p class="sidebar-heading">Appendix</p>
+<ul>
+<li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
+</ul>
+<p class="sidebar-heading">Practice</p>
+<ul>
+<li><a href="exercises.html">Exercises</a></li>
+<li><a href="glossary.html">Glossary</a></li>
+<li><a href="notebooks.html">Notebooks</a></li>
+</ul>
+</nav>
+</details>
+<main id="main">
+<header class="page-header">
+<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">6</span><span class="phase-kicker">Phase 6 · Lesson 4 of 8</span><span class="lesson-time">~12 min</span><span class="lesson-cp">1 <span aria-hidden="true">▶</span> checkpoint</span></p>
+<nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations-1.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness-1.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system-1.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming-1.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools-1.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety-1.html" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management-1.html" aria-current="true" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration-1.html" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness-1.html" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
+<nav class="lesson-rail" aria-label="Lessons in this phase"><a class="lesson-tick" href="06-context-management-1.html" title="Lesson 1: Context Management (~8 min)" aria-label="Lesson 1: Context Management (~8 min)">1</a><a class="lesson-tick" href="06-context-management-2.html" title="Lesson 2: line-by-line (~16 min)" aria-label="Lesson 2: line-by-line (~16 min)">2</a><a class="lesson-tick" href="06-context-management-3.html" title="Lesson 3: functions (~17 min)" aria-label="Lesson 3: functions (~17 min)">3</a><a class="lesson-tick" href="06-context-management-4.html" aria-current="page" title="Lesson 4: the organized form · part 1 of 2 (~12 min)" aria-label="Lesson 4: the organized form · part 1 of 2 (~12 min)">4</a><a class="lesson-tick" href="06-context-management-5.html" title="Lesson 5: the organized form · part 2 of 2 (~13 min)" aria-label="Lesson 5: the organized form · part 2 of 2 (~13 min)">5</a><a class="lesson-tick" href="06-context-management-6.html" title="Lesson 6: compact (~14 min)" aria-label="Lesson 6: compact (~14 min)">6</a><a class="lesson-tick" href="06-context-management-7.html" title="Lesson 7: Beyond the ladder (~8 min)" aria-label="Lesson 7: Beyond the ladder (~8 min)">7</a><a class="lesson-tick" href="06-context-management-8.html" title="Wrap-up: Pitfalls (~5 min)" aria-label="Wrap-up: Pitfalls (~5 min)">8</a></nav>
+<nav class="ladder" aria-label="Version ladder"><a class="ladder-rung" href="06-context-management-2.html#version-1--line-by-line-watch-the-window-fill-up"><span class="ladder-medallion">V1</span> line-by-line</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="06-context-management-3.html#version-2--functions-count_tokens-and-prune_to_budget"><span class="ladder-medallion">V2</span> functions</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="06-context-management-4.html#version-3--the-organized-form-a-contextpy-module-the-loop-consults"><span class="ladder-medallion">V3</span> the organized form</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="06-context-management-6.html#version-4--compact-spend-one-api-call-to-buy-back-context"><span class="ladder-medallion">V4</span> compact</a></nav>
+<details class="page-toc">
+<summary>On this page</summary>
+<ul>
+<li class="toc-h2"><a href="#version-3--the-organized-form-a-contextpy-module-the-loop-consults">Version 3 — the organized form: a context.py module the loop consults</a>
+<ul>
+<li class="toc-h3"><a href="#what-changed-from-v2-to-v3">What changed from V2 to V3</a></li>
+<li class="toc-h3"><a href="#step-31--counting-tokens-exactly-tiktoken-with-a-tiered-fallback">Step 3.1 — Counting Tokens exactly: tiktoken with a tiered fallback</a></li>
+<li class="toc-h3"><a href="#step-32--count_items--serialise-the-transcript">Step 3.2 — count_items — serialise the transcript</a></li>
+<li class="toc-h3"><a href="#step-33--ground-truth-from-respusage-and-running-totals">Step 3.3 — Ground truth from resp.usage and running totals</a></li>
+<li class="toc-h3"><a href="#step-34--budget-constants">Step 3.4 — Budget constants</a></li>
+<li class="toc-h3"><a href="#step-35--tactic-a-clip-tool-output-at-the-source">Step 3.5 — Tactic A: Clip Tool Output at the Source</a></li>
+</ul>
+</li>
+</ul>
+</details>
+</header>
+<article>
+<h2 id="version-3--the-organized-form-a-contextpy-module-the-loop-consults">Version 3 — the organized form: a <code>context.py</code> module the loop consults<a aria-label="Permalink to this section" class="hanchor" href="06-context-management.html#version-3--the-organized-form-a-contextpy-module-the-loop-consults">¶</a></h2>
+<h3 id="what-changed-from-v2-to-v3">What changed from V2 to V3<a aria-label="Permalink to this section" class="hanchor" href="06-context-management.html#what-changed-from-v2-to-v3">¶</a></h3>
+<ul>
+<li>The functions move out of the harness file into their own <strong><code>context.py</code> module</strong>;
+  the loop just imports and consults it before every API call — the same shape the
+  <code>agent_harness</code> package uses.</li>
+<li><code>count_tokens</code> is upgraded from <code>// 4</code> to <strong><code>tiktoken</code></strong> (exact, with a graceful
+  fallback to the heuristic when offline).</li>
+<li>Magic numbers become named <strong>budget constants</strong> derived from the model's real window
+  (<code>MAX_CONTEXT_TOKENS</code>, <code>RESPONSE_RESERVE</code>, <code>INPUT_BUDGET</code>, <code>COMPACT_TRIGGER</code>).</li>
+<li>A new tactic, <strong><code>clip_output</code></strong>, bounds each tool result <em>before</em> it ever enters the
+  transcript — the cheapest token is the one you never store.</li>
+<li><code>prune_to_budget</code> gains a <strong>recency window</strong> (<code>keep_last_n</code>) so the freshest items —
+  including the tool round-trip in flight — are never shed.</li>
+<li>After each call, <code>resp.usage</code> provides <strong>ground-truth token counts</strong> to check the
+  estimate against.</li>
+</ul>
+<p>Nothing conceptually new at this rung — it's Version 2's functions, <em>organized</em>: moved
+into a module, hardened with exact counting, named constants, clipping, and a recency
+window. This is the shape the production package uses (<code>agent_harness/context.py</code>),
+where the <code>Agent</code> consults the context helpers at the top of every turn.</p>
+<h3 id="step-31--counting-tokens-exactly-tiktoken-with-a-tiered-fallback">Step 3.1 — Counting Tokens exactly: <code>tiktoken</code> with a tiered fallback<a aria-label="Permalink to this section" class="hanchor" href="06-context-management.html#step-31--counting-tokens-exactly-tiktoken-with-a-tiered-fallback">¶</a></h3>
+<p>The API returns ground-truth token counts in <code>resp.usage</code> after each call, but we also need <em>local</em> estimates to decide whether to compact <em>before</em> the next API call.</p>
+<p>First, install tiktoken — this step is <strong>optional</strong>: as the next paragraph explains, the
+code below falls back to the divide-by-4 heuristic whenever tiktoken is missing or you
+are offline, so you can skip the install and keep going:</p>
+<div class="highlight nocopy"><pre><span></span><code>pip install tiktoken
+</code></pre></div>
+<p><code>tiktoken</code> implements the same byte-pair encoding the OpenAI models use, so its counts match the API exactly (within rounding). (Its full API — the encodings, the lazy vocabulary download, the robust fallback pattern — is documented in the <a href="09-library-reference.html#2-tiktoken--local-token-counting">Appendix's tokenizer section</a>.)</p>
+<p><strong>Why now?</strong> Versions 1 and 2 used <code>len(text) // 4</code>. That's good enough for experimentation, but
+for a real harness you want exact counts so you don't compact too late. This function
+uses <code>tiktoken</code> when installed, and falls back to the divide-by-4 heuristic otherwise —
+so the code works offline or without the extra dependency.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># context.py  (start of file)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Token counting — tiktoken if available, else heuristic (4 chars ≈ 1 token)</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_heuristic</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="c1"># Dependency-free fallback: empirically ~4 characters per token across</span>
+    <span class="c1"># English prose and code.  Overestimates slightly, which is the safe</span>
+    <span class="c1"># direction (we compact a little earlier than strictly necessary).</span>
+    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">//</span> <span class="mi">4</span><span class="p">)</span>
+
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">tiktoken</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_encoding</span><span class="p">():</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return an encoding for current-generation OpenAI models, or None.</span>
+
+<span class="sd">        IMPORTANT: the FIRST time an encoding is used, tiktoken downloads the</span>
+<span class="sd">        vocabulary file over the network. encoding_for_model can raise KeyError</span>
+<span class="sd">        for an unknown model name, but the download can raise *other* errors</span>
+<span class="sd">        (e.g. requests.ConnectionError/HTTPError) when offline. We catch</span>
+<span class="sd">        broadly and return None so we fall back to the heuristic instead of</span>
+<span class="sd">        crashing the whole import.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">enc</span> <span class="o">=</span> <span class="n">tiktoken</span><span class="o">.</span><span class="n">encoding_for_model</span><span class="p">(</span><span class="s2">&quot;gpt-4o&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="n">enc</span> <span class="o">=</span> <span class="n">tiktoken</span><span class="o">.</span><span class="n">get_encoding</span><span class="p">(</span><span class="s2">&quot;o200k_base&quot;</span><span class="p">)</span>
+            <span class="n">enc</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;warmup&quot;</span><span class="p">)</span>  <span class="c1"># force the lazy download to happen here</span>
+            <span class="k">return</span> <span class="n">enc</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">_ENC</span> <span class="o">=</span> <span class="n">_get_encoding</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">count_tokens</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the BPE token count, or the heuristic if tiktoken is unusable.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">_ENC</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_heuristic</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">_ENC</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">text</span><span class="p">))</span>
+
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">count_tokens</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>  <span class="c1"># type: ignore[misc]</span>
+        <span class="k">return</span> <span class="n">_heuristic</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+</code></pre></div>
+<blockquote class="beginner">
+<p>🟢 The comment <code># type: ignore[misc]</code> is for <strong>type checkers only</strong> — Python itself
+ignores it. It silences the checker's complaint that <code>count_tokens</code> is defined twice
+(once in the <code>try</code>, once in the <code>except</code>); at runtime exactly one of the two
+definitions exists, which is the whole point of the fallback.</p>
+</blockquote>
+<h3 id="step-32--count_items--serialise-the-transcript">Step 3.2 — <code>count_items</code> — serialise the transcript<a aria-label="Permalink to this section" class="hanchor" href="06-context-management.html#step-32--count_items--serialise-the-transcript">¶</a></h3>
+<p>The transcript is a list of dicts. We serialize each item to a compact JSON string, count its tokens, and sum.</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">_item_to_text</span><span class="p">(</span><span class="n">item</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Produce a text representation of one transcript item for token counting.&quot;&quot;&quot;</span>
+    <span class="n">item_type</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">item_type</span> <span class="o">==</span> <span class="s2">&quot;message&quot;</span><span class="p">:</span>
+        <span class="c1"># {&quot;type&quot;: &quot;message&quot;, &quot;role&quot;: &quot;user&quot;|&quot;assistant&quot;, &quot;content&quot;: ...}</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;content&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="c1"># Content may be a list of content blocks</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;text&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">block</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">block</span><span class="p">))</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;role&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">content</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">if</span> <span class="n">item_type</span> <span class="o">==</span> <span class="s2">&quot;function_call&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;function_call </span><span class="si">{</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;arguments&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">if</span> <span class="n">item_type</span> <span class="o">==</span> <span class="s2">&quot;function_call_output&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;function_call_output </span><span class="si">{</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;call_id&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;output&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">if</span> <span class="n">item_type</span> <span class="o">==</span> <span class="s2">&quot;reasoning&quot;</span><span class="p">:</span>
+        <span class="c1"># Reasoning items may have a list of summary objects or a text field</span>
+        <span class="n">summary</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;summary&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">summary</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;text&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">summary</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="nb">dict</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
+
+    <span class="c1"># Fallback: dump the whole thing</span>
+    <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">count_items</span><span class="p">(</span><span class="n">items</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimate the token count of a list of transcript items.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">count_tokens</span><span class="p">(</span><span class="n">_item_to_text</span><span class="p">(</span><span class="n">item</span><span class="p">))</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="step-33--ground-truth-from-respusage-and-running-totals">Step 3.3 — Ground truth from <code>resp.usage</code> and running totals<a aria-label="Permalink to this section" class="hanchor" href="06-context-management.html#step-33--ground-truth-from-respusage-and-running-totals">¶</a></h3>
+<p>After every API call, reconcile the estimate with reality and update a running total.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># In your agent loop (agent.py):</span>
+
+<span class="n">total_input_tokens</span>  <span class="o">=</span> <span class="mi">0</span>
+<span class="n">total_output_tokens</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="c1"># ... inside the loop, after client.responses.create() returns:</span>
+<span class="n">total_input_tokens</span>  <span class="o">+=</span> <span class="n">resp</span><span class="o">.</span><span class="n">usage</span><span class="o">.</span><span class="n">input_tokens</span>
+<span class="n">total_output_tokens</span> <span class="o">+=</span> <span class="n">resp</span><span class="o">.</span><span class="n">usage</span><span class="o">.</span><span class="n">output_tokens</span>
+
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;[tokens] this turn: </span><span class="si">{</span><span class="n">resp</span><span class="o">.</span><span class="n">usage</span><span class="o">.</span><span class="n">input_tokens</span><span class="si">}</span><span class="s2"> in / &quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">resp</span><span class="o">.</span><span class="n">usage</span><span class="o">.</span><span class="n">output_tokens</span><span class="si">}</span><span class="s2"> out | &quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;session total: </span><span class="si">{</span><span class="n">total_input_tokens</span><span class="si">}</span><span class="s2"> in / </span><span class="si">{</span><span class="n">total_output_tokens</span><span class="si">}</span><span class="s2"> out&quot;</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>The per-call <code>input_tokens</code> count IS the true size of the full input the API processed (including system instructions, tools schema, all transcript items). Use it, not a cumulative sum across turns, for the most accurate picture of context pressure.</p>
+<h3 id="step-34--budget-constants">Step 3.4 — Budget constants<a aria-label="Permalink to this section" class="hanchor" href="06-context-management.html#step-34--budget-constants">¶</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># context.py — budget constants (tune per deployment)</span>
+
+<span class="c1"># Hard model limit — set to your actual model&#39;s context window.</span>
+<span class="n">MAX_CONTEXT_TOKENS</span> <span class="o">=</span> <span class="mi">128_000</span>
+
+<span class="c1"># Reserve this many tokens for the model&#39;s next *output* so we never</span>
+<span class="c1"># overflow even if the response is verbose.</span>
+<span class="n">RESPONSE_RESERVE</span> <span class="o">=</span> <span class="mi">4_096</span>
+
+<span class="c1"># Usable input budget = max window − response reserve.</span>
+<span class="n">INPUT_BUDGET</span> <span class="o">=</span> <span class="n">MAX_CONTEXT_TOKENS</span> <span class="o">-</span> <span class="n">RESPONSE_RESERVE</span>  <span class="c1"># 123 904</span>
+
+<span class="c1"># Compact when input usage exceeds this fraction of the input budget.</span>
+<span class="c1"># 0.75 gives a comfortable cushion for the compaction call itself.</span>
+<span class="n">COMPACT_THRESHOLD</span> <span class="o">=</span> <span class="mf">0.75</span>
+<span class="n">COMPACT_TRIGGER</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">INPUT_BUDGET</span> <span class="o">*</span> <span class="n">COMPACT_THRESHOLD</span><span class="p">)</span>  <span class="c1"># ~92 928</span>
+</code></pre></div>
+<p>The strategies below are ordered from simplest to most powerful. Use them in layers: apply an earlier strategy before reaching for the next.</p>
+<h3 id="step-35--tactic-a-clip-tool-output-at-the-source">Step 3.5 — Tactic A: Clip Tool Output at the Source<a aria-label="Permalink to this section" class="hanchor" href="06-context-management.html#step-35--tactic-a-clip-tool-output-at-the-source">¶</a></h3>
+<p><strong>Why now?</strong> The cheapest token to save is the one that never enters the transcript.
+Before you think about compacting history, ensure each individual tool result is
+bounded. A <code>pytest --verbose</code> run can easily return 10 000+ characters; if you clip it
+to 2 000 tokens at the point of collection, your transcript stays lean from the start.</p>
+<p>Already covered in Phase 4, but the rule of thumb: <strong>clip tool output to the first N tokens before appending it as a <code>function_call_output</code> item.</strong> If the agent needs more it can call the tool again with a narrower query.</p>
+<div class="highlight"><pre><span></span><code><span class="n">MAX_TOOL_OUTPUT_TOKENS</span> <span class="o">=</span> <span class="mi">2_000</span>  <span class="c1"># per tool call</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">clip_output</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">max_tokens</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">MAX_TOOL_OUTPUT_TOKENS</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Truncate tool output so it does not bloat the transcript.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">count_tokens</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">max_tokens</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">text</span>
+    <span class="c1"># Binary-search style: approximate character limit then trim</span>
+    <span class="n">char_limit</span> <span class="o">=</span> <span class="n">max_tokens</span> <span class="o">*</span> <span class="mi">4</span>
+    <span class="n">clipped</span> <span class="o">=</span> <span class="n">text</span><span class="p">[:</span><span class="n">char_limit</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">clipped</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">... [output truncated to ~</span><span class="si">{</span><span class="n">max_tokens</span><span class="si">}</span><span class="s2"> tokens]&quot;</span>
+</code></pre></div>
+<h3 id="-check-it-now-no-api-key-needed">▶ Check it now (no API key needed)<a aria-label="Permalink to this section" class="hanchor" href="06-context-management.html#-check-it-now-no-api-key-needed">¶</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Quick test — no API needed</span>
+<span class="n">long_output</span> <span class="o">=</span> <span class="s2">&quot;line of output</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">*</span> <span class="mi">1000</span>   <span class="c1"># ~3 750 tokens</span>
+<span class="n">safe_output</span> <span class="o">=</span> <span class="n">clip_output</span><span class="p">(</span><span class="n">long_output</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Original: ~</span><span class="si">{</span><span class="n">count_tokens</span><span class="p">(</span><span class="n">long_output</span><span class="p">)</span><span class="si">}</span><span class="s2"> tokens&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Clipped:  ~</span><span class="si">{</span><span class="n">count_tokens</span><span class="p">(</span><span class="n">safe_output</span><span class="p">)</span><span class="si">}</span><span class="s2"> tokens&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Last line:&quot;</span><span class="p">,</span> <span class="n">safe_output</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+</code></pre></div>
+<p>Expected output (with the heuristic counter — exact numbers vary slightly with
+tiktoken installed):</p>
+<div class="highlight nocopy"><pre><span></span><code>Original: ~3750 tokens
+Clipped:  ~2009 tokens
+Last line: ... [output truncated to ~2000 tokens]
+</code></pre></div>
+<p><strong>Tradeoff:</strong> The agent may miss information present later in long outputs. Mitigate by having the agent request page ranges or grep patterns rather than whole files.</p>
+</article>
+<footer class="page-footer">
+<nav class="continue" aria-label="Continue">
+<a class="continue-card" href="06-context-management-5.html" rel="next">
+<span class="continue-kicker">Next · Lesson 5 of 8</span>
+<span class="continue-title">the organized form · part 2 of 2<span class="continue-time">~13 min</span><span class="continue-arrow" aria-hidden="true">→</span></span>
+</a>
+<p class="continue-aux">
+<a href="06-context-management-3.html" rel="prev">← Lesson 3 · functions</a>
+<a class="continue-fullpage" href="06-context-management.html#version-3--the-organized-form-a-contextpy-module-the-loop-consults">View this lesson on the single page</a>
+</p>
+</nav>
+<p class="generated-note">Generated from <code>06-context-management.md</code> — lesson 4 of 8 in the derived lesson view (boundaries may move when the markdown changes; the <a href="06-context-management.html">single page</a> is the permanent address).</p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/06-context-management.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
+</footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
+</main>
+</div>
+<script>
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards.
+     diagram-text mirrors are excluded — print hides them entirely (the SVG
+     figure already prints; opening the ASCII would print the diagram twice). */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not(.diagram-text):not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
+  });
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
+
+  /* Reading progress: the fixed 3px accent bar tracks scroll position.
+     Without JS the element simply stays at width 0 — invisible, harmless. */
+  var pbar = document.querySelector('.progress-bar');
+  if (pbar) {
+    var setProgress = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      pbar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    };
+    window.addEventListener('scroll', setProgress, { passive: true });
+    setProgress();
+  }
+
+  /* Deep links into collapsed sections: open every <details> ancestor of the
+     target, and the refsection that immediately follows a target heading.
+     Re-scroll only if something actually opened (the layout above the target
+     just changed), and instantly — the CSS smooth scroll would crawl across
+     tens of thousands of pixels on the long phase pages. */
+  function openForHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) { return; }
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    var opened = false;
+    var d = el.closest('details');
+    while (d) {
+      if (!d.hasAttribute('open')) { d.setAttribute('open', ''); opened = true; }
+      d = d.parentElement && d.parentElement.closest('details');
+    }
+    var sib = el.nextElementSibling;
+    if (sib && sib.matches('details.refsection') && !sib.hasAttribute('open')) {
+      sib.setAttribute('open', '');
+      opened = true;
+    }
+    if (!opened) { return; }
+    var jump = function () {
+      var y = el.getBoundingClientRect().top + window.scrollY - 16;
+      try { window.scrollTo({ top: y, behavior: 'instant' }); }
+      catch (e) { window.scrollTo(0, y); }
+    };
+    jump();
+    /* the browser's own fragment scroll was computed against the collapsed
+       layout and may still be animating (CSS smooth) — re-assert once, which
+       cancels it */
+    setTimeout(jump, 100);
+  }
+  window.addEventListener('hashchange', openForHash);
+  openForHash();
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
+</script>
+</body>
+</html>

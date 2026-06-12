@@ -356,7 +356,7 @@ details.diagram-text > summary {
   transition: border-color 120ms ease-out, color 120ms ease-out;
 }
 .rail-dot:hover { border-color: var(--accent); color: var(--accent-deep); }
-.rail-dot[aria-current="page"] {
+.rail-dot[aria-current] {
   background: var(--accent); border-color: var(--accent);
   color: #fff;                                        /* 6.29:1 */
 }
@@ -379,6 +379,138 @@ details.diagram-text > summary {
   color: var(--accent-deep); border-radius: 999px; padding: 0.15em 0.5em;
 }
 .ladder-sep { color: var(--muted); }
+/* ---- lesson view (derived bite-size pages) ---- */
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+.phase-eyebrow { flex-wrap: wrap; }
+.lesson-time, .lesson-cp {
+  font: 600 0.75rem var(--font-mono); letter-spacing: 0.02em;
+  border: 1px solid var(--border-strong); border-radius: 999px;
+  padding: 0.2em 0.7em; color: var(--muted); white-space: nowrap;
+}
+.lesson-cp {
+  color: var(--accent-deep);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+/* full-page strip: the labeled crossing into the lesson track */
+.lesson-strip {
+  margin: 0 0 1rem; padding: 0.625rem 1rem; font-size: 0.875rem;
+  border: 1px solid var(--border); border-radius: 10px;
+  background: color-mix(in srgb, var(--accent) 5%, var(--bg));
+}
+.lesson-strip a { font-weight: 600; }
+.lesson-strip-note { color: var(--muted); }
+/* lesson rail: one tick per lesson, 18px gaps -> 44px tap pitch */
+.lesson-rail {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: 1.125rem; margin: 0 0 1rem;
+}
+.lesson-tick {
+  position: relative; flex: none; width: 26px; height: 26px;
+  border-radius: 8px; border: 1px solid var(--border-strong);
+  background: var(--bg); color: var(--muted);              /* 6.10:1 */
+  display: flex; align-items: center; justify-content: center;
+  font: 600 0.75rem var(--font-mono); text-decoration: none;
+  transition: border-color 120ms ease-out, color 120ms ease-out;
+}
+.lesson-tick::after { content: ""; position: absolute; inset: -9px; } /* 44px target */
+.lesson-tick:hover { border-color: var(--accent); color: var(--accent-deep); }
+.lesson-tick[aria-current="page"] {
+  background: var(--accent); border-color: var(--accent);
+  color: #fff;                                             /* 6.29:1 */
+}
+/* hub lesson plan */
+.lesson-plan {
+  margin: 2.5rem 0 0; padding: 1rem 1.25rem;
+  border: 1px solid var(--border); border-radius: 12px;
+}
+.plan-kicker {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 1rem; flex-wrap: wrap; margin: 0 0 0.5rem;
+  font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted);
+}
+.plan-total { color: var(--accent-deep); letter-spacing: 0.02em; }
+.plan-list { list-style: none; margin: 0 0 1rem; padding: 0; }
+.plan-list li { margin: 0; border-bottom: 1px solid var(--border); }
+.plan-list li:last-child { border-bottom: 0; }
+.plan-row {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.55rem 0.375rem; border-radius: 8px;
+  text-decoration: none; color: var(--fg);
+  transition: background-color 120ms ease-out, color 120ms ease-out;
+}
+a.plan-row:hover { background: color-mix(in srgb, var(--accent) 7%, transparent); }
+a.plan-row:hover .plan-title { color: var(--accent-deep); }
+.plan-num {
+  flex: none; width: 1.9em; height: 1.9em; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font: 700 0.75rem var(--font-mono);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent-deep);
+}
+.plan-title { font-weight: 600; font-size: 0.9375rem; min-width: 0; }
+.plan-meta {
+  margin-left: auto; text-align: right;
+  font: 600 0.75rem var(--font-mono); color: var(--muted);
+  white-space: nowrap;
+}
+.plan-badge {
+  font: 700 0.625rem var(--font-mono); text-transform: uppercase;
+  letter-spacing: 0.08em; white-space: nowrap; color: var(--green);
+  border: 1px solid color-mix(in srgb, var(--green) 45%, transparent);
+  border-radius: 999px; padding: 0.1em 0.6em; margin-left: 0.4em;
+}
+.plan-here .plan-row { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.plan-here .plan-title::after {
+  content: " — you are here"; font-weight: 400; font-size: 0.8125rem;
+  color: var(--muted);
+}
+.plan-single { margin: 0; font-size: 0.875rem; color: var(--muted); }
+/* Continue card: the goal-gradient pull at the end of every lesson */
+.continue { margin: 0; }
+.continue-card {
+  display: block; padding: 1rem 1.25rem; text-decoration: none;
+  border: 1px solid var(--border-strong); border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 4%, var(--bg));
+  transition: border-color 120ms ease-out;
+}
+.continue-card:hover { border-color: var(--accent); }
+.continue-kicker {
+  display: block; margin-bottom: 0.3rem;
+  font-family: var(--font-mono); font-size: 0.6875rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted);
+}
+.continue-title {
+  display: flex; align-items: baseline; gap: 0.6em; flex-wrap: wrap;
+  font-weight: 700; font-size: 1.125rem; color: var(--fg);
+}
+.continue-card:hover .continue-title { color: var(--accent-deep); }
+.continue-time {
+  font: 600 0.75rem var(--font-mono); color: var(--muted);
+  white-space: nowrap;
+}
+.continue-arrow { margin-left: auto; color: var(--accent); }
+.continue-aux {
+  display: flex; justify-content: space-between; gap: 0.5rem 1.5rem;
+  flex-wrap: wrap; margin: 0.75rem 0 0; font-size: 0.875rem;
+}
+.continue-aux a { color: var(--muted); text-decoration: none; }
+.continue-aux a:hover { color: var(--accent-deep); text-decoration: underline; }
+/* per-h2 lesson-view links on full pages: hover-revealed, like ¶ */
+.lesson-link {
+  margin-left: 0.6em; padding: 0.1em 0.6em; white-space: nowrap;
+  font: 600 0.6875rem var(--font-mono); letter-spacing: 0.04em;
+  text-transform: uppercase; text-decoration: none; color: var(--muted);
+  border: 1px solid var(--border-strong); border-radius: 999px;
+  vertical-align: 0.2em;
+  opacity: 0; transition: opacity 120ms ease-out, color 120ms ease-out,
+    border-color 120ms ease-out;
+}
+h2:hover > .lesson-link, .lesson-link:focus-visible { opacity: 1; }
+.lesson-link:hover { color: var(--accent-deep); border-color: var(--accent); }
 /* ---- index landing page (body.page-index only) ---- */
 .hero { padding: 1.5rem 0 0.5rem; }
 .hero .hero-eyebrow {
@@ -411,7 +543,8 @@ details.diagram-text > summary {
   .skip-link { color: var(--bg); }
   .btn-primary { color: var(--bg); }
   .phase-medallion { color: var(--bg); }                   /* 7.47:1 */
-  .rail-dot[aria-current="page"] { color: var(--bg); }     /* 7.47:1 */
+  .rail-dot[aria-current] { color: var(--bg); }            /* 7.47:1 */
+  .lesson-tick[aria-current="page"] { color: var(--bg); }  /* 7.47:1 */
   .btn-primary:hover { background: #A5B0FF; }  /* dark text on it: 9.28:1 */
   .hero blockquote { color: var(--muted); }    /* 7.34:1 */
   blockquote.beginner { background: color-mix(in srgb, var(--green) 9%, var(--bg)); }
@@ -422,7 +555,8 @@ details.diagram-text > summary {
 @media print {
   .sidebar-wrap, .skip-link, .copy-btn, .page-header, .page-toc, .prevnext,
   .back-to-top, .hanchor, .hero-cta, .source-link, .progress-bar,
-  .diagram-text, .md-breadcrumb { display: none !important; }
+  .diagram-text, .md-breadcrumb, .lesson-strip, .lesson-rail, .lesson-link,
+  .lesson-plan, .continue { display: none !important; }
   /* use the sheet: drop the screen column, center the text at a book-like
      measure instead of hugging the left half of the page */
   .layout { max-width: none; }

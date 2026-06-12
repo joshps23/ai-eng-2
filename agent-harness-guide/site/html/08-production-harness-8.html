@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<!-- GENERATED from 08-production-harness.md — do not edit; run site/build_site.py -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="wzxhzdk:2">
+<link rel="canonical" href="https://joshps23.github.io/ai-eng-2/08-production-harness.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://joshps23.github.io/ai-eng-2/08-production-harness-8.html">
+<meta property="og:site_name" content="Agent Harness Guide">
+<meta property="og:title" content="Phase 8 · Lesson 8 — 7. Packaging and Operations — Agent Harness Guide">
+<meta property="og:description" content="wzxhzdk:2">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#FDFDFE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
+<title>Phase 8 · Lesson 8 — 7. Packaging and Operations — Agent Harness Guide</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body>
+<div class="progress-bar" aria-hidden="true"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="layout">
+<details class="sidebar-wrap" open>
+<summary class="sidebar-toggle">Guide navigation</summary>
+<nav class="sidebar" aria-label="Guide pages">
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
+<p class="sidebar-heading">Start here</p>
+<ul>
+<li><a href="index.html">Guide hub</a></li>
+<li><a href="learning-path.html">Learning Path</a></li>
+<li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
+<li><a href="faq.html">Setup &amp; FAQ</a></li>
+</ul>
+<p class="sidebar-heading">Phases</p>
+<ul>
+<li><a href="00-foundations-1.html">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness-1.html">Phase 1 — Bare Harness</a></li>
+<li><a href="02-tool-system-1.html">Phase 2 — Tool System</a></li>
+<li><a href="03-conversation-and-streaming-1.html">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools-1.html">Phase 4 — Real Tools</a></li>
+<li><a href="05-permissions-and-safety-1.html">Phase 5 — Permissions &amp; Safety</a></li>
+<li><a href="06-context-management-1.html">Phase 6 — Context Management</a></li>
+<li><a href="07-subagents-orchestration-1.html">Phase 7 — Sub-agents</a></li>
+<li class="current"><a href="08-production-harness-1.html" aria-current="true">Phase 8 — Production Harness</a></li>
+</ul>
+<p class="sidebar-heading">Appendix</p>
+<ul>
+<li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
+</ul>
+<p class="sidebar-heading">Practice</p>
+<ul>
+<li><a href="exercises.html">Exercises</a></li>
+<li><a href="glossary.html">Glossary</a></li>
+<li><a href="notebooks.html">Notebooks</a></li>
+</ul>
+</nav>
+</details>
+<main id="main">
+<header class="page-header">
+<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">8</span><span class="phase-kicker">Phase 8 · Lesson 8 of 10</span><span class="lesson-time">~4 min</span></p>
+<nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations-1.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness-1.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system-1.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming-1.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools-1.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety-1.html" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management-1.html" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration-1.html" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness-1.html" aria-current="true" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
+<nav class="lesson-rail" aria-label="Lessons in this phase"><a class="lesson-tick" href="08-production-harness-1.html" title="Lesson 1: The Production Harness (~11 min)" aria-label="Lesson 1: The Production Harness (~11 min)">1</a><a class="lesson-tick" href="08-production-harness-2.html" title="Lesson 2: The Smallest Reliability Win (~6 min)" aria-label="Lesson 2: The Smallest Reliability Win (~6 min)">2</a><a class="lesson-tick" href="08-production-harness-3.html" title="Lesson 3: Observability (~12 min)" aria-label="Lesson 3: Observability (~12 min)">3</a><a class="lesson-tick" href="08-production-harness-4.html" title="Lesson 4: Configuration (~15 min)" aria-label="Lesson 4: Configuration (~15 min)">4</a><a class="lesson-tick" href="08-production-harness-5.html" title="Lesson 5: The CLI / REPL (~11 min)" aria-label="Lesson 5: The CLI / REPL (~11 min)">5</a><a class="lesson-tick" href="08-production-harness-6.html" title="Lesson 6: 5. Reliability (Production… (~8 min)" aria-label="Lesson 6: 5. Reliability (Production… (~8 min)">6</a><a class="lesson-tick" href="08-production-harness-7.html" title="Lesson 7: 6. The Definitive… (~11 min)" aria-label="Lesson 7: 6. The Definitive… (~11 min)">7</a><a class="lesson-tick" href="08-production-harness-8.html" aria-current="page" title="Lesson 8: 7. Packaging and Operations (~4 min)" aria-label="Lesson 8: 7. Packaging and Operations (~4 min)">8</a><a class="lesson-tick" href="08-production-harness-9.html" title="Lesson 9: 8. Testing the Harness (~17 min)" aria-label="Lesson 9: 8. Testing the Harness (~17 min)">9</a><a class="lesson-tick" href="08-production-harness-10.html" title="Wrap-up: Pitfalls (~7 min)" aria-label="Wrap-up: Pitfalls (~7 min)">10</a></nav>
+<details class="page-toc">
+<summary>On this page</summary>
+<ul>
+<li class="toc-h2"><a href="#7-packaging-and-operations">7. Packaging and Operations</a>
+<ul>
+<li class="toc-h3"><a href="#project-layout">Project Layout</a></li>
+<li class="toc-h3"><a href="#pyprojecttoml">pyproject.toml</a></li>
+<li class="toc-h3"><a href="#running-the-bash-tool-safely-in-production">Running the Bash Tool Safely in Production</a></li>
+</ul>
+</li>
+</ul>
+</details>
+</header>
+<article>
+<h2 id="7-packaging-and-operations">7. Packaging and Operations<a aria-label="Permalink to this section" class="hanchor" href="08-production-harness.html#7-packaging-and-operations">¶</a></h2>
+<h3 id="project-layout">Project Layout<a aria-label="Permalink to this section" class="hanchor" href="08-production-harness.html#project-layout">¶</a></h3>
+<div class="highlight nocopy"><pre><span></span><code>agent_harness/
+├── __init__.py
+├── accounting.py        # SessionAccounting, price table
+├── agent.py             # Agent class, run_turn
+├── cli.py               # argparse + REPL
+├── compaction.py        # compact_conversation (Phase 6)
+├── config.py            # Settings dataclass
+├── conversation.py      # Conversation, save/load (Phase 3)
+├── hooks.py             # PreToolUse / PostToolUse (Phase 5)
+├── instructions.py      # build_instructions
+├── llm.py               # Resilient wrapper (this phase)
+├── logging_config.py    # configure_logging
+├── permissions.py       # PermissionPolicy, Decision (Phase 5)
+├── streaming.py         # Streaming renderer (Phase 3)
+├── tools.py             # Tool, @tool, ToolRegistry + real tools (Phases 2, 4)
+│   └── filesystem.py    # read_file, write_file, bash, etc. (Phase 4)
+├── tracer.py            # Tracer, JSONL event log
+└── sub_agents.py        # sub-agent presets, task tool (Phase 7)
+
+pyproject.toml
+.agentrc                 # optional project config
+CLAUDE.md                # optional memory file
+transcript.json          # auto-saved transcript (gitignore this)
+trace.jsonl              # auto-saved event log (gitignore this)
+</code></pre></div>
+<blockquote>
+<p><strong>Mapping note.</strong> The layout above is the <em>teaching</em> layout, using this phase's
+illustrative file names. The consolidated, tested package merges further:
+<code>tools.py</code>/<code>filesystem.py</code> became the <code>tools/</code> subpackage (<code>base.py</code>, <code>registry.py</code>,
+<code>files.py</code>, <code>shell.py</code>, <code>parallel.py</code>); <code>sub_agents.py</code> became <code>subagents.py</code>;
+<code>compaction.py</code> is <code>context.py</code>'s <code>compact()</code>; the token half of <code>accounting.py</code>
+survives as a small <code>UsageAccumulator</code> inside <code>agent.py</code> (the price table is an
+extension you can add); <code>tracer.py</code>, <code>logging_config.py</code>, and <code>instructions.py</code> are
+production extensions shown here, not separate package modules; and the package adds
+<code>testing.py</code> — the fake client from §8. The <strong>console-script name</strong> maps too: the
+tested package's <code>pyproject.toml</code> installs the command as <strong><code>agent-harness</code></strong>
+(equivalently <code>python -m agent_harness.cli</code>) — wherever prose in this phase shortens
+it to <code>agent</code>, that is the command it means. Compare for yourself: the real tree is in
+<a class="repo-file" href="https://github.com/joshps23/ai-eng-2/tree/main/agent-harness-guide/code/agent_harness" title="Opens this repository file on GitHub"><code>code/agent_harness/</code></a> and the name-by-name mapping table is in
+<a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/code/README.md" title="Opens this repository file on GitHub"><code>code/README.md</code></a>.</p>
+</blockquote>
+<h3 id="pyprojecttoml"><code>pyproject.toml</code><a aria-label="Permalink to this section" class="hanchor" href="08-production-harness.html#pyprojecttoml">¶</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">[build-system]</span>
+<span class="n">requires</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;setuptools&gt;=68&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;wheel&quot;</span><span class="p">]</span>
+<span class="n">build-backend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;setuptools.build_meta&quot;</span>
+
+<span class="k">[project]</span>
+<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;agent-harness&quot;</span>
+<span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0.1.0&quot;</span>
+<span class="n">description</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;A production-grade LLM agent harness in pure Python&quot;</span>
+<span class="n">readme</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;README.md&quot;</span>
+<span class="n">requires-python</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&gt;=3.11&quot;</span>
+<span class="n">dependencies</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="c1"># The Responses API (client.responses.create) was added in openai 1.66.0.</span>
+<span class="w">    </span><span class="s2">&quot;openai&gt;=1.66.0&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="k">[project.optional-dependencies]</span>
+<span class="n">tiktoken</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;tiktoken&gt;=0.7&quot;</span><span class="p">]</span><span class="w">  </span><span class="c1"># accurate token counting</span>
+<span class="n">dev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;pytest&gt;=8&quot;</span><span class="p">]</span>
+
+<span class="k">[project.scripts]</span>
+<span class="c1"># The command name the install creates — the tested package uses the same one</span>
+<span class="c1"># (code/pyproject.toml). Run it as `agent-harness`, or without installing the</span>
+<span class="c1"># script at all: `python -m agent_harness.cli`.</span>
+<span class="n">agent-harness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;agent_harness.cli:main&quot;</span>
+
+<span class="k">[tool.setuptools.packages.find]</span>
+<span class="n">where</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;.&quot;</span><span class="p">]</span>
+<span class="n">include</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;agent_harness*&quot;</span><span class="p">]</span>
+</code></pre></div>
+<p>Install in development mode:</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[tiktoken,dev]&quot;</span>
+</code></pre></div>
+<p>Run:</p>
+<div class="highlight"><pre><span></span><code>agent-harness<span class="w">                      </span><span class="c1"># interactive REPL</span>
+agent-harness<span class="w"> </span>-p<span class="w"> </span><span class="s2">&quot;Summarise all TODO comments in this repo&quot;</span>
+agent-harness<span class="w"> </span>--resume<span class="w"> </span>--mode<span class="w"> </span>strict
+<span class="nv">AGENT_MODEL</span><span class="o">=</span>gpt-4o<span class="w"> </span>agent-harness<span class="w">   </span><span class="c1"># override model via env</span>
+python<span class="w"> </span>-m<span class="w"> </span>agent_harness.cli<span class="w">        </span><span class="c1"># same entry point, no console script needed</span>
+</code></pre></div>
+<h3 id="running-the-bash-tool-safely-in-production">Running the Bash Tool Safely in Production<a aria-label="Permalink to this section" class="hanchor" href="08-production-harness.html#running-the-bash-tool-safely-in-production">¶</a></h3>
+<p>The <code>bash</code> tool (Phase 4) executes arbitrary shell commands inside <code>WORKSPACE_ROOT</code>. For real deployments, isolate it:</p>
+<ul>
+<li><strong>Docker container</strong>: mount the workspace directory read-write; use a network-disabled container for the agent process itself.</li>
+<li><strong>Linux namespaces / <code>unshare</code></strong>: <code>unshare --user --pid --net --mount bash -c "..."</code> gives a throwaway namespace.</li>
+<li><strong>Firejail / bubblewrap</strong>: lighter-weight sandboxing on Linux desktops.</li>
+<li><strong><code>timeout</code> prefix</strong>: wrap every bash invocation with <code>timeout 30 &lt;cmd&gt;</code> to prevent runaway commands.</li>
+</ul>
+<p>The harness does not enforce sandboxing itself; that is an infrastructure concern. Document your threat model and choose accordingly.</p>
+</article>
+<footer class="page-footer">
+<nav class="continue" aria-label="Continue">
+<a class="continue-card" href="08-production-harness-9.html" rel="next">
+<span class="continue-kicker">Next · Lesson 9 of 10</span>
+<span class="continue-title">8. Testing the Harness<span class="continue-time">~17 min</span><span class="continue-arrow" aria-hidden="true">→</span></span>
+</a>
+<p class="continue-aux">
+<a href="08-production-harness-7.html" rel="prev">← Lesson 7 · 6. The Definitive…</a>
+<a class="continue-fullpage" href="08-production-harness.html#7-packaging-and-operations">View this lesson on the single page</a>
+</p>
+</nav>
+<p class="generated-note">Generated from <code>08-production-harness.md</code> — lesson 8 of 10 in the derived lesson view (boundaries may move when the markdown changes; the <a href="08-production-harness.html">single page</a> is the permanent address).</p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/08-production-harness.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
+</footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
+</main>
+</div>
+<script>
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards.
+     diagram-text mirrors are excluded — print hides them entirely (the SVG
+     figure already prints; opening the ASCII would print the diagram twice). */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not(.diagram-text):not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
+  });
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
+
+  /* Reading progress: the fixed 3px accent bar tracks scroll position.
+     Without JS the element simply stays at width 0 — invisible, harmless. */
+  var pbar = document.querySelector('.progress-bar');
+  if (pbar) {
+    var setProgress = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      pbar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    };
+    window.addEventListener('scroll', setProgress, { passive: true });
+    setProgress();
+  }
+
+  /* Deep links into collapsed sections: open every <details> ancestor of the
+     target, and the refsection that immediately follows a target heading.
+     Re-scroll only if something actually opened (the layout above the target
+     just changed), and instantly — the CSS smooth scroll would crawl across
+     tens of thousands of pixels on the long phase pages. */
+  function openForHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) { return; }
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    var opened = false;
+    var d = el.closest('details');
+    while (d) {
+      if (!d.hasAttribute('open')) { d.setAttribute('open', ''); opened = true; }
+      d = d.parentElement && d.parentElement.closest('details');
+    }
+    var sib = el.nextElementSibling;
+    if (sib && sib.matches('details.refsection') && !sib.hasAttribute('open')) {
+      sib.setAttribute('open', '');
+      opened = true;
+    }
+    if (!opened) { return; }
+    var jump = function () {
+      var y = el.getBoundingClientRect().top + window.scrollY - 16;
+      try { window.scrollTo({ top: y, behavior: 'instant' }); }
+      catch (e) { window.scrollTo(0, y); }
+    };
+    jump();
+    /* the browser's own fragment scroll was computed against the collapsed
+       layout and may still be animating (CSS smooth) — re-assert once, which
+       cancels it */
+    setTimeout(jump, 100);
+  }
+  window.addEventListener('hashchange', openForHash);
+  openForHash();
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
+</script>
+</body>
+</html>

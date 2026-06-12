@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<!-- GENERATED from 08-production-harness.md — do not edit; run site/build_site.py -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Tick these off. Each line is a capability of the finished harness, the phase whose ladder taught it, and the module of the tested package (code/agent_harness…">
+<link rel="canonical" href="https://joshps23.github.io/ai-eng-2/08-production-harness.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://joshps23.github.io/ai-eng-2/08-production-harness-10.html">
+<meta property="og:site_name" content="Agent Harness Guide">
+<meta property="og:title" content="Phase 8 · Wrap-up — Pitfalls — Agent Harness Guide">
+<meta property="og:description" content="Tick these off. Each line is a capability of the finished harness, the phase whose ladder taught it, and the module of the tested package (code/agent_harness…">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#FDFDFE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
+<title>Phase 8 · Wrap-up — Pitfalls — Agent Harness Guide</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body>
+<div class="progress-bar" aria-hidden="true"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="layout">
+<details class="sidebar-wrap" open>
+<summary class="sidebar-toggle">Guide navigation</summary>
+<nav class="sidebar" aria-label="Guide pages">
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
+<p class="sidebar-heading">Start here</p>
+<ul>
+<li><a href="index.html">Guide hub</a></li>
+<li><a href="learning-path.html">Learning Path</a></li>
+<li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
+<li><a href="faq.html">Setup &amp; FAQ</a></li>
+</ul>
+<p class="sidebar-heading">Phases</p>
+<ul>
+<li><a href="00-foundations-1.html">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness-1.html">Phase 1 — Bare Harness</a></li>
+<li><a href="02-tool-system-1.html">Phase 2 — Tool System</a></li>
+<li><a href="03-conversation-and-streaming-1.html">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools-1.html">Phase 4 — Real Tools</a></li>
+<li><a href="05-permissions-and-safety-1.html">Phase 5 — Permissions &amp; Safety</a></li>
+<li><a href="06-context-management-1.html">Phase 6 — Context Management</a></li>
+<li><a href="07-subagents-orchestration-1.html">Phase 7 — Sub-agents</a></li>
+<li class="current"><a href="08-production-harness-1.html" aria-current="true">Phase 8 — Production Harness</a></li>
+</ul>
+<p class="sidebar-heading">Appendix</p>
+<ul>
+<li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
+</ul>
+<p class="sidebar-heading">Practice</p>
+<ul>
+<li><a href="exercises.html">Exercises</a></li>
+<li><a href="glossary.html">Glossary</a></li>
+<li><a href="notebooks.html">Notebooks</a></li>
+</ul>
+</nav>
+</details>
+<main id="main">
+<header class="page-header">
+<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">8</span><span class="phase-kicker">Phase 8 · Wrap-up</span><span class="lesson-time">~7 min</span></p>
+<nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations-1.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness-1.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system-1.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming-1.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools-1.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety-1.html" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management-1.html" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration-1.html" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness-1.html" aria-current="true" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
+<nav class="lesson-rail" aria-label="Lessons in this phase"><a class="lesson-tick" href="08-production-harness-1.html" title="Lesson 1: The Production Harness (~11 min)" aria-label="Lesson 1: The Production Harness (~11 min)">1</a><a class="lesson-tick" href="08-production-harness-2.html" title="Lesson 2: The Smallest Reliability Win (~6 min)" aria-label="Lesson 2: The Smallest Reliability Win (~6 min)">2</a><a class="lesson-tick" href="08-production-harness-3.html" title="Lesson 3: Observability (~12 min)" aria-label="Lesson 3: Observability (~12 min)">3</a><a class="lesson-tick" href="08-production-harness-4.html" title="Lesson 4: Configuration (~15 min)" aria-label="Lesson 4: Configuration (~15 min)">4</a><a class="lesson-tick" href="08-production-harness-5.html" title="Lesson 5: The CLI / REPL (~11 min)" aria-label="Lesson 5: The CLI / REPL (~11 min)">5</a><a class="lesson-tick" href="08-production-harness-6.html" title="Lesson 6: 5. Reliability (Production… (~8 min)" aria-label="Lesson 6: 5. Reliability (Production… (~8 min)">6</a><a class="lesson-tick" href="08-production-harness-7.html" title="Lesson 7: 6. The Definitive… (~11 min)" aria-label="Lesson 7: 6. The Definitive… (~11 min)">7</a><a class="lesson-tick" href="08-production-harness-8.html" title="Lesson 8: 7. Packaging and Operations (~4 min)" aria-label="Lesson 8: 7. Packaging and Operations (~4 min)">8</a><a class="lesson-tick" href="08-production-harness-9.html" title="Lesson 9: 8. Testing the Harness (~17 min)" aria-label="Lesson 9: 8. Testing the Harness (~17 min)">9</a><a class="lesson-tick" href="08-production-harness-10.html" aria-current="page" title="Wrap-up: Pitfalls (~7 min)" aria-label="Wrap-up: Pitfalls (~7 min)">10</a></nav>
+<details class="page-toc">
+<summary>On this page</summary>
+<ul>
+<li class="toc-h2"><a href="#pitfalls">Pitfalls</a>
+</li>
+<li class="toc-h2"><a href="#key-takeaways">Key takeaways</a>
+</li>
+<li class="toc-h2"><a href="#check-yourself">Check yourself</a>
+</li>
+<li class="toc-h2"><a href="#what-youll-have-built--the-final-checklist">What you&#x27;ll have built — the final checklist</a>
+</li>
+<li class="toc-h2"><a href="#graduation--run-the-real-thing">Graduation — run the real thing</a>
+</li>
+</ul>
+</details>
+</header>
+<article>
+<h2 id="pitfalls">Pitfalls<a aria-label="Permalink to this section" class="hanchor" href="08-production-harness.html#pitfalls">¶</a></h2>
+<blockquote>
+<p><strong>Watch out for these common mistakes.</strong></p>
+</blockquote>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th scope="col">Pitfall</th>
+<th scope="col">Consequence</th>
+<th scope="col">Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Appending raw SDK objects (or test fakes) to the transcript</td>
+<td>The next iteration's <code>estimate_tokens()</code> — and <code>conversation.save()</code> — <code>json.dumps</code> the transcript and raise <code>TypeError: Object of type … is not JSON serializable</code></td>
+<td>Normalize at append time: <code>model_dump()</code> for SDK objects, <code>dataclasses.asdict</code> for dataclass fakes (the <code>_to_dict</code> helper in §6)</td>
+</tr>
+<tr>
+<td>Declaring boolean CLI flags with argparse's natural defaults (<code>store_true</code> → <code>False</code>, <code>store_false</code> → <code>True</code>)</td>
+<td>A flag the user never typed looks like an explicit choice, so <code>apply_cli_args</code> silently overrides env vars and <code>.agentrc</code> — the documented precedence chain breaks for <code>verbose</code>/<code>debug</code>/<code>stream</code></td>
+<td>Give boolean flags <code>default=None</code>; <code>apply_cli_args</code> only merges non-<code>None</code> values</td>
+</tr>
+<tr>
+<td>Sleeping after the <em>final</em> failed retry attempt</td>
+<td>The harness waits the longest backoff (16 s and up) only to raise anyway — pure dead time</td>
+<td><code>break</code> out of the retry loop before sleeping when no attempts remain (Step 0 and §5 both guard this)</td>
+</tr>
+<tr>
+<td>Misreading <code>for … else</code> in <code>run_turn</code> as error handling</td>
+<td>You expect the <code>else:</code> branch on exceptions; it actually runs when the loop exhausts <code>max_iterations</code> without <code>break</code></td>
+<td>Read <code>for … else</code> as "for … <em>no-break</em>" — see the 🟢 gloss after the §6 listing</td>
+</tr>
+<tr>
+<td>Building Phase 8 against this phase's aspirational interfaces</td>
+<td>A wall of <code>AttributeError</code>s (<code>registry.call</code>, <code>Decision.ESCALATE</code>, instance <code>conversation.load</code>, …) when assembling from your real Phase 2–7 code</td>
+<td>Use the §0 method-name translation table (§8.0 writes it out as four runnable shim modules), or build against the tested package in <code>code/agent_harness/</code></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="key-takeaways">Key takeaways<a aria-label="Permalink to this section" class="hanchor" href="08-production-harness.html#key-takeaways">¶</a></h2>
+<ul>
+<li>The gap between a <strong>demo and a production harness</strong> is <em>not</em> new agent ideas — it's
+  <strong>reliability, observability, configuration, and clean packaging</strong> around the same loop.</li>
+<li><strong>Reliability:</strong> retry transient/rate-limit errors with <strong>exponential backoff</strong>, cap
+  iterations, and handle <strong>Ctrl-C</strong> gracefully.</li>
+<li><strong>Observability:</strong> <strong>structured logging</strong> of tool calls, timings, and failures lets you
+  see <em>inside</em> a run and debug it.</li>
+<li>It all assembles into <strong>one CLI</strong> (<code>argparse</code>) over the <code>Conversation</code>, <code>ToolRegistry</code>,
+  and <code>PermissionPolicy</code> you've built since Phase 1 — each a separately testable piece.</li>
+</ul>
+<h2 id="check-yourself">Check yourself<a aria-label="Permalink to this section" class="hanchor" href="08-production-harness.html#check-yourself">¶</a></h2>
+<ol>
+<li>Name two things that separate a production harness from a demo.</li>
+<li>What technique rides out a transient <code>RateLimitError</code>?</li>
+<li>What does structured logging buy you operationally?</li>
+<li>Is this phase mostly new concepts, or hardening of the existing loop?</li>
+</ol>
+<details>
+<summary>Answers</summary>
+<ol>
+<li>Any two of: <strong>retries/reliability</strong>, <strong>observability/logging</strong>, <strong>configuration</strong>, and
+   <strong>packaging/CLI</strong>.</li>
+<li><strong>Retry with exponential backoff</strong> (wait 1s, 2s, 4s… between attempts).</li>
+<li><strong>Visibility</strong> — which tools ran, how long they took, and what failed — so you can
+   diagnose problems instead of guessing.</li>
+<li><strong>Hardening and assembly.</strong> The agent ideas are already in place; Phase 8 makes them
+   reliable, observable, and shippable.</li>
+</ol>
+</details>
+<h2 id="what-youll-have-built--the-final-checklist">What you'll have built — the final checklist<a aria-label="Permalink to this section" class="hanchor" href="08-production-harness.html#what-youll-have-built--the-final-checklist">¶</a></h2>
+<p>Tick these off. Each line is a capability of the finished harness, the phase whose ladder
+taught it, and the module of the tested package
+(<a class="repo-file" href="https://github.com/joshps23/ai-eng-2/tree/main/agent-harness-guide/code/agent_harness" title="Opens this repository file on GitHub"><code>code/agent_harness/</code></a>) where its top rung now lives:</p>
+<ul class="contains-task-list">
+<li class="task-list-item"><input disabled type="checkbox"> <strong>An agent loop</strong> — call the model, run the tools it asks for, feed results back
+      with matching <code>call_id</code>s, repeat until done — <em>Phase 1</em> → <code>agent.py</code></li>
+<li class="task-list-item"><input disabled type="checkbox"> <strong>A tool system</strong> — plain functions promoted to schema-bearing tools with <code>@tool</code>,
+      dispatched through a registry that returns <code>"Error: ..."</code> strings instead of
+      crashing the loop — <em>Phase 2</em> → <code>tools/base.py</code>, <code>tools/registry.py</code></li>
+<li class="task-list-item"><input disabled type="checkbox"> <strong>Memory</strong> — a transcript the model never has (it's stateless!), owned as a plain
+      list you can save, load, and resume — <em>Phase 3</em> → <code>conversation.py</code></li>
+<li class="task-list-item"><input disabled type="checkbox"> <strong>Hands</strong> — real file and shell tools, confined to a workspace root — <em>Phase 4</em> →
+      <code>tools/files.py</code>, <code>tools/shell.py</code></li>
+<li class="task-list-item"><input disabled type="checkbox"> <strong>Judgment</strong> — a permission gate before every tool call, and hooks that observe
+      without touching the loop — <em>Phase 5</em> → <code>permissions.py</code>, <code>hooks.py</code></li>
+<li class="task-list-item"><input disabled type="checkbox"> <strong>Endurance</strong> — token counting, budget-aware pruning that never orphans a
+      <code>function_call</code>/<code>function_call_output</code> pair, and model-written compaction —
+      <em>Phase 6</em> → <code>context.py</code></li>
+<li class="task-list-item"><input disabled type="checkbox"> <strong>Delegation</strong> — sub-agents that are just the same <code>Agent</code> run inside a <code>task</code>
+      tool, plus threaded parallel dispatch — <em>Phase 7</em> → <code>subagents.py</code>,
+      <code>tools/parallel.py</code></li>
+<li class="task-list-item"><input disabled type="checkbox"> <strong>Production fitness</strong> — retry/backoff, settings from env/file/flags, a REPL with
+      slash-commands, and offline tests against a scripted fake — <em>Phase 8</em> → <code>llm.py</code>,
+      <code>config.py</code>, <code>cli.py</code>, <code>testing.py</code></li>
+</ul>
+<p>If every box is honest, you have built, from scratch, the kind of harness that powers
+Claude Code — and you understand every line of it.</p>
+<p><strong>Practice:</strong> the <a href="exercises.html#phase-8--the-production-harness">Phase 8 exercises</a>
+(plus the capstone) walk you through hardening and extending this assembly yourself.</p>
+<h2 id="graduation--run-the-real-thing">Graduation — run the real thing<a aria-label="Permalink to this section" class="hanchor" href="08-production-harness.html#graduation--run-the-real-thing">¶</a></h2>
+<p>Don't close the tab on a checklist — close it on a running agent. The consolidated
+package is the maintained form of everything you just built, and it installs, runs, and
+proves itself in three commands:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>code/
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span><span class="w">     </span><span class="c1"># one-time install (pulls openai + pytest)</span>
+agent-harness<span class="w">               </span><span class="c1"># the REPL you built — or: python -m agent_harness.cli</span>
+<span class="w">                            </span><span class="c1"># (no OPENAI_API_KEY? you&#39;ll meet the missing-credentials</span>
+<span class="w">                            </span><span class="c1">#  error from Step 4&#39;s checkpoint — the next command needs</span>
+<span class="w">                            </span><span class="c1">#  no key at all)</span>
+python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>-q<span class="w">         </span><span class="c1"># the full suite: 56 passed, fully offline</span>
+</code></pre></div>
+<p>That quiet green <code>56 passed</code> is the whole guide in one line: your seven ladders,
+assembled and proven, without a single network call.</p>
+<p>Where to from here — three good next steps:</p>
+<ul>
+<li><strong><a href="09-library-reference.html">Appendix: Library Reference</a></strong> — the lookup companion
+  for the four libraries underneath everything (<code>openai</code>, <code>tiktoken</code>,
+  <code>concurrent.futures</code>, <code>subprocess</code>). It is not a ninth phase; keep it open while you
+  build.</li>
+<li><strong><a href="exercises.html#capstone">The Capstone exercise</a></strong> — one project that exercises
+  every phase at once, now that you have all the parts.</li>
+<li><strong><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/code/README.md" title="Opens this repository file on GitHub">code/README.md</a></strong> — the maintained version of everything built
+  here, with the name-by-name map from guide listings to package modules. When your
+  code and a guide snippet disagree, this is the source of truth.</li>
+</ul>
+<p><em>End of Phase 8 — and of the guide. You now have a complete, from-scratch implementation of a production coding agent in pure Python.</em></p>
+</article>
+<footer class="page-footer">
+<nav class="continue" aria-label="Continue">
+<a class="continue-card" href="09-library-reference.html" rel="next">
+<span class="continue-kicker">Next</span>
+<span class="continue-title">Appendix — Library Reference<span class="continue-arrow" aria-hidden="true">→</span></span>
+</a>
+<p class="continue-aux">
+<a href="08-production-harness-9.html" rel="prev">← Lesson 9 · 8. Testing the Harness</a>
+<a class="continue-fullpage" href="08-production-harness.html#pitfalls">View this lesson on the single page</a>
+</p>
+</nav>
+<p class="generated-note">Generated from <code>08-production-harness.md</code> — lesson 10 of 10 in the derived lesson view (boundaries may move when the markdown changes; the <a href="08-production-harness.html">single page</a> is the permanent address).</p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/08-production-harness.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
+</footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
+</main>
+</div>
+<script>
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards.
+     diagram-text mirrors are excluded — print hides them entirely (the SVG
+     figure already prints; opening the ASCII would print the diagram twice). */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not(.diagram-text):not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
+  });
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
+
+  /* Reading progress: the fixed 3px accent bar tracks scroll position.
+     Without JS the element simply stays at width 0 — invisible, harmless. */
+  var pbar = document.querySelector('.progress-bar');
+  if (pbar) {
+    var setProgress = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      pbar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    };
+    window.addEventListener('scroll', setProgress, { passive: true });
+    setProgress();
+  }
+
+  /* Deep links into collapsed sections: open every <details> ancestor of the
+     target, and the refsection that immediately follows a target heading.
+     Re-scroll only if something actually opened (the layout above the target
+     just changed), and instantly — the CSS smooth scroll would crawl across
+     tens of thousands of pixels on the long phase pages. */
+  function openForHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) { return; }
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    var opened = false;
+    var d = el.closest('details');
+    while (d) {
+      if (!d.hasAttribute('open')) { d.setAttribute('open', ''); opened = true; }
+      d = d.parentElement && d.parentElement.closest('details');
+    }
+    var sib = el.nextElementSibling;
+    if (sib && sib.matches('details.refsection') && !sib.hasAttribute('open')) {
+      sib.setAttribute('open', '');
+      opened = true;
+    }
+    if (!opened) { return; }
+    var jump = function () {
+      var y = el.getBoundingClientRect().top + window.scrollY - 16;
+      try { window.scrollTo({ top: y, behavior: 'instant' }); }
+      catch (e) { window.scrollTo(0, y); }
+    };
+    jump();
+    /* the browser's own fragment scroll was computed against the collapsed
+       layout and may still be animating (CSS smooth) — re-assert once, which
+       cancels it */
+    setTimeout(jump, 100);
+  }
+  window.addEventListener('hashchange', openForHash);
+  openForHash();
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
+</script>
+</body>
+</html>

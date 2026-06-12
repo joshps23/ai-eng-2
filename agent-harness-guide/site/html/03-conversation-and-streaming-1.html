@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<!-- GENERATED from 03-conversation-and-streaming.md — do not edit; run site/build_site.py -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="This phase addresses two tightly related concerns that every production agent harness must solve: owning and persisting the transcript correctly, and streami…">
+<link rel="canonical" href="https://joshps23.github.io/ai-eng-2/03-conversation-and-streaming.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://joshps23.github.io/ai-eng-2/03-conversation-and-streaming-1.html">
+<meta property="og:site_name" content="Agent Harness Guide">
+<meta property="og:title" content="Phase 3 · Lesson 1 — Conversation State &amp;… — Agent Harness Guide">
+<meta property="og:description" content="This phase addresses two tightly related concerns that every production agent harness must solve: owning and persisting the transcript correctly, and streami…">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#FDFDFE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
+<title>Phase 3 · Lesson 1 — Conversation State &amp;… — Agent Harness Guide</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body>
+<div class="progress-bar" aria-hidden="true"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="layout">
+<details class="sidebar-wrap" open>
+<summary class="sidebar-toggle">Guide navigation</summary>
+<nav class="sidebar" aria-label="Guide pages">
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
+<p class="sidebar-heading">Start here</p>
+<ul>
+<li><a href="index.html">Guide hub</a></li>
+<li><a href="learning-path.html">Learning Path</a></li>
+<li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
+<li><a href="faq.html">Setup &amp; FAQ</a></li>
+</ul>
+<p class="sidebar-heading">Phases</p>
+<ul>
+<li><a href="00-foundations-1.html">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness-1.html">Phase 1 — Bare Harness</a></li>
+<li><a href="02-tool-system-1.html">Phase 2 — Tool System</a></li>
+<li class="current"><a href="03-conversation-and-streaming-1.html" aria-current="page">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools-1.html">Phase 4 — Real Tools</a></li>
+<li><a href="05-permissions-and-safety-1.html">Phase 5 — Permissions &amp; Safety</a></li>
+<li><a href="06-context-management-1.html">Phase 6 — Context Management</a></li>
+<li><a href="07-subagents-orchestration-1.html">Phase 7 — Sub-agents</a></li>
+<li><a href="08-production-harness-1.html">Phase 8 — Production Harness</a></li>
+</ul>
+<p class="sidebar-heading">Appendix</p>
+<ul>
+<li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
+</ul>
+<p class="sidebar-heading">Practice</p>
+<ul>
+<li><a href="exercises.html">Exercises</a></li>
+<li><a href="glossary.html">Glossary</a></li>
+<li><a href="notebooks.html">Notebooks</a></li>
+</ul>
+</nav>
+</details>
+<main id="main">
+<header class="page-header">
+<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">3</span><span class="phase-kicker">Phase 3 · Lesson 1 of 8</span><span class="lesson-time">~6 min</span></p>
+<nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations-1.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness-1.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system-1.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming-1.html" aria-current="true" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools-1.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety-1.html" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management-1.html" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration-1.html" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness-1.html" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
+<nav class="lesson-rail" aria-label="Lessons in this phase"><a class="lesson-tick" href="03-conversation-and-streaming-1.html" aria-current="page" title="Lesson 1: Conversation State &amp;… (~6 min)" aria-label="Lesson 1: Conversation State &amp;… (~6 min)">1</a><a class="lesson-tick" href="03-conversation-and-streaming-2.html" title="Lesson 2: Line-by-Line (~10 min)" aria-label="Lesson 2: Line-by-Line (~10 min)">2</a><a class="lesson-tick" href="03-conversation-and-streaming-3.html" title="Lesson 3: Functions (~17 min)" aria-label="Lesson 3: Functions (~17 min)">3</a><a class="lesson-tick" href="03-conversation-and-streaming-4.html" title="Lesson 4: Classes (~22 min)" aria-label="Lesson 4: Classes (~22 min)">4</a><a class="lesson-tick" href="03-conversation-and-streaming-5.html" title="Lesson 5: Streaming · part 1 of 3 (~11 min)" aria-label="Lesson 5: Streaming · part 1 of 3 (~11 min)">5</a><a class="lesson-tick" href="03-conversation-and-streaming-6.html" title="Lesson 6: Streaming · part 2 of 3 (~13 min)" aria-label="Lesson 6: Streaming · part 2 of 3 (~13 min)">6</a><a class="lesson-tick" href="03-conversation-and-streaming-7.html" title="Lesson 7: Streaming · part 3 of 3 (~3 min)" aria-label="Lesson 7: Streaming · part 3 of 3 (~3 min)">7</a><a class="lesson-tick" href="03-conversation-and-streaming-8.html" title="Wrap-up: Pitfalls (~5 min)" aria-label="Wrap-up: Pitfalls (~5 min)">8</a></nav>
+<nav class="ladder" aria-label="Version ladder"><a class="ladder-rung" href="03-conversation-and-streaming-2.html#version-1--line-by-line-the-transcript-is-just-a-list"><span class="ladder-medallion">V1</span> Line-by-Line</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="03-conversation-and-streaming-3.html#version-2--functions-name-the-moves"><span class="ladder-medallion">V2</span> Functions</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="03-conversation-and-streaming-4.html#version-3--classes-the-conversation-object"><span class="ladder-medallion">V3</span> Classes</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="03-conversation-and-streaming-5.html#version-4--streaming-the-same-harness-live-optional"><span class="ladder-medallion">V4</span> Streaming</a></nav>
+</header>
+<article>
+<p class="md-breadcrumb"><a href="02-tool-system.html">← Phase 2: A Real Tool System</a> · <a href="index.html">Guide index</a> · <a href="04-real-tools.html">Phase 4: Real-World Tools →</a></p>
+<h1 id="phase-3--conversation-state--streaming">Phase 3 — Conversation State &amp; Streaming</h1>
+<p>This phase addresses two tightly related concerns that every production agent harness must
+solve: owning and persisting the transcript correctly, and streaming model output to give
+users a responsive, observable interface.</p>
+<p>By the end you will have:</p>
+<ul>
+<li>A <code>Conversation</code> class that serializes to/from JSON and correctly handles all item types</li>
+<li>A <code>stream_turn()</code> function that renders text deltas live and announces tool calls as they
+  form</li>
+<li>An updated <code>run_agent_streaming()</code> loop that combines the Phase 2 tool registry with the
+  above two pieces</li>
+</ul>
+<p>As in the other phases, you will build the <strong>same harness four times</strong>, each version a
+complete program you can run, each one rung more organized than the last:</p>
+<ul>
+<li><strong>Version 1 — line-by-line.</strong> A multi-turn chat where the transcript is a plain list you
+  append to inline. No <code>def</code>, no classes — just statements and a <code>while</code> loop.</li>
+<li><strong>Version 2 — functions.</strong> The same chat, with the repeated moves named as plain
+  functions (<code>add_user</code>, <code>extend_items</code>, <code>run_turn</code>, <code>save</code>/<code>load</code>).</li>
+<li><strong>Version 3 — classes.</strong> The same chat, with the transcript owned by a <code>Conversation</code>
+  class — the shape the final package uses.</li>
+<li><strong>Version 4 — streaming.</strong> The same harness, with one new <em>mechanism</em>: the model's
+  answer arrives as a stream of events instead of one finished response.</li>
+</ul>
+<p>Nothing the harness <em>does</em> changes between versions; only how the code is organized (V1→V3)
+and how the answer is displayed (V4). If a version ever feels confusing, drop back one rung
+— the previous version is always still correct.</p>
+<hr>
+<blockquote class="beginner">
+<h2 id="-beginner-track-two-things-to-know-before-you-start">🟢 Beginner track: two things to know before you start<a aria-label="Permalink to this section" class="hanchor" href="03-conversation-and-streaming.html#-beginner-track-two-things-to-know-before-you-start">¶</a></h2>
+<p><strong>1. The <code>Conversation</code> class is just the <code>input_items</code> list you already used —
+with a few helper functions.</strong> In Phase 1 you kept the whole conversation in a plain
+list and appended to it. This phase wraps that list in a <code>class</code> so it can also
+save/load itself. You can get every benefit using only a <strong>dict</strong> and <strong>functions</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">new_conversation</span><span class="p">(</span><span class="n">instructions</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="c1"># The conversation is just a dict holding a list of items.</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;instructions&quot;</span><span class="p">:</span> <span class="n">instructions</span><span class="p">,</span> <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">add_user</span><span class="p">(</span><span class="n">conv</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+    <span class="n">conv</span><span class="p">[</span><span class="s2">&quot;items&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">text</span><span class="p">})</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">extend_items</span><span class="p">(</span><span class="n">conv</span><span class="p">,</span> <span class="n">output_items</span><span class="p">):</span>
+    <span class="c1"># Turn each SDK object into a plain dict, then store it.</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">output_items</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s2">&quot;model_dump&quot;</span><span class="p">):</span>
+            <span class="n">item</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">model_dump</span><span class="p">()</span>   <span class="c1"># SDK object -&gt; plain dict</span>
+        <span class="n">conv</span><span class="p">[</span><span class="s2">&quot;items&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">item</span><span class="p">))</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">add_tool_result</span><span class="p">(</span><span class="n">conv</span><span class="p">,</span> <span class="n">call_id</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
+    <span class="n">conv</span><span class="p">[</span><span class="s2">&quot;items&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function_call_output&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;call_id&quot;</span><span class="p">:</span> <span class="n">call_id</span><span class="p">,</span>
+        <span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="n">output</span><span class="p">,</span>
+    <span class="p">})</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">to_input</span><span class="p">(</span><span class="n">conv</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">conv</span><span class="p">[</span><span class="s2">&quot;items&quot;</span><span class="p">])</span>        <span class="c1"># the list you pass to input=</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="n">conv</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">conv</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># it&#39;s just a dict -&gt; write it as JSON</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>           <span class="c1"># read the dict back</span>
+</code></pre></div>
+<p>Use these wherever the phase says <code>conv.add_user(...)</code>, <code>conv.extend(...)</code>,
+<code>conv.to_input()</code>, etc. — read the dot-method <code>conv.add_user(text)</code> as the function
+call <code>add_user(conv, text)</code>. (<code>hasattr(item, "model_dump")</code> just asks "does this
+object have a <code>model_dump</code> method?" — <code>True</code> for SDK objects, <code>False</code> for plain
+dicts.)</p>
+<p><strong>2. Streaming is optional. You can skip the entire streaming half of this phase.</strong>
+Streaming only changes <em>how the answer is displayed</em> — character-by-character as the
+model types, instead of all at once. It does <strong>not</strong> change the loop or the results.
+The plain <code>client.responses.create(...)</code> call you already know (without
+<code>stream=True</code>) works perfectly; just read <code>resp.output_text</code> for the final text and
+loop over <code>resp.output</code> for tool calls, exactly as in Phases 1–2. Come back to the
+streaming code (<code>with ... stream=True</code>, the event types, the ANSI colors) only when
+you specifically want a live-typing UI.</p>
+</blockquote>
+<hr>
+<p><strong>Contents:</strong></p>
+<ul>
+<li><a href="#two-orthogonal-concerns">Two Orthogonal Concerns</a></li>
+<li><a href="03-conversation-and-streaming.html#version-1--line-by-line-the-transcript-is-just-a-list">Version 1 — Line-by-Line: the Transcript Is Just a List</a></li>
+<li><a href="03-conversation-and-streaming.html#version-2--functions-name-the-moves">Version 2 — Functions: Name the Moves</a></li>
+<li><a href="03-conversation-and-streaming.html#interlude--transcript-management-deep-dive">Interlude — Transcript Management Deep-Dive</a></li>
+<li><a href="03-conversation-and-streaming.html#version-3--classes-the-conversation-object">Version 3 — Classes: the <code>Conversation</code> Object</a></li>
+<li><a href="03-conversation-and-streaming.html#version-4--streaming-the-same-harness-live-optional">Version 4 — Streaming (optional)</a></li>
+<li><a href="03-conversation-and-streaming.html#pitfalls">Pitfalls</a></li>
+</ul>
+<blockquote>
+<p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/03-conversation-and-streaming.ipynb" title="Opens the notebook on GitHub — or use its Open-in-Colab badge"><code>notebooks/03-conversation-and-streaming.ipynb</code></a> executes this phase's checkpoints offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
+</blockquote>
+<h2 id="two-orthogonal-concerns">Two Orthogonal Concerns<a aria-label="Permalink to this section" class="hanchor" href="03-conversation-and-streaming.html#two-orthogonal-concerns">¶</a></h2>
+<p><strong>Transcript management</strong> determines what you send in <code>input</code> on each call.  You have two
+options:</p>
+<ol>
+<li><strong>Own the list</strong> — append every <code>resp.output</code> item to your local <code>input_items</code> list and
+   send the whole list on the next call.</li>
+<li><strong>Delegate to the server</strong> — pass <code>previous_response_id=resp.id</code> and send only the new
+   items; the server stitches the history together.</li>
+</ol>
+<p><strong>Streaming</strong> is independent of which state strategy you pick.  You can stream with either
+approach.</p>
+</article>
+<section class="lesson-plan" aria-label="Lesson plan">
+<p class="plan-kicker">Lesson plan <span class="plan-total">8 lessons · ~87 min</span></p>
+<ol class="plan-list">
+<li class="plan-here" aria-current="page"><span class="plan-row"><span class="plan-num" aria-hidden="true">1</span><span class="plan-title">Conversation State &amp;…</span><span class="plan-meta">~6 min</span></span></li>
+<li><a class="plan-row" href="03-conversation-and-streaming-2.html"><span class="plan-num" aria-hidden="true">2</span><span class="plan-title">Line-by-Line</span><span class="plan-meta">~10 min · 2 <span aria-hidden="true">▶</span><span class="visually-hidden"> checkpoints</span></span></a></li>
+<li><a class="plan-row" href="03-conversation-and-streaming-3.html"><span class="plan-num" aria-hidden="true">3</span><span class="plan-title">Functions</span><span class="plan-meta">~17 min · 3 <span aria-hidden="true">▶</span><span class="visually-hidden"> checkpoints</span></span></a></li>
+<li><a class="plan-row" href="03-conversation-and-streaming-4.html"><span class="plan-num" aria-hidden="true">4</span><span class="plan-title">Classes</span><span class="plan-meta">~22 min · 3 <span aria-hidden="true">▶</span><span class="visually-hidden"> checkpoints</span></span></a></li>
+<li><a class="plan-row" href="03-conversation-and-streaming-5.html"><span class="plan-num" aria-hidden="true">5</span><span class="plan-title">Streaming · part 1 of 3</span><span class="plan-meta">~11 min · 1 <span aria-hidden="true">▶</span><span class="visually-hidden"> checkpoint</span></span></a></li>
+<li><a class="plan-row" href="03-conversation-and-streaming-6.html"><span class="plan-num" aria-hidden="true">6</span><span class="plan-title">Streaming · part 2 of 3</span><span class="plan-meta">~13 min · 1 <span aria-hidden="true">▶</span><span class="visually-hidden"> checkpoint</span></span></a></li>
+<li><a class="plan-row" href="03-conversation-and-streaming-7.html"><span class="plan-num" aria-hidden="true">7</span><span class="plan-title">Streaming · part 3 of 3</span><span class="plan-meta">~3 min</span></a></li>
+<li><a class="plan-row" href="03-conversation-and-streaming-8.html"><span class="plan-num" aria-hidden="true">8</span><span class="plan-title">Pitfalls <span class="plan-badge">Wrap-up</span></span><span class="plan-meta">~5 min</span></a></li>
+</ol>
+<p class="plan-single">Prefer one scroll? <a href="03-conversation-and-streaming.html">Read this phase as a single page</a>.</p>
+</section>
+<footer class="page-footer">
+<nav class="continue" aria-label="Continue">
+<a class="continue-card" href="03-conversation-and-streaming-2.html" rel="next">
+<span class="continue-kicker">Next · Lesson 2 of 8</span>
+<span class="continue-title">Line-by-Line<span class="continue-time">~10 min</span><span class="continue-arrow" aria-hidden="true">→</span></span>
+</a>
+<p class="continue-aux">
+<a href="02-tool-system-8.html" rel="prev">← Phase 2 · Wrap-up</a>
+<a class="continue-fullpage" href="03-conversation-and-streaming.html#phase-3--conversation-state--streaming">View this lesson on the single page</a>
+</p>
+</nav>
+<p class="generated-note">Generated from <code>03-conversation-and-streaming.md</code> — lesson 1 of 8 in the derived lesson view (boundaries may move when the markdown changes; the <a href="03-conversation-and-streaming.html">single page</a> is the permanent address).</p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/03-conversation-and-streaming.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
+</footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
+</main>
+</div>
+<script>
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards.
+     diagram-text mirrors are excluded — print hides them entirely (the SVG
+     figure already prints; opening the ASCII would print the diagram twice). */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not(.diagram-text):not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
+  });
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
+
+  /* Reading progress: the fixed 3px accent bar tracks scroll position.
+     Without JS the element simply stays at width 0 — invisible, harmless. */
+  var pbar = document.querySelector('.progress-bar');
+  if (pbar) {
+    var setProgress = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      pbar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    };
+    window.addEventListener('scroll', setProgress, { passive: true });
+    setProgress();
+  }
+
+  /* Deep links into collapsed sections: open every <details> ancestor of the
+     target, and the refsection that immediately follows a target heading.
+     Re-scroll only if something actually opened (the layout above the target
+     just changed), and instantly — the CSS smooth scroll would crawl across
+     tens of thousands of pixels on the long phase pages. */
+  function openForHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) { return; }
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    var opened = false;
+    var d = el.closest('details');
+    while (d) {
+      if (!d.hasAttribute('open')) { d.setAttribute('open', ''); opened = true; }
+      d = d.parentElement && d.parentElement.closest('details');
+    }
+    var sib = el.nextElementSibling;
+    if (sib && sib.matches('details.refsection') && !sib.hasAttribute('open')) {
+      sib.setAttribute('open', '');
+      opened = true;
+    }
+    if (!opened) { return; }
+    var jump = function () {
+      var y = el.getBoundingClientRect().top + window.scrollY - 16;
+      try { window.scrollTo({ top: y, behavior: 'instant' }); }
+      catch (e) { window.scrollTo(0, y); }
+    };
+    jump();
+    /* the browser's own fragment scroll was computed against the collapsed
+       layout and may still be animating (CSS smooth) — re-assert once, which
+       cancels it */
+    setTimeout(jump, 100);
+  }
+  window.addEventListener('hashchange', openForHash);
+  openForHash();
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
+</script>
+</body>
+</html>

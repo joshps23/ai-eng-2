@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<!-- GENERATED from 08-production-harness.md — do not edit; run site/build_site.py -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="This is the fully-annotated reference implementation. It wires every middleware component in the correct order. Read it as the canonical specification.">
+<link rel="canonical" href="https://joshps23.github.io/ai-eng-2/08-production-harness.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://joshps23.github.io/ai-eng-2/08-production-harness-7.html">
+<meta property="og:site_name" content="Agent Harness Guide">
+<meta property="og:title" content="Phase 8 · Lesson 7 — 6. The Definitive… — Agent Harness Guide">
+<meta property="og:description" content="This is the fully-annotated reference implementation. It wires every middleware component in the correct order. Read it as the canonical specification.">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#FDFDFE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
+<title>Phase 8 · Lesson 7 — 6. The Definitive… — Agent Harness Guide</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body>
+<div class="progress-bar" aria-hidden="true"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="layout">
+<details class="sidebar-wrap" open>
+<summary class="sidebar-toggle">Guide navigation</summary>
+<nav class="sidebar" aria-label="Guide pages">
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
+<p class="sidebar-heading">Start here</p>
+<ul>
+<li><a href="index.html">Guide hub</a></li>
+<li><a href="learning-path.html">Learning Path</a></li>
+<li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
+<li><a href="faq.html">Setup &amp; FAQ</a></li>
+</ul>
+<p class="sidebar-heading">Phases</p>
+<ul>
+<li><a href="00-foundations-1.html">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness-1.html">Phase 1 — Bare Harness</a></li>
+<li><a href="02-tool-system-1.html">Phase 2 — Tool System</a></li>
+<li><a href="03-conversation-and-streaming-1.html">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools-1.html">Phase 4 — Real Tools</a></li>
+<li><a href="05-permissions-and-safety-1.html">Phase 5 — Permissions &amp; Safety</a></li>
+<li><a href="06-context-management-1.html">Phase 6 — Context Management</a></li>
+<li><a href="07-subagents-orchestration-1.html">Phase 7 — Sub-agents</a></li>
+<li class="current"><a href="08-production-harness-1.html" aria-current="true">Phase 8 — Production Harness</a></li>
+</ul>
+<p class="sidebar-heading">Appendix</p>
+<ul>
+<li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
+</ul>
+<p class="sidebar-heading">Practice</p>
+<ul>
+<li><a href="exercises.html">Exercises</a></li>
+<li><a href="glossary.html">Glossary</a></li>
+<li><a href="notebooks.html">Notebooks</a></li>
+</ul>
+</nav>
+</details>
+<main id="main">
+<header class="page-header">
+<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">8</span><span class="phase-kicker">Phase 8 · Lesson 7 of 10</span><span class="lesson-time">~11 min</span></p>
+<nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations-1.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness-1.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system-1.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming-1.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools-1.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety-1.html" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management-1.html" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration-1.html" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness-1.html" aria-current="true" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
+<nav class="lesson-rail" aria-label="Lessons in this phase"><a class="lesson-tick" href="08-production-harness-1.html" title="Lesson 1: The Production Harness (~11 min)" aria-label="Lesson 1: The Production Harness (~11 min)">1</a><a class="lesson-tick" href="08-production-harness-2.html" title="Lesson 2: The Smallest Reliability Win (~6 min)" aria-label="Lesson 2: The Smallest Reliability Win (~6 min)">2</a><a class="lesson-tick" href="08-production-harness-3.html" title="Lesson 3: Observability (~12 min)" aria-label="Lesson 3: Observability (~12 min)">3</a><a class="lesson-tick" href="08-production-harness-4.html" title="Lesson 4: Configuration (~15 min)" aria-label="Lesson 4: Configuration (~15 min)">4</a><a class="lesson-tick" href="08-production-harness-5.html" title="Lesson 5: The CLI / REPL (~11 min)" aria-label="Lesson 5: The CLI / REPL (~11 min)">5</a><a class="lesson-tick" href="08-production-harness-6.html" title="Lesson 6: 5. Reliability (Production… (~8 min)" aria-label="Lesson 6: 5. Reliability (Production… (~8 min)">6</a><a class="lesson-tick" href="08-production-harness-7.html" aria-current="page" title="Lesson 7: 6. The Definitive… (~11 min)" aria-label="Lesson 7: 6. The Definitive… (~11 min)">7</a><a class="lesson-tick" href="08-production-harness-8.html" title="Lesson 8: 7. Packaging and Operations (~4 min)" aria-label="Lesson 8: 7. Packaging and Operations (~4 min)">8</a><a class="lesson-tick" href="08-production-harness-9.html" title="Lesson 9: 8. Testing the Harness (~17 min)" aria-label="Lesson 9: 8. Testing the Harness (~17 min)">9</a><a class="lesson-tick" href="08-production-harness-10.html" title="Wrap-up: Pitfalls (~7 min)" aria-label="Wrap-up: Pitfalls (~7 min)">10</a></nav>
+</header>
+<article>
+<h2 id="6-the-definitive-agentrun_turn-loop">6. The Definitive <code>Agent.run_turn</code> Loop<a aria-label="Permalink to this section" class="hanchor" href="08-production-harness.html#6-the-definitive-agentrun_turn-loop">¶</a></h2>
+<p>This is the fully-annotated reference implementation. It wires every middleware component in the correct order. Read it as the canonical specification.</p>
+<blockquote>
+<p><strong>Which rung is this?</strong> The <strong>top rung of the entire guide</strong>. The skeleton is Phase 1's
+V3 — an <code>Agent</code> class wrapped around the call-model → run-tools → feed-results loop —
+and every collaborator it touches is the top rung of another phase's ladder:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th scope="col">Line in <code>run_turn</code> you'll see below</th>
+<th scope="col">Whose ladder-top it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>self.conversation.items.append(...)</code> / <code>.save(...)</code></td>
+<td>Phase 3 V3 (<code>Conversation</code>)</td>
+</tr>
+<tr>
+<td><code>self.registry.schemas()</code> / <code>self.registry.call(...)</code></td>
+<td>Phase 2 V4 (<code>@tool</code> + <code>ToolRegistry</code>)</td>
+</tr>
+<tr>
+<td><code>self.policy.check(...)</code>, <code>run_pre_hooks</code> / <code>run_post_hooks</code></td>
+<td>Phase 5 V3/V4 (policy + hooks)</td>
+</tr>
+<tr>
+<td><code>self.estimate_tokens()</code> / <code>self.compact()</code></td>
+<td>Phase 6 (<code>count_tokens</code> → <code>compact</code>)</td>
+</tr>
+<tr>
+<td><code>ThreadPoolExecutor(...)</code> over approved calls</td>
+<td>Phase 7 V4 (threaded dispatch)</td>
+</tr>
+<tr>
+<td><code>llm.create(...)</code> / <code>llm.stream(...)</code></td>
+<td>this phase, Step 0 → §5</td>
+</tr>
+</tbody>
+</table></div>
+<p>Nothing in the body is new. If any line feels foreign, the table tells you which phase
+to revisit — climb that ladder again and come back.</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="c1"># agent_harness/agent.py  (run_turn — full implementation)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Agent.run_turn encapsulates one user message → zero-or-more LLM+tool</span>
+<span class="sd">iterations → final assistant reply.</span>
+
+<span class="sd">Middleware order (per iteration):</span>
+<span class="sd">  1. Budget check / auto-compact</span>
+<span class="sd">  2. Append pending tool results (from prior iteration)</span>
+<span class="sd">  3. Stream LLM turn (with retry via llm.py)</span>
+<span class="sd">  4. Record usage in accounting</span>
+<span class="sd">  5. Carry output items into next input (normalized to plain dicts)</span>
+<span class="sd">  6. For each function_call item in output:</span>
+<span class="sd">       a. Pre-use hooks</span>
+<span class="sd">       b. Permission gate (approve / deny / escalate to user)</span>
+<span class="sd">       c. Parallel execution via ThreadPoolExecutor</span>
+<span class="sd">       d. Post-use hooks</span>
+<span class="sd">       e. Build function_call_output items</span>
+<span class="sd">  7. Trace the turn</span>
+<span class="sd">  8. Persist the transcript</span>
+<span class="sd">  9. If no tool calls: done. Otherwise: loop.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThreadPoolExecutor</span><span class="p">,</span> <span class="n">as_completed</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">llm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.accounting</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionAccounting</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">Settings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.conversation</span><span class="w"> </span><span class="kn">import</span> <span class="n">Conversation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.hooks</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_pre_hooks</span><span class="p">,</span> <span class="n">run_post_hooks</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.permissions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Decision</span><span class="p">,</span> <span class="n">PermissionPolicy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">ToolRegistry</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.tracer</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tracer</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Agent</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">client</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">instructions</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">registry</span><span class="p">:</span> <span class="n">ToolRegistry</span><span class="p">,</span>
+        <span class="n">policy</span><span class="p">:</span> <span class="n">PermissionPolicy</span><span class="p">,</span>
+        <span class="n">accounting</span><span class="p">:</span> <span class="n">SessionAccounting</span><span class="p">,</span>
+        <span class="n">tracer</span><span class="p">:</span> <span class="n">Tracer</span><span class="p">,</span>
+        <span class="n">settings</span><span class="p">:</span> <span class="n">Settings</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;main&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span> <span class="o">=</span> <span class="n">instructions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">registry</span> <span class="o">=</span> <span class="n">registry</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">policy</span> <span class="o">=</span> <span class="n">policy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accounting</span> <span class="o">=</span> <span class="n">accounting</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tracer</span> <span class="o">=</span> <span class="n">tracer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span> <span class="o">=</span> <span class="n">settings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">conversation</span> <span class="o">=</span> <span class="n">Conversation</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">turn_count</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="c1"># Item normalization — Phase 3 / Phase 6&#39;s model_dump() habit</span>
+    <span class="c1"># ------------------------------------------------------------------</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_to_dict</span><span class="p">(</span><span class="n">item</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalize one output item to a plain dict before it enters</span>
+<span class="sd">        the transcript.</span>
+
+<span class="sd">        The model&#39;s output items arrive as SDK (pydantic) objects — and in</span>
+<span class="sd">        tests (§8) as dataclass fakes. If we appended them raw, the very</span>
+<span class="sd">        next iteration&#39;s estimate_tokens() — json.dumps over the transcript</span>
+<span class="sd">        — would raise TypeError, and conversation.save() would too.</span>
+<span class="sd">        Normalizing at append time keeps the transcript JSON-serializable,</span>
+<span class="sd">        exactly the trick Phases 3 and 6 taught.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">item</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s2">&quot;model_dump&quot;</span><span class="p">):</span>          <span class="c1"># real SDK objects</span>
+            <span class="k">return</span> <span class="n">item</span><span class="o">.</span><span class="n">model_dump</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">is_dataclass</span><span class="p">(</span><span class="n">item</span><span class="p">):</span>       <span class="c1"># test fakes (§8.2)</span>
+            <span class="k">return</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">asdict</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">vars</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>                        <span class="c1"># last resort</span>
+
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="c1"># Token estimation (rough; use tiktoken in production)</span>
+    <span class="c1"># ------------------------------------------------------------------</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">estimate_tokens</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="c1"># Safe to json.dumps: _to_dict() guarantees every appended item</span>
+        <span class="c1"># is a plain dict.</span>
+        <span class="n">raw</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conversation</span><span class="o">.</span><span class="n">items</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span> <span class="o">//</span> <span class="mi">4</span>  <span class="c1"># ~4 chars per token</span>
+
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="c1"># Compaction</span>
+    <span class="c1"># ------------------------------------------------------------------</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">compact</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Summarise the conversation using a cheap model (Phase 6).</span>
+<span class="sd">        Replace input_items with [summary_message, ...recent_messages].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.compaction</span><span class="w"> </span><span class="kn">import</span> <span class="n">compact_conversation</span>  <span class="c1"># Phase 6</span>
+        <span class="n">before</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimate_tokens</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conversation</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="n">compact_conversation</span><span class="p">(</span>
+            <span class="n">client</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">compaction_model</span><span class="p">,</span>
+            <span class="n">items</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">conversation</span><span class="o">.</span><span class="n">items</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">after</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimate_tokens</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tracer</span><span class="o">.</span><span class="n">compaction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">turn_count</span><span class="p">,</span> <span class="n">before</span><span class="p">,</span> <span class="n">after</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Compaction: </span><span class="si">%d</span><span class="s2"> → </span><span class="si">%d</span><span class="s2"> estimated tokens&quot;</span><span class="p">,</span> <span class="n">before</span><span class="p">,</span> <span class="n">after</span><span class="p">)</span>
+
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="c1"># The loop</span>
+    <span class="c1"># ------------------------------------------------------------------</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_turn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Drive the agent until the model stops calling tools.</span>
+<span class="sd">        Returns the final assistant text.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Append the user message to the transcript.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conversation</span><span class="o">.</span><span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">user_text</span><span class="p">})</span>
+
+        <span class="n">pending_tool_outputs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">final_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">iteration</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">max_iterations</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">turn_count</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="c1"># ── Step 1: Budget check ──────────────────────────────────</span>
+            <span class="n">est_tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimate_tokens</span><span class="p">()</span>
+            <span class="n">threshold</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">max_context_tokens</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">compact_threshold</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">est_tokens</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="s2">&quot;Auto-compact triggered: </span><span class="si">%d</span><span class="s2"> &gt; </span><span class="si">%d</span><span class="s2"> tokens&quot;</span><span class="p">,</span> <span class="n">est_tokens</span><span class="p">,</span> <span class="n">threshold</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">compact</span><span class="p">()</span>
+
+            <span class="c1"># ── Step 2: Append pending tool outputs ───────────────────</span>
+            <span class="c1"># Tool outputs from the previous iteration are added now so</span>
+            <span class="c1"># they are part of the input to this LLM call.</span>
+            <span class="k">for</span> <span class="n">output_item</span> <span class="ow">in</span> <span class="n">pending_tool_outputs</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">conversation</span><span class="o">.</span><span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">output_item</span><span class="p">)</span>
+            <span class="n">pending_tool_outputs</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="c1"># ── Step 3: LLM call (with retry and streaming) ───────────</span>
+            <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tracer</span><span class="o">.</span><span class="n">turn_start</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">turn_count</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conversation</span><span class="o">.</span><span class="n">items</span><span class="p">))</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;[</span><span class="si">%s</span><span class="s2">] Turn </span><span class="si">%d</span><span class="s2">, </span><span class="si">%d</span><span class="s2"> messages, ~</span><span class="si">%d</span><span class="s2"> tokens&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">turn_count</span><span class="p">,</span>
+                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conversation</span><span class="o">.</span><span class="n">items</span><span class="p">),</span> <span class="n">est_tokens</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">tool_schemas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">registry</span><span class="o">.</span><span class="n">schemas</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">stream</span><span class="p">:</span>
+                <span class="c1"># Streamed path: print chunks as they arrive, collect full response</span>
+                <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stream_turn</span><span class="p">(</span><span class="n">tool_schemas</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Non-streamed path</span>
+                <span class="n">resp</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">,</span>
+                    <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+                    <span class="n">instructions</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">,</span>
+                    <span class="nb">input</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">conversation</span><span class="o">.</span><span class="n">items</span><span class="p">,</span>
+                    <span class="n">tools</span><span class="o">=</span><span class="n">tool_schemas</span><span class="p">,</span>
+                <span class="p">)</span>
+
+            <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+
+            <span class="c1"># ── Step 4: Record usage ──────────────────────────────────</span>
+            <span class="c1"># usage can be None on some streaming paths — guard it.</span>
+            <span class="n">usage</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">resp</span><span class="p">,</span> <span class="s2">&quot;usage&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">in_tok</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="s2">&quot;input_tokens&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">usage</span> <span class="k">else</span> <span class="mi">0</span>
+            <span class="n">out_tok</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="s2">&quot;output_tokens&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">usage</span> <span class="k">else</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accounting</span><span class="o">.</span><span class="n">record_turn</span><span class="p">(</span>
+                <span class="n">input_tokens</span><span class="o">=</span><span class="n">in_tok</span><span class="p">,</span>
+                <span class="n">output_tokens</span><span class="o">=</span><span class="n">out_tok</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tracer</span><span class="o">.</span><span class="n">turn_end</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">turn_count</span><span class="p">,</span>
+                <span class="n">in_tok</span><span class="p">,</span>
+                <span class="n">out_tok</span><span class="p">,</span>
+                <span class="n">elapsed</span><span class="p">,</span>
+                <span class="n">stop_reason</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">resp</span><span class="p">,</span> <span class="s2">&quot;status&quot;</span><span class="p">,</span> <span class="s2">&quot;unknown&quot;</span><span class="p">)),</span>
+            <span class="p">)</span>
+
+            <span class="c1"># ── Step 5: Carry output items into transcript ────────────</span>
+            <span class="c1"># The Responses API returns output as a list of typed items.</span>
+            <span class="c1"># Append them — normalized to plain dicts via _to_dict() — so</span>
+            <span class="c1"># future turns see the model&#39;s prior output AND the transcript</span>
+            <span class="c1"># stays JSON-serializable for estimate_tokens()/save().</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">resp</span><span class="o">.</span><span class="n">output</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">conversation</span><span class="o">.</span><span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_to_dict</span><span class="p">(</span><span class="n">item</span><span class="p">))</span>
+
+            <span class="c1"># Collect assistant text for the final return value.</span>
+            <span class="n">function_calls</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">resp</span><span class="o">.</span><span class="n">output</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;message&quot;</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+                        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;output_text&quot;</span><span class="p">:</span>
+                            <span class="n">final_text</span> <span class="o">+=</span> <span class="n">block</span><span class="o">.</span><span class="n">text</span>
+                <span class="k">elif</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;function_call&quot;</span><span class="p">:</span>
+                    <span class="n">function_calls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+
+            <span class="c1"># If no tool calls, the model is done.</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">function_calls</span><span class="p">:</span>
+                <span class="k">break</span>
+
+            <span class="c1"># ── Step 6: Execute tool calls ────────────────────────────</span>
+            <span class="c1"># 6a. Pre-use hooks</span>
+            <span class="k">for</span> <span class="n">fc</span> <span class="ow">in</span> <span class="n">function_calls</span><span class="p">:</span>
+                <span class="n">args</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">fc</span><span class="o">.</span><span class="n">arguments</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fc</span><span class="o">.</span><span class="n">arguments</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">fc</span><span class="o">.</span><span class="n">arguments</span>
+                <span class="n">run_pre_hooks</span><span class="p">(</span><span class="n">tool_name</span><span class="o">=</span><span class="n">fc</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+
+            <span class="c1"># 6b. Permission gate</span>
+            <span class="n">approved</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">fc</span> <span class="ow">in</span> <span class="n">function_calls</span><span class="p">:</span>
+                <span class="n">args</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">fc</span><span class="o">.</span><span class="n">arguments</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fc</span><span class="o">.</span><span class="n">arguments</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">fc</span><span class="o">.</span><span class="n">arguments</span>
+                <span class="n">decision</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">policy</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">tool_name</span><span class="o">=</span><span class="n">fc</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">tracer</span><span class="o">.</span><span class="n">permission_decision</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">turn_count</span><span class="p">,</span> <span class="n">fc</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">decision</span><span class="o">.</span><span class="n">value</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">decision</span> <span class="o">==</span> <span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">:</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Permission DENIED: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">fc</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                    <span class="n">pending_tool_outputs</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function_call_output&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;call_id&quot;</span><span class="p">:</span> <span class="n">fc</span><span class="o">.</span><span class="n">call_id</span><span class="p">,</span>
+                        <span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Error: permission denied for tool &#39;</span><span class="si">{</span><span class="n">fc</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">,</span>
+                    <span class="p">})</span>
+                <span class="k">elif</span> <span class="n">decision</span> <span class="o">==</span> <span class="n">Decision</span><span class="o">.</span><span class="n">ESCALATE</span><span class="p">:</span>
+                    <span class="c1"># Ask the user interactively</span>
+                    <span class="n">granted</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ask_user_approval</span><span class="p">(</span><span class="n">fc</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">granted</span><span class="p">:</span>
+                        <span class="n">approved</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fc</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">pending_tool_outputs</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function_call_output&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;call_id&quot;</span><span class="p">:</span> <span class="n">fc</span><span class="o">.</span><span class="n">call_id</span><span class="p">,</span>
+                            <span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Error: user denied permission for &#39;</span><span class="si">{</span><span class="n">fc</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">,</span>
+                        <span class="p">})</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">approved</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fc</span><span class="p">)</span>
+
+            <span class="c1"># 6c. Parallel execution</span>
+            <span class="n">results</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">with</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span>
+                <span class="n">max_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">max_tool_concurrency</span>
+            <span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+                <span class="n">future_to_fc</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="n">pool</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_execute_tool</span><span class="p">,</span> <span class="n">fc</span><span class="p">):</span> <span class="n">fc</span>
+                    <span class="k">for</span> <span class="n">fc</span> <span class="ow">in</span> <span class="n">approved</span>
+                <span class="p">}</span>
+                <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">as_completed</span><span class="p">(</span><span class="n">future_to_fc</span><span class="p">):</span>
+                    <span class="n">fc</span> <span class="o">=</span> <span class="n">future_to_fc</span><span class="p">[</span><span class="n">future</span><span class="p">]</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">result</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                        <span class="c1"># Tools must not raise; if they do, catch here</span>
+                        <span class="n">result</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Error: unexpected exception: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">results</span><span class="p">[</span><span class="n">fc</span><span class="o">.</span><span class="n">call_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+
+            <span class="c1"># 6d. Post-use hooks + build outputs</span>
+            <span class="k">for</span> <span class="n">fc</span> <span class="ow">in</span> <span class="n">approved</span><span class="p">:</span>
+                <span class="n">args</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">fc</span><span class="o">.</span><span class="n">arguments</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fc</span><span class="o">.</span><span class="n">arguments</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">fc</span><span class="o">.</span><span class="n">arguments</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="n">fc</span><span class="o">.</span><span class="n">call_id</span><span class="p">]</span>
+                <span class="n">run_post_hooks</span><span class="p">(</span><span class="n">tool_name</span><span class="o">=</span><span class="n">fc</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">result</span><span class="o">=</span><span class="n">result</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">tracer</span><span class="o">.</span><span class="n">tool_result</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">turn_count</span><span class="p">,</span>
+                    <span class="n">fc</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">fc</span><span class="o">.</span><span class="n">call_id</span><span class="p">,</span>
+                    <span class="n">ok</span><span class="o">=</span><span class="ow">not</span> <span class="n">result</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;Error&quot;</span><span class="p">),</span>
+                    <span class="n">preview</span><span class="o">=</span><span class="n">result</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">accounting</span><span class="o">.</span><span class="n">record_tool_call</span><span class="p">()</span>
+
+                <span class="n">pending_tool_outputs</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function_call_output&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;call_id&quot;</span><span class="p">:</span> <span class="n">fc</span><span class="o">.</span><span class="n">call_id</span><span class="p">,</span>
+                    <span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="n">result</span><span class="p">,</span>
+                <span class="p">})</span>
+
+            <span class="c1"># ── Step 7 &amp; 8: Trace + persist ───────────────────────────</span>
+            <span class="c1"># Trace already updated in the tool_result calls above.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conversation</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">transcript_path</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Hit max_iterations without a clean stop</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Hit max_iterations=</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">max_iterations</span><span class="p">)</span>
+            <span class="n">final_text</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">[Agent reached maximum iterations limit]&quot;</span>
+
+        <span class="k">return</span> <span class="n">final_text</span>
+
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="c1"># Streaming helper</span>
+    <span class="c1"># ------------------------------------------------------------------</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_stream_turn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool_schemas</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stream the turn, printing text chunks, then return the final response.&quot;&quot;&quot;</span>
+        <span class="n">final</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">with</span> <span class="n">llm</span><span class="o">.</span><span class="n">stream</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+            <span class="n">instructions</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">,</span>
+            <span class="nb">input</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">conversation</span><span class="o">.</span><span class="n">items</span><span class="p">,</span>
+            <span class="n">tools</span><span class="o">=</span><span class="n">tool_schemas</span><span class="p">,</span>
+            <span class="n">reasoning</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;summary&quot;</span><span class="p">:</span> <span class="s2">&quot;auto&quot;</span><span class="p">},</span>  <span class="c1"># surface the chain-of-thought</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">stream_ctx</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">stream_ctx</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;response.output_text.delta&quot;</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">delta</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;response.reasoning_summary_text.delta&quot;</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">delta</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># chain-of-thought</span>
+                <span class="k">elif</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;response.completed&quot;</span><span class="p">:</span>
+                    <span class="c1"># The raw stream has no get_final_response(); the assembled</span>
+                    <span class="c1"># Response arrives here, on event.response.</span>
+                    <span class="n">final</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">response</span>
+            <span class="nb">print</span><span class="p">()</span>  <span class="c1"># newline after streamed output</span>
+        <span class="k">return</span> <span class="n">final</span>
+
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="c1"># Tool execution (never raises)</span>
+    <span class="c1"># ------------------------------------------------------------------</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_execute_tool</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fc</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">fc</span><span class="o">.</span><span class="n">arguments</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fc</span><span class="o">.</span><span class="n">arguments</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">fc</span><span class="o">.</span><span class="n">arguments</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tracer</span><span class="o">.</span><span class="n">tool_call</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">turn_count</span><span class="p">,</span> <span class="n">fc</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">fc</span><span class="o">.</span><span class="n">call_id</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Executing tool </span><span class="si">%s</span><span class="s2"> call_id=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">fc</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">fc</span><span class="o">.</span><span class="n">call_id</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">registry</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">fc</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Tool </span><span class="si">%s</span><span class="s2"> raised: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">fc</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="c1"># Interactive approval</span>
+    <span class="c1"># ------------------------------------------------------------------</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ask_user_approval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">[Permission required] Tool: </span><span class="si">{</span><span class="n">tool_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Arguments: </span><span class="si">{</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">answer</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Allow? [y/N]: &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">EOFError</span><span class="p">,</span> <span class="ne">KeyboardInterrupt</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">answer</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;yes&quot;</span><span class="p">)</span>
+</code></pre></div>
+<blockquote class="beginner">
+<p>🟢 <strong><code>for … else</code> is not "on error".</strong> The <code>else:</code> clause hanging off <code>run_turn</code>'s
+<code>for iteration in range(...)</code> loop runs only if the loop finished <strong>without hitting
+<code>break</code></strong> — read it as "for … no-break". The loop <code>break</code>s as soon as the model stops
+calling tools, so reaching the <code>else:</code> branch means exactly one thing: all
+<code>max_iterations</code> were used up without a clean stop, and we append the
+<code>[Agent reached maximum iterations limit]</code> notice. It is the most misread construct
+in Python; nothing about it is error handling.</p>
+</blockquote>
+</article>
+<footer class="page-footer">
+<nav class="continue" aria-label="Continue">
+<a class="continue-card" href="08-production-harness-8.html" rel="next">
+<span class="continue-kicker">Next · Lesson 8 of 10</span>
+<span class="continue-title">7. Packaging and Operations<span class="continue-time">~4 min</span><span class="continue-arrow" aria-hidden="true">→</span></span>
+</a>
+<p class="continue-aux">
+<a href="08-production-harness-6.html" rel="prev">← Lesson 6 · 5. Reliability (Production…</a>
+<a class="continue-fullpage" href="08-production-harness.html#6-the-definitive-agentrun_turn-loop">View this lesson on the single page</a>
+</p>
+</nav>
+<p class="generated-note">Generated from <code>08-production-harness.md</code> — lesson 7 of 10 in the derived lesson view (boundaries may move when the markdown changes; the <a href="08-production-harness.html">single page</a> is the permanent address).</p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/08-production-harness.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
+</footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
+</main>
+</div>
+<script>
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards.
+     diagram-text mirrors are excluded — print hides them entirely (the SVG
+     figure already prints; opening the ASCII would print the diagram twice). */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not(.diagram-text):not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
+  });
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
+
+  /* Reading progress: the fixed 3px accent bar tracks scroll position.
+     Without JS the element simply stays at width 0 — invisible, harmless. */
+  var pbar = document.querySelector('.progress-bar');
+  if (pbar) {
+    var setProgress = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      pbar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    };
+    window.addEventListener('scroll', setProgress, { passive: true });
+    setProgress();
+  }
+
+  /* Deep links into collapsed sections: open every <details> ancestor of the
+     target, and the refsection that immediately follows a target heading.
+     Re-scroll only if something actually opened (the layout above the target
+     just changed), and instantly — the CSS smooth scroll would crawl across
+     tens of thousands of pixels on the long phase pages. */
+  function openForHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) { return; }
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    var opened = false;
+    var d = el.closest('details');
+    while (d) {
+      if (!d.hasAttribute('open')) { d.setAttribute('open', ''); opened = true; }
+      d = d.parentElement && d.parentElement.closest('details');
+    }
+    var sib = el.nextElementSibling;
+    if (sib && sib.matches('details.refsection') && !sib.hasAttribute('open')) {
+      sib.setAttribute('open', '');
+      opened = true;
+    }
+    if (!opened) { return; }
+    var jump = function () {
+      var y = el.getBoundingClientRect().top + window.scrollY - 16;
+      try { window.scrollTo({ top: y, behavior: 'instant' }); }
+      catch (e) { window.scrollTo(0, y); }
+    };
+    jump();
+    /* the browser's own fragment scroll was computed against the collapsed
+       layout and may still be animating (CSS smooth) — re-assert once, which
+       cancels it */
+    setTimeout(jump, 100);
+  }
+  window.addEventListener('hashchange', openForHash);
+  openForHash();
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
+</script>
+</body>
+</html>

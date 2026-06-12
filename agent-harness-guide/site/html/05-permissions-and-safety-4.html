@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<!-- GENERATED from 05-permissions-and-safety.md — do not edit; run site/build_site.py -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="This is Version 2, organized. Each of the four steps below upgrades one of the plain dicts/functions you already have into its production-shaped form; at the…">
+<link rel="canonical" href="https://joshps23.github.io/ai-eng-2/05-permissions-and-safety.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://joshps23.github.io/ai-eng-2/05-permissions-and-safety-4.html">
+<meta property="og:site_name" content="Agent Harness Guide">
+<meta property="og:title" content="Phase 5 · Lesson 4 — classes · part 1 of 3 — Agent Harness Guide">
+<meta property="og:description" content="This is Version 2, organized. Each of the four steps below upgrades one of the plain dicts/functions you already have into its production-shaped form; at the…">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#FDFDFE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
+<title>Phase 5 · Lesson 4 — classes · part 1 of 3 — Agent Harness Guide</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body>
+<div class="progress-bar" aria-hidden="true"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="layout">
+<details class="sidebar-wrap" open>
+<summary class="sidebar-toggle">Guide navigation</summary>
+<nav class="sidebar" aria-label="Guide pages">
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
+<p class="sidebar-heading">Start here</p>
+<ul>
+<li><a href="index.html">Guide hub</a></li>
+<li><a href="learning-path.html">Learning Path</a></li>
+<li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
+<li><a href="faq.html">Setup &amp; FAQ</a></li>
+</ul>
+<p class="sidebar-heading">Phases</p>
+<ul>
+<li><a href="00-foundations-1.html">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness-1.html">Phase 1 — Bare Harness</a></li>
+<li><a href="02-tool-system-1.html">Phase 2 — Tool System</a></li>
+<li><a href="03-conversation-and-streaming-1.html">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools-1.html">Phase 4 — Real Tools</a></li>
+<li class="current"><a href="05-permissions-and-safety-1.html" aria-current="true">Phase 5 — Permissions &amp; Safety</a></li>
+<li><a href="06-context-management-1.html">Phase 6 — Context Management</a></li>
+<li><a href="07-subagents-orchestration-1.html">Phase 7 — Sub-agents</a></li>
+<li><a href="08-production-harness-1.html">Phase 8 — Production Harness</a></li>
+</ul>
+<p class="sidebar-heading">Appendix</p>
+<ul>
+<li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
+</ul>
+<p class="sidebar-heading">Practice</p>
+<ul>
+<li><a href="exercises.html">Exercises</a></li>
+<li><a href="glossary.html">Glossary</a></li>
+<li><a href="notebooks.html">Notebooks</a></li>
+</ul>
+</nav>
+</details>
+<main id="main">
+<header class="page-header">
+<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">5</span><span class="phase-kicker">Phase 5 · Lesson 4 of 9</span><span class="lesson-time">~9 min</span></p>
+<nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations-1.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness-1.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system-1.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming-1.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools-1.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety-1.html" aria-current="true" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management-1.html" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration-1.html" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness-1.html" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
+<nav class="lesson-rail" aria-label="Lessons in this phase"><a class="lesson-tick" href="05-permissions-and-safety-1.html" title="Lesson 1: Permissions, Safety &amp; the… (~3 min)" aria-label="Lesson 1: Permissions, Safety &amp; the… (~3 min)">1</a><a class="lesson-tick" href="05-permissions-and-safety-2.html" title="Lesson 2: line-by-line (~7 min)" aria-label="Lesson 2: line-by-line (~7 min)">2</a><a class="lesson-tick" href="05-permissions-and-safety-3.html" title="Lesson 3: functions (~22 min)" aria-label="Lesson 3: functions (~22 min)">3</a><a class="lesson-tick" href="05-permissions-and-safety-4.html" aria-current="page" title="Lesson 4: classes · part 1 of 3 (~9 min)" aria-label="Lesson 4: classes · part 1 of 3 (~9 min)">4</a><a class="lesson-tick" href="05-permissions-and-safety-5.html" title="Lesson 5: classes · part 2 of 3 (~11 min)" aria-label="Lesson 5: classes · part 2 of 3 (~11 min)">5</a><a class="lesson-tick" href="05-permissions-and-safety-6.html" title="Lesson 6: classes · part 3 of 3 (~10 min)" aria-label="Lesson 6: classes · part 3 of 3 (~10 min)">6</a><a class="lesson-tick" href="05-permissions-and-safety-7.html" title="Lesson 7: hooks (~16 min)" aria-label="Lesson 7: hooks (~16 min)">7</a><a class="lesson-tick" href="05-permissions-and-safety-8.html" title="Lesson 8: Sandboxing (~19 min)" aria-label="Lesson 8: Sandboxing (~19 min)">8</a><a class="lesson-tick" href="05-permissions-and-safety-9.html" title="Wrap-up: Pitfalls (~6 min)" aria-label="Wrap-up: Pitfalls (~6 min)">9</a></nav>
+<nav class="ladder" aria-label="Version ladder"><a class="ladder-rung" href="05-permissions-and-safety-2.html#version-1--line-by-line-one-inline-if-before-the-tool-runs"><span class="ladder-medallion">V1</span> line-by-line</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="05-permissions-and-safety-3.html#version-2--functions-a-check_permission-you-can-call-and-test"><span class="ladder-medallion">V2</span> functions</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="05-permissions-and-safety-4.html#version-3--classes-the-same-gate-as-policy-objects"><span class="ladder-medallion">V3</span> classes</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="05-permissions-and-safety-7.html#version-4--hooks-functions-you-hand-to-the-harness"><span class="ladder-medallion">V4</span> hooks</a></nav>
+<details class="page-toc">
+<summary>On this page</summary>
+<ul>
+<li class="toc-h2"><a href="#version-3--classes-the-same-gate-as-policy-objects">Version 3 — classes: the same gate as policy objects</a>
+<ul>
+<li class="toc-h3"><a href="#what-changed-from-v2-to-v3">What changed from V2 to V3</a></li>
+<li class="toc-h3"><a href="#step-31--risk-classification-production-shape">Step 3.1 — Risk Classification (production shape)</a></li>
+<li class="toc-h3"><a href="#step-32--permission-modes-production-shape">Step 3.2 — Permission Modes (production shape)</a></li>
+</ul>
+</li>
+</ul>
+</details>
+</header>
+<article>
+<h2 id="version-3--classes-the-same-gate-as-policy-objects">Version 3 — classes: the same gate as policy objects<a aria-label="Permalink to this section" class="hanchor" href="05-permissions-and-safety.html#version-3--classes-the-same-gate-as-policy-objects">¶</a></h2>
+<h3 id="what-changed-from-v2-to-v3">What changed from V2 to V3<a aria-label="Permalink to this section" class="hanchor" href="05-permissions-and-safety.html#what-changed-from-v2-to-v3">¶</a></h3>
+<ul>
+<li>The <code>"safe"</code>/<code>"caution"</code>/<code>"dangerous"</code> strings move from a standalone <code>TOOL_RISK</code>
+  dict onto the tool itself (<code>Tool.risk</code>), so risk can't drift out of sync with the tool list.</li>
+<li>The mode string becomes <code>class Mode(str, Enum)</code> — same values, but a typo like
+  <code>Mode.PLAM</code> fails at import time instead of silently never matching.</li>
+<li>Each rule dict <code>{"decision": ..., "tool": ..., "arg_contains": ...}</code> becomes a
+  <code>PolicyRule</code> dataclass with named fields and a <code>matches()</code> method.</li>
+<li>The rule list and its evaluation loop move together into <code>PermissionPolicy.evaluate()</code>
+  — still first-match-wins, exactly like <code>apply_rules()</code>.</li>
+<li><code>check_permission</code> now returns <code>(Decision, reason)</code> instead of a bare string, so
+  denials carry an explanation the model and your logs can read.</li>
+<li>One genuinely new capability: <strong>session memory</strong> — answering <code>a</code>/<code>d</code> at the prompt
+  remembers your choice for the rest of the run.</li>
+</ul>
+<p>This is Version 2, organized. Each of the four steps below upgrades one of the plain
+dicts/functions you already have into its production-shaped form; at the end, the whole
+thing is assembled into one runnable file.</p>
+<h3 id="step-31--risk-classification-production-shape">Step 3.1 — Risk Classification (production shape)<a aria-label="Permalink to this section" class="hanchor" href="05-permissions-and-safety.html#step-31--risk-classification-production-shape">¶</a></h3>
+<p>The plain <code>TOOL_RISK</code> dict works, but in a larger codebase you want risk declared <em>on the tool itself</em>, so it can't drift out of sync. To do that, this phase builds its own richer <code>Tool</code> — a dataclass with a <code>risk</code> field — as an upgrade of the Phase 2 idea.</p>
+<blockquote class="beginner">
+<p>🟢 <strong>A two-minute bridge: how this phase's files relate to Phase 2's.</strong> Phase 2 built a
+<code>tools/</code> <em>package</em> (a folder) exporting <code>Tool</code>, <code>FunctionTool</code>, the <code>@tool</code> decorator,
+and <code>ToolRegistry</code> — none of which know about risk. This phase keeps its upgraded
+versions in <strong>its own files</strong> with <strong>different names</strong>, so nothing collides:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th scope="col">Phase 2 (<code>tools/</code> package)</th>
+<th scope="col">Phase 5 (this phase's files)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>class Tool</code> / <code>FunctionTool(fn=...)</code></td>
+<td><code>risk_tools.py</code> — <code>@dataclass Tool(run=..., risk=...)</code></td>
+</tr>
+<tr>
+<td><code>ToolRegistry.to_openai_schema()</code></td>
+<td><code>tool_registry.py</code> — <code>ToolRegistry.api_schemas()</code></td>
+</tr>
+<tr>
+<td><code>ToolRegistry.dispatch(name, args_str)</code></td>
+<td>same name, plus <code>get()</code> and <code>all_tools()</code></td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Do not name this phase's file <code>tools.py</code></strong> — a <code>tools.py</code> file and Phase 2's <code>tools/</code>
+package cannot live in the same folder (Python sees one name, <code>tools</code>, and picks one of
+them — the same shadowing trap Phase 4 dodged by naming its module <code>coding_tools.py</code>).
+We use <strong><code>risk_tools.py</code></strong> throughout. At the end of this phase, a small adapter
+(<code>phase5_tools.py</code>, built in the sandbox section) wraps Phase 4's actual tools in these
+risk-aware ones, so you reuse everything you already built.</p>
+</blockquote>
+<!-- bq-split -->
+<blockquote>
+<p><strong>Why the <code>@dataclass</code> syntax?</strong> It's a class whose only job is to hold named fields — think of it as a dict with fixed keys and dot-access. <code>tool.risk</code> is the same idea as <code>tool["risk"]</code>.</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="c1"># risk_tools.py — this phase&#39;s risk-aware Tool (an upgraded take on Phase 2&#39;s Tool)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span>
+
+<span class="n">RISK_SAFE</span>      <span class="o">=</span> <span class="s2">&quot;safe&quot;</span>       <span class="c1"># read-only, no side effects</span>
+<span class="n">RISK_CAUTION</span>   <span class="o">=</span> <span class="s2">&quot;caution&quot;</span>    <span class="c1"># writes, but bounded (workspace files only)</span>
+<span class="n">RISK_DANGEROUS</span> <span class="o">=</span> <span class="s2">&quot;dangerous&quot;</span>  <span class="c1"># arbitrary execution or network I/O</span>
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Tool</span><span class="p">:</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">parameters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>          <span class="c1"># JSON Schema object</span>
+    <span class="n">run</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
+    <span class="n">risk</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">RISK_SAFE</span>               <span class="c1"># default to safe; override per tool</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_api_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
+            <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span>
+            <span class="c1"># No &quot;strict&quot;: True here — strict mode requires every property to be</span>
+            <span class="c1"># listed in &quot;required&quot;, which breaks tools with optional parameters</span>
+            <span class="c1"># (read_file&#39;s offset/limit, bash&#39;s timeout). Phase 1 covered this.</span>
+        <span class="p">}</span>
+</code></pre></div>
+<p>When registering real tools (from Phase 4), declare their risk explicitly:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># tool_registry.py — this phase&#39;s registry (Phase 2&#39;s idea, plus get/all_tools/api_schemas)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">risk_tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tool</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ToolRegistry</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tools</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tool</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool</span><span class="p">:</span> <span class="n">Tool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># One quiet difference from Phase 2&#39;s ToolRegistry: registering the same</span>
+        <span class="c1"># name twice silently overwrites here (last registration wins), where</span>
+        <span class="c1"># Phase 2 raised ValueError.  Convenient for this phase&#39;s experiments.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tools</span><span class="p">[</span><span class="n">tool</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">tool</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tool</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tools</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">all_tools</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Tool</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tools</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">api_schemas</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">to_api_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tools</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">dispatch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Raw dispatch — no safety checks. Use safe_dispatch in the loop.&quot;&quot;&quot;</span>
+        <span class="n">tool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tools</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">tool</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Error: unknown tool &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">args_str</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Error: could not parse tool arguments: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">tool</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>          <span class="c1"># tools should not raise, but belt-and-suspenders</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Error: tool raised unexpectedly: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
+</code></pre></div>
+<p>The risk table for Phase 4 tools:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th scope="col">Tool</th>
+<th scope="col">Risk</th>
+<th scope="col">Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>read_file</code></td>
+<td><code>safe</code></td>
+<td>Read-only, path-confined</td>
+</tr>
+<tr>
+<td><code>glob</code></td>
+<td><code>safe</code></td>
+<td>Read-only listing</td>
+</tr>
+<tr>
+<td><code>grep</code></td>
+<td><code>safe</code></td>
+<td>Read-only search</td>
+</tr>
+<tr>
+<td><code>list_dir</code></td>
+<td><code>safe</code></td>
+<td>Read-only listing</td>
+</tr>
+<tr>
+<td><code>write_file</code></td>
+<td><code>caution</code></td>
+<td>Creates/overwrites files in workspace</td>
+</tr>
+<tr>
+<td><code>edit_file</code></td>
+<td><code>caution</code></td>
+<td>Mutates files in workspace</td>
+</tr>
+<tr>
+<td><code>bash</code></td>
+<td><code>dangerous</code></td>
+<td>Arbitrary shell execution</td>
+</tr>
+</tbody>
+</table></div>
+<hr>
+<h3 id="step-32--permission-modes-production-shape">Step 3.2 — Permission Modes (production shape)<a aria-label="Permalink to this section" class="hanchor" href="05-permissions-and-safety.html#step-32--permission-modes-production-shape">¶</a></h3>
+<blockquote>
+<p><strong>Why <code>class Mode(str, Enum)</code> instead of a plain string?</strong> Your editor can autocomplete <code>Mode.PLAN</code> and will catch <code>Mode.PLAM</code> at import time. The plain-string version from Step 2.2 works identically at runtime; the Enum just catches typos early.</p>
+</blockquote>
+<p>The harness operates in one of five modes. These mirror the mental model popularised by Claude Code, adapted for a pure-Python harness.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th scope="col">Mode</th>
+<th scope="col">Short name</th>
+<th scope="col">What it allows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Plan / read-only</td>
+<td><code>plan</code></td>
+<td><code>safe</code> tools only. All mutations silently denied (returned as a denial message to the model).</td>
+</tr>
+<tr>
+<td>Auto</td>
+<td><code>auto</code></td>
+<td><code>safe</code> and <code>caution</code> auto-approved. <code>dangerous</code> tools prompt the user.</td>
+</tr>
+<tr>
+<td>Accept edits</td>
+<td><code>accept-edits</code></td>
+<td><code>safe</code> and <code>caution</code> auto-approved. <code>dangerous</code> tools prompt the user (same as <code>auto</code> except the intent signal is explicit).</td>
+</tr>
+<tr>
+<td>Always allow</td>
+<td><code>always-allow</code></td>
+<td>All tool calls auto-approved. No prompts.</td>
+</tr>
+<tr>
+<td>Bypass / YOLO</td>
+<td><code>bypass</code></td>
+<td>Same as <code>always-allow</code> but the harness prints a loud warning at startup.</td>
+</tr>
+</tbody>
+</table></div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p><p><code>always-allow</code> and <code>bypass</code> auto-approve <strong>every</strong> tool call, including <code>bash</code>. One
+confused completion — or one prompt-injected file — can then overwrite files or
+exfiltrate secrets with no human in the loop. Use these modes only in a throwaway
+sandbox, never on input or a machine you care about.</p>
+</div>
+<!-- bq-split -->
+<blockquote class="beginner">
+<p>🟢 <strong><code>{"safe"}</code> below is a <em>set</em>, not a dict.</strong> Curly braces around values <em>without
+colons</em> make a <code>set</code> — think of it as a list that ignores duplicates and is very fast
+at <code>in</code> checks (<code>"safe" in {"safe", "caution"}</code>). <code>set()</code> makes an empty one — plain
+<code>{}</code> would make an empty <em>dict</em>.</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="c1"># permissions.py</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Mode</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+    <span class="n">PLAN</span>          <span class="o">=</span> <span class="s2">&quot;plan&quot;</span>
+    <span class="n">AUTO</span>          <span class="o">=</span> <span class="s2">&quot;auto&quot;</span>
+    <span class="n">ACCEPT_EDITS</span>  <span class="o">=</span> <span class="s2">&quot;accept-edits&quot;</span>
+    <span class="n">ALWAYS_ALLOW</span>  <span class="o">=</span> <span class="s2">&quot;always-allow&quot;</span>
+    <span class="n">BYPASS</span>        <span class="o">=</span> <span class="s2">&quot;bypass&quot;</span>
+
+<span class="c1"># Map mode -&gt; which risk levels are auto-approved (everything else -&gt; ASK or DENY)</span>
+<span class="n">_AUTO_APPROVED</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Mode</span><span class="p">,</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">Mode</span><span class="o">.</span><span class="n">PLAN</span><span class="p">:</span>         <span class="p">{</span><span class="s2">&quot;safe&quot;</span><span class="p">},</span>
+    <span class="n">Mode</span><span class="o">.</span><span class="n">AUTO</span><span class="p">:</span>         <span class="p">{</span><span class="s2">&quot;safe&quot;</span><span class="p">,</span> <span class="s2">&quot;caution&quot;</span><span class="p">},</span>
+    <span class="n">Mode</span><span class="o">.</span><span class="n">ACCEPT_EDITS</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;safe&quot;</span><span class="p">,</span> <span class="s2">&quot;caution&quot;</span><span class="p">},</span>
+    <span class="n">Mode</span><span class="o">.</span><span class="n">ALWAYS_ALLOW</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;safe&quot;</span><span class="p">,</span> <span class="s2">&quot;caution&quot;</span><span class="p">,</span> <span class="s2">&quot;dangerous&quot;</span><span class="p">},</span>
+    <span class="n">Mode</span><span class="o">.</span><span class="n">BYPASS</span><span class="p">:</span>       <span class="p">{</span><span class="s2">&quot;safe&quot;</span><span class="p">,</span> <span class="s2">&quot;caution&quot;</span><span class="p">,</span> <span class="s2">&quot;dangerous&quot;</span><span class="p">},</span>
+<span class="p">}</span>
+
+<span class="c1"># In PLAN mode, dangerous/caution are hard-DENY (not ASK), because the user</span>
+<span class="c1"># explicitly asked for a read-only run.</span>
+<span class="n">_HARD_DENY_IN_MODE</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Mode</span><span class="p">,</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">Mode</span><span class="o">.</span><span class="n">PLAN</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;caution&quot;</span><span class="p">,</span> <span class="s2">&quot;dangerous&quot;</span><span class="p">},</span>
+<span class="p">}</span>
+
+<span class="n">BYPASS_WARNING</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s2">╔══════════════════════════════════════════════════════════════╗</span>
+<span class="s2">║  WARNING: harness running in BYPASS / YOLO mode.             ║</span>
+<span class="s2">║  All tool calls will be auto-approved, including bash.       ║</span>
+<span class="s2">║  Never use this mode on untrusted input or in production.    ║</span>
+<span class="s2">╚══════════════════════════════════════════════════════════════╝&quot;&quot;&quot;</span>
+</code></pre></div>
+<hr>
+</article>
+<footer class="page-footer">
+<nav class="continue" aria-label="Continue">
+<a class="continue-card" href="05-permissions-and-safety-5.html" rel="next">
+<span class="continue-kicker">Next · Lesson 5 of 9</span>
+<span class="continue-title">classes · part 2 of 3<span class="continue-time">~11 min</span><span class="continue-arrow" aria-hidden="true">→</span></span>
+</a>
+<p class="continue-aux">
+<a href="05-permissions-and-safety-3.html" rel="prev">← Lesson 3 · functions</a>
+<a class="continue-fullpage" href="05-permissions-and-safety.html#version-3--classes-the-same-gate-as-policy-objects">View this lesson on the single page</a>
+</p>
+</nav>
+<p class="generated-note">Generated from <code>05-permissions-and-safety.md</code> — lesson 4 of 9 in the derived lesson view (boundaries may move when the markdown changes; the <a href="05-permissions-and-safety.html">single page</a> is the permanent address).</p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/05-permissions-and-safety.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
+</footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
+</main>
+</div>
+<script>
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards.
+     diagram-text mirrors are excluded — print hides them entirely (the SVG
+     figure already prints; opening the ASCII would print the diagram twice). */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not(.diagram-text):not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
+  });
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
+
+  /* Reading progress: the fixed 3px accent bar tracks scroll position.
+     Without JS the element simply stays at width 0 — invisible, harmless. */
+  var pbar = document.querySelector('.progress-bar');
+  if (pbar) {
+    var setProgress = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      pbar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    };
+    window.addEventListener('scroll', setProgress, { passive: true });
+    setProgress();
+  }
+
+  /* Deep links into collapsed sections: open every <details> ancestor of the
+     target, and the refsection that immediately follows a target heading.
+     Re-scroll only if something actually opened (the layout above the target
+     just changed), and instantly — the CSS smooth scroll would crawl across
+     tens of thousands of pixels on the long phase pages. */
+  function openForHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) { return; }
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    var opened = false;
+    var d = el.closest('details');
+    while (d) {
+      if (!d.hasAttribute('open')) { d.setAttribute('open', ''); opened = true; }
+      d = d.parentElement && d.parentElement.closest('details');
+    }
+    var sib = el.nextElementSibling;
+    if (sib && sib.matches('details.refsection') && !sib.hasAttribute('open')) {
+      sib.setAttribute('open', '');
+      opened = true;
+    }
+    if (!opened) { return; }
+    var jump = function () {
+      var y = el.getBoundingClientRect().top + window.scrollY - 16;
+      try { window.scrollTo({ top: y, behavior: 'instant' }); }
+      catch (e) { window.scrollTo(0, y); }
+    };
+    jump();
+    /* the browser's own fragment scroll was computed against the collapsed
+       layout and may still be animating (CSS smooth) — re-assert once, which
+       cancels it */
+    setTimeout(jump, 100);
+  }
+  window.addEventListener('hashchange', openForHash);
+  openForHash();
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
+</script>
+</body>
+</html>

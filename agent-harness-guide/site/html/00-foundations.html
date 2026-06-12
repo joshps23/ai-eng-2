@@ -35,15 +35,15 @@
 </ul>
 <p class="sidebar-heading">Phases</p>
 <ul>
-<li class="current"><a href="00-foundations.html" aria-current="page">Phase 0 — Foundations</a></li>
-<li><a href="01-bare-harness.html">Phase 1 — Bare Harness</a></li>
-<li><a href="02-tool-system.html">Phase 2 — Tool System</a></li>
-<li><a href="03-conversation-and-streaming.html">Phase 3 — Conversation &amp; Streaming</a></li>
-<li><a href="04-real-tools.html">Phase 4 — Real Tools</a></li>
-<li><a href="05-permissions-and-safety.html">Phase 5 — Permissions &amp; Safety</a></li>
-<li><a href="06-context-management.html">Phase 6 — Context Management</a></li>
-<li><a href="07-subagents-orchestration.html">Phase 7 — Sub-agents</a></li>
-<li><a href="08-production-harness.html">Phase 8 — Production Harness</a></li>
+<li class="current"><a href="00-foundations-1.html" aria-current="true">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness-1.html">Phase 1 — Bare Harness</a></li>
+<li><a href="02-tool-system-1.html">Phase 2 — Tool System</a></li>
+<li><a href="03-conversation-and-streaming-1.html">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools-1.html">Phase 4 — Real Tools</a></li>
+<li><a href="05-permissions-and-safety-1.html">Phase 5 — Permissions &amp; Safety</a></li>
+<li><a href="06-context-management-1.html">Phase 6 — Context Management</a></li>
+<li><a href="07-subagents-orchestration-1.html">Phase 7 — Sub-agents</a></li>
+<li><a href="08-production-harness-1.html">Phase 8 — Production Harness</a></li>
 </ul>
 <p class="sidebar-heading">Appendix</p>
 <ul>
@@ -62,6 +62,7 @@
 <p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">0</span><span class="phase-kicker">Phase 0 of 8</span></p>
 <nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations.html" aria-current="page" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety.html" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management.html" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration.html" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness.html" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
 <nav class="ladder" aria-label="Version ladder"><a class="ladder-rung" href="#03-version-1--the-whole-handshake-line-by-line"><span class="ladder-medallion">V1</span> the whole handshake, line…</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="#04-version-2--the-same-handshake-organized-into-functions"><span class="ladder-medallion">V2</span> the same handshake…</a></nav>
+<p class="lesson-strip">This phase is also available as 5 lessons of ~8 min — <a href="00-foundations-1.html">start Lesson 1 →</a> <span class="lesson-strip-note">(this single page is best for printing)</span></p>
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
@@ -153,7 +154,7 @@ comes up.</p>
 <blockquote>
 <p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/00-foundations.ipynb" title="Opens the notebook on GitHub — or use its Open-in-Colab badge"><code>notebooks/00-foundations.ipynb</code></a> executes this phase's checkpoints offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
 </blockquote>
-<h2 id="01-what-is-an-agent-harness">0.1 What is an "agent harness"?<a aria-label="Permalink to this section" class="hanchor" href="#01-what-is-an-agent-harness">¶</a></h2>
+<h2 id="01-what-is-an-agent-harness">0.1 What is an "agent harness"?<a aria-label="Permalink to this section" class="hanchor" href="#01-what-is-an-agent-harness">¶</a><a class="lesson-link" href="00-foundations-1.html" title="Read this section in lesson view (Lesson 1 of 5)">lesson 1</a></h2>
 <p>An LLM by itself is a <strong>pure function</strong>: text in, text out. It cannot read a file,
 run a command, call an API, or remember anything between calls. It is frozen.</p>
 <p>An <strong>agent harness</strong> is the program wrapped <em>around</em> the model that gives it hands
@@ -271,7 +272,7 @@ that polish phase by phase.</p>
 </tbody>
 </table></div>
 <p>Each phase is runnable on its own and builds directly on the previous one.</p>
-<h2 id="02-why-the-responses-api-and-not-chat-completions">0.2 Why the Responses API (and not Chat Completions)?<a aria-label="Permalink to this section" class="hanchor" href="#02-why-the-responses-api-and-not-chat-completions">¶</a></h2>
+<h2 id="02-why-the-responses-api-and-not-chat-completions">0.2 Why the Responses API (and not Chat Completions)?<a aria-label="Permalink to this section" class="hanchor" href="#02-why-the-responses-api-and-not-chat-completions">¶</a><a class="lesson-link" href="00-foundations-1.html" title="Read this section in lesson view (Lesson 1 of 5)">lesson 1</a></h2>
 <p>OpenAI has two surfaces for talking to its models:</p>
 <ul>
 <li><strong>Chat Completions</strong> (<code>/v1/chat/completions</code>) — the older, stateless,
@@ -297,7 +298,7 @@ agent loop:</p>
 <p>If you only know Chat Completions, the mental shift is: <em>stop thinking "a list of
 messages" and start thinking "a running list of typed items."</em></p>
 </blockquote>
-<h2 id="03-version-1--the-whole-handshake-line-by-line">0.3 Version 1 — the whole handshake, line by line<a aria-label="Permalink to this section" class="hanchor" href="#03-version-1--the-whole-handshake-line-by-line">¶</a></h2>
+<h2 id="03-version-1--the-whole-handshake-line-by-line">0.3 Version 1 — the whole handshake, line by line<a aria-label="Permalink to this section" class="hanchor" href="#03-version-1--the-whole-handshake-line-by-line">¶</a><a class="lesson-link" href="00-foundations-2.html" title="Read this section in lesson view (Lesson 2 of 5)">lesson 2</a></h2>
 <p>This section is the <strong>single source of truth</strong> every later phase relies on. We
 introduce each piece one at a time, with a working checkpoint after each new idea.
 If a code sample in a later phase looks unfamiliar, come back here.</p>
@@ -676,7 +677,7 @@ is the key line that makes the conversation grow correctly.</p>
 <p>That completes <strong>Version 1</strong>: every concept of this phase, in one straight-line
 file. Next we climb one rung of the ladder — the <em>same</em> program, reorganized into
 functions.</p>
-<h2 id="04-version-2--the-same-handshake-organized-into-functions">0.4 Version 2 — the same handshake, organized into functions<a aria-label="Permalink to this section" class="hanchor" href="#04-version-2--the-same-handshake-organized-into-functions">¶</a></h2>
+<h2 id="04-version-2--the-same-handshake-organized-into-functions">0.4 Version 2 — the same handshake, organized into functions<a aria-label="Permalink to this section" class="hanchor" href="#04-version-2--the-same-handshake-organized-into-functions">¶</a><a class="lesson-link" href="00-foundations-3.html" title="Read this section in lesson view (Lesson 3 of 5)">lesson 3</a></h2>
 <p>Version 1 works, and you should keep it — it is the version where nothing is
 hidden. But it has a cost you'll feel the moment the program grows: everything is
 one anonymous blob. If a friend asked <em>"which lines are the tool?"</em> you'd have to
@@ -854,7 +855,7 @@ versions yourself — <strong>Phase 1</strong> previews a minimal <code>Agent</c
 its own ladder, and <strong>Phase 2</strong> introduces the <code>Tool</code> abstraction, the
 <code>ToolRegistry</code>, and (as its Version 4) the <code>@tool</code> decorator. When you meet
 them, remember they are this same handshake, climbing the same ladder.</p>
-<h2 id="05-preview-streaming-full-treatment-in-phase-3">0.5 Preview: streaming (full treatment in Phase 3)<a aria-label="Permalink to this section" class="hanchor" href="#05-preview-streaming-full-treatment-in-phase-3">¶</a></h2>
+<h2 id="05-preview-streaming-full-treatment-in-phase-3">0.5 Preview: streaming (full treatment in Phase 3)<a aria-label="Permalink to this section" class="hanchor" href="#05-preview-streaming-full-treatment-in-phase-3">¶</a><a class="lesson-link" href="00-foundations-3.html" title="Read this section in lesson view (Lesson 3 of 5)">lesson 3</a></h2>
 <blockquote>
 <p><strong>This section is optional for now.</strong> Skip it on your first pass. Come back after
 you have Phase 1 working. Streaming is a UI enhancement — it does not change the
@@ -889,7 +890,7 @@ higher-level <code>client.responses.stream()</code> helper that does this for yo
 purpose — the harness drives the event loop itself.) Key event types you'll use:
 <code>response.output_text.delta</code>, <code>response.function_call_arguments.delta</code>,
 <code>response.output_item.added</code>, <code>response.completed</code>. Phase 3 builds a full streaming renderer.</p>
-<h2 id="06-preview-usage--cost-full-treatment-in-phase-6">0.6 Preview: usage &amp; cost (full treatment in Phase 6)<a aria-label="Permalink to this section" class="hanchor" href="#06-preview-usage--cost-full-treatment-in-phase-6">¶</a></h2>
+<h2 id="06-preview-usage--cost-full-treatment-in-phase-6">0.6 Preview: usage &amp; cost (full treatment in Phase 6)<a aria-label="Permalink to this section" class="hanchor" href="#06-preview-usage--cost-full-treatment-in-phase-6">¶</a><a class="lesson-link" href="00-foundations-3.html" title="Read this section in lesson view (Lesson 3 of 5)">lesson 3</a></h2>
 <blockquote>
 <p><strong>This section is optional for now.</strong> Skip it on your first pass. Token accounting
 matters a lot once your conversations grow long — but first get the handshake
@@ -902,7 +903,7 @@ working.</p>
 </code></pre></div>
 
 <p>We track these in Phase 6 (context budgeting) and Phase 8 (observability).</p>
-<h2 id="07-project-conventions-used-by-every-phase">0.7 Project conventions (used by every phase)<a aria-label="Permalink to this section" class="hanchor" href="#07-project-conventions-used-by-every-phase">¶</a></h2>
+<h2 id="07-project-conventions-used-by-every-phase">0.7 Project conventions (used by every phase)<a aria-label="Permalink to this section" class="hanchor" href="#07-project-conventions-used-by-every-phase">¶</a><a class="lesson-link" href="00-foundations-4.html" title="Read this section in lesson view (Lesson 4 of 5)">lesson 4</a></h2>
 <p>To keep eight phases coherent, we fix these conventions now.</p>
 <h3 id="071-repository-layout">0.7.1 Repository layout<a aria-label="Permalink to this section" class="hanchor" href="#071-repository-layout">¶</a></h3>
 <p>By the end of the guide the consolidated package lives in <code>code/</code> and looks like:</p>
@@ -971,7 +972,7 @@ one is mostly waiting (for the network, the disk, a command). Until Phase 7 ever
 example runs the simple one-after-another way, and when threads appear, this version
 shows the sequential version first so you can see they produce the same result.</p>
 </blockquote>
-<h2 id="08-sanity-check-script">0.8 Sanity-check script<a aria-label="Permalink to this section" class="hanchor" href="#08-sanity-check-script">¶</a></h2>
+<h2 id="08-sanity-check-script">0.8 Sanity-check script<a aria-label="Permalink to this section" class="hanchor" href="#08-sanity-check-script">¶</a><a class="lesson-link" href="00-foundations-4.html" title="Read this section in lesson view (Lesson 4 of 5)">lesson 4</a></h2>
 <p>Before moving to Phase 1, confirm your environment works end to end. This script is
 a variant of <code>version1_handshake.py</code> (§0.3.6) that swaps the weather stub for an
 integer <code>add</code> tool — it exercises the exact handshake you just learned, with a tool
@@ -1029,7 +1030,7 @@ Version 2 function shape (and adding a <code>multiply</code> tool) is the Phase 
 
 <p>If that prints a sentence containing "42", your key, model access, and understanding of the
 handshake are all good. <strong>You now have everything you need to build the loop.</strong></p>
-<h2 id="key-takeaways">Key takeaways<a aria-label="Permalink to this section" class="hanchor" href="#key-takeaways">¶</a></h2>
+<h2 id="key-takeaways">Key takeaways<a aria-label="Permalink to this section" class="hanchor" href="#key-takeaways">¶</a><a class="lesson-link" href="00-foundations-5.html" title="Read this section in lesson view (Lesson 5 of 5)">lesson 5</a></h2>
 <ul>
 <li>An LLM is <strong>stateless</strong>: text in, text out. The harness supplies the two things it
   lacks — <strong>memory</strong> (the growing <code>input</code> list) and <strong>hands</strong> (tools).</li>
@@ -1042,7 +1043,7 @@ handshake are all good. <strong>You now have everything you need to build the lo
 <li>The conversation is <strong>append-only</strong>: the model's own output items travel back into
   the next call's <code>input</code>. That re-sent list <em>is</em> the model's memory.</li>
 </ul>
-<h2 id="check-yourself">Check yourself<a aria-label="Permalink to this section" class="hanchor" href="#check-yourself">¶</a></h2>
+<h2 id="check-yourself">Check yourself<a aria-label="Permalink to this section" class="hanchor" href="#check-yourself">¶</a><a class="lesson-link" href="00-foundations-5.html" title="Read this section in lesson view (Lesson 5 of 5)">lesson 5</a></h2>
 <p>Before moving on, can you answer these?</p>
 <ol>
 <li>What two capabilities does a harness add to a stateless LLM?</li>
@@ -1062,7 +1063,7 @@ handshake are all good. <strong>You now have everything you need to build the lo
    the model's prior output items is exactly what preserves the conversation.</li>
 </ol>
 </details>
-<h2 id="exercises">Exercises<a aria-label="Permalink to this section" class="hanchor" href="#exercises">¶</a></h2>
+<h2 id="exercises">Exercises<a aria-label="Permalink to this section" class="hanchor" href="#exercises">¶</a><a class="lesson-link" href="00-foundations-5.html" title="Read this section in lesson view (Lesson 5 of 5)">lesson 5</a></h2>
 <p>See <a href="exercises.html#phase-0--foundations"><code>EXERCISES.md</code> — Phase 0</a>: reorganize the <code>check_setup.py</code>
 sanity script (§0.8) into the Version 2 function shape and add a <code>multiply</code> tool.</p>
 <hr>

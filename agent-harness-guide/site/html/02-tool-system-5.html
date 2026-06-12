@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<!-- GENERATED from 02-tool-system.md — do not edit; run site/build_site.py -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Why now? Writing schema dicts by hand is tedious and error-prone. If you rename a parameter in the function but forget to update the dict, the model gets a s…">
+<link rel="canonical" href="https://joshps23.github.io/ai-eng-2/02-tool-system.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://joshps23.github.io/ai-eng-2/02-tool-system-5.html">
+<meta property="og:site_name" content="Agent Harness Guide">
+<meta property="og:title" content="Phase 2 · Lesson 5 — The @tool Decorator — Agent Harness Guide">
+<meta property="og:description" content="Why now? Writing schema dicts by hand is tedious and error-prone. If you rename a parameter in the function but forget to update the dict, the model gets a s…">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#FDFDFE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
+<title>Phase 2 · Lesson 5 — The @tool Decorator — Agent Harness Guide</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body>
+<div class="progress-bar" aria-hidden="true"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="layout">
+<details class="sidebar-wrap" open>
+<summary class="sidebar-toggle">Guide navigation</summary>
+<nav class="sidebar" aria-label="Guide pages">
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
+<p class="sidebar-heading">Start here</p>
+<ul>
+<li><a href="index.html">Guide hub</a></li>
+<li><a href="learning-path.html">Learning Path</a></li>
+<li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
+<li><a href="faq.html">Setup &amp; FAQ</a></li>
+</ul>
+<p class="sidebar-heading">Phases</p>
+<ul>
+<li><a href="00-foundations-1.html">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness-1.html">Phase 1 — Bare Harness</a></li>
+<li class="current"><a href="02-tool-system-1.html" aria-current="true">Phase 2 — Tool System</a></li>
+<li><a href="03-conversation-and-streaming-1.html">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools-1.html">Phase 4 — Real Tools</a></li>
+<li><a href="05-permissions-and-safety-1.html">Phase 5 — Permissions &amp; Safety</a></li>
+<li><a href="06-context-management-1.html">Phase 6 — Context Management</a></li>
+<li><a href="07-subagents-orchestration-1.html">Phase 7 — Sub-agents</a></li>
+<li><a href="08-production-harness-1.html">Phase 8 — Production Harness</a></li>
+</ul>
+<p class="sidebar-heading">Appendix</p>
+<ul>
+<li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
+</ul>
+<p class="sidebar-heading">Practice</p>
+<ul>
+<li><a href="exercises.html">Exercises</a></li>
+<li><a href="glossary.html">Glossary</a></li>
+<li><a href="notebooks.html">Notebooks</a></li>
+</ul>
+</nav>
+</details>
+<main id="main">
+<header class="page-header">
+<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">2</span><span class="phase-kicker">Phase 2 · Lesson 5 of 8</span><span class="lesson-time">~19 min</span><span class="lesson-cp">1 <span aria-hidden="true">▶</span> checkpoint</span></p>
+<nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations-1.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness-1.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system-1.html" aria-current="true" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming-1.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools-1.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety-1.html" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management-1.html" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration-1.html" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness-1.html" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
+<nav class="lesson-rail" aria-label="Lessons in this phase"><a class="lesson-tick" href="02-tool-system-1.html" title="Lesson 1: A Real Tool System (~4 min)" aria-label="Lesson 1: A Real Tool System (~4 min)">1</a><a class="lesson-tick" href="02-tool-system-2.html" title="Lesson 2: Line by Line (~10 min)" aria-label="Lesson 2: Line by Line (~10 min)">2</a><a class="lesson-tick" href="02-tool-system-3.html" title="Lesson 3: Functions and a Dict… (~12 min)" aria-label="Lesson 3: Functions and a Dict… (~12 min)">3</a><a class="lesson-tick" href="02-tool-system-4.html" title="Lesson 4: Classes (~17 min)" aria-label="Lesson 4: Classes (~17 min)">4</a><a class="lesson-tick" href="02-tool-system-5.html" aria-current="page" title="Lesson 5: The @tool Decorator (~19 min)" aria-label="Lesson 5: The @tool Decorator (~19 min)">5</a><a class="lesson-tick" href="02-tool-system-6.html" title="Lesson 6: Parallel Tool Execution (~12 min)" aria-label="Lesson 6: Parallel Tool Execution (~12 min)">6</a><a class="lesson-tick" href="02-tool-system-7.html" title="Lesson 7: the tools/ Package (~7 min)" aria-label="Lesson 7: the tools/ Package (~7 min)">7</a><a class="lesson-tick" href="02-tool-system-8.html" title="Wrap-up: Pitfalls (~5 min)" aria-label="Wrap-up: Pitfalls (~5 min)">8</a></nav>
+<nav class="ladder" aria-label="Version ladder"><a class="ladder-rung" href="02-tool-system-2.html#version-1--line-by-line-inline-ifelif-dispatch"><span class="ladder-medallion">V1</span> Line by Line</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="02-tool-system-3.html#version-2--functions-and-a-dict-registry"><span class="ladder-medallion">V2</span> Functions and a Dict…</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="02-tool-system-4.html#version-3--classes-tool-and-toolregistry"><span class="ladder-medallion">V3</span> Classes</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="02-tool-system-5.html#version-4--the-tool-decorator"><span class="ladder-medallion">V4</span> The @tool Decorator</a></nav>
+<details class="page-toc">
+<summary>On this page</summary>
+<ul>
+<li class="toc-h2"><a href="#version-4--the-tool-decorator">Version 4 — The @tool Decorator</a>
+<ul>
+<li class="toc-h3"><a href="#what-changed-from-v3-to-v4">What changed from V3 to V4</a></li>
+<li class="toc-h3"><a href="#41-decorators-in-60-seconds">4.1 Decorators in 60 seconds</a></li>
+<li class="toc-h3"><a href="#42-write-a-function-with-type-hints-and-a-docstring">4.2 Write a function with type hints and a docstring</a></li>
+<li class="toc-h3"><a href="#43-verify-what-the-decorator-produced">4.3 Verify what the decorator produced</a></li>
+<li class="toc-h3"><a href="#44-the-decorated-object-still-has-parameters-name-description">4.4 The decorated object still has .parameters, .name, .description</a></li>
+<li class="toc-h3"><a href="#45-functiontool--wrapping-a-decorated-function">4.5 FunctionTool — wrapping a decorated function</a></li>
+<li class="toc-h3"><a href="#46-the-tool-decorators-internals">4.6 The @tool decorator&#x27;s internals</a></li>
+<li class="toc-h3"><a href="#seeing-the-generated-schema-for-a-more-complex-function">Seeing the Generated Schema for a More Complex Function</a></li>
+<li class="toc-h3"><a href="#python-to-json-schema-type-mapping">Python-to-JSON Schema Type Mapping</a></li>
+<li class="toc-h3"><a href="#47-using-tool-objects-with-the-version-2-dict-registry">4.7 Using @tool objects with the Version 2 dict registry</a></li>
+<li class="toc-h3"><a href="#the-full-file-agent_v4py">The full file: agent_v4.py</a></li>
+</ul>
+</li>
+</ul>
+</details>
+</header>
+<article>
+<h2 id="version-4--the-tool-decorator">Version 4 — The <code>@tool</code> Decorator<a aria-label="Permalink to this section" class="hanchor" href="02-tool-system.html#version-4--the-tool-decorator">¶</a></h2>
+<h3 id="what-changed-from-v3-to-v4">What changed from V3 to V4<a aria-label="Permalink to this section" class="hanchor" href="02-tool-system.html#what-changed-from-v3-to-v4">¶</a></h3>
+<ul>
+<li>The hand-written schema dicts <strong>disappear</strong>: <code>@tool</code> builds each one automatically from the function's <strong>type hints</strong> and <strong>docstring</strong>.</li>
+<li>A new <code>Tool</code> subclass, <strong><code>FunctionTool</code></strong>, wraps a plain function — so a decorated function <em>is</em> an ordinary <code>Tool</code> object that the V3 registry already accepts, unchanged.</li>
+<li><code>required</code> vs. optional parameters are inferred from <strong>defaults</strong>; per-parameter descriptions come from the docstring's <code>Args:</code> block.</li>
+<li>Nothing else changes: the registry, dispatch, and the agent loop are untouched.</li>
+</ul>
+<p><strong>Why now?</strong> Writing schema dicts by hand is tedious and error-prone. If you rename a parameter in the function but forget to update the dict, the model gets a stale description. The <code>@tool</code> decorator reads the function's type hints and docstring and builds the dict for you — it's just automating the dict you already know how to write.</p>
+<h3 id="41-decorators-in-60-seconds">4.1 Decorators in 60 seconds<a aria-label="Permalink to this section" class="hanchor" href="02-tool-system.html#41-decorators-in-60-seconds">¶</a></h3>
+<p>A decorator is <strong>just a function that takes a function</strong>. There is no other magic. Watch:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">shout</span><span class="p">(</span><span class="n">fn</span><span class="p">):</span>                        <span class="c1"># takes a function...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">fn</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">wrapper</span>                    <span class="c1"># ...returns a replacement for it</span>
+
+<span class="nd">@shout</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">greet</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;hello, </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">greet</span><span class="p">(</span><span class="s2">&quot;ada&quot;</span><span class="p">))</span>   <span class="c1"># HELLO, ADA</span>
+</code></pre></div>
+<p>The line <code>@shout</code> means exactly <code>greet = shout(greet)</code>: define <code>greet</code>, pass it through <code>shout</code>, and keep whatever comes back under the same name. A decorator doesn't have to return a function, either — ours will return a <code>FunctionTool</code> <em>object</em> built from the function. Run the snippet above before continuing; once <code>@shout</code> makes sense, <code>@tool</code> is the same move with a fancier factory.</p>
+<blockquote class="beginner">
+<p>🟢 <strong>Decorator + "introspection" — what's really happening.</strong> A <strong>decorator</strong> is the
+<code>@tool</code> line written directly above a function. It means "after defining this
+function, pass it through <code>tool()</code> and keep the result under the same name." The
+<code>tool()</code> function here uses <strong>introspection</strong> (<code>inspect</code>, <code>get_type_hints</code>) — code
+that <em>reads other code</em> — to look at the function's parameter names, type hints, and
+docstring and <strong>build the schema dict for you</strong>. It's convenient, but it's just
+automating the dict you can write by hand. <strong>If this feels like too much, don't use
+it:</strong> the Version 1–3 code above writes the same schema dict directly, which is fewer
+moving parts and shows you exactly what the model receives. You can read this section
+for interest and skip straight to using hand-written schema dicts.</p>
+</blockquote>
+<h3 id="42-write-a-function-with-type-hints-and-a-docstring">4.2 Write a function with type hints and a docstring<a aria-label="Permalink to this section" class="hanchor" href="02-tool-system.html#42-write-a-function-with-type-hints-and-a-docstring">¶</a></h3>
+<blockquote>
+<p><strong>Read, don't run (yet).</strong> The <code>tool</code> decorator used in §4.2–4.4 doesn't exist
+yet — we build it ourselves in §4.5–4.6 below. Pasting this block on its own gives
+<code>NameError: name 'tool' is not defined</code>. Read these three short sections as a
+preview of the <em>experience</em> we're about to build, then run them once <code>tool</code> is
+defined (or use the complete <code>tools/base.py</code> listing at the end of the phase).</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="nd">@tool</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add two numbers and return the result.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        a: First number.</span>
+<span class="sd">        b: Second number.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span>
+</code></pre></div>
+<p>No schema dict. The decorator inspects the hints (<code>float</code>) and the docstring (<code>Args:</code> block) and produces the same dict you would write by hand.</p>
+<h3 id="43-verify-what-the-decorator-produced">4.3 Verify what the decorator produced<a aria-label="Permalink to this section" class="hanchor" href="02-tool-system.html#43-verify-what-the-decorator-produced">¶</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+</code></pre></div>
+<p>Output:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;object&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;a&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;First number.&quot;</span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;b&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;number&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Second number.&quot;</span><span class="p">}</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;required&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;b&quot;</span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;additionalProperties&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Identical to the hand-written dict from Versions 1–3. <code>add.name</code> is <code>"add"</code>, <code>add.description</code> is <code>"Add two numbers and return the result."</code>. Nothing was written by hand.</p>
+<h3 id="44-the-decorated-object-still-has-parameters-name-description">4.4 The decorated object still has <code>.parameters</code>, <code>.name</code>, <code>.description</code><a aria-label="Permalink to this section" class="hanchor" href="02-tool-system.html#44-the-decorated-object-still-has-parameters-name-description">¶</a></h3>
+<p>After <code>@tool</code>, <code>add</code> is no longer a plain function — it is a <code>FunctionTool</code> object with those three attributes, plus a <code>.run(**kwargs)</code> method. You can still call <code>add.run(a=2, b=3)</code> and get <code>"5"</code>.</p>
+<h3 id="45-functiontool--wrapping-a-decorated-function">4.5 <code>FunctionTool</code> — wrapping a decorated function<a aria-label="Permalink to this section" class="hanchor" href="02-tool-system.html#45-functiontool--wrapping-a-decorated-function">¶</a></h3>
+<p>The <code>@tool</code> decorator produces a <code>FunctionTool</code>, which is a <code>Tool</code> subclass that delegates <code>run</code> to the original function:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FunctionTool</span><span class="p">(</span><span class="n">Tool</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A Tool wrapping a plain callable, produced by the @tool decorator.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">description</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">parameters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span>        <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span>  <span class="o">=</span> <span class="n">parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fn</span>         <span class="o">=</span> <span class="n">fn</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fn</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># Tools must return strings. Coerce if needed.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+</code></pre></div>
+<p>Because <code>FunctionTool</code> <em>is a</em> <code>Tool</code>, the Version 3 registry accepts it with no changes: <code>registry.register(add)</code> — done.</p>
+<h3 id="46-the-tool-decorators-internals">4.6 The <code>@tool</code> decorator's internals<a aria-label="Permalink to this section" class="hanchor" href="02-tool-system.html#46-the-tool-decorators-internals">¶</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Maps Python types to JSON Schema type strings</span>
+<span class="n">_PY_TO_JSON</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">type</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nb">str</span><span class="p">:</span>   <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="nb">int</span><span class="p">:</span>   <span class="s2">&quot;integer&quot;</span><span class="p">,</span>
+    <span class="nb">float</span><span class="p">:</span> <span class="s2">&quot;number&quot;</span><span class="p">,</span>
+    <span class="nb">bool</span><span class="p">:</span>  <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
+    <span class="nb">list</span><span class="p">:</span>  <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+    <span class="nb">dict</span><span class="p">:</span>  <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_build_schema</span><span class="p">(</span><span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Introspect a function and produce a JSON Schema for its parameters.</span>
+
+<span class="sd">    Rules:</span>
+<span class="sd">    - Parameters with no default are marked required.</span>
+<span class="sd">    - Parameter descriptions come from the docstring (Google style: &quot;name: desc&quot;).</span>
+<span class="sd">    - Return annotation is ignored (tools always return str at runtime).</span>
+<span class="sd">    - *args and **kwargs are ignored.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">hints</span> <span class="o">=</span> <span class="n">get_type_hints</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+    <span class="n">sig</span>   <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+    <span class="n">doc</span>   <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getdoc</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="c1"># Parse &quot;Args:&quot; block from Google-style docstring for per-param descriptions</span>
+    <span class="n">param_docs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">in_args</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+        <span class="n">stripped</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">stripped</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;args:&quot;</span><span class="p">,</span> <span class="s2">&quot;arguments:&quot;</span><span class="p">,</span> <span class="s2">&quot;parameters:&quot;</span><span class="p">):</span>
+            <span class="n">in_args</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">in_args</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">stripped</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)):</span>
+                <span class="c1"># Un-indented line = new top-level section — stop</span>
+                <span class="n">in_args</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">elif</span> <span class="s2">&quot;:&quot;</span> <span class="ow">in</span> <span class="n">stripped</span><span class="p">:</span>
+                <span class="n">pname</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">pdesc</span> <span class="o">=</span> <span class="n">stripped</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+                <span class="n">param_docs</span><span class="p">[</span><span class="n">pname</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span> <span class="o">=</span> <span class="n">pdesc</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+    <span class="c1"># The first non-empty line before &quot;Args:&quot; is the function description</span>
+    <span class="n">fn_description</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+        <span class="n">stripped</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">stripped</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;args:&quot;</span><span class="p">,</span> <span class="s2">&quot;arguments:&quot;</span><span class="p">,</span> <span class="s2">&quot;parameters:&quot;</span><span class="p">):</span>
+            <span class="k">break</span>
+        <span class="k">if</span> <span class="n">stripped</span><span class="p">:</span>
+            <span class="n">fn_description</span> <span class="o">=</span> <span class="n">stripped</span>
+            <span class="k">break</span>
+
+    <span class="n">properties</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">required</span><span class="p">:</span>   <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>       <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">pname</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">kind</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_POSITIONAL</span><span class="p">,</span>
+            <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_KEYWORD</span><span class="p">,</span>
+        <span class="p">):</span>
+            <span class="k">continue</span>
+
+        <span class="n">py_type</span> <span class="o">=</span> <span class="n">hints</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pname</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">json_type</span> <span class="o">=</span> <span class="n">_PY_TO_JSON</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">py_type</span><span class="p">,</span> <span class="s2">&quot;string&quot;</span><span class="p">)</span>
+
+        <span class="n">prop</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">json_type</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">pname</span> <span class="ow">in</span> <span class="n">param_docs</span><span class="p">:</span>
+            <span class="n">prop</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_docs</span><span class="p">[</span><span class="n">pname</span><span class="p">]</span>
+
+        <span class="n">properties</span><span class="p">[</span><span class="n">pname</span><span class="p">]</span> <span class="o">=</span> <span class="n">prop</span>
+
+        <span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">required</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pname</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="n">properties</span><span class="p">,</span>
+        <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="n">required</span><span class="p">,</span>
+        <span class="s2">&quot;additionalProperties&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">fn_description</span><span class="p">,</span>
+    <span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">tool</span><span class="p">(</span><span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;FunctionTool&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decorator. Converts a plain function into a Tool instance.</span>
+
+<span class="sd">    Usage::</span>
+
+<span class="sd">        @tool</span>
+<span class="sd">        def add(a: int, b: int) -&gt; str:</span>
+<span class="sd">            \&quot;\&quot;\&quot;Add two integers.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                a: First operand.</span>
+<span class="sd">                b: Second operand.</span>
+<span class="sd">            \&quot;\&quot;\&quot;</span>
+<span class="sd">            return str(a + b)</span>
+
+<span class="sd">    The resulting object is a Tool; its .parameters dict is auto-generated.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">schema</span> <span class="o">=</span> <span class="n">_build_schema</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">FunctionTool</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">fn</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="n">schema</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="n">fn</span><span class="o">.</span><span class="vm">__doc__</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+        <span class="n">parameters</span><span class="o">=</span><span class="n">schema</span><span class="p">,</span>
+        <span class="n">fn</span><span class="o">=</span><span class="n">fn</span><span class="p">,</span>
+    <span class="p">)</span>
+</code></pre></div>
+<h3 id="seeing-the-generated-schema-for-a-more-complex-function">Seeing the Generated Schema for a More Complex Function<a aria-label="Permalink to this section" class="hanchor" href="02-tool-system.html#seeing-the-generated-schema-for-a-more-complex-function">¶</a></h3>
+<div class="highlight"><pre><span></span><code><span class="nd">@tool</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">word_count</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">strip_punctuation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Count the number of words in a string.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        text: The text to count words in.</span>
+<span class="sd">        strip_punctuation: If true, punctuation is removed before counting.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+    <span class="k">if</span> <span class="n">strip_punctuation</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[^\w\s]&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">()))</span>
+
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">word_count</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+</code></pre></div>
+<p>Output:</p>
+<div class="highlight nocopy"><pre><span></span><code>{
+  &quot;type&quot;: &quot;object&quot;,
+  &quot;properties&quot;: {
+    &quot;text&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;description&quot;: &quot;The text to count words in.&quot;
+    },
+    &quot;strip_punctuation&quot;: {
+      &quot;type&quot;: &quot;boolean&quot;,
+      &quot;description&quot;: &quot;If true, punctuation is removed before counting.&quot;
+    }
+  },
+  &quot;required&quot;: [
+    &quot;text&quot;
+  ],
+  &quot;additionalProperties&quot;: false
+}
+</code></pre></div>
+<p><code>text</code> is required because it has no default. <code>strip_punctuation</code> is optional because it defaults to <code>False</code>. The descriptions came from the docstring. Nothing was written by hand.</p>
+<h3 id="python-to-json-schema-type-mapping">Python-to-JSON Schema Type Mapping<a aria-label="Permalink to this section" class="hanchor" href="02-tool-system.html#python-to-json-schema-type-mapping">¶</a></h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th scope="col">Python type</th>
+<th scope="col">JSON Schema <code>"type"</code></th>
+<th scope="col">Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>str</code></td>
+<td><code>"string"</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>int</code></td>
+<td><code>"integer"</code></td>
+<td>Excludes floats</td>
+</tr>
+<tr>
+<td><code>float</code></td>
+<td><code>"number"</code></td>
+<td>Includes integers</td>
+</tr>
+<tr>
+<td><code>bool</code></td>
+<td><code>"boolean"</code></td>
+<td>Must come before <code>int</code> in lookup since <code>bool</code> is a subclass of <code>int</code></td>
+</tr>
+<tr>
+<td><code>list</code></td>
+<td><code>"array"</code></td>
+<td>No item type enforcement at schema level</td>
+</tr>
+<tr>
+<td><code>dict</code></td>
+<td><code>"object"</code></td>
+<td>No property type enforcement at schema level</td>
+</tr>
+<tr>
+<td>anything else</td>
+<td><code>"string"</code></td>
+<td>Conservative fallback</td>
+</tr>
+</tbody>
+</table></div>
+<blockquote>
+<p><strong>Warning — <code>bool</code> before <code>int</code>.</strong> In Python, <code>bool</code> is a subclass of <code>int</code>. If your lookup table iterates in the wrong order you will map <code>bool</code> parameters to <code>"integer"</code>. The <code>_PY_TO_JSON</code> dict above is ordered correctly in Python 3.7+ because dict preserves insertion order, and <code>bool</code> appears before <code>int</code> in the literal. If you ever switch to <code>isinstance</code> checks, test <code>bool</code> first.</p>
+</blockquote>
+<!-- bq-split -->
+<blockquote>
+<p><strong>Warning — mutable defaults.</strong> If a function parameter has a mutable default like <code>def fn(items: list = [])</code>, <code>_build_schema</code> will still mark it optional correctly. But at call time, Python's mutable default trap still applies. Tools should use <code>None</code> as the default and construct the mutable object inside the function body. The decorator does not fix this for you.</p>
+</blockquote>
+<h3 id="47-using-tool-objects-with-the-version-2-dict-registry">4.7 Using <code>@tool</code> objects with the Version 2 dict registry<a aria-label="Permalink to this section" class="hanchor" href="02-tool-system.html#47-using-tool-objects-with-the-version-2-dict-registry">¶</a></h3>
+<p>The decorator does not <em>require</em> the class-based registry. A <code>FunctionTool</code> produced by <code>@tool</code> has <code>.name</code>, <code>.parameters</code>, and <code>.run()</code>, so you can even slot it into the Version 2 <code>TOOLS</code> dict:</p>
+<div class="highlight"><pre><span></span><code><span class="n">TOOLS</span><span class="p">[</span><span class="s2">&quot;add&quot;</span><span class="p">]</span>        <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;fn&quot;</span><span class="p">:</span> <span class="n">add</span><span class="o">.</span><span class="n">run</span><span class="p">,</span>        <span class="s2">&quot;schema&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">add</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">add</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>        <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="n">add</span><span class="o">.</span><span class="n">parameters</span><span class="p">}}</span>
+<span class="n">TOOLS</span><span class="p">[</span><span class="s2">&quot;word_count&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;fn&quot;</span><span class="p">:</span> <span class="n">word_count</span><span class="o">.</span><span class="n">run</span><span class="p">,</span> <span class="s2">&quot;schema&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">word_count</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">word_count</span><span class="o">.</span><span class="n">description</span><span class="p">,</span> <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="n">word_count</span><span class="o">.</span><span class="n">parameters</span><span class="p">}}</span>
+</code></pre></div>
+<p>That works, but it is getting wordy — which is exactly what the Version 3 <code>ToolRegistry</code> removes: it accepts <code>Tool</code> objects directly, so registration is just <code>registry.register(add)</code>.</p>
+<h3 id="the-full-file-agent_v4py">The full file: <code>agent_v4.py</code><a aria-label="Permalink to this section" class="hanchor" href="02-tool-system.html#the-full-file-agent_v4py">¶</a></h3>
+<p>The whole ladder in one pasteable file: the V3 classes, the new decorator, and the unchanged loop. It is longer than <code>agent_v3.py</code> only because the decorator machinery lives inside it — once it moves into a <code>tools/</code> package (next section), the agent file shrinks dramatically.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># agent_v4.py — same harness; @tool builds the schemas for us</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">get_type_hints</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">openai</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenAI</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">OpenAI</span><span class="p">()</span>
+<span class="n">MODEL</span>  <span class="o">=</span> <span class="s2">&quot;gpt-4o&quot;</span>
+
+
+<span class="c1"># ── Tool machinery: the V3 classes plus the decorator ──────────────────</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Tool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for all tools.&quot;&quot;&quot;</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">parameters</span><span class="p">:</span> <span class="nb">dict</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">FunctionTool</span><span class="p">(</span><span class="n">Tool</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A Tool wrapping a plain callable, produced by the @tool decorator.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">description</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span>        <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span>  <span class="o">=</span> <span class="n">parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fn</span>         <span class="o">=</span> <span class="n">fn</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fn</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="n">_PY_TO_JSON</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nb">str</span><span class="p">:</span>   <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+    <span class="nb">int</span><span class="p">:</span>   <span class="s2">&quot;integer&quot;</span><span class="p">,</span>
+    <span class="nb">float</span><span class="p">:</span> <span class="s2">&quot;number&quot;</span><span class="p">,</span>
+    <span class="nb">bool</span><span class="p">:</span>  <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
+    <span class="nb">list</span><span class="p">:</span>  <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+    <span class="nb">dict</span><span class="p">:</span>  <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_build_schema</span><span class="p">(</span><span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Derive a JSON Schema from a function&#39;s signature, hints, and docstring.&quot;&quot;&quot;</span>
+    <span class="n">hints</span> <span class="o">=</span> <span class="n">get_type_hints</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+    <span class="n">sig</span>   <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+    <span class="n">doc</span>   <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getdoc</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="c1"># Per-parameter descriptions from the Google-style &quot;Args:&quot; block</span>
+    <span class="n">param_docs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">in_args</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+        <span class="n">stripped</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">stripped</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;args:&quot;</span><span class="p">,</span> <span class="s2">&quot;arguments:&quot;</span><span class="p">,</span> <span class="s2">&quot;parameters:&quot;</span><span class="p">):</span>
+            <span class="n">in_args</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">in_args</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">stripped</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)):</span>
+                <span class="n">in_args</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">elif</span> <span class="s2">&quot;:&quot;</span> <span class="ow">in</span> <span class="n">stripped</span><span class="p">:</span>
+                <span class="n">pname</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">pdesc</span> <span class="o">=</span> <span class="n">stripped</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+                <span class="n">param_docs</span><span class="p">[</span><span class="n">pname</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span> <span class="o">=</span> <span class="n">pdesc</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+    <span class="c1"># The first non-empty line before &quot;Args:&quot; is the function description</span>
+    <span class="n">fn_description</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">doc</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+        <span class="n">stripped</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">stripped</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;args:&quot;</span><span class="p">,</span> <span class="s2">&quot;arguments:&quot;</span><span class="p">,</span> <span class="s2">&quot;parameters:&quot;</span><span class="p">):</span>
+            <span class="k">break</span>
+        <span class="k">if</span> <span class="n">stripped</span><span class="p">:</span>
+            <span class="n">fn_description</span> <span class="o">=</span> <span class="n">stripped</span>
+            <span class="k">break</span>
+
+    <span class="n">properties</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">required</span><span class="p">:</span>   <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>       <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">pname</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">kind</span> <span class="ow">in</span> <span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_POSITIONAL</span><span class="p">,</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">VAR_KEYWORD</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="n">py_type</span>   <span class="o">=</span> <span class="n">hints</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pname</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="n">json_type</span> <span class="o">=</span> <span class="n">_PY_TO_JSON</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">py_type</span><span class="p">,</span> <span class="s2">&quot;string&quot;</span><span class="p">)</span>
+        <span class="n">prop</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">json_type</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">pname</span> <span class="ow">in</span> <span class="n">param_docs</span><span class="p">:</span>
+            <span class="n">prop</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_docs</span><span class="p">[</span><span class="n">pname</span><span class="p">]</span>
+        <span class="n">properties</span><span class="p">[</span><span class="n">pname</span><span class="p">]</span> <span class="o">=</span> <span class="n">prop</span>
+        <span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="n">inspect</span><span class="o">.</span><span class="n">Parameter</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">required</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pname</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="n">properties</span><span class="p">,</span>
+        <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="n">required</span><span class="p">,</span>
+        <span class="s2">&quot;additionalProperties&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">fn_description</span><span class="p">,</span>
+    <span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">tool</span><span class="p">(</span><span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FunctionTool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Decorator: convert a plain function into a FunctionTool.&quot;&quot;&quot;</span>
+    <span class="n">schema</span> <span class="o">=</span> <span class="n">_build_schema</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">FunctionTool</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">fn</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="n">schema</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="n">fn</span><span class="o">.</span><span class="vm">__doc__</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+        <span class="n">parameters</span><span class="o">=</span><span class="n">schema</span><span class="p">,</span>
+        <span class="n">fn</span><span class="o">=</span><span class="n">fn</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ToolRegistry</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tools</span> <span class="o">=</span> <span class="p">{}</span>                       <span class="c1"># name -&gt; Tool object</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">tool</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tools</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tool &#39;</span><span class="si">{</span><span class="n">tool</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; is already registered.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tools</span><span class="p">[</span><span class="n">tool</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">tool</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_openai_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
+                <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span>
+            <span class="p">}</span>
+            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tools</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">dispatch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">arguments_str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tools</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Error: unknown tool &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">arguments_str</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Error: invalid JSON arguments: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tools</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="o">**</span><span class="n">args</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">result</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Error (</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
+
+
+<span class="c1"># ── Tools: plain functions, schemas auto-generated ─────────────────────</span>
+
+<span class="nd">@tool</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add two numbers and return the result.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        a: First number.</span>
+<span class="sd">        b: Second number.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span>
+
+
+<span class="nd">@tool</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">word_count</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Count the number of words in a string.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        text: The text to count words in.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\S+&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">)))</span>
+
+
+<span class="n">registry</span> <span class="o">=</span> <span class="n">ToolRegistry</span><span class="p">()</span>
+<span class="n">registry</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">add</span><span class="p">)</span>
+<span class="n">registry</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">word_count</span><span class="p">)</span>
+
+
+<span class="c1"># ── Agent loop — identical to agent_v3.py ──────────────────────────────</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">run_agent</span><span class="p">(</span><span class="n">user_message</span><span class="p">,</span> <span class="n">max_turns</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">input_items</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">user_message</span><span class="p">}]</span>
+    <span class="n">tools_schema</span> <span class="o">=</span> <span class="n">registry</span><span class="o">.</span><span class="n">to_openai_schema</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">turn</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_turns</span><span class="p">):</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">responses</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">MODEL</span><span class="p">,</span>
+            <span class="nb">input</span><span class="o">=</span><span class="n">input_items</span><span class="p">,</span>
+            <span class="n">tools</span><span class="o">=</span><span class="n">tools_schema</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">input_items</span> <span class="o">+=</span> <span class="n">resp</span><span class="o">.</span><span class="n">output</span>
+        <span class="n">function_calls</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">resp</span><span class="o">.</span><span class="n">output</span> <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;function_call&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">function_calls</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">resp</span><span class="o">.</span><span class="n">output</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;message&quot;</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">content</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">part</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;output_text&quot;</span><span class="p">:</span>
+                            <span class="k">return</span> <span class="n">part</span><span class="o">.</span><span class="n">text</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">fc</span> <span class="ow">in</span> <span class="n">function_calls</span><span class="p">:</span>
+            <span class="n">input_items</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function_call_output&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;call_id&quot;</span><span class="p">:</span> <span class="n">fc</span><span class="o">.</span><span class="n">call_id</span><span class="p">,</span>
+                <span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="n">registry</span><span class="o">.</span><span class="n">dispatch</span><span class="p">(</span><span class="n">fc</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">fc</span><span class="o">.</span><span class="n">arguments</span><span class="p">),</span>
+            <span class="p">})</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[turn </span><span class="si">{</span><span class="n">turn</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">] tools called: </span><span class="si">{</span><span class="p">[</span><span class="n">fc</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">fc</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">function_calls</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Agent did not finish within </span><span class="si">{</span><span class="n">max_turns</span><span class="si">}</span><span class="s2"> turns.&quot;</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">answer</span> <span class="o">=</span> <span class="n">run_agent</span><span class="p">(</span>
+        <span class="s2">&quot;What is 1234 + 5678? &quot;</span>
+        <span class="s2">&quot;Also, how many words are in: &#39;The quick brown fox jumps over the lazy dog&#39;?&quot;</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Final answer:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">answer</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="-run-it-now-3">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="02-tool-system.html#-run-it-now-3">¶</a></h3>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>agent_v4.py
+</code></pre></div>
+<p>Same output as Versions 1, 2, and 3 — confirm it for yourself. Then notice what <em>writing a new tool</em> costs now: a function with type hints and a docstring, plus one <code>registry.register(...)</code> line. No schema dict, no <code>elif</code> branch, no list to update. Alternatively, take your <code>agent_v2.py</code>, replace its two function definitions and schema dicts with the <code>@tool</code>-decorated versions (plus the machinery), and confirm the output is identical there too.</p>
+</article>
+<footer class="page-footer">
+<nav class="continue" aria-label="Continue">
+<a class="continue-card" href="02-tool-system-6.html" rel="next">
+<span class="continue-kicker">Next · Lesson 6 of 8</span>
+<span class="continue-title">Parallel Tool Execution<span class="continue-time">~12 min</span><span class="continue-arrow" aria-hidden="true">→</span></span>
+</a>
+<p class="continue-aux">
+<a href="02-tool-system-4.html" rel="prev">← Lesson 4 · Classes</a>
+<a class="continue-fullpage" href="02-tool-system.html#version-4--the-tool-decorator">View this lesson on the single page</a>
+</p>
+</nav>
+<p class="generated-note">Generated from <code>02-tool-system.md</code> — lesson 5 of 8 in the derived lesson view (boundaries may move when the markdown changes; the <a href="02-tool-system.html">single page</a> is the permanent address).</p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/02-tool-system.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
+</footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
+</main>
+</div>
+<script>
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards.
+     diagram-text mirrors are excluded — print hides them entirely (the SVG
+     figure already prints; opening the ASCII would print the diagram twice). */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not(.diagram-text):not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
+  });
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
+
+  /* Reading progress: the fixed 3px accent bar tracks scroll position.
+     Without JS the element simply stays at width 0 — invisible, harmless. */
+  var pbar = document.querySelector('.progress-bar');
+  if (pbar) {
+    var setProgress = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      pbar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    };
+    window.addEventListener('scroll', setProgress, { passive: true });
+    setProgress();
+  }
+
+  /* Deep links into collapsed sections: open every <details> ancestor of the
+     target, and the refsection that immediately follows a target heading.
+     Re-scroll only if something actually opened (the layout above the target
+     just changed), and instantly — the CSS smooth scroll would crawl across
+     tens of thousands of pixels on the long phase pages. */
+  function openForHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) { return; }
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    var opened = false;
+    var d = el.closest('details');
+    while (d) {
+      if (!d.hasAttribute('open')) { d.setAttribute('open', ''); opened = true; }
+      d = d.parentElement && d.parentElement.closest('details');
+    }
+    var sib = el.nextElementSibling;
+    if (sib && sib.matches('details.refsection') && !sib.hasAttribute('open')) {
+      sib.setAttribute('open', '');
+      opened = true;
+    }
+    if (!opened) { return; }
+    var jump = function () {
+      var y = el.getBoundingClientRect().top + window.scrollY - 16;
+      try { window.scrollTo({ top: y, behavior: 'instant' }); }
+      catch (e) { window.scrollTo(0, y); }
+    };
+    jump();
+    /* the browser's own fragment scroll was computed against the collapsed
+       layout and may still be animating (CSS smooth) — re-assert once, which
+       cancels it */
+    setTimeout(jump, 100);
+  }
+  window.addEventListener('hashchange', openForHash);
+  openForHash();
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
+</script>
+</body>
+</html>
