@@ -75,6 +75,15 @@ though imports work fine in your terminal. Two fixes, use both:
    re-run. The notebooks' first cell prints `sys.executable` so you can confirm it
    points into your `.venv`.
 
+**Q: Can I run the notebooks on Google Colab?**
+**Yes.** Each notebook has an **"Open in Colab" badge** at the top, and its first code
+cell bootstraps itself on Colab: it clones the repo and `pip install`s `agent_harness`
+automatically (locally, where the package is already installed, that cell does nothing
+extra). Because the repo is private, you need a one-time **`GH_TOKEN`** Colab secret — a
+fine-grained GitHub token with read-only Contents access. Full steps (token setup, the
+optional `OPENAI_API_KEY` secret for real-API mode, and Colab caveats) are in
+[`notebooks/README.md` — Running on Google Colab](./notebooks/README.md#running-on-google-colab).
+
 **Q: Do I need an API key just to learn?**
 **No.** The entire guide is readable offline and the full test suite passes with **no
 key and no network** — a `FakeClient` (see `code/agent_harness/testing.py`) stands in
