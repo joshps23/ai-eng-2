@@ -61,6 +61,10 @@ Status: ☐ todo · ◐ in progress · ☑ done
 
 Newest first. One line per shipped iteration.
 
+- **2026-06-11** — Cycle 7 (user-seeded, Colab): notebooks now self-bootstrap on Google
+  Colab (GH_TOKEN secret for the private repo, no-op locally/CI), with badges, README
+  Colab section, and FAQ entry; bootstrap success/failure paths simulated end-to-end.
+  Iteration cap (10) reached — the evaluator loop in REVISION-BRIEF.md is closed.
 - **2026-06-11** — Persona dev loop, cycle 6 (beginner through the notebooks): two
   readers verified all six notebooks keyless — zero blockers, outputs reproduced
   cell-for-cell; their ~10 fixes (Exercise 1.1 tools-list trap, USE_REAL_API gating
