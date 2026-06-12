@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<!-- GENERATED from README.md — do not edit; run site/build_site.py -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="An exhaustive, phase-by-phase guide to building an agentic coding harness — the kind of program that powers tools like Claude Code and Cursor — from scratch,…">
+<title>Building a Full-Fledged Agent Harness with the OpenAI Responses API — in Pure Python — Agent Harness Guide</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="layout">
+<details class="sidebar-wrap" open>
+<summary class="sidebar-toggle">Guide navigation</summary>
+<nav class="sidebar" aria-label="Guide navigation">
+<h2>Start here</h2>
+<ul>
+<li class="current"><a href="index.html" aria-current="page">Guide hub</a></li>
+<li><a href="learning-path.html">Learning Path</a></li>
+<li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
+<li><a href="faq.html">Setup &amp; FAQ</a></li>
+</ul>
+<h2>Phases</h2>
+<ul>
+<li><a href="00-foundations.html">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness.html">Phase 1 — Bare Harness</a></li>
+<li><a href="02-tool-system.html">Phase 2 — Tool System</a></li>
+<li><a href="03-conversation-and-streaming.html">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools.html">Phase 4 — Real Tools</a></li>
+<li><a href="05-permissions-and-safety.html">Phase 5 — Permissions &amp; Safety</a></li>
+<li><a href="06-context-management.html">Phase 6 — Context Management</a></li>
+<li><a href="07-subagents-orchestration.html">Phase 7 — Sub-agents</a></li>
+<li><a href="08-production-harness.html">Phase 8 — Production Harness</a></li>
+</ul>
+<h2>Appendix</h2>
+<ul>
+<li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
+</ul>
+<h2>Practice</h2>
+<ul>
+<li><a href="exercises.html">Exercises</a></li>
+<li><a href="glossary.html">Glossary</a></li>
+<li><a href="notebooks.html">Notebooks</a></li>
+</ul>
+</nav>
+</details>
+<main id="main">
+<header class="page-header">
+<p class="source-link"><a href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/README.md">View the markdown source on GitHub</a></p>
+<details class="page-toc">
+<summary>On this page</summary>
+<ul>
+<li class="toc-h2"><a href="#who-this-is-for">Who this is for</a></li>
+<li class="toc-h2"><a href="#how-the-guide-is-structured">How the guide is structured</a></li>
+<li class="toc-h3"><a href="#prefer-to-run-it-as-notebooks">Prefer to run it as notebooks?</a></li>
+<li class="toc-h2"><a href="#support-docs-and-what-each-is-for">Support docs and what each is for</a></li>
+<li class="toc-h2"><a href="#the-canonical-runnable-code">The canonical, runnable code</a></li>
+<li class="toc-h2"><a href="#the-one-idea-behind-everything">The one idea behind everything</a></li>
+<li class="toc-h2"><a href="#prerequisites">Prerequisites</a></li>
+<li class="toc-h2"><a href="#a-note-on-models">A note on models</a></li>
+<li class="toc-h2"><a href="#license--intent">License &amp; intent</a></li>
+</ul>
+</details>
+</header>
+<article>
+<h1 id="building-a-full-fledged-agent-harness-with-the-openai-responses-api--in-pure-python">Building a Full-Fledged Agent Harness with the OpenAI Responses API — in Pure Python</h1>
+<blockquote>
+<p>An exhaustive, phase-by-phase guide to building an agentic coding harness — the kind
+of program that powers tools like <strong>Claude Code</strong> and <strong>Cursor</strong> — from scratch,
+using only the OpenAI <strong>Responses API</strong> and the Python standard library.</p>
+<p><strong>No frameworks.</strong> No LangChain, no LlamaIndex, no agent SDK. The entire point is to
+teach the concepts <em>from under the hood</em> so you understand what those frameworks
+hide — and could rebuild them yourself.</p>
+</blockquote>
+<hr>
+<h2 id="who-this-is-for">Who this is for</h2>
+<p>Written for working engineers <strong>and</strong> for beginners who know functions, lists,
+dictionaries, operators, and <code>client.responses.create(...)</code> — the 🟢 beginner track
+is built in. Either way, it's for anyone who wants to <em>really</em> understand how modern
+AI agents work: the loop, tools, streaming, permissions, context management, and
+multi-agent orchestration. By the end you'll have built a production-shaped harness
+with a CLI, a sandboxed toolset, an approval system, automatic context compaction,
+and parallel sub-agents.</p>
+<blockquote class="beginner">
+<p>🟢 <strong>Newer to Python?</strong> Read the
+<strong><a href="beginner-notes.html">Python Concepts Cheat-Sheet</a></strong> once before Phase 0. It
+explains every concept the guide uses beyond those five — classes, <code>json.loads</code>,
+JSON Schema, <code>with</code>, threads — in those terms, and green 🟢 boxes throughout the
+phases bridge each gap exactly where it appears. Keep the
+<strong><a href="glossary.html"><code>GLOSSARY.md</code></a></strong> open in a tab: it defines every harness and
+Python term used here, so you never have to leave to look something up.</p>
+</blockquote>
+<h2 id="how-the-guide-is-structured">How the guide is structured</h2>
+<p>The guide is <strong>incremental</strong>. Each phase is runnable on its own and builds directly
+on the previous one. Phase 1 is a working agent in ~80 lines; by Phase 8 you have a
+Claude-Code-shaped harness.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">Phase</th>
+<th>File</th>
+<th>What you build</th>
+<th>Key concept</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;"><strong>0</strong></td>
+<td><a href="00-foundations.html"><code>00-foundations.md</code></a></td>
+<td>Setup + the contract every phase reuses</td>
+<td>The agent loop; the Responses API</td>
+</tr>
+<tr>
+<td style="text-align: right;"><strong>1</strong></td>
+<td><a href="01-bare-harness.html"><code>01-bare-harness.md</code></a></td>
+<td>A working agent in ~80 lines</td>
+<td>The minimal viable loop with one tool</td>
+</tr>
+<tr>
+<td style="text-align: right;"><strong>2</strong></td>
+<td><a href="02-tool-system.html"><code>02-tool-system.md</code></a></td>
+<td>An extensible tool system</td>
+<td>Registry, auto-schema from type hints, parallel tool calls</td>
+</tr>
+<tr>
+<td style="text-align: right;"><strong>3</strong></td>
+<td><a href="03-conversation-and-streaming.html"><code>03-conversation-and-streaming.md</code></a></td>
+<td>State + live output</td>
+<td>Owning the transcript; streaming events</td>
+</tr>
+<tr>
+<td style="text-align: right;"><strong>4</strong></td>
+<td><a href="04-real-tools.html"><code>04-real-tools.md</code></a></td>
+<td>The real toolset</td>
+<td><code>read_file</code>, <code>edit_file</code>, <code>bash</code>, <code>grep</code>, <code>glob</code>, …</td>
+</tr>
+<tr>
+<td style="text-align: right;"><strong>5</strong></td>
+<td><a href="05-permissions-and-safety.html"><code>05-permissions-and-safety.md</code></a></td>
+<td>The safety layer</td>
+<td>Approval gates, sandboxing, the hook system</td>
+</tr>
+<tr>
+<td style="text-align: right;"><strong>6</strong></td>
+<td><a href="06-context-management.html"><code>06-context-management.md</code></a></td>
+<td>Long-session survival</td>
+<td>Token budgeting, pruning, compaction</td>
+</tr>
+<tr>
+<td style="text-align: right;"><strong>7</strong></td>
+<td><a href="07-subagents-orchestration.html"><code>07-subagents-orchestration.md</code></a></td>
+<td>Multi-agent orchestration</td>
+<td>Spawning <strong>parallel</strong> sub-agents dynamically</td>
+</tr>
+<tr>
+<td style="text-align: right;"><strong>8</strong></td>
+<td><a href="08-production-harness.html"><code>08-production-harness.md</code></a></td>
+<td>The full assembled harness</td>
+<td>Retries, observability, persistence, the CLI</td>
+</tr>
+<tr>
+<td style="text-align: right;"><strong>A</strong></td>
+<td><a href="09-library-reference.html"><code>09-library-reference.md</code></a></td>
+<td>Reference appendix</td>
+<td>Every external library (<code>openai</code>, <code>tiktoken</code>) + key stdlib, with methods, parameters, return types, and examples</td>
+</tr>
+<tr>
+<td style="text-align: right;"><strong>G</strong></td>
+<td><a href="glossary.html"><code>GLOSSARY.md</code></a></td>
+<td>Plain-language glossary</td>
+<td>Every harness/Python term used in the guide, defined for beginners</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>New and want a plan?</strong> The <strong><a href="learning-path.html">Learning Path</a></strong> turns these
+phases into a step-by-step route with time-budgeted tracks and per-phase
+checkpoints. Otherwise, <strong>start with <a href="00-foundations.html">Phase 0</a>.</strong> It
+establishes the API contract and conventions (naming, data shapes, project layout)
+that every later phase depends on. If a later code sample looks unfamiliar, Phase 0
+is your reference.</p>
+</blockquote>
+<h3 id="prefer-to-run-it-as-notebooks">Prefer to run it as notebooks?</h3>
+<p><strong>Every phase (0–8)</strong> (plus a setup check) has a companion <strong>Jupyter
+notebook</strong> in <a href="notebooks.html"><code>notebooks/</code></a> — small, run-top-to-bottom
+checkpoint runners that execute each phase's ideas against the tested package,
+<strong>fully offline by default</strong> (no API key needed). The phases keep the narrative;
+the notebooks run things. Setup and conventions:
+<a href="notebooks.html"><code>notebooks/README.md</code></a>.</p>
+<h2 id="support-docs-and-what-each-is-for">Support docs and what each is for</h2>
+<table>
+<thead>
+<tr>
+<th>Doc</th>
+<th>Its job</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="learning-path.html">Learning Path</a></td>
+<td>The step-by-step route through the phases: pick a track, do the per-phase tasks, pass the checkpoints.</td>
+</tr>
+<tr>
+<td><a href="beginner-notes.html">Python Concepts Cheat-Sheet</a></td>
+<td>A one-time pre-read before Phase 0: every Python concept beyond functions/lists/dicts, in a sentence or two each.</td>
+</tr>
+<tr>
+<td><a href="glossary.html">Glossary</a></td>
+<td>Look-up-as-you-read definitions of every harness and Python term the guide uses.</td>
+</tr>
+<tr>
+<td><a href="faq.html">FAQ &amp; troubleshooting</a></td>
+<td>The canonical setup page plus symptom-first fixes: install errors, API keys, models, "the agent did nothing", tracebacks.</td>
+</tr>
+<tr>
+<td><a href="exercises.html">Exercises</a></td>
+<td>A warm-up + a stretch task per phase (with hints), plus the capstone — so you build, not just read.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-canonical-runnable-code">The canonical, runnable code</h2>
+<p>Each phase's markdown shows code <strong>as it grows</strong> — a Phase 3 snippet is deliberately
+simpler than its Phase 8 descendant, and a few designs (the tool registry, the
+conversation object) are intentionally refactored as the guide introduces new needs.
+That's the teaching arc, not the finished product.</p>
+<p>The <strong>single, consistent, end-to-end implementation</strong> lives in
+<a href="../../code/"><code>code/agent_harness/</code></a>. It is the source of truth: one tool registry, one
+<code>Conversation</code>, one permission system, wired together and <strong>covered by a passing test
+suite</strong> that runs entirely offline (a <code>FakeClient</code> stands in for the API):</p>
+<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>code
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span>
+python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>-q<span class="w">   </span><span class="c1"># all tests pass, no API key or network needed</span>
+</code></pre></div>
+
+<p>If a per-phase snippet and the package ever seem to disagree, the package is correct —
+read the phase for the <em>idea</em>, read <code>code/agent_harness/</code> for the <em>implementation</em>.</p>
+<h2 id="the-one-idea-behind-everything">The one idea behind everything</h2>
+<p>An LLM is a pure function: text in, text out. It can't touch the world or remember
+anything. An <strong>agent harness</strong> is the loop wrapped around it that gives it hands and a
+memory:</p>
+<div class="highlight"><pre><span></span><code>   send conversation ──▶ model wants tools? ──yes──▶ run tools, append results ──┐
+        ▲                        │ no                                            │
+        └────────────────────────┼───────────────────────────────────────────────┘
+                                  ▼
+                            return answer
+</code></pre></div>
+
+<p>Everything in this guide — streaming, permissions, sub-agents, compaction, retries —
+is refinement on top of that loop.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>openai<span class="w">          </span><span class="c1"># the only required dependency</span>
+pip<span class="w"> </span>install<span class="w"> </span>tiktoken<span class="w">        </span><span class="c1"># optional: local token counting (Phase 6)</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span><span class="s2">&quot;sk-...&quot;</span>
+</code></pre></div>
+
+<p>Python 3.10+. Run the sanity-check script at the end of <a href="00-foundations.html">Phase 0</a>
+to confirm your environment and API access before starting Phase 1.</p>
+<h2 id="a-note-on-models">A note on models</h2>
+<p>Throughout, code pins a single <code>MODEL</code> constant. Use the latest capable
+Responses-API model available to you; reasoning-capable models give the best agentic
+behavior. Everything here also works on smaller, faster models.</p>
+<h2 id="license--intent">License &amp; intent</h2>
+<p>This is educational material. The code is written for clarity over cleverness; in
+several places we deliberately show the "manual" version of something a library would
+hide, then point at the production-grade variant. Read it, run it, break it, rebuild
+it.</p>
+</article>
+<footer class="page-footer">
+<nav class="prevnext" aria-label="Previous and next page">
+
+<a class="next" href="learning-path.html" rel="next">Learning Path →</a>
+</nav>
+<p class="generated-note">Generated from <code>README.md</code> — the markdown is the source of truth.</p>
+</footer>
+</main>
+</div>
+<script>
+document.querySelectorAll('div.highlight').forEach(function (block) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-btn';
+  btn.type = 'button';
+  btn.textContent = 'Copy';
+  btn.addEventListener('click', function () {
+    var code = block.querySelector('pre').innerText;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(function () {
+        btn.textContent = 'Copied!';
+        setTimeout(function () { btn.textContent = 'Copy'; }, 1500);
+      }).catch(function () {});  /* graceful no-op on file:// denial */
+    }
+  });
+  block.insertBefore(btn, block.firstChild);
+});
+</script>
+</body>
+</html>

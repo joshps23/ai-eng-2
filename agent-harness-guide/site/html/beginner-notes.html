@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<!-- GENERATED from BEGINNER-NOTES.md — do not edit; run site/build_site.py -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Read this once before Phase 0. This page is for you if you&#x27;re comfortable with exactly five things: functions, lists, dictionaries, operators (+ - * / == and…">
+<title>Python Concepts Cheat-Sheet — Agent Harness Guide</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="layout">
+<details class="sidebar-wrap" open>
+<summary class="sidebar-toggle">Guide navigation</summary>
+<nav class="sidebar" aria-label="Guide navigation">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Guide hub</a></li>
+<li><a href="learning-path.html">Learning Path</a></li>
+<li class="current"><a href="beginner-notes.html" aria-current="page">Python Cheat-Sheet</a></li>
+<li><a href="faq.html">Setup &amp; FAQ</a></li>
+</ul>
+<h2>Phases</h2>
+<ul>
+<li><a href="00-foundations.html">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness.html">Phase 1 — Bare Harness</a></li>
+<li><a href="02-tool-system.html">Phase 2 — Tool System</a></li>
+<li><a href="03-conversation-and-streaming.html">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools.html">Phase 4 — Real Tools</a></li>
+<li><a href="05-permissions-and-safety.html">Phase 5 — Permissions &amp; Safety</a></li>
+<li><a href="06-context-management.html">Phase 6 — Context Management</a></li>
+<li><a href="07-subagents-orchestration.html">Phase 7 — Sub-agents</a></li>
+<li><a href="08-production-harness.html">Phase 8 — Production Harness</a></li>
+</ul>
+<h2>Appendix</h2>
+<ul>
+<li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
+</ul>
+<h2>Practice</h2>
+<ul>
+<li><a href="exercises.html">Exercises</a></li>
+<li><a href="glossary.html">Glossary</a></li>
+<li><a href="notebooks.html">Notebooks</a></li>
+</ul>
+</nav>
+</details>
+<main id="main">
+<header class="page-header">
+<p class="source-link"><a href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/BEGINNER-NOTES.md">View the markdown source on GitHub</a></p>
+<details class="page-toc">
+<summary>On this page</summary>
+<ul>
+<li class="toc-h2"><a href="#concepts-beyond-your-five">Concepts beyond your five</a></li>
+</ul>
+</details>
+</header>
+<article>
+<h1 id="python-concepts-cheat-sheet">Python Concepts Cheat-Sheet</h1>
+<blockquote>
+<p><strong>Read this once before Phase 0.</strong> This page is for you if you're comfortable with
+exactly five things: <strong>functions</strong>, <strong>lists</strong>, <strong>dictionaries</strong>, <strong>operators</strong>
+(<code>+ - * / == and or not in</code> …), and the <strong>OpenAI Responses API</strong> called with
+<code>client.responses.create(...)</code>. Everything else the guide uses is explained the
+first time it shows up, in a 🟢 box — and summarized here in one or two sentences
+each. Where the guide could use an advanced tool just for convenience, it also
+shows a plain-functions way to get the same result.</p>
+</blockquote>
+<h2 id="concepts-beyond-your-five">Concepts beyond your five</h2>
+<p>Read these once. Each scaffolding box in the guide links back here.</p>
+<table>
+<thead>
+<tr>
+<th>Thing you'll see</th>
+<th>What it really is, in terms you know</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><code>class</code> / methods</strong></td>
+<td>A bundle of related functions plus some shared data. You can mentally read <code>obj.do_thing(x)</code> as "call the <code>do_thing</code> function, passing <code>obj</code>'s data along." This version replaces classes with plain functions wherever it can.</td>
+</tr>
+<tr>
+<td><strong><code>item.type</code> (a dot, not <code>["type"]</code>)</strong></td>
+<td>The Responses API gives back <em>objects</em>. Reading a field with a dot (<code>item.type</code>) is just like reading a dict key (<code>item["type"]</code>) — same idea, different punctuation.</td>
+</tr>
+<tr>
+<td><strong><code>json.loads(s)</code> / <code>json.dumps(d)</code></strong></td>
+<td><code>loads</code> turns a <strong>string that looks like a dict</strong> (e.g. <code>'{"city": "Paris"}'</code>) into a real dict. <code>dumps</code> does the reverse: dict → string. The API hands you tool arguments as a <em>string</em>, so you <code>json.loads</code> it into a dict.</td>
+</tr>
+<tr>
+<td><strong>JSON Schema</strong></td>
+<td>Just a <strong>dictionary</strong> that describes what arguments a function takes (their names and types). The model reads it to decide how to call your function. You already know dicts — this is one with an agreed-upon shape.</td>
+</tr>
+<tr>
+<td><strong><code>try</code> / <code>except</code></strong></td>
+<td>"Try to run this; if it blows up, do that instead, don't crash." This version keeps these tiny and always explains them inline.</td>
+</tr>
+<tr>
+<td><strong><code>with ... as x:</code></strong></td>
+<td>A way to use something and clean it up automatically afterward. When you see <code>with client.responses.create(..., stream=True) as stream:</code>, read it as "open a stream, loop over it, close it when done."</td>
+</tr>
+<tr>
+<td><strong>type hints</strong> (<code>x: str</code>, <code>-&gt; dict</code>)</td>
+<td>Optional notes that say "this is a string" or "this returns a dict." They change nothing at runtime — you can ignore them while reading.</td>
+</tr>
+<tr>
+<td><strong><code>from __future__ import annotations</code></strong></td>
+<td>A switch at the top of some files that only affects how <em>type hints</em> are read (it lets newer hint syntax work on older Pythons). It changes nothing about what the code does — safe to ignore.</td>
+</tr>
+<tr>
+<td><strong><code>typing.TYPE_CHECKING</code></strong></td>
+<td>A constant that is <code>False</code> when your program actually runs; only type-checker tools see it as <code>True</code>. An <code>if TYPE_CHECKING:</code> block imports things purely for type hints, so at runtime it's skipped — also safe to ignore.</td>
+</tr>
+<tr>
+<td><strong><code>*args</code> / <code>**kwargs</code></strong></td>
+<td>"Accept any extra positional/keyword arguments." <code>run(**kwargs)</code> just means "this function accepts named arguments and gathers them into a dict called <code>kwargs</code>."</td>
+</tr>
+<tr>
+<td><strong>decorators</strong> (<code>@something</code>)</td>
+<td>A line starting with <code>@</code> above a function that wraps it to add behavior. Where the original used these for convenience, this version shows the plain-function equivalent.</td>
+</tr>
+<tr>
+<td><strong>threads / <code>ThreadPoolExecutor</code></strong></td>
+<td>A way to run several slow things (like API or disk calls) at the same time instead of one after another. The simple, sequential (one-after-another) version is always shown first.</td>
+</tr>
+<tr>
+<td><strong>f-strings</strong> (<code>f"hi {name}"</code>)</td>
+<td>A string with <code>{...}</code> holes that get filled in with values. <code>f"{a} + {b}"</code> is the same as <code>str(a) + " + " + str(b)</code>.</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p>That's the whole list. When a phase uses one of these, an inline 🟢 box re-explains it
+right where it appears — and the <strong><a href="glossary.html">Glossary</a></strong> defines every other term
+in the guide. Ready? Head to <strong><a href="00-foundations.html">Phase 0</a></strong> (or the
+<strong><a href="learning-path.html">Learning Path</a></strong> if you want a step-by-step plan).</p>
+</article>
+<footer class="page-footer">
+<nav class="prevnext" aria-label="Previous and next page">
+<a class="prev" href="learning-path.html" rel="prev">← Learning Path</a>
+<a class="next" href="faq.html" rel="next">Setup &amp; FAQ →</a>
+</nav>
+<p class="generated-note">Generated from <code>BEGINNER-NOTES.md</code> — the markdown is the source of truth.</p>
+</footer>
+</main>
+</div>
+<script>
+document.querySelectorAll('div.highlight').forEach(function (block) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-btn';
+  btn.type = 'button';
+  btn.textContent = 'Copy';
+  btn.addEventListener('click', function () {
+    var code = block.querySelector('pre').innerText;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(function () {
+        btn.textContent = 'Copied!';
+        setTimeout(function () { btn.textContent = 'Copy'; }, 1500);
+      }).catch(function () {});  /* graceful no-op on file:// denial */
+    }
+  });
+  block.insertBefore(btn, block.firstChild);
+});
+</script>
+</body>
+</html>

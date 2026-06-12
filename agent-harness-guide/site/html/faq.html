@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<!-- GENERATED from FAQ.md — do not edit; run site/build_site.py -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Stuck on a setup error, a confusing traceback, or &quot;why did the agent do nothing&quot;? Find your symptom below. For term definitions see the Glossary; for the rec…">
+<title>Beginner FAQ &amp; Troubleshooting — Agent Harness Guide</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="layout">
+<details class="sidebar-wrap" open>
+<summary class="sidebar-toggle">Guide navigation</summary>
+<nav class="sidebar" aria-label="Guide navigation">
+<h2>Start here</h2>
+<ul>
+<li><a href="index.html">Guide hub</a></li>
+<li><a href="learning-path.html">Learning Path</a></li>
+<li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
+<li class="current"><a href="faq.html" aria-current="page">Setup &amp; FAQ</a></li>
+</ul>
+<h2>Phases</h2>
+<ul>
+<li><a href="00-foundations.html">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness.html">Phase 1 — Bare Harness</a></li>
+<li><a href="02-tool-system.html">Phase 2 — Tool System</a></li>
+<li><a href="03-conversation-and-streaming.html">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools.html">Phase 4 — Real Tools</a></li>
+<li><a href="05-permissions-and-safety.html">Phase 5 — Permissions &amp; Safety</a></li>
+<li><a href="06-context-management.html">Phase 6 — Context Management</a></li>
+<li><a href="07-subagents-orchestration.html">Phase 7 — Sub-agents</a></li>
+<li><a href="08-production-harness.html">Phase 8 — Production Harness</a></li>
+</ul>
+<h2>Appendix</h2>
+<ul>
+<li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
+</ul>
+<h2>Practice</h2>
+<ul>
+<li><a href="exercises.html">Exercises</a></li>
+<li><a href="glossary.html">Glossary</a></li>
+<li><a href="notebooks.html">Notebooks</a></li>
+</ul>
+</nav>
+</details>
+<main id="main">
+<header class="page-header">
+<p class="source-link"><a href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/FAQ.md">View the markdown source on GitHub</a></p>
+<details class="page-toc">
+<summary>On this page</summary>
+<ul>
+<li class="toc-h2"><a href="#setup--installation">Setup &amp; installation</a></li>
+<li class="toc-h2"><a href="#api-keys-models--cost">API keys, models &amp; cost</a></li>
+<li class="toc-h2"><a href="#running-the-agent">Running the agent</a></li>
+<li class="toc-h2"><a href="#reading-tracebacks-a-20-second-skill">Reading tracebacks (a 20-second skill)</a></li>
+<li class="toc-h2"><a href="#platform-notes">Platform notes</a></li>
+</ul>
+</details>
+</header>
+<article>
+<h1 id="beginner-faq--troubleshooting">Beginner FAQ &amp; Troubleshooting</h1>
+<blockquote>
+<p>Stuck on a setup error, a confusing traceback, or "why did the agent do nothing"?
+Find your symptom below. For term definitions see the
+<strong><a href="glossary.html">Glossary</a></strong>; for the recommended order to learn in, see the
+<strong><a href="learning-path.html">Learning Path</a></strong>.</p>
+</blockquote>
+<hr>
+<h2 id="setup--installation">Setup &amp; installation</h2>
+<p>This is the canonical setup recipe — other pages link here instead of repeating it.
+From the <strong>repo root</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>agent-harness-guide/code
+python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>.venv/bin/activate<span class="w">   </span><span class="c1"># Windows: .venv\Scripts\activate</span>
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span>
+python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>-q<span class="w">          </span><span class="c1"># expect: all tests pass, offline, no API key needed</span>
+</code></pre></div>
+
+<p>Python 3.10+; the only required dependency is <code>openai&gt;=1.66.0</code>. If any step
+misbehaves, find your symptom below.</p>
+<p><strong>Q: <code>ModuleNotFoundError: No module named 'agent_harness'</code> when I run the tests.</strong>
+Almost always an interpreter mismatch: a globally-installed <code>pytest</code> belongs to a
+different Python than the one you <code>pip install</code>ed into. Two fixes, use both:
+1. Work inside a virtual environment: <code>python -m venv .venv &amp;&amp; source .venv/bin/activate</code>
+   (Windows: <code>.venv\Scripts\activate</code>), then <code>pip install -e ".[dev]"</code>.
+2. Run tests as <strong><code>python -m pytest</code></strong> (from <code>agent-harness-guide/code</code>), never bare
+   <code>pytest</code>. The <code>python -m</code> form guarantees the same interpreter you installed into.</p>
+<p><strong>Q: <code>pip install -e ".[dev]"</code> fails or can't reach the network.</strong>
+You need network access once to download <code>openai</code> and <code>pytest</code>. Behind a proxy, set
+<code>HTTP_PROXY</code>/<code>HTTPS_PROXY</code>. If you already have the deps, <code>pip install -e . --no-deps</code>
+installs just the package. The package itself is pure Python — no compiler needed.</p>
+<p><strong>Q: <code>agent-harness: command not found</code>.</strong>
+The console script is created by <code>pip install -e ".[dev]"</code>. Make sure your virtual
+environment is <strong>active</strong> (you should see <code>(.venv)</code> in your prompt), or just run the
+module directly: <code>python -m agent_harness.cli</code>.</p>
+<p><strong>Q: Which Python version do I need?</strong>
+3.10 or newer (<code>python --version</code> to check). The guide uses 3.10+ syntax such as
+<code>X | Y</code> type unions.</p>
+<p><strong>Q: How do I set up the companion notebooks?</strong>
+The optional <a href="notebooks.html">Jupyter notebooks</a> (every phase 0–8, plus a
+setup check) need one extras group and one kernel registration on top of the canonical
+setup above:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>agent-harness-guide/code
+python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>.venv/bin/activate<span class="w">   </span><span class="c1"># Windows: .venv\Scripts\activate</span>
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev,notebooks]&quot;</span>
+python<span class="w"> </span>-m<span class="w"> </span>ipykernel<span class="w"> </span>install<span class="w"> </span>--user<span class="w"> </span>--name<span class="w"> </span>agent-harness<span class="w"> </span>--display-name<span class="w"> </span><span class="s2">&quot;Python (agent-harness)&quot;</span>
+jupyter<span class="w"> </span>lab<span class="w"> </span>../notebooks/
+</code></pre></div>
+
+<p>The <code>ipykernel install</code> line registers your venv as a named kernel so notebooks can
+import <code>agent_harness</code> (see the next question for the failure mode it prevents).
+JupyterLab is the documented default; VS Code's notebook UI works identically — it
+discovers the same kernelspec. The notebooks run <strong>fully offline by default</strong> (a
+<code>FakeClient</code> stands in for the API); see <a href="notebooks.html"><code>notebooks/README.md</code></a>
+for the <code>USE_REAL_API</code> switch and conventions.</p>
+<p><strong>Q: My notebook can't import <code>agent_harness</code> (<code>ModuleNotFoundError</code> inside Jupyter).</strong>
+The kernel running your notebook isn't the venv you <code>pip install</code>ed into. This is the
+notebook analog of the <code>python -m pytest</code> vs bare <code>pytest</code> rule above: a system-wide
+Jupyter launches a system-wide Python, where <code>agent_harness</code> was never installed — even
+though imports work fine in your terminal. Two fixes, use both:
+1. Register the venv as a kernel (with the venv active, from <code>agent-harness-guide/code</code>):
+   <code>python -m ipykernel install --user --name agent-harness --display-name "Python (agent-harness)"</code>.
+2. In the notebook, pick <strong>Kernel → Change Kernel → Python (agent-harness)</strong>, then
+   re-run. The notebooks' first cell prints <code>sys.executable</code> so you can confirm it
+   points into your <code>.venv</code>.</p>
+<p><strong>Q: Can I run the notebooks on Google Colab?</strong>
+<strong>Yes.</strong> Each notebook has an <strong>"Open in Colab" badge</strong> at the top, and its first code
+cell bootstraps itself on Colab: it clones the repo and <code>pip install</code>s <code>agent_harness</code>
+automatically (locally, where the package is already installed, that cell does nothing
+extra). Because the repo is private, you need a one-time <strong><code>GH_TOKEN</code></strong> Colab secret — a
+fine-grained GitHub token with read-only Contents access. Full steps (token setup, the
+optional <code>OPENAI_API_KEY</code> secret for real-API mode, and Colab caveats) are in
+<a href="notebooks.html#running-on-google-colab"><code>notebooks/README.md</code> — Running on Google Colab</a>.</p>
+<p><strong>Q: Do I need an API key just to learn?</strong>
+<strong>No.</strong> The entire guide is readable offline and the full test suite passes with <strong>no
+key and no network</strong> — a <code>FakeClient</code> (see <code>code/agent_harness/testing.py</code>) stands in
+for the real API. You only need a key to actually <em>chat</em> with the agent. One honest
+caveat: the phases' "▶ Run it now" scripts <em>do</em> call the real API, so without a key
+they stop at <code>openai.OpenAIError: Missing credentials</code> (see below). That's expected —
+the "No API key?" box in Phase 0 gives the keyless alternatives: verify each
+checkpoint against its printed expected output, and run the offline test suite.</p>
+<hr>
+<h2 id="api-keys-models--cost">API keys, models &amp; cost</h2>
+<p><strong>Q: How does the harness find my API key?</strong>
+It calls <code>OpenAI()</code> with no arguments, which reads the <strong><code>OPENAI_API_KEY</code></strong>
+environment variable. Set it before running:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span><span class="s2">&quot;sk-...&quot;</span><span class="w">        </span><span class="c1"># Windows (PowerShell): $env:OPENAI_API_KEY=&quot;sk-...&quot;</span>
+</code></pre></div>
+
+<p><strong>Q: <code>openai.OpenAIError: Missing credentials</code> (and the traceback points at <code>client = OpenAI()</code>).</strong>
+This is the error you get when <strong>no key is set at all</strong>. <code>OpenAI()</code> looks for
+<code>OPENAI_API_KEY</code> the moment the client is constructed and raises right there — <em>before</em>
+any request is sent, which is why the traceback points at the <code>client = OpenAI()</code> line
+rather than at <code>responses.create</code>. Fix: <code>export OPENAI_API_KEY="sk-..."</code> in the same
+terminal, then re-run. (No key and just want to learn? See the previous section — the
+guide and its tests work offline; the phases' "▶ Run it now" boxes explain the keyless
+alternatives.)</p>
+<p><strong>Q: <code>openai.AuthenticationError</code> / 401.</strong>
+The key is <strong>set but wrong</strong> — mistyped or revoked. (A completely missing key fails
+earlier and differently; see the previous question.) Re-check <code>echo $OPENAI_API_KEY</code>,
+regenerate it in your OpenAI dashboard if unsure, and confirm your account has billing
+set up.</p>
+<p><strong>Q: Which model does it use, and how do I change it?</strong>
+The default is <strong><code>gpt-4o</code></strong> (<code>MODEL_DEFAULT</code> in <code>code/agent_harness/config.py</code>). Override
+per run with <code>--model</code>, e.g. <code>agent-harness --model gpt-4o-mini</code>. Reasoning-capable
+models give the best agentic (tool-using) behavior; smaller models are cheaper and
+faster and still work. Use whatever Responses-API model your account can access.</p>
+<p><strong>Q: <code>model_not_found</code> / 404 on the model.</strong>
+Your account doesn't have access to that model name, or it's misspelled. Try a model
+you know you can use (e.g. <code>--model gpt-4o-mini</code>).</p>
+<p><strong>Q: <code>RateLimitError</code> / 429.</strong>
+You've hit a per-minute request or token cap (or run out of quota). Wait and retry;
+Phase 8 adds automatic retry-with-backoff for exactly this. If it's a quota problem,
+check billing.</p>
+<p><strong>Q: How do I avoid surprise costs while experimenting?</strong>
+Use a smaller model (<code>--model gpt-4o-mini</code>), keep <code>--max-iterations</code> low, and point
+the agent at a tiny scratch directory so tool output stays short. Tokens ≈ cost — the
+shorter the transcript, the cheaper the run.</p>
+<hr>
+<h2 id="running-the-agent">Running the agent</h2>
+<p><strong>Q: The agent answered in plain text but never used a tool I expected.</strong>
+The model <em>chooses</em> whether to call a tool. If it didn't, usually (a) the tool's
+<code>description</code>/schema doesn't make its purpose obvious, (b) the task didn't actually
+need it, or (c) your system prompt didn't point at it. Sharpen the tool description
+(Phase 2/4) — the schema is how the model "sees" the tool.</p>
+<p><strong>Q: It loops forever / hits the iteration cap.</strong>
+There's a safety limit (<code>max_iterations</code>, default 50, settable with
+<code>--max-iterations</code>). Hitting it usually means the model is stuck retrying a failing
+tool. Read the tool results in the transcript — a tool that keeps erroring will make
+the model keep trying. Fix the tool or tighten its error message so the model can
+recover.</p>
+<p><strong>Q: A tool raised an exception and the whole program crashed.</strong>
+Tool functions should return an error <em>string</em> rather than raise, so the model can
+see what went wrong and adapt. See how the real tools wrap risky work in
+<code>try</code>/<code>except</code> (Phase 4) and the permission/hook layer (Phase 5).</p>
+<p><strong>Q: How do I resume a previous conversation?</strong>
+Use <code>--resume</code> (see the CLI flags in Phase 8 / <code>cli.py</code>). Conversations can be saved
+and reloaded — that's the transcript-as-state idea from Phase 3.</p>
+<p><strong>Q: How do I stop it from doing something dangerous (e.g. <code>rm -rf</code>)?</strong>
+That's the permission layer (Phase 5). Run with a stricter <code>--mode</code> so risky tools
+require approval, and keep the agent's <code>--workspace</code> pointed at a sandbox directory.</p>
+<hr>
+<h2 id="reading-tracebacks-a-20-second-skill">Reading tracebacks (a 20-second skill)</h2>
+<p>Python prints the <strong>call stack oldest-first</strong>, so the <em>last</em> line is what actually
+went wrong — read a traceback <strong>bottom-up</strong>:
+- <code>ModuleNotFoundError</code> → something isn't installed in <em>this</em> interpreter (see setup).
+- <code>KeyError</code> / <code>AttributeError</code> → you read a field that wasn't there; print the object.
+- <code>json.JSONDecodeError</code> → you tried to <code>json.loads</code> something that isn't valid JSON
+  (often empty tool arguments — guard with <code>args or "{}"</code>).
+- <code>openai.*Error</code> → the API rejected the request; the message says why (auth, model,
+  rate limit).</p>
+<hr>
+<h2 id="platform-notes">Platform notes</h2>
+<ul>
+<li><strong>Windows:</strong> activate the venv with <code>.venv\Scripts\activate</code>; set env vars with
+  <code>$env:OPENAI_API_KEY="..."</code> (PowerShell). The <code>bash</code> tool (Phase 4) assumes a
+  Unix-style shell — run under WSL or Git Bash if you want it to behave like the guide.</li>
+<li><strong>macOS / Linux:</strong> the commands in the guide work as written.</li>
+</ul>
+<hr>
+<blockquote>
+<p>Spotted a gap or an error? Open an issue on the repo.</p>
+</blockquote>
+</article>
+<footer class="page-footer">
+<nav class="prevnext" aria-label="Previous and next page">
+<a class="prev" href="beginner-notes.html" rel="prev">← Python Cheat-Sheet</a>
+<a class="next" href="00-foundations.html" rel="next">Phase 0 — Foundations →</a>
+</nav>
+<p class="generated-note">Generated from <code>FAQ.md</code> — the markdown is the source of truth.</p>
+</footer>
+</main>
+</div>
+<script>
+document.querySelectorAll('div.highlight').forEach(function (block) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-btn';
+  btn.type = 'button';
+  btn.textContent = 'Copy';
+  btn.addEventListener('click', function () {
+    var code = block.querySelector('pre').innerText;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(function () {
+        btn.textContent = 'Copied!';
+        setTimeout(function () { btn.textContent = 'Copy'; }, 1500);
+      }).catch(function () {});  /* graceful no-op on file:// denial */
+    }
+  });
+  block.insertBefore(btn, block.firstChild);
+});
+</script>
+</body>
+</html>
