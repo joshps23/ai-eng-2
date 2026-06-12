@@ -52,7 +52,7 @@ Status: ☐ todo · ◐ in progress · ☑ done
 | 6 | **Beginner FAQ / troubleshooting** page: API keys, rate limits, common tracebacks, Windows vs. mac/Linux | 1, 4 | ☑ |
 | 7 | **CI** that runs the test suite (and ideally a markdown link/code-block check) on every push | 6 | ☑ |
 | 8 | **Verify phase code samples** against the canonical package — flag any drift between snippets and `code/` | 6 | ☑ |
-| 9 | **Visual diagrams**: replace/augment ASCII with clearer flow diagrams where it helps a beginner | 4 | ☐ |
+| 9 | **Visual diagrams**: replace/augment ASCII with clearer flow diagrams where it helps a beginner | 4 | ◐ |
 | 10 | **"What you'll have built" capstone** + a checklist mapping each phase's output to a feature of a real harness | 5 | ☐ |
 | 11 | **Notebook resource**: executed jupytext companion notebooks for phases 0–3 + 6, offline CI gate, kernel/setup docs | 1, 3, 4 | ☑ |
 | 12 | **Companion notebooks for phases 4/5/7/8** (hybrid slices per the expert v1-scope verdict: scripted-asker permission gate, tmpdir tools, sub-agent core, Phase-8 demo trio) | 3 | ☑ |
@@ -61,6 +61,10 @@ Status: ☐ todo · ◐ in progress · ☑ done
 
 Newest first. One line per shipped iteration.
 
+- **2026-06-12** — Cycle 17 (user-seeded): pages-too-long/too-few-visuals — Reference
+  sections collapse with anchor-safe auto-expand (Phase 4 −33.5%), the three ASCII
+  diagrams now render as designed SVGs (Item 9 ◐ — site half done; md-side diagrams
+  for Phase 0/6 remain), plus per-phase medallion, 0–8 rail, ladder map, progress bar.
 - **2026-06-12** — Cycles 15–16: independent second \$10k-designer review (20 renders;
   verdict 3.5/5 with the stock light pygments palette as the headline catch) and full
   implementation of her 12 inputs — GitHub-Light code tokens, pruned TOCs, nav-toggle
