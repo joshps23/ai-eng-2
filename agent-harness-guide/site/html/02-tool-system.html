@@ -24,7 +24,7 @@
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
 <nav class="sidebar" aria-label="Guide pages">
-<p class="site-mark"><span class="site-mark-glyph" aria-hidden="true">⟲</span> Agent Harness Guide</p>
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
 <p class="sidebar-heading">Start here</p>
 <ul>
 <li><a href="index.html">Guide hub</a></li>
@@ -69,10 +69,8 @@
 <li class="toc-h2"><a href="#version-1--line-by-line-inline-ifelif-dispatch">Version 1 — Line by Line: Inline if/elif Dispatch</a>
 <ul>
 <li class="toc-h3"><a href="#11-the-schema-dicts-and-the-tools-list">1.1 The schema dicts and the tools list</a></li>
-<li class="toc-h3"><a href="#-check-it-now-no-api-key-needed">▶ Check it now (no API key needed) — 1.1 The schema dicts and the tools list</a></li>
 <li class="toc-h3"><a href="#12-the-loop-with-the-tool-logic-inlined">1.2 The loop, with the tool logic inlined</a></li>
 <li class="toc-h3"><a href="#the-full-file-agent_v1py">The full file: agent_v1.py</a></li>
-<li class="toc-h3"><a href="#-run-it-now">▶ Run it now — The full file</a></li>
 <li class="toc-h3"><a href="#the-pain-point-every-new-tool-means-edits-in-three-places">The pain point: every new tool means edits in three places</a></li>
 </ul>
 </li>
@@ -83,10 +81,8 @@
 <li class="toc-h3"><a href="#22-register-them-in-a-plain-dict">2.2 Register them in a plain dict</a></li>
 <li class="toc-h3"><a href="#23-build-the-list-the-api-needs">2.3 Build the list the API needs</a></li>
 <li class="toc-h3"><a href="#24-dispatch-look-up-a-tool-and-call-it">2.4 Dispatch: look up a tool and call it</a></li>
-<li class="toc-h3"><a href="#-check-it-now-no-api-key-needed-1">▶ Check it now (no API key needed) — 2.4 Dispatch</a></li>
 <li class="toc-h3"><a href="#25-handle-multiple-tool-calls--a-plain-for-loop">2.5 Handle multiple tool calls — a plain for loop</a></li>
 <li class="toc-h3"><a href="#26-the-full-agent-loop-using-only-functions-and-dicts">2.6 The full agent loop using only functions and dicts</a></li>
-<li class="toc-h3"><a href="#-run-it-now-1">▶ Run it now — 2.6 The full agent loop using only functions and dicts</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#version-3--classes-tool-and-toolregistry">Version 3 — Classes: Tool and ToolRegistry</a>
@@ -94,10 +90,8 @@
 <li class="toc-h3"><a href="#what-changed-from-v2-to-v3">What changed from V2 to V3</a></li>
 <li class="toc-h3"><a href="#the-mapping-classdecorator-version--version-2-plain-function-version">The mapping: class/decorator version ↔ Version 2 plain-function version</a></li>
 <li class="toc-h3"><a href="#31-the-tool-base-class">3.1 The Tool base class</a></li>
-<li class="toc-h3"><a href="#-check-it-now-no-api-key-needed-2">▶ Check it now (no API key needed) — 3.1 The Tool base class</a></li>
 <li class="toc-h3"><a href="#32-the-toolregistry-class">3.2 The ToolRegistry class</a></li>
 <li class="toc-h3"><a href="#33-the-full-file-agent_v3py">3.3 The full file: agent_v3.py</a></li>
-<li class="toc-h3"><a href="#-run-it-now-2">▶ Run it now — 3.3 The full file</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#version-4--the-tool-decorator">Version 4 — The @tool Decorator</a>
@@ -113,7 +107,6 @@
 <li class="toc-h3"><a href="#python-to-json-schema-type-mapping">Python-to-JSON Schema Type Mapping</a></li>
 <li class="toc-h3"><a href="#47-using-tool-objects-with-the-version-2-dict-registry">4.7 Using @tool objects with the Version 2 dict registry</a></li>
 <li class="toc-h3"><a href="#the-full-file-agent_v4py">The full file: agent_v4.py</a></li>
-<li class="toc-h3"><a href="#-run-it-now-3">▶ Run it now — The full file</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#going-further-optional--parallel-tool-execution">Going Further (Optional) — Parallel Tool Execution</a>
@@ -144,7 +137,6 @@
 <li class="toc-h3"><a href="#toolsregistrypy--complete">tools/registry.py — Complete</a></li>
 <li class="toc-h3"><a href="#toolsparallelpy--complete">tools/parallel.py — Complete</a></li>
 <li class="toc-h3"><a href="#tools__init__py">tools/__init__.py</a></li>
-<li class="toc-h3"><a href="#-check-it-now-no-api-key-needed-3">▶ Check it now (no API key needed) — tools/__init__.py</a></li>
 <li class="toc-h3"><a href="#agentpy--complete-with-example-tools">agent.py — Complete with Example Tools</a></li>
 <li class="toc-h3"><a href="#example-transcript">Example Transcript</a></li>
 </ul>
@@ -193,7 +185,7 @@
 <p>You can stop at any version; each one is a complete, working tool system that produces the same answers. Each later version changes <em>how the code is organized</em>, never <em>what the agent does</em>.</p>
 <h3 id="-beginner-track">🟢 Beginner track<a aria-label="Permalink to this section" class="hanchor" href="#-beginner-track">¶</a></h3>
 <blockquote class="beginner">
-<p>🟢 <strong>Beginner track.</strong> If classes and decorators are still new to you, Versions 1 and 2
+<p>If classes and decorators are still new to you, Versions 1 and 2
 are a perfectly legitimate stopping point — hand-written schema dicts plus a dict
 registry is a complete tool system, and it is exactly what the later versions automate.
 Read Versions 3 and 4 for the <em>ideas</em> and come back to the syntax when you are ready.</p>
@@ -213,7 +205,6 @@ Read Versions 3 and 4 for the <em>ideas</em> and come back to the syntax when yo
 <blockquote>
 <p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/02-tool-system.ipynb" title="Opens the notebook on GitHub — or use its Open-in-Colab badge"><code>notebooks/02-tool-system.ipynb</code></a> executes this phase's checkpoints offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
 </blockquote>
-<hr>
 <h2 id="version-1--line-by-line-inline-ifelif-dispatch">Version 1 — Line by Line: Inline <code>if/elif</code> Dispatch<a aria-label="Permalink to this section" class="hanchor" href="#version-1--line-by-line-inline-ifelif-dispatch">¶</a></h2>
 <p><strong>Why start here?</strong> Before we build any machinery, we should see the harness in its rawest possible form: every tool's schema written out, every tool's <em>logic</em> pasted directly into the dispatch branch, no functions of our own at all. This version works — and the moment you try to add a third tool, you will see exactly which pain each later version removes.</p>
 <h3 id="11-the-schema-dicts-and-the-tools-list">1.1 The schema dicts and the tools list<a aria-label="Permalink to this section" class="hanchor" href="#11-the-schema-dicts-and-the-tools-list">¶</a></h3>
@@ -371,7 +362,6 @@ Final answer:
 <li><strong>Add an <code>elif</code> branch</strong> to the dispatch chain — forget this and the model calls a tool that silently falls into the <code>else</code> error branch.</li>
 </ol>
 <p>Three places, in different parts of the file, that must stay in sync by hand. And there are quieter problems: if <code>args["a"]</code> is missing or the tool logic raises, the whole script crashes — the model never gets to see an error and recover. Every version that follows is an answer to this paragraph.</p>
-<hr>
 <h2 id="version-2--functions-and-a-dict-registry">Version 2 — Functions and a Dict Registry<a aria-label="Permalink to this section" class="hanchor" href="#version-2--functions-and-a-dict-registry">¶</a></h2>
 <h3 id="what-changed-from-v1-to-v2">What changed from V1 to V2<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v1-to-v2">¶</a></h3>
 <ul>
@@ -642,7 +632,6 @@ Final answer:
 multi-tool agent. The remaining versions show how to remove repetitive boilerplate, not how
 to make the agent <em>work</em> — it already works.</p>
 </blockquote>
-<hr>
 <h2 id="version-3--classes-tool-and-toolregistry">Version 3 — Classes: <code>Tool</code> and <code>ToolRegistry</code><a aria-label="Permalink to this section" class="hanchor" href="#version-3--classes-tool-and-toolregistry">¶</a></h2>
 <h3 id="what-changed-from-v2-to-v3">What changed from V2 to V3<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v2-to-v3">¶</a></h3>
 <ul>
@@ -1053,7 +1042,6 @@ and override <code>run</code>" means: make a new blueprint based on <code>Tool</
 </code></pre></div>
 
 <p>You should see the same output as Versions 1 and 2. The tool <em>behavior</em> is identical — you have only reorganized who owns the registry. The same idea, organized.</p>
-<hr>
 <h2 id="version-4--the-tool-decorator">Version 4 — The <code>@tool</code> Decorator<a aria-label="Permalink to this section" class="hanchor" href="#version-4--the-tool-decorator">¶</a></h2>
 <h3 id="what-changed-from-v3-to-v4">What changed from V3 to V4<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v3-to-v4">¶</a></h3>
 <ul>
@@ -1593,7 +1581,6 @@ defined (or use the complete <code>tools/base.py</code> listing at the end of th
 </code></pre></div>
 
 <p>Same output as Versions 1, 2, and 3 — confirm it for yourself. Then notice what <em>writing a new tool</em> costs now: a function with type hints and a docstring, plus one <code>registry.register(...)</code> line. No schema dict, no <code>elif</code> branch, no list to update. Alternatively, take your <code>agent_v2.py</code>, replace its two function definitions and schema dicts with the <code>@tool</code>-decorated versions (plus the machinery), and confirm the output is identical there too.</p>
-<hr>
 <h2 id="going-further-optional--parallel-tool-execution">Going Further (Optional) — Parallel Tool Execution<a aria-label="Permalink to this section" class="hanchor" href="#going-further-optional--parallel-tool-execution">¶</a></h2>
 <p><strong>Why now?</strong> The <code>for</code> loop over tool calls in Versions 1–4 runs them one at a time. If the model asks for weather in Paris and weather in Tokyo simultaneously, you wait for Paris to finish before starting Tokyo. Threads fix this. This is a speed optimization only — it does not change the results.</p>
 <blockquote class="beginner">
@@ -1708,7 +1695,6 @@ dict in one line instead of with a loop.</p>
 <li>Tools are pure functions with no shared state.</li>
 </ul>
 <p>The safe default for unknown tools is sequential. Switch to parallel only when you understand each tool's side effects.</p>
-<hr>
 <h2 id="argument-validation-strict-mode-vs-manual-checks-optional">Argument Validation: Strict Mode vs. Manual Checks (optional)<a aria-label="Permalink to this section" class="hanchor" href="#argument-validation-strict-mode-vs-manual-checks-optional">¶</a></h2>
 <p>The Responses API supports a <code>"strict": True</code> field on each tool definition. When strict mode is active, the API guarantees:</p>
 <ol>
@@ -1749,7 +1735,6 @@ dict in one line instead of with a loop.</p>
 </code></pre></div>
 
 <p>The <code>@tool</code> decorator does not currently generate this form automatically; it outputs simple schemas that work with <code>strict=False</code>. For a production system, you would either extend the decorator to accept <code>strict=True</code> and emit null-typed optionals, or write schemas by hand for strict-mode tools.</p>
-<hr>
 <h2 id="structured-results-and-errors-optional">Structured Results and Errors (optional)<a aria-label="Permalink to this section" class="hanchor" href="#structured-results-and-errors-optional">¶</a></h2>
 <h3 id="the-string-contract">The String Contract<a aria-label="Permalink to this section" class="hanchor" href="#the-string-contract">¶</a></h3>
 <p>Every tool returns a string. This is not a limitation — it is a deliberate interface boundary. The model receives text; strings are the natural unit.</p>
@@ -1786,7 +1771,6 @@ dict in one line instead of with a loop.</p>
 <div class="highlight nocopy"><pre><span></span><code>Error (ZeroDivisionError): division by zero
 </code></pre></div>
 <p>This string is the tool output. The model reads it, understands something went wrong, and can inform the user or try a different approach. The agent loop continues normally.</p>
-<hr>
 <h2 id="the-updated-agent-loop--the-production-shape">The Updated Agent Loop — the Production Shape<a aria-label="Permalink to this section" class="hanchor" href="#the-updated-agent-loop--the-production-shape">¶</a></h2>
 <p><em>The optional detour ends here — the core path resumes with this section.</em></p>
 <p>With the registry and parallel dispatch in place, the agent loop becomes completely decoupled from individual tools.</p>
@@ -1882,7 +1866,6 @@ dict in one line instead of with a loop.</p>
 <li>The loop terminates when no <code>function_call</code> items appear in <code>resp.output</code>.</li>
 <li><code>max_turns</code> is a hard guard against runaway loops. 10 is a reasonable default for most tasks; increase it for complex multi-step agents.</li>
 </ul>
-<hr>
 <h2 id="full-runnable-example--the-tools-package">Full Runnable Example — the <code>tools/</code> Package<a aria-label="Permalink to this section" class="hanchor" href="#full-runnable-example--the-tools-package">¶</a></h2>
 <p>Here is the complete file layout and a runnable script — the Version 4 harness split into modules, the way the consolidated package organizes it.</p>
 <h3 id="file-layout">File Layout<a aria-label="Permalink to this section" class="hanchor" href="#file-layout">¶</a></h3>
@@ -2356,7 +2339,6 @@ Final answer:
 The sentence &quot;The quick brown fox jumps over the lazy dog&quot; contains 9 words.
 </code></pre></div>
 <p>In turn 1 the model issued two <code>function_call</code> items simultaneously. Both ran in parallel via <code>ThreadPoolExecutor</code>. The results were appended with their respective <code>call_id</code> values. The model received both outputs in turn 2 and produced the final text response with no further tool calls.</p>
-<hr>
 <h2 id="why-we-built-it-in-versions-the-problems-with-ad-hoc-dispatch">Why We Built It in Versions: The Problems with Ad-Hoc Dispatch<a aria-label="Permalink to this section" class="hanchor" href="#why-we-built-it-in-versions-the-problems-with-ad-hoc-dispatch">¶</a></h2>
 <p>You now have a full tool system. This section names the five failure modes of the Version 1 / Phase 1 one-branch-per-tool approach — useful when you need to explain <em>why</em> the registry matters:</p>
 <p><strong>No single source of truth.</strong> The tool's schema (sent to the model) and the tool's implementation (called at runtime) are defined in separate places. They drift.</p>
@@ -2373,7 +2355,6 @@ The sentence &quot;The quick brown fox jumps over the lazy dog&quot; contains 9 
 <li><strong>Structured errors</strong>: returning error information as strings so the model can reason about failures</li>
 </ul>
 <p>Track each requirement back through the ladder: registration arrived in V2, classes organized it in V3, schema generation arrived in V4, and validation and parallelism came as add-ons to the registry. Same harness all the way up.</p>
-<hr>
 <h2 id="pitfalls">Pitfalls<a aria-label="Permalink to this section" class="hanchor" href="#pitfalls">¶</a></h2>
 <div class="table-wrap"><table>
 <thead>
@@ -2421,7 +2402,6 @@ The sentence &quot;The quick brown fox jumps over the lazy dog&quot; contains 9 
 </tr>
 </tbody>
 </table></div>
-<hr>
 <h2 id="key-takeaways">Key takeaways<a aria-label="Permalink to this section" class="hanchor" href="#key-takeaways">¶</a></h2>
 <ul>
 <li>The same harness climbed a <strong>ladder of versions</strong>: inline <code>if/elif</code> (V1) → functions +
@@ -2456,7 +2436,6 @@ The sentence &quot;The quick brown fox jumps over the lazy dog&quot; contains 9 
    <code>call_id</code> still gets its required matching output so the next <code>create()</code> is valid.</li>
 </ol>
 </details>
-<hr>
 <h2 id="exercises">Exercises<a aria-label="Permalink to this section" class="hanchor" href="#exercises">¶</a></h2>
 <p>See <a href="exercises.html"><code>EXERCISES.md</code> — Phase 2</a> for hands-on practice:</p>
 <ul>
@@ -2480,10 +2459,16 @@ The sentence &quot;The quick brown fox jumps over the lazy dog&quot; contains 9 
 <script>
 (function () {
   /* On narrow screens the stacked sidebar would push content below the
-     fold on every load — start it collapsed there. */
-  if (matchMedia('(max-width: 800px)').matches) {
-    var sb = document.querySelector('.sidebar-wrap');
-    if (sb) { sb.removeAttribute('open'); }
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
   }
 
   /* Print: open every <details> (answers, TOC) and revert afterwards. */

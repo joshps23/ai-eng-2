@@ -24,7 +24,7 @@
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
 <nav class="sidebar" aria-label="Guide pages">
-<p class="site-mark"><span class="site-mark-glyph" aria-hidden="true">⟲</span> Agent Harness Guide</p>
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
 <p class="sidebar-heading">Start here</p>
 <ul>
 <li><a href="index.html">Guide hub</a></li>
@@ -159,7 +159,6 @@ you see <code>with ... as x:</code> or <code>try/except</code> here, they mean t
 <a href="00-foundations.html">Phase 0</a> and <a href="01-bare-harness.html">Phase 1</a> boxes. So: study
 §1, skim §2–§4 for reference when you need them.</p>
 </blockquote>
-<hr>
 <h2 id="1-openai--the-responses-api">1. <code>openai</code> — the Responses API<a aria-label="Permalink to this section" class="hanchor" href="#1-openai--the-responses-api">¶</a></h2>
 <p>The <code>openai</code> package is the official Python SDK. We use <strong>only</strong> the Responses API
 (<code>client.responses.*</code>). We never touch Chat Completions (<code>client.chat.completions.*</code>).</p>
@@ -532,7 +531,6 @@ whole point is to drive the event loop and assemble the final response ourselves
 can see exactly what that helper does under the hood. Everything here uses the low-level
 <code>create(stream=True)</code> primitive.</p>
 </blockquote>
-<hr>
 <h2 id="2-tiktoken--local-token-counting">2. <code>tiktoken</code> — local token counting<a aria-label="Permalink to this section" class="hanchor" href="#2-tiktoken--local-token-counting">¶</a></h2>
 <p><code>tiktoken</code> is OpenAI's fast BPE tokenizer. We use it in Phase 6 to count tokens
 <strong>locally</strong> (no API call) so we can budget and prune the conversation. It's optional:
@@ -650,7 +648,6 @@ network error on first download).</p>
 
 <p>This never crashes: missing package, unknown model, or no network all degrade
 gracefully to the heuristic.</p>
-<hr>
 <h2 id="3-concurrentfutures--running-tools-in-parallel">3. <code>concurrent.futures</code> — running tools in parallel<a aria-label="Permalink to this section" class="hanchor" href="#3-concurrentfutures--running-tools-in-parallel">¶</a></h2>
 <p>Standard library. The harness uses a <code>ThreadPoolExecutor</code> to run independent tool
 calls (and sub-agents) at the same time. Threads are the right tool here because the
@@ -727,7 +724,6 @@ a bottleneck.</p>
 
 <p>Returning results keyed by <code>call_id</code> is exactly why ordering doesn't matter for the
 Responses API — <code>function_call_output</code> items are matched to calls by <code>call_id</code>.</p>
-<hr>
 <h2 id="4-subprocess--running-shell-commands">4. <code>subprocess</code> — running shell commands<a aria-label="Permalink to this section" class="hanchor" href="#4-subprocess--running-shell-commands">¶</a></h2>
 <p>Standard library. Powers the <code>bash</code> tool. We use <code>subprocess.run</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
@@ -822,7 +818,6 @@ Responses API — <code>function_call_output</code> items are matched to calls b
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;command timed out&quot;</span><span class="p">)</span>
 </code></pre></div>
 
-<hr>
 <h2 id="where-to-go-next">Where to go next<a aria-label="Permalink to this section" class="hanchor" href="#where-to-go-next">¶</a></h2>
 <ul>
 <li><strong>OpenAI Responses API</strong> — official docs: <a href="https://platform.openai.com/docs/api-reference/responses">https://platform.openai.com/docs/api-reference/responses</a></li>
@@ -848,10 +843,16 @@ box.</p>
 <script>
 (function () {
   /* On narrow screens the stacked sidebar would push content below the
-     fold on every load — start it collapsed there. */
-  if (matchMedia('(max-width: 800px)').matches) {
-    var sb = document.querySelector('.sidebar-wrap');
-    if (sb) { sb.removeAttribute('open'); }
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
   }
 
   /* Print: open every <details> (answers, TOC) and revert afterwards. */

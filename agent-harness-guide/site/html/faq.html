@@ -24,7 +24,7 @@
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
 <nav class="sidebar" aria-label="Guide pages">
-<p class="site-mark"><span class="site-mark-glyph" aria-hidden="true">⟲</span> Agent Harness Guide</p>
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
 <p class="sidebar-heading">Start here</p>
 <ul>
 <li><a href="index.html">Guide hub</a></li>
@@ -82,7 +82,6 @@ Find your symptom below. For term definitions see the
 <strong><a href="glossary.html">Glossary</a></strong>; for the recommended order to learn in, see the
 <strong><a href="learning-path.html">Learning Path</a></strong>.</p>
 </blockquote>
-<hr>
 <h2 id="setup--installation">Setup &amp; installation<a aria-label="Permalink to this section" class="hanchor" href="#setup--installation">¶</a></h2>
 <p>This is the canonical setup recipe — other pages link here instead of repeating it.
 From the <strong>repo root</strong>:</p>
@@ -159,7 +158,6 @@ caveat: the phases' "▶ Run it now" scripts <em>do</em> call the real API, so w
 they stop at <code>openai.OpenAIError: Missing credentials</code> (see below). That's expected —
 the "No API key?" box in Phase 0 gives the keyless alternatives: verify each
 checkpoint against its printed expected output, and run the offline test suite.</p>
-<hr>
 <h2 id="api-keys-models--cost">API keys, models &amp; cost<a aria-label="Permalink to this section" class="hanchor" href="#api-keys-models--cost">¶</a></h2>
 <p><strong>Q: How does the harness find my API key?</strong>
 It calls <code>OpenAI()</code> with no arguments, which reads the <strong><code>OPENAI_API_KEY</code></strong>
@@ -196,7 +194,6 @@ check billing.</p>
 Use a smaller model (<code>--model gpt-4o-mini</code>), keep <code>--max-iterations</code> low, and point
 the agent at a tiny scratch directory so tool output stays short. Tokens ≈ cost — the
 shorter the transcript, the cheaper the run.</p>
-<hr>
 <h2 id="running-the-agent">Running the agent<a aria-label="Permalink to this section" class="hanchor" href="#running-the-agent">¶</a></h2>
 <p><strong>Q: The agent answered in plain text but never used a tool I expected.</strong>
 The model <em>chooses</em> whether to call a tool. If it didn't, usually (a) the tool's
@@ -219,7 +216,6 @@ and reloaded — that's the transcript-as-state idea from Phase 3.</p>
 <p><strong>Q: How do I stop it from doing something dangerous (e.g. <code>rm -rf</code>)?</strong>
 That's the permission layer (Phase 5). Run with a stricter <code>--mode</code> so risky tools
 require approval, and keep the agent's <code>--workspace</code> pointed at a sandbox directory.</p>
-<hr>
 <h2 id="reading-tracebacks-a-20-second-skill">Reading tracebacks (a 20-second skill)<a aria-label="Permalink to this section" class="hanchor" href="#reading-tracebacks-a-20-second-skill">¶</a></h2>
 <p>Python prints the <strong>call stack oldest-first</strong>, so the <em>last</em> line is what actually
 went wrong — read a traceback <strong>bottom-up</strong>:
@@ -229,7 +225,6 @@ went wrong — read a traceback <strong>bottom-up</strong>:
   (often empty tool arguments — guard with <code>args or "{}"</code>).
 - <code>openai.*Error</code> → the API rejected the request; the message says why (auth, model,
   rate limit).</p>
-<hr>
 <h2 id="platform-notes">Platform notes<a aria-label="Permalink to this section" class="hanchor" href="#platform-notes">¶</a></h2>
 <ul>
 <li><strong>Windows:</strong> activate the venv with <code>.venv\Scripts\activate</code>; set env vars with
@@ -256,10 +251,16 @@ went wrong — read a traceback <strong>bottom-up</strong>:
 <script>
 (function () {
   /* On narrow screens the stacked sidebar would push content below the
-     fold on every load — start it collapsed there. */
-  if (matchMedia('(max-width: 800px)').matches) {
-    var sb = document.querySelector('.sidebar-wrap');
-    if (sb) { sb.removeAttribute('open'); }
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
   }
 
   /* Print: open every <details> (answers, TOC) and revert afterwards. */

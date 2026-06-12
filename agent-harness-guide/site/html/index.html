@@ -24,7 +24,7 @@
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
 <nav class="sidebar" aria-label="Guide pages">
-<p class="site-mark"><span class="site-mark-glyph" aria-hidden="true">⟲</span> Agent Harness Guide</p>
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
 <p class="sidebar-heading">Start here</p>
 <ul>
 <li class="current"><a href="index.html" aria-current="page">Guide hub</a></li>
@@ -100,7 +100,6 @@ hide — and could rebuild them yourself.</p>
 <a class="btn btn-ghost" href="learning-path.html">Pick a learning path</a>
 </p>
 </div>
-<hr>
 <h2 id="who-this-is-for">Who this is for<a aria-label="Permalink to this section" class="hanchor" href="#who-this-is-for">¶</a></h2>
 <p>Written for working engineers <strong>and</strong> for beginners who know functions, lists,
 dictionaries, operators, and <code>client.responses.create(...)</code> — the 🟢 beginner track
@@ -306,10 +305,16 @@ it.</p>
 <script>
 (function () {
   /* On narrow screens the stacked sidebar would push content below the
-     fold on every load — start it collapsed there. */
-  if (matchMedia('(max-width: 800px)').matches) {
-    var sb = document.querySelector('.sidebar-wrap');
-    if (sb) { sb.removeAttribute('open'); }
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
   }
 
   /* Print: open every <details> (answers, TOC) and revert afterwards. */

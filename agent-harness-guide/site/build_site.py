@@ -296,7 +296,11 @@ class GuideTreeprocessor(Treeprocessor):
                 if tag == "h1" and self.ctx.h1 is None:
                     self.ctx.h1 = text
                 if tag in ("h2", "h3"):
-                    self.ctx.toc.append((int(tag[1]), text, el.get("id")))
+                    # "▶ Run it now" checkpoints repeat near-identically and
+                    # drown the page outline — keep their ids (GitHub anchor
+                    # parity) but leave them out of the page TOC.
+                    if not text.lstrip().startswith("▶"):
+                        self.ctx.toc.append((int(tag[1]), text, el.get("id")))
                     anchor = etree.SubElement(el, "a")
                     anchor.set("class", "hanchor")
                     anchor.set("href", "#" + el.get("id"))
@@ -468,10 +472,16 @@ def rewrite_href(href: str, source_dir: str) -> str:
 PAGE_JS = """\
 (function () {
   /* On narrow screens the stacked sidebar would push content below the
-     fold on every load — start it collapsed there. */
-  if (matchMedia('(max-width: 800px)').matches) {
-    var sb = document.querySelector('.sidebar-wrap');
-    if (sb) { sb.removeAttribute('open'); }
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
   }
 
   /* Print: open every <details> (answers, TOC) and revert afterwards. */
@@ -584,40 +594,18 @@ def build_sidebar(current: str) -> str:
     return "\n".join(parts)
 
 
-def toc_suffix(text: str) -> str:
-    """Short disambiguation suffix for a TOC checkpoint: the parent heading's
-    leading identifier — the text before the first ' — ' or ':' (e.g.
-    'Step 2.4 — Add write_file' -> 'Step 2.4')."""
-    cut = len(text)
-    for sep in (" — ", ":"):
-        pos = text.find(sep)
-        if pos != -1:
-            cut = min(cut, pos)
-    return text[:cut].strip() or text
-
-
 def build_toc(toc: list[tuple[int, str, str]]) -> str:
-    """Nested page TOC: h3 entries group under their h2 in a sub-<ul>, and
-    duplicate h3 texts (the repeated '▶ Run it now' checkpoints) are suffixed
-    with the leading identifier of the nearest preceding non-checkpoint
-    heading (any level) so they are distinguishable.  Heading ids are not
-    touched — only the visible labels."""
+    """Nested page TOC: h3 entries group under their h2 in a sub-<ul>.
+    '▶ Run it now' checkpoints are excluded at collection time (see
+    GuideTreeprocessor), which also removes every duplicate heading text —
+    no disambiguation suffixes are needed."""
     if not toc:
         return ""
-    counts: dict[str, int] = {}
-    for _level, text, _slug in toc:
-        counts[text] = counts.get(text, 0) + 1
     parts = ["<ul>"]
-    nearest = None      # nearest preceding non-checkpoint heading text
     open_h2 = False     # an h2-level <li> is open
     open_sub = False    # a nested <ul> is open inside it
     for level, text, slug in toc:
-        label = text
-        if level == 3 and nearest and counts[text] > 1:
-            label = f"{text} — {toc_suffix(nearest)}"
-        if counts[text] == 1:
-            nearest = text
-        link = f'<a href="#{slug}">{esc(label)}</a>'
+        link = f'<a href="#{slug}">{esc(text)}</a>'
         if level == 2:
             if open_sub:
                 parts.append("</ul>")
@@ -643,6 +631,29 @@ def build_toc(toc: list[tuple[int, str, str]]) -> str:
         '<details class="page-toc">\n<summary>On this page</summary>\n'
         + "\n".join(parts) + "\n</details>"
     )
+
+
+# A source `---` divider directly above an `##` renders as <hr> + <h2>, but
+# every h2 already carries its own bottom border — the section would open
+# with a double rule.  Strike the <hr> (string post-processing, like
+# index_hero; the markdown source is untouched).
+HR_BEFORE_H2 = re.compile(r"<hr>\s*(?=<h2\b)")
+
+# A 🟢 beginner box directly after a heading sometimes re-states the heading
+# as its bold lead-in ("### 🟢 Beginner track" then "🟢 **Beginner track.**…")
+# — the label fires twice.  Drop the box's lead-in only when its text equals
+# the heading's (conservative literal back-reference; plain-text headings
+# only, content untouched everywhere else).
+BEGINNER_DUP = re.compile(
+    r'(<h([2-6])\b[^>]*>(?:🟢 ?)?(?P<t>[^<]+?) ?'
+    r'<a aria-label="[^"]*" class="hanchor"[^>]*>¶</a></h\2>\s*'
+    r'<blockquote class="beginner">\s*<p>)🟢 <strong>(?P=t)\.?</strong>\s*')
+
+
+def postprocess_body(body: str) -> str:
+    body = HR_BEFORE_H2.sub("", body)
+    body = BEGINNER_DUP.sub(r"\1", body)
+    return body
 
 
 def index_hero(body: str) -> str:
@@ -688,6 +699,7 @@ def build_page(out_name: str, src_rel: str, body: str, ctx: PageContext,
                  if ctx.repo_links else "")
 
     is_index = out_name == "index.html"
+    body = postprocess_body(body)
     if is_index:
         body = index_hero(body)
     body_class = ' class="page-index"' if is_index else ""
@@ -719,7 +731,7 @@ def build_page(out_name: str, src_rel: str, body: str, ctx: PageContext,
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
 <nav class="sidebar" aria-label="Guide pages">
-<p class="site-mark"><span class="site-mark-glyph" aria-hidden="true">⟲</span> Agent Harness Guide</p>
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
 {build_sidebar(out_name)}
 </nav>
 </details>
@@ -784,7 +796,7 @@ BASE_CSS = """\
     --border: #2A2F3C;
     --border-strong: #3A4150;
     --accent: #8C9BFF;        /* 7.47:1 on bg, 6.82:1 on code-bg; dark text on it: 7.47:1 */
-    --accent-deep: #8C9BFF;   /* same in dark; 6.19:1 on 10% accent tint */
+    --accent-deep: #A5B0FF;   /* hover step up: 9.28:1 on bg, 8.49:1 on code-bg */
     --code-bg: #171A23;
     --sidebar-bg: #12141C;
     --green: #3FB950;         /* 7.49:1 on bg, 6.68:1 on its 9% tint */
@@ -821,19 +833,34 @@ body {
   border-right: 1px solid var(--border);
 }
 .sidebar-toggle {
-  cursor: pointer; padding: 0.75rem 1rem; font-weight: 600;
+  cursor: pointer; padding: 0.875rem 1rem; font-weight: 600;
   list-style: none; display: block;
+  font-family: var(--font-mono); font-size: 0.75rem;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--muted); /* 5.88:1 on sidebar-bg */
+  border-bottom: 1px solid var(--border);
 }
 .sidebar-toggle::-webkit-details-marker { display: none; }
-.sidebar { padding: 0 1rem 1rem; font-size: 0.875rem; line-height: 1.5; }
-.site-mark {
-  font-weight: 700; font-size: 0.9375rem; letter-spacing: -0.01em;
-  margin: 0.75rem 0 0.25rem; color: var(--fg);
+.sidebar-toggle::after { content: " ▾"; color: var(--muted); }
+details[open] > .sidebar-toggle::after { content: " ▴"; }
+/* The sidebar is always expanded on desktop (the JS re-opens it above the
+   breakpoint), so the "Guide navigation" chrome is redundant there — the
+   site mark becomes the sidebar's first line.  <details> content stays
+   rendered: visibility follows the [open] attribute, not the summary. */
+@media (min-width: 801px) {
+  .sidebar-toggle { display: none; }
 }
-.site-mark-glyph { color: var(--accent); }
+.sidebar { padding: 0 1rem 1rem; font-size: 0.875rem; line-height: 1.5; }
+/* typographic site mark: mono `agent-harness/`, the slash in accent */
+.site-mark {
+  font-family: var(--font-mono); font-weight: 700; font-size: 0.875rem;
+  letter-spacing: 0; margin: 0.875rem 0 0.25rem; color: var(--fg);
+}
+.site-mark .mark-slash { color: var(--accent); }
 .sidebar .sidebar-heading {
-  font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.05em; color: var(--muted); margin: 1.25em 0 0.25em;
+  font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted);
+  margin: 1.25em 0 0.25em;
 }
 .sidebar ul { list-style: none; margin: 0; padding: 0; }
 .sidebar li { margin: 0; }
@@ -853,6 +880,13 @@ article { max-width: 75ch; font-size: 1.0625rem; line-height: 1.7; }
 article p, article ul, article ol { margin: 0 0 1.25rem; }
 article blockquote > :last-child, article .admonition > :last-child,
 article details > :last-child { margin-bottom: 0; }
+/* tablet: a 250px rail + 2rem padding pinches the article to ~55ch at 834w;
+   give the text back ~6ch.  Must precede the 800px block so the stacked-
+   layout rules below win the cascade at phone widths. */
+@media (max-width: 1000px) {
+  .sidebar-wrap { flex-basis: 220px; }
+  main { padding: 1.5rem; }
+}
 @media (max-width: 800px) {
   .layout { flex-direction: column; }
   /* column flex: align-items flex-start would shrink main to max-content
@@ -895,9 +929,11 @@ table { border-collapse: collapse; width: 100%; font-size: 0.9375rem; }
 th, td { border: 0; border-bottom: 1px solid var(--border);
   padding: 0.5em 0.875em; text-align: left; }
 th { background: transparent; border-bottom: 2px solid var(--border-strong);
-  font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;
-  color: var(--muted); }
-tbody tr:hover td { background: color-mix(in srgb, var(--fg) 3%, transparent); }
+  font-family: var(--font-mono); font-size: 0.75rem;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+/* hover paint only where rows lead somewhere: the index phase table */
+.page-index tbody tr:hover td {
+  background: color-mix(in srgb, var(--fg) 3%, transparent); }
 code, pre, kbd {
   font-family: var(--font-mono);
   font-size: 0.875em;
@@ -922,12 +958,15 @@ div.highlight pre::-webkit-scrollbar-track { background: transparent; }
   position: absolute; top: 0.5rem; right: 0.5rem;
   padding: 0.25em 0.7em; font-size: 0.75rem; font-family: var(--font-sans);
   cursor: pointer; border: 1px solid var(--border-strong); border-radius: 6px;
-  background: var(--bg); color: var(--muted); opacity: 0;
+  background: var(--bg); color: var(--muted);
+  /* always visible (a long block scrolls the corner out of reach before a
+     hover reveal could help); dimmed until hovered/focused */
+  opacity: 0.7;
   transition: opacity 120ms ease-out, color 120ms ease-out;
 }
-div.highlight:hover .copy-btn, .copy-btn:focus-visible { opacity: 1; }
+div.highlight:hover .copy-btn, .copy-btn:hover,
+.copy-btn:focus-visible { opacity: 1; }
 .copy-btn:hover { color: var(--fg); }
-@media (hover: none) { .copy-btn { opacity: 0.7; } }  /* touch: always visible */
 blockquote {
   margin: 1.25rem 0; padding: 0.75rem 1.25rem; color: var(--muted);
   border-left: 3px solid var(--border-strong); border-radius: 0 8px 8px 0;
@@ -970,8 +1009,9 @@ article details:not(.page-toc) {
   border-radius: 10px; padding: 0.625rem 1rem; font-size: 0.875rem;
 }
 .page-toc > summary {
-  color: var(--muted); font-weight: 600; font-size: 0.8125rem;
-  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--muted); font-weight: 600;
+  font-family: var(--font-mono); font-size: 0.75rem;
+  text-transform: uppercase; letter-spacing: 0.08em;
 }
 .page-toc ul { list-style: none; padding-left: 0; margin: 0.5em 0; }
 .page-toc ul ul { padding-left: 1.5em; margin: 0; }
@@ -994,9 +1034,9 @@ ul.contains-task-list { list-style: none; padding-left: 1em; }
 .prevnext .prev::before { content: "Previous"; }
 .prevnext .next::before { content: "Next"; }
 .prevnext a::before {
-  display: block; font-size: 0.6875rem; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted);
-  margin-bottom: 0.2rem;
+  display: block; font-family: var(--font-mono); font-size: 0.6875rem;
+  font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--muted); margin-bottom: 0.2rem;
 }
 .prevnext .next { margin-left: auto; text-align: right; }
 .generated-note { color: var(--muted); font-size: 0.8125rem; line-height: 1.5; }
@@ -1018,8 +1058,9 @@ a.repo-file::after { content: " ↗"; font-size: 0.85em; }
 /* ---- index landing page (body.page-index only) ---- */
 .hero { padding: 1.5rem 0 0.5rem; }
 .hero .hero-eyebrow {
-  font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.08em; color: var(--accent-deep); margin: 0 0 0.75rem;
+  font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--accent-deep); margin: 0 0 0.75rem;
 }
 .page-index h1 { font-size: clamp(2rem, 4.5vw, 2.75rem); text-wrap: balance; }
 .hero blockquote {
@@ -1036,7 +1077,6 @@ a.repo-file::after { content: " ↗"; font-size: 0.85em; }
 .btn-primary:hover { background: var(--accent-deep); }     /* white on it: 7.90:1 */
 .btn-ghost { border: 1px solid var(--border-strong); color: var(--fg); }
 .btn-ghost:hover { border-color: var(--accent); color: var(--accent-deep); }
-.page-index .hero + hr { display: none; }
 .page-index .page-header { display: none; }
 .page-index .table-wrap td:first-child strong {
   font-size: 1.25rem; color: var(--accent-deep);
@@ -1054,9 +1094,14 @@ a.repo-file::after { content: " ↗"; font-size: 0.85em; }
     background: color-mix(in srgb, var(--accent) 10%, var(--bg)); }
 }
 @media print {
-  .sidebar-wrap, .skip-link, .copy-btn, .page-header, .prevnext,
+  .sidebar-wrap, .skip-link, .copy-btn, .page-header, .page-toc, .prevnext,
   .back-to-top, .hanchor, .hero-cta, .source-link,
   .md-breadcrumb { display: none !important; }
+  /* use the sheet: drop the screen column, center the text at a book-like
+     measure instead of hugging the left half of the page */
+  .layout { max-width: none; }
+  main { max-width: none; }
+  article { max-width: 65ch; margin: 0 auto; }
   article a { color: inherit; }
   div.highlight pre { white-space: pre-wrap; overflow-x: visible; }
   .table-wrap { overflow-x: visible; }
@@ -1065,12 +1110,95 @@ a.repo-file::after { content: " ↗"; font-size: 0.85em; }
 """
 
 
+# Hand-written light token rules: pygments 2.20 ships github-dark but no
+# github-light, so the light scheme is GitHub-Light's palette transcribed by
+# hand, mirroring the github-dark block's class coverage and bold/italic
+# treatment so both schemes speak one language.  Comments are nudged from
+# GitHub's #6E7781 (only 4.24:1 on --code-bg) to #59626E.  Every color is
+# >= 4.5:1 on --code-bg #F6F7FA: #CF222E 5.00, #8250DF 4.71, #0A3069 11.96,
+# #0550AE 7.09, #59626E 5.77, #953800 6.89, #116329 6.90, #82071E 9.81,
+# #1B1F27 15.41.
+LIGHT_PYGMENTS = """\
+.highlight .hll { background-color: #FFF8C5 }
+.highlight .c { color: #59626E; font-style: italic } /* Comment */
+.highlight .err { color: #82071E } /* Error */
+.highlight .k { color: #CF222E } /* Keyword */
+.highlight .n { color: #1B1F27 } /* Name */
+.highlight .o { color: #CF222E; font-weight: bold } /* Operator */
+.highlight .p { color: #1B1F27 } /* Punctuation */
+.highlight .ch { color: #59626E; font-style: italic } /* Comment.Hashbang */
+.highlight .cm { color: #59626E; font-style: italic } /* Comment.Multiline */
+.highlight .cp { color: #59626E } /* Comment.Preproc */
+.highlight .cpf { color: #59626E; font-style: italic } /* Comment.PreprocFile */
+.highlight .c1 { color: #59626E; font-style: italic } /* Comment.Single */
+.highlight .cs { color: #59626E; font-style: italic } /* Comment.Special */
+.highlight .gd { color: #82071E } /* Generic.Deleted */
+.highlight .ge { font-style: italic } /* Generic.Emph */
+.highlight .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.highlight .gr { color: #82071E } /* Generic.Error */
+.highlight .gh { color: #0A3069; font-weight: bold } /* Generic.Heading */
+.highlight .gi { color: #116329 } /* Generic.Inserted */
+.highlight .go { color: #59626E } /* Generic.Output */
+.highlight .gp { color: #59626E } /* Generic.Prompt */
+.highlight .gs { font-weight: bold } /* Generic.Strong */
+.highlight .gu { color: #0A3069; font-weight: bold } /* Generic.Subheading */
+.highlight .gt { color: #0550AE } /* Generic.Traceback */
+.highlight .kc { color: #0550AE } /* Keyword.Constant */
+.highlight .kd { color: #CF222E } /* Keyword.Declaration */
+.highlight .kn { color: #CF222E } /* Keyword.Namespace */
+.highlight .kp { color: #0550AE } /* Keyword.Pseudo */
+.highlight .kr { color: #CF222E } /* Keyword.Reserved */
+.highlight .kt { color: #CF222E } /* Keyword.Type */
+.highlight .m { color: #0550AE } /* Literal.Number */
+.highlight .s { color: #0A3069 } /* Literal.String */
+.highlight .na { color: #0550AE } /* Name.Attribute */
+.highlight .nb { color: #1B1F27 } /* Name.Builtin */
+.highlight .nc { color: #953800; font-weight: bold } /* Name.Class */
+.highlight .no { color: #0550AE } /* Name.Constant */
+.highlight .nd { color: #8250DF; font-weight: bold } /* Name.Decorator */
+.highlight .ni { color: #59626E; font-weight: bold } /* Name.Entity */
+.highlight .ne { color: #953800; font-weight: bold } /* Name.Exception */
+.highlight .nf { color: #8250DF; font-weight: bold } /* Name.Function */
+.highlight .nl { color: #953800 } /* Name.Label */
+.highlight .nn { color: #CF222E } /* Name.Namespace */
+.highlight .nt { color: #116329 } /* Name.Tag */
+.highlight .nv { color: #953800 } /* Name.Variable */
+.highlight .ow { color: #CF222E; font-weight: bold } /* Operator.Word */
+.highlight .w { color: #59626E } /* Text.Whitespace */
+.highlight .mb { color: #0550AE } /* Literal.Number.Bin */
+.highlight .mf { color: #0550AE } /* Literal.Number.Float */
+.highlight .mh { color: #0550AE } /* Literal.Number.Hex */
+.highlight .mi { color: #0550AE } /* Literal.Number.Integer */
+.highlight .mo { color: #0550AE } /* Literal.Number.Oct */
+.highlight .sa { color: #0550AE } /* Literal.String.Affix */
+.highlight .sb { color: #0A3069 } /* Literal.String.Backtick */
+.highlight .sc { color: #0A3069 } /* Literal.String.Char */
+.highlight .dl { color: #0A3069 } /* Literal.String.Delimiter */
+.highlight .sd { color: #0A3069; font-style: italic } /* Literal.String.Doc */
+.highlight .s2 { color: #0A3069 } /* Literal.String.Double */
+.highlight .se { color: #0550AE } /* Literal.String.Escape */
+.highlight .sh { color: #0A3069 } /* Literal.String.Heredoc */
+.highlight .si { color: #0A3069 } /* Literal.String.Interpol */
+.highlight .sx { color: #0A3069 } /* Literal.String.Other */
+.highlight .sr { color: #0A3069 } /* Literal.String.Regex */
+.highlight .s1 { color: #0A3069 } /* Literal.String.Single */
+.highlight .ss { color: #0550AE } /* Literal.String.Symbol */
+.highlight .bp { color: #1B1F27 } /* Name.Builtin.Pseudo */
+.highlight .fm { color: #8250DF; font-weight: bold } /* Name.Function.Magic */
+.highlight .vc { color: #953800 } /* Name.Variable.Class */
+.highlight .vg { color: #953800 } /* Name.Variable.Global */
+.highlight .vi { color: #953800 } /* Name.Variable.Instance */
+.highlight .vm { color: #0550AE } /* Name.Variable.Magic */
+.highlight .il { color: #0550AE } /* Literal.Number.Integer.Long */
+"""
+
+
 def build_css() -> str:
-    light = HtmlFormatter(style="default").get_style_defs(".highlight")
     dark = HtmlFormatter(style="github-dark").get_style_defs(".highlight")
     return (
         BASE_CSS
-        + "\n/* pygments: light */\n" + light
+        + "\n/* pygments: light (GitHub-Light, hand-tuned — see LIGHT_PYGMENTS) */\n"
+        + LIGHT_PYGMENTS
         + "\n/* pygments: dark */\n@media (prefers-color-scheme: dark) {\n"
         + "\n".join("  " + line for line in dark.splitlines())
         + "\n}\n"
