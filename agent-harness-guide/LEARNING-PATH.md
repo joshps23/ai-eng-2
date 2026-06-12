@@ -18,7 +18,8 @@ tab. If you're newer to Python, read the
   bridge for a concept beyond functions/lists/dicts.
 - ▶ — a "Run it now" / "Check it now" checkpoint: a command to run plus the output
   you should see.
-- `[!WARNING]` — a destructive-operation warning (the model touching disk unguarded,
+- a red **Warning** box (written `[!WARNING]` in the markdown source) — a
+  destructive-operation warning (the model touching disk unguarded,
   bypass modes, runaway recursion). Slow down when you see one.
 
 ---

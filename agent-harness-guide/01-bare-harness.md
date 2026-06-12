@@ -760,7 +760,7 @@ Before moving on, can you answer these?
 
 ## Exercises
 
-See [`EXERCISES.md` — Phase 1](./EXERCISES.md) for hands-on practice:
+See [`EXERCISES.md` — Phase 1](./EXERCISES.md#phase-1--a-bare-harness) for hands-on practice:
 
 - **1.1 (warm-up):** Add a second tool (e.g. `get_weather(city)` returning a fixed string). Ask a question that should use it, and one that shouldn't. Did the model choose correctly?
 - **1.2 (stretch):** Make a tool that *always* returns an error string. Watch the loop retry — then confirm your `MAX_ITERATIONS` cap stops it.

@@ -885,7 +885,7 @@ integer `add` tool — it exercises the exact handshake you just learned, with a
 whose output is completely deterministic so you can easily verify correctness. It's
 written in the Version 1 straight-line style on purpose; reorganizing it into the
 Version 2 function shape (and adding a `multiply` tool) is the Phase 0 exercise in
-[`EXERCISES.md`](./EXERCISES.md).
+[`EXERCISES.md`](./EXERCISES.md#phase-0--foundations).
 
 ```python
 # check_setup.py
@@ -980,7 +980,7 @@ Before moving on, can you answer these?
 
 ## Exercises
 
-See [`EXERCISES.md` — Phase 0](./EXERCISES.md): reorganize the `check_setup.py`
+See [`EXERCISES.md` — Phase 0](./EXERCISES.md#phase-0--foundations): reorganize the `check_setup.py`
 sanity script (§0.8) into the Version 2 function shape and add a `multiply` tool.
 
 ---

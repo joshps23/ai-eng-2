@@ -25,6 +25,7 @@ misbehaves, find your symptom below.
 **Q: `ModuleNotFoundError: No module named 'agent_harness'` when I run the tests.**
 Almost always an interpreter mismatch: a globally-installed `pytest` belongs to a
 different Python than the one you `pip install`ed into. Two fixes, use both:
+
 1. Work inside a virtual environment: `python -m venv .venv && source .venv/bin/activate`
    (Windows: `.venv\Scripts\activate`), then `pip install -e ".[dev]"`.
 2. Run tests as **`python -m pytest`** (from `agent-harness-guide/code`), never bare
@@ -69,6 +70,7 @@ The kernel running your notebook isn't the venv you `pip install`ed into. This i
 notebook analog of the `python -m pytest` vs bare `pytest` rule above: a system-wide
 Jupyter launches a system-wide Python, where `agent_harness` was never installed — even
 though imports work fine in your terminal. Two fixes, use both:
+
 1. Register the venv as a kernel (with the venv active, from `agent-harness-guide/code`):
    `python -m ipykernel install --user --name agent-harness --display-name "Python (agent-harness)"`.
 2. In the notebook, pick **Kernel → Change Kernel → Python (agent-harness)**, then
