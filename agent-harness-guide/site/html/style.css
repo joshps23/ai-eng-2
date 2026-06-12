@@ -55,13 +55,16 @@ article { max-width: 75ch; }
   .sidebar-wrap { position: static; flex: none; width: 100%; max-height: none;
     border-right: none; border-bottom: 1px solid var(--border); }
   main { padding: 1rem; }
+  /* keep the fixed back-to-top control clear of the next-phase link */
+  .page-footer { padding-bottom: 3.5rem; }
 }
 h1, h2, h3, h4 { line-height: 1.25; scroll-margin-top: 0.5em; }
 .hanchor {
   margin-left: 0.35em; font-size: 0.85em; text-decoration: none;
   color: var(--muted); opacity: 0;
 }
-h2:hover > .hanchor, h3:hover > .hanchor, .hanchor:focus { opacity: 1; }
+h2:hover > .hanchor, h3:hover > .hanchor, .hanchor:focus,
+.hanchor:focus-visible { opacity: 1; }
 h1 { font-size: 1.8rem; border-bottom: 1px solid var(--border); padding-bottom: 0.3em; }
 h2 { font-size: 1.4rem; border-bottom: 1px solid var(--border); padding-bottom: 0.3em; margin-top: 1.6em; }
 h3 { font-size: 1.15rem; margin-top: 1.4em; }
@@ -149,6 +152,9 @@ a.repo-file::after { content: " ↗"; font-size: 0.85em; }
   opacity: 0.85;
 }
 .back-to-top:hover, .back-to-top:focus-visible { opacity: 1; }
+/* JS adds/removes this near the top of the page; with JS disabled the
+   class is never applied and the control stays visible. */
+.back-to-top.btt-hidden { visibility: hidden; opacity: 0; pointer-events: none; }
 @media (prefers-color-scheme: dark) {
   /* white-on-accent is 3.1:1 in the dark palette; the page bg is 6.7:1 */
   .skip-link, .sidebar li.current > a { color: var(--bg); }
@@ -157,6 +163,8 @@ a.repo-file::after { content: " ↗"; font-size: 0.85em; }
   .sidebar-wrap, .skip-link, .copy-btn, .page-header, .prevnext,
   .back-to-top, .hanchor { display: none !important; }
   div.highlight pre { white-space: pre-wrap; overflow-x: visible; }
+  .table-wrap { overflow-x: visible; }
+  th, td { word-break: break-word; }
 }
 
 /* pygments: light */

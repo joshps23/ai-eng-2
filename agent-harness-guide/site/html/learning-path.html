@@ -14,7 +14,7 @@
 <div class="layout">
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
-<nav class="sidebar">
+<nav class="sidebar" aria-label="Guide pages">
 <p class="sidebar-heading">Start here</p>
 <ul>
 <li><a href="index.html">Guide hub</a></li>
@@ -48,7 +48,7 @@
 </details>
 <main id="main">
 <header class="page-header">
-<p class="source-link"><a href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/LEARNING-PATH.md">View the markdown source on GitHub</a></p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/LEARNING-PATH.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
@@ -100,7 +100,7 @@ tab. If you're newer to Python, read the
   bypass modes, runaway recursion). Slow down when you see one.</li>
 </ul>
 <hr>
-<h2 id="before-you-start-15-min-once">Before you start (15 min, once)<a aria-hidden="true" class="hanchor" href="#before-you-start-15-min-once" tabindex="-1">¶</a></h2>
+<h2 id="before-you-start-15-min-once">Before you start (15 min, once)<a aria-label="Permalink to this section" class="hanchor" href="#before-you-start-15-min-once">¶</a></h2>
 <ol>
 <li><strong>Install and test the code</strong> (Python 3.10+; from the repo root):
     <div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>agent-harness-guide/code
@@ -126,7 +126,7 @@ phases carry the explanations. Setup and the list:
 <a href="notebooks.html"><code>notebooks/README.md</code></a>.</p>
 </blockquote>
 <hr>
-<h2 id="pick-your-track">Pick your track<a aria-hidden="true" class="hanchor" href="#pick-your-track" tabindex="-1">¶</a></h2>
+<h2 id="pick-your-track">Pick your track<a aria-label="Permalink to this section" class="hanchor" href="#pick-your-track">¶</a></h2>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -161,12 +161,12 @@ phases carry the explanations. Setup and the list:
 track suggests means nothing about you. You can stop at the end of any phase and have
 something that runs. Nothing later is required to make earlier phases work.</p>
 <hr>
-<h2 id="the-full-path-phase-by-phase">The full path, phase by phase<a aria-hidden="true" class="hanchor" href="#the-full-path-phase-by-phase" tabindex="-1">¶</a></h2>
+<h2 id="the-full-path-phase-by-phase">The full path, phase by phase<a aria-label="Permalink to this section" class="hanchor" href="#the-full-path-phase-by-phase">¶</a></h2>
 <p>Each phase below lists <strong>what you'll build</strong>, <strong>what to do</strong>, and a <strong>checkpoint</strong> —
 a concrete sign you've understood it before moving on. The <strong>Do</strong> and <strong>Checkpoint</strong>
 lines are GitHub task-list checkboxes: fork the repo (or copy this section into a
 GitHub issue or a notes file) and tick them off to keep your place between sessions.</p>
-<h3 id="phase-0--foundations--00-foundationsmd">Phase 0 — Foundations · <a href="00-foundations.html"><code>00-foundations.md</code></a><a aria-hidden="true" class="hanchor" href="#phase-0--foundations--00-foundationsmd" tabindex="-1">¶</a></h3>
+<h3 id="phase-0--foundations--00-foundationsmd">Phase 0 — Foundations · <a href="00-foundations.html"><code>00-foundations.md</code></a><a aria-label="Permalink to this section" class="hanchor" href="#phase-0--foundations--00-foundationsmd">¶</a></h3>
 <ul class="contains-task-list">
 <li><strong>Build:</strong> nothing yet — the mental model and the API contract every phase reuses.</li>
 <li class="task-list-item"><input disabled type="checkbox"> <strong>Do:</strong> read it carefully; run the sanity-check script at the end to confirm your
@@ -174,64 +174,64 @@ GitHub issue or a notes file) and tick them off to keep your place between sessi
 <li class="task-list-item"><input disabled type="checkbox"> <strong>Checkpoint:</strong> you can explain, in one sentence, the loop <em>send → tool call? →
   run &amp; append → repeat → answer</em>, and you know what <code>response.output</code> contains.</li>
 </ul>
-<h3 id="phase-1--a-bare-harness-in-80-lines--01-bare-harnessmd">Phase 1 — A bare harness in ~80 lines · <a href="01-bare-harness.html"><code>01-bare-harness.md</code></a><a aria-hidden="true" class="hanchor" href="#phase-1--a-bare-harness-in-80-lines--01-bare-harnessmd" tabindex="-1">¶</a></h3>
+<h3 id="phase-1--a-bare-harness-in-80-lines--01-bare-harnessmd">Phase 1 — A bare harness in ~80 lines · <a href="01-bare-harness.html"><code>01-bare-harness.md</code></a><a aria-label="Permalink to this section" class="hanchor" href="#phase-1--a-bare-harness-in-80-lines--01-bare-harnessmd">¶</a></h3>
 <ul class="contains-task-list">
 <li><strong>Build:</strong> a complete working agent in one file, with one trivial tool.</li>
 <li class="task-list-item"><input disabled type="checkbox"> <strong>Do:</strong> type it out (don't just copy), run it, and watch a tool call happen.</li>
 <li class="task-list-item"><input disabled type="checkbox"> <strong>Checkpoint:</strong> you can point at the exact lines where (a) the model <em>asks</em> for a
   tool and (b) your code <em>runs</em> it and feeds the result back.</li>
 </ul>
-<h3 id="phase-2--the-tool-system--02-tool-systemmd">Phase 2 — The tool system · <a href="02-tool-system.html"><code>02-tool-system.md</code></a><a aria-hidden="true" class="hanchor" href="#phase-2--the-tool-system--02-tool-systemmd" tabindex="-1">¶</a></h3>
+<h3 id="phase-2--the-tool-system--02-tool-systemmd">Phase 2 — The tool system · <a href="02-tool-system.html"><code>02-tool-system.md</code></a><a aria-label="Permalink to this section" class="hanchor" href="#phase-2--the-tool-system--02-tool-systemmd">¶</a></h3>
 <ul class="contains-task-list">
 <li><strong>Build:</strong> an extensible way to register tools and auto-describe them to the model.</li>
 <li class="task-list-item"><input disabled type="checkbox"> <strong>Do:</strong> add one tool of your own (e.g. a calculator) and call it from the agent.</li>
 <li class="task-list-item"><input disabled type="checkbox"> <strong>Checkpoint:</strong> you can add a new tool without touching the loop itself.</li>
 </ul>
-<h3 id="phase-3--conversation--streaming--03-conversation-and-streamingmd">Phase 3 — Conversation &amp; streaming · <a href="03-conversation-and-streaming.html"><code>03-conversation-and-streaming.md</code></a><a aria-hidden="true" class="hanchor" href="#phase-3--conversation--streaming--03-conversation-and-streamingmd" tabindex="-1">¶</a></h3>
+<h3 id="phase-3--conversation--streaming--03-conversation-and-streamingmd">Phase 3 — Conversation &amp; streaming · <a href="03-conversation-and-streaming.html"><code>03-conversation-and-streaming.md</code></a><a aria-label="Permalink to this section" class="hanchor" href="#phase-3--conversation--streaming--03-conversation-and-streamingmd">¶</a></h3>
 <ul class="contains-task-list">
 <li><strong>Build:</strong> ownership of the transcript as state; optional live (streaming) output.</li>
 <li class="task-list-item"><input disabled type="checkbox"> <strong>Do:</strong> save a conversation to disk and reload it; treat streaming as optional.</li>
 <li class="task-list-item"><input disabled type="checkbox"> <strong>Checkpoint:</strong> you can describe what's stored in the transcript and why the model
   "remembers" across turns.</li>
 </ul>
-<h3 id="phase-4--the-real-toolset--04-real-toolsmd">Phase 4 — The real toolset · <a href="04-real-tools.html"><code>04-real-tools.md</code></a><a aria-hidden="true" class="hanchor" href="#phase-4--the-real-toolset--04-real-toolsmd" tabindex="-1">¶</a></h3>
+<h3 id="phase-4--the-real-toolset--04-real-toolsmd">Phase 4 — The real toolset · <a href="04-real-tools.html"><code>04-real-tools.md</code></a><a aria-label="Permalink to this section" class="hanchor" href="#phase-4--the-real-toolset--04-real-toolsmd">¶</a></h3>
 <ul class="contains-task-list">
 <li><strong>Build:</strong> <code>read_file</code>, <code>edit_file</code>, <code>bash</code>, <code>grep</code>, <code>glob</code> — a coding agent's hands.</li>
 <li class="task-list-item"><input disabled type="checkbox"> <strong>Do:</strong> point the agent at a small scratch directory and have it read/edit a file.</li>
 <li class="task-list-item"><input disabled type="checkbox"> <strong>Checkpoint:</strong> the agent can make a real change on disk that you can <code>git diff</code>.</li>
 </ul>
-<h3 id="phase-5--permissions--safety--05-permissions-and-safetymd">Phase 5 — Permissions &amp; safety · <a href="05-permissions-and-safety.html"><code>05-permissions-and-safety.md</code></a><a aria-hidden="true" class="hanchor" href="#phase-5--permissions--safety--05-permissions-and-safetymd" tabindex="-1">¶</a></h3>
+<h3 id="phase-5--permissions--safety--05-permissions-and-safetymd">Phase 5 — Permissions &amp; safety · <a href="05-permissions-and-safety.html"><code>05-permissions-and-safety.md</code></a><a aria-label="Permalink to this section" class="hanchor" href="#phase-5--permissions--safety--05-permissions-and-safetymd">¶</a></h3>
 <ul class="contains-task-list">
 <li><strong>Build:</strong> approval gates, sandboxing, and the hook system.</li>
 <li class="task-list-item"><input disabled type="checkbox"> <strong>Do:</strong> make a destructive tool require approval; watch a hook fire before a tool runs.</li>
 <li class="task-list-item"><input disabled type="checkbox"> <strong>Checkpoint:</strong> you can name the layer that stops the agent from running <code>rm -rf</code>
   without asking.</li>
 </ul>
-<h3 id="phase-6--context-management--06-context-managementmd">Phase 6 — Context management · <a href="06-context-management.html"><code>06-context-management.md</code></a><a aria-hidden="true" class="hanchor" href="#phase-6--context-management--06-context-managementmd" tabindex="-1">¶</a></h3>
+<h3 id="phase-6--context-management--06-context-managementmd">Phase 6 — Context management · <a href="06-context-management.html"><code>06-context-management.md</code></a><a aria-label="Permalink to this section" class="hanchor" href="#phase-6--context-management--06-context-managementmd">¶</a></h3>
 <ul class="contains-task-list">
 <li><strong>Build:</strong> token budgeting, pruning, and compaction for long sessions.</li>
 <li class="task-list-item"><input disabled type="checkbox"> <strong>Do:</strong> force a tiny token budget and watch old turns get summarised/dropped.</li>
 <li class="task-list-item"><input disabled type="checkbox"> <strong>Checkpoint:</strong> you can explain why a long chat eventually <em>must</em> shed history, and
   the three tactics for doing it.</li>
 </ul>
-<h3 id="phase-7--sub-agents--orchestration--07-subagents-orchestrationmd">Phase 7 — Sub-agents &amp; orchestration · <a href="07-subagents-orchestration.html"><code>07-subagents-orchestration.md</code></a><a aria-hidden="true" class="hanchor" href="#phase-7--sub-agents--orchestration--07-subagents-orchestrationmd" tabindex="-1">¶</a></h3>
+<h3 id="phase-7--sub-agents--orchestration--07-subagents-orchestrationmd">Phase 7 — Sub-agents &amp; orchestration · <a href="07-subagents-orchestration.html"><code>07-subagents-orchestration.md</code></a><a aria-label="Permalink to this section" class="hanchor" href="#phase-7--sub-agents--orchestration--07-subagents-orchestrationmd">¶</a></h3>
 <ul class="contains-task-list">
 <li><strong>Build:</strong> spawning focused sub-agents, optionally in parallel.</li>
 <li class="task-list-item"><input disabled type="checkbox"> <strong>Do:</strong> add a <code>task</code> tool that runs a sub-agent for a search-style subtask.</li>
 <li class="task-list-item"><input disabled type="checkbox"> <strong>Checkpoint:</strong> you can describe how a sub-agent is "just the loop, called again."</li>
 </ul>
-<h3 id="phase-8--the-production-harness--08-production-harnessmd">Phase 8 — The production harness · <a href="08-production-harness.html"><code>08-production-harness.md</code></a><a aria-hidden="true" class="hanchor" href="#phase-8--the-production-harness--08-production-harnessmd" tabindex="-1">¶</a></h3>
+<h3 id="phase-8--the-production-harness--08-production-harnessmd">Phase 8 — The production harness · <a href="08-production-harness.html"><code>08-production-harness.md</code></a><a aria-label="Permalink to this section" class="hanchor" href="#phase-8--the-production-harness--08-production-harnessmd">¶</a></h3>
 <ul class="contains-task-list">
 <li><strong>Build:</strong> the full assembled CLI — retries, observability, persistence.</li>
 <li class="task-list-item"><input disabled type="checkbox"> <strong>Do:</strong> run <code>agent-harness</code> (or <code>python -m agent_harness.cli</code>) end-to-end.</li>
 <li class="task-list-item"><input disabled type="checkbox"> <strong>Checkpoint:</strong> you can map each earlier phase to a part of the finished harness.</li>
 </ul>
-<h3 id="appendix--library-reference--09-library-referencemd">Appendix — Library reference · <a href="09-library-reference.html"><code>09-library-reference.md</code></a><a aria-hidden="true" class="hanchor" href="#appendix--library-reference--09-library-referencemd" tabindex="-1">¶</a></h3>
+<h3 id="appendix--library-reference--09-library-referencemd">Appendix — Library reference · <a href="09-library-reference.html"><code>09-library-reference.md</code></a><a aria-label="Permalink to this section" class="hanchor" href="#appendix--library-reference--09-library-referencemd">¶</a></h3>
 <ul>
 <li><strong>Use as needed:</strong> look up any <code>openai</code> / <code>tiktoken</code> / stdlib method the guide uses.</li>
 </ul>
 <hr>
-<h2 id="when-youre-done">When you're done<a aria-hidden="true" class="hanchor" href="#when-youre-done" tabindex="-1">¶</a></h2>
+<h2 id="when-youre-done">When you're done<a aria-label="Permalink to this section" class="hanchor" href="#when-youre-done">¶</a></h2>
 <p>You'll have built — and understood from the inside — a Claude-Code-shaped harness:
 a loop, a sandboxed toolset, an approval system, automatic context compaction, and
 parallel sub-agents. The canonical, tested version of all of it lives in
@@ -272,6 +272,18 @@ parallel sub-agents. The canonical, tested version of all of it lives in
     openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
     openedForPrint = [];
   });
+
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
 
   /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
      execCommand -> select the block and ask for Ctrl-C.  If no mechanism
@@ -316,7 +328,7 @@ parallel sub-agents. The canonical, tested version of all of it lives in
       setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
     }
     function fallback(pre, code) {
-      if (execCopy(code)) { flash('Copied!'); }
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
       else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
       else { flash('Copy failed'); }
     }

@@ -288,8 +288,7 @@ class GuideTreeprocessor(Treeprocessor):
                     anchor = etree.SubElement(el, "a")
                     anchor.set("class", "hanchor")
                     anchor.set("href", "#" + el.get("id"))
-                    anchor.set("aria-hidden", "true")
-                    anchor.set("tabindex", "-1")
+                    anchor.set("aria-label", "Permalink to this section")
                     anchor.text = "¶"
             elif tag == "blockquote":
                 self._blockquote(el)
@@ -306,6 +305,14 @@ class GuideTreeprocessor(Treeprocessor):
                         el.set("class", cls)
                         el.set("title", "Opens a file in the repository "
                                         "checkout — not part of this site")
+                        self.ctx.repo_links += 1
+                    elif (new.startswith(GITHUB_BLOB)
+                            and new.partition("#")[0].endswith(".ipynb")):
+                        cls = (el.get("class", "") + " repo-file").strip()
+                        el.set("class", cls)
+                        el.set("title", "Opens the notebook on GitHub "
+                                        "(requires repo access) — or use its "
+                                        "Open-in-Colab badge")
                         self.ctx.repo_links += 1
             elif tag == "p" and self.ctx.first_para is None:
                 text = "".join(el.itertext()).strip()
@@ -433,6 +440,10 @@ def rewrite_href(href: str, source_dir: str) -> str:
         resolved += "/"
     if resolved in SOURCE_TO_PAGE:
         return SOURCE_TO_PAGE[resolved] + sep + frag
+    if resolved.endswith(".ipynb"):
+        # raw .ipynb is unreadable JSON in a checkout — send it to GitHub's
+        # rendered view instead (same base URL as the source links)
+        return GITHUB_BLOB + resolved + sep + frag
     # not converted: point back into the repo checkout (html/ is 2 deep)
     return posixpath.normpath(posixpath.join("../..", resolved)) + (
         "/" if resolved.endswith("/") else "") + sep + frag
@@ -463,6 +474,18 @@ PAGE_JS = """\
     openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
     openedForPrint = [];
   });
+
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
 
   /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
      execCommand -> select the block and ask for Ctrl-C.  If no mechanism
@@ -507,7 +530,7 @@ PAGE_JS = """\
       setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
     }
     function fallback(pre, code) {
-      if (execCopy(code)) { flash('Copied!'); }
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
       else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
       else { flash('Copy failed'); }
     }
@@ -548,23 +571,39 @@ def build_sidebar(current: str) -> str:
     return "\n".join(parts)
 
 
+def toc_suffix(text: str) -> str:
+    """Short disambiguation suffix for a TOC checkpoint: the parent heading's
+    leading identifier — the text before the first ' — ' or ':' (e.g.
+    'Step 2.4 — Add write_file' -> 'Step 2.4')."""
+    cut = len(text)
+    for sep in (" — ", ":"):
+        pos = text.find(sep)
+        if pos != -1:
+            cut = min(cut, pos)
+    return text[:cut].strip() or text
+
+
 def build_toc(toc: list[tuple[int, str, str]]) -> str:
     """Nested page TOC: h3 entries group under their h2 in a sub-<ul>, and
     duplicate h3 texts (the repeated '▶ Run it now' checkpoints) are suffixed
-    with their parent h2 so they are distinguishable."""
+    with the leading identifier of the nearest preceding non-checkpoint
+    heading (any level) so they are distinguishable.  Heading ids are not
+    touched — only the visible labels."""
     if not toc:
         return ""
     counts: dict[str, int] = {}
     for _level, text, _slug in toc:
         counts[text] = counts.get(text, 0) + 1
     parts = ["<ul>"]
-    parent = None       # text of the current h2
+    nearest = None      # nearest preceding non-checkpoint heading text
     open_h2 = False     # an h2-level <li> is open
     open_sub = False    # a nested <ul> is open inside it
     for level, text, slug in toc:
         label = text
-        if level == 3 and parent and counts[text] > 1:
-            label = f"{text} — {parent}"
+        if level == 3 and nearest and counts[text] > 1:
+            label = f"{text} — {toc_suffix(nearest)}"
+        if counts[text] == 1:
+            nearest = text
         link = f'<a href="#{slug}">{esc(label)}</a>'
         if level == 2:
             if open_sub:
@@ -574,7 +613,6 @@ def build_toc(toc: list[tuple[int, str, str]]) -> str:
                 parts.append("</li>")
             parts.append(f'<li class="toc-h2">{link}')
             open_h2 = True
-            parent = text
         else:
             if not open_h2:  # h3 before any h2: keep it at the top level
                 parts.append(f'<li class="toc-h3">{link}</li>')
@@ -597,7 +635,9 @@ def build_toc(toc: list[tuple[int, str, str]]) -> str:
 def build_page(out_name: str, src_rel: str, body: str, ctx: PageContext,
                idx: int) -> str:
     h1 = ctx.h1 or PAGES[idx][2]
-    title = f"{h1} — Agent Harness Guide"
+    # the hub's h1 is ~90 chars; use its short nav label in the tab title
+    title_text = PAGES[idx][2] if out_name == "index.html" else h1
+    title = f"{title_text} — Agent Harness Guide"
     desc = (ctx.first_para or h1).replace("\n", " ")
     if len(desc) > 158:
         desc = desc[:157].rstrip() + "…"
@@ -629,13 +669,13 @@ def build_page(out_name: str, src_rel: str, body: str, ctx: PageContext,
 <div class="layout">
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
-<nav class="sidebar">
+<nav class="sidebar" aria-label="Guide pages">
 {build_sidebar(out_name)}
 </nav>
 </details>
 <main id="main">
 <header class="page-header">
-<p class="source-link"><a href="{GITHUB_BLOB}{src_rel}">View the markdown source on GitHub</a></p>
+<p class="source-link"><a class="repo-file" href="{GITHUB_BLOB}{src_rel}" title="Requires access to the repository">View the markdown source on GitHub</a></p>
 {build_toc(ctx.toc)}
 </header>
 <article>
@@ -719,13 +759,16 @@ article { max-width: 75ch; }
   .sidebar-wrap { position: static; flex: none; width: 100%; max-height: none;
     border-right: none; border-bottom: 1px solid var(--border); }
   main { padding: 1rem; }
+  /* keep the fixed back-to-top control clear of the next-phase link */
+  .page-footer { padding-bottom: 3.5rem; }
 }
 h1, h2, h3, h4 { line-height: 1.25; scroll-margin-top: 0.5em; }
 .hanchor {
   margin-left: 0.35em; font-size: 0.85em; text-decoration: none;
   color: var(--muted); opacity: 0;
 }
-h2:hover > .hanchor, h3:hover > .hanchor, .hanchor:focus { opacity: 1; }
+h2:hover > .hanchor, h3:hover > .hanchor, .hanchor:focus,
+.hanchor:focus-visible { opacity: 1; }
 h1 { font-size: 1.8rem; border-bottom: 1px solid var(--border); padding-bottom: 0.3em; }
 h2 { font-size: 1.4rem; border-bottom: 1px solid var(--border); padding-bottom: 0.3em; margin-top: 1.6em; }
 h3 { font-size: 1.15rem; margin-top: 1.4em; }
@@ -813,6 +856,9 @@ a.repo-file::after { content: " ↗"; font-size: 0.85em; }
   opacity: 0.85;
 }
 .back-to-top:hover, .back-to-top:focus-visible { opacity: 1; }
+/* JS adds/removes this near the top of the page; with JS disabled the
+   class is never applied and the control stays visible. */
+.back-to-top.btt-hidden { visibility: hidden; opacity: 0; pointer-events: none; }
 @media (prefers-color-scheme: dark) {
   /* white-on-accent is 3.1:1 in the dark palette; the page bg is 6.7:1 */
   .skip-link, .sidebar li.current > a { color: var(--bg); }
@@ -821,6 +867,8 @@ a.repo-file::after { content: " ↗"; font-size: 0.85em; }
   .sidebar-wrap, .skip-link, .copy-btn, .page-header, .prevnext,
   .back-to-top, .hanchor { display: none !important; }
   div.highlight pre { white-space: pre-wrap; overflow-x: visible; }
+  .table-wrap { overflow-x: visible; }
+  th, td { word-break: break-word; }
 }
 """
 

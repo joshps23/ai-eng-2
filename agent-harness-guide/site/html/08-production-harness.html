@@ -14,7 +14,7 @@
 <div class="layout">
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
-<nav class="sidebar">
+<nav class="sidebar" aria-label="Guide pages">
 <p class="sidebar-heading">Start here</p>
 <ul>
 <li><a href="index.html">Guide hub</a></li>
@@ -48,7 +48,7 @@
 </details>
 <main id="main">
 <header class="page-header">
-<p class="source-link"><a href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/08-production-harness.md">View the markdown source on GitHub</a></p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/08-production-harness.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
@@ -60,12 +60,12 @@
 </li>
 <li class="toc-h2"><a href="#step-0--the-smallest-reliability-win-retry-with-backoff">Step 0 — The Smallest Reliability Win: Retry with Backoff</a>
 <ul>
-<li class="toc-h3"><a href="#-run-it-now">▶ Run it now — Step 0 — The Smallest Reliability Win: Retry with Backoff</a></li>
+<li class="toc-h3"><a href="#-run-it-now">▶ Run it now — Step 0</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#step-1--observability-know-what-your-agent-is-doing">Step 1 — Observability: Know What Your Agent Is Doing</a>
 <ul>
-<li class="toc-h3"><a href="#-run-it-now-1">▶ Run it now — Step 1 — Observability: Know What Your Agent Is Doing</a></li>
+<li class="toc-h3"><a href="#-run-it-now-1">▶ Run it now — Step 1</a></li>
 <li class="toc-h3"><a href="#1b--graduating-to-stdlib-logging">1b — Graduating to stdlib logging</a></li>
 <li class="toc-h3"><a href="#1c--the-jsonl-tracer">1c — The JSONL Tracer</a></li>
 <li class="toc-h3"><a href="#1d--cost-and-token-accounting">1d — Cost and Token Accounting</a></li>
@@ -73,17 +73,17 @@
 </li>
 <li class="toc-h2"><a href="#step-2--configuration-no-more-magic-constants">Step 2 — Configuration: No More Magic Constants</a>
 <ul>
-<li class="toc-h3"><a href="#-run-it-now-2">▶ Run it now — Step 2 — Configuration: No More Magic Constants</a></li>
+<li class="toc-h3"><a href="#-run-it-now-2">▶ Run it now — Step 2</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#step-3--system-prompt-engineering">Step 3 — System Prompt Engineering</a>
 <ul>
-<li class="toc-h3"><a href="#-run-it-now-3">▶ Run it now — Step 3 — System Prompt Engineering</a></li>
+<li class="toc-h3"><a href="#-run-it-now-3">▶ Run it now — Step 3</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#step-4--the-cli--repl-the-face-of-the-harness">Step 4 — The CLI / REPL: The Face of the Harness</a>
 <ul>
-<li class="toc-h3"><a href="#-run-it-now-4">▶ Run it now — Step 4 — The CLI / REPL: The Face of the Harness</a></li>
+<li class="toc-h3"><a href="#-run-it-now-4">▶ Run it now — Step 4</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#5-reliability-production-shape-llmpy">5. Reliability (Production Shape: llm.py)</a>
@@ -133,7 +133,7 @@
 <p>You have built every organ of the system. Phase 2 gave you tools and parallel dispatch. Phase 3 gave you conversation persistence and streaming. Phase 4 gave you real filesystem and shell tools. Phase 5 gave you permissions and hooks. Phase 6 gave you token budgeting and compaction. Phase 7 gave you agent orchestration and sub-agents.</p>
 <p>This phase wires all of that into a harness you could ship: reliable under network chaos, observable when something goes wrong, configurable without code edits, and pleasant to use from a terminal. The gap between a weekend demo and a production coding agent is almost entirely about these properties. We will close that gap, component by component.</p>
 <hr>
-<h2 id="0-youve-already-built-all-of-this--the-ladder-to-package-map">0. You've Already Built All of This — the Ladder-to-Package Map<a aria-hidden="true" class="hanchor" href="#0-youve-already-built-all-of-this--the-ladder-to-package-map" tabindex="-1">¶</a></h2>
+<h2 id="0-youve-already-built-all-of-this--the-ladder-to-package-map">0. You've Already Built All of This — the Ladder-to-Package Map<a aria-label="Permalink to this section" class="hanchor" href="#0-youve-already-built-all-of-this--the-ladder-to-package-map">¶</a></h2>
 <p>Every previous phase climbed the same <strong>version ladder</strong>: V1 line-by-line (no <code>def</code>, no
 classes), V2 functions, V3 classes, and — where the phase taught it — V4 decorators or
 threads. Phase 8 is where the ladders meet. There is no V1 here, because <em>you already
@@ -265,7 +265,7 @@ tested package settles each of these definitively in <code>code/agent_harness/</
 are ready. The rest of this phase adds the second table's modules one step at a time,
 then shows the fully assembled <code>Agent.run_turn</code> where every row plugs in.</p>
 <hr>
-<h2 id="1-what-separates-a-demo-from-a-production-harness">1. What Separates a Demo from a Production Harness<a aria-hidden="true" class="hanchor" href="#1-what-separates-a-demo-from-a-production-harness" tabindex="-1">¶</a></h2>
+<h2 id="1-what-separates-a-demo-from-a-production-harness">1. What Separates a Demo from a Production Harness<a aria-label="Permalink to this section" class="hanchor" href="#1-what-separates-a-demo-from-a-production-harness">¶</a></h2>
 <p>A demo works when the network is fast, the model cooperates on the first try, no file is large, and you are watching. A production harness must handle:</p>
 <div class="table-wrap"><table>
 <thead>
@@ -314,7 +314,7 @@ then shows the fully assembled <code>Agent.run_turn</code> where every row plugs
 one at a time, and <strong>§5–§10</strong> harden, assemble, package, test, and close.)</p>
 <p><strong>Contents:</strong></p>
 <blockquote>
-<p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="../../notebooks/08-production-harness.ipynb" title="Opens a file in the repository checkout — not part of this site"><code>notebooks/08-production-harness.ipynb</code></a> executes this phase's runnable core offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
+<p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/08-production-harness.ipynb" title="Opens the notebook on GitHub (requires repo access) — or use its Open-in-Colab badge"><code>notebooks/08-production-harness.ipynb</code></a> executes this phase's runnable core offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
 </blockquote>
 <ul>
 <li><a href="#0-youve-already-built-all-of-this--the-ladder-to-package-map">§0 — the ladder-to-package map</a></li>
@@ -329,7 +329,7 @@ one at a time, and <strong>§5–§10</strong> harden, assemble, package, test, 
 </ul>
 <hr>
 <blockquote class="beginner">
-<h2 id="-beginner-track-this-phase-is-polish-not-new-core-ideas">🟢 Beginner track: this phase is polish, not new core ideas<a aria-hidden="true" class="hanchor" href="#-beginner-track-this-phase-is-polish-not-new-core-ideas" tabindex="-1">¶</a></h2>
+<h2 id="-beginner-track-this-phase-is-polish-not-new-core-ideas">🟢 Beginner track: this phase is polish, not new core ideas<a aria-label="Permalink to this section" class="hanchor" href="#-beginner-track-this-phase-is-polish-not-new-core-ideas">¶</a></h2>
 <p>Take a breath — there's <strong>no new agent concept</strong> in Phase 8. The loop at the heart of
 <code>run_turn</code> (§6) is the <em>same loop</em> you wrote in Phases 1–2: call the model, run the
 tools it asks for, feed results back, repeat until done. Everything else here is
@@ -391,7 +391,7 @@ need to build every module to have a working agent — you already do.</p>
 because the material got harder, but because you know the patterns now.</p>
 </blockquote>
 <hr>
-<h2 id="step-0--the-smallest-reliability-win-retry-with-backoff">Step 0 — The Smallest Reliability Win: Retry with Backoff<a aria-hidden="true" class="hanchor" href="#step-0--the-smallest-reliability-win-retry-with-backoff" tabindex="-1">¶</a></h2>
+<h2 id="step-0--the-smallest-reliability-win-retry-with-backoff">Step 0 — The Smallest Reliability Win: Retry with Backoff<a aria-label="Permalink to this section" class="hanchor" href="#step-0--the-smallest-reliability-win-retry-with-backoff">¶</a></h2>
 <p><strong>Why now?</strong> Networks are unreliable. The OpenAI API sometimes returns a 429 (rate limit) or a 500 (server error). Without retry logic, your agent dies on the first hiccup. With it, the agent waits a moment and tries again — the user never notices.</p>
 <p>Here is the complete retry wrapper using only a <code>for</code> loop, <code>try</code>/<code>except</code>, and <code>time.sleep</code> — no new imports beyond <code>time</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
@@ -419,7 +419,7 @@ sorting, jitter, <code>Retry-After</code>), and the tested package takes one fin
 <strong>V3</strong>: a tiny <code>LLMClient</code> class whose only state is <em>which client to wrap</em> — that
 injectability is exactly what makes the offline <code>FakeClient</code> testing in §8 possible.</p>
 </blockquote>
-<h3 id="-run-it-now">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now">¶</a></h3>
 <p>You can test retry logic without a real API by using a fake client that fails the first two times:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 
@@ -467,7 +467,7 @@ Success on attempt 3
 </code></pre></div></p>
 <p>Once this works, every call in your loop is retry-safe. The rest of this phase wraps the same loop in progressively more production machinery.</p>
 <hr>
-<h2 id="step-1--observability-know-what-your-agent-is-doing">Step 1 — Observability: Know What Your Agent Is Doing<a aria-hidden="true" class="hanchor" href="#step-1--observability-know-what-your-agent-is-doing" tabindex="-1">¶</a></h2>
+<h2 id="step-1--observability-know-what-your-agent-is-doing">Step 1 — Observability: Know What Your Agent Is Doing<a aria-label="Permalink to this section" class="hanchor" href="#step-1--observability-know-what-your-agent-is-doing">¶</a></h2>
 <p><strong>Why now?</strong> Once retry is in place, the next failure mode is: <em>the agent runs but does the wrong thing and you have no idea why</em>. Structured logging turns invisible behaviour into a visible record.</p>
 <p>The simplest upgrade is to add <code>print()</code> statements with consistent labels. Replace bare <code>print()</code> calls with a tiny helper:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
@@ -501,10 +501,10 @@ loop.) Steps 1b–1d climb this ladder one rung at a time.</p>
 <span class="n">log</span><span class="p">(</span><span class="s2">&quot;INFO&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;tool_result  call_id=</span><span class="si">{</span><span class="n">call_id</span><span class="si">}</span><span class="s2">  ok=</span><span class="si">{</span><span class="ow">not</span><span class="w"> </span><span class="n">result</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;Error&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-1">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-1" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-1">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-1">¶</a></h3>
 <p>Run your existing agent with these log lines added. Ask it something that triggers a tool call. You should now see a structured record of every turn: how many messages were in context, how many tokens were used, how long each call took, and which tools ran.</p>
 <p>If something goes wrong, you will know <em>exactly</em> which turn failed and what the inputs were — instead of guessing.</p>
-<h3 id="1b--graduating-to-stdlib-logging">1b — Graduating to stdlib <code>logging</code><a aria-hidden="true" class="hanchor" href="#1b--graduating-to-stdlib-logging" tabindex="-1">¶</a></h3>
+<h3 id="1b--graduating-to-stdlib-logging">1b — Graduating to stdlib <code>logging</code><a aria-label="Permalink to this section" class="hanchor" href="#1b--graduating-to-stdlib-logging">¶</a></h3>
 <p>When you are ready for logs that can be silenced or redirected to a file, swap your <code>log()</code> helper for stdlib <code>logging</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># agent_harness/logging_config.py</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
@@ -558,7 +558,7 @@ loop.) Steps 1b–1d climb this ladder one rung at a time.</p>
 function for the stdlib's, but nothing was reorganized: same calls, same places, better
 plumbing.</p>
 </blockquote>
-<h3 id="1c--the-jsonl-tracer">1c — The JSONL Tracer<a aria-hidden="true" class="hanchor" href="#1c--the-jsonl-tracer" tabindex="-1">¶</a></h3>
+<h3 id="1c--the-jsonl-tracer">1c — The JSONL Tracer<a aria-label="Permalink to this section" class="hanchor" href="#1c--the-jsonl-tracer">¶</a></h3>
 <p>A machine-readable event log is invaluable for post-hoc debugging and cost audits.</p>
 <blockquote>
 <p><strong>Which rung is this?</strong> <strong>V3 — classes.</strong> The <code>Tracer</code> below is your <code>log()</code> helper
@@ -686,7 +686,7 @@ its own data. The method bodies are still just "build a dict, write a line."</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">_emit</span><span class="p">(</span><span class="s2">&quot;session_end&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;stats&quot;</span><span class="p">:</span> <span class="n">stats</span><span class="p">})</span>
 </code></pre></div>
 
-<h3 id="1d--cost-and-token-accounting">1d — Cost and Token Accounting<a aria-hidden="true" class="hanchor" href="#1d--cost-and-token-accounting" tabindex="-1">¶</a></h3>
+<h3 id="1d--cost-and-token-accounting">1d — Cost and Token Accounting<a aria-label="Permalink to this section" class="hanchor" href="#1d--cost-and-token-accounting">¶</a></h3>
 <p>Track usage across turns (and across sub-agents spawned in Phase 7). This is the same idea as the <code>log()</code> helper above — just accumulating numbers instead of printing strings:</p>
 <blockquote>
 <p><strong>Which rung is this?</strong> <strong>V3 — classes</strong>, for the same reason as the <code>Tracer</code>: the
@@ -783,7 +783,7 @@ The function bodies are what matter; skim the decorators.</p>
 </blockquote>
 <p>Pass a single <code>SessionAccounting</code> instance into the <code>Agent</code> and every sub-agent so all usage rolls up to one object.</p>
 <hr>
-<h2 id="step-2--configuration-no-more-magic-constants">Step 2 — Configuration: No More Magic Constants<a aria-hidden="true" class="hanchor" href="#step-2--configuration-no-more-magic-constants" tabindex="-1">¶</a></h2>
+<h2 id="step-2--configuration-no-more-magic-constants">Step 2 — Configuration: No More Magic Constants<a aria-label="Permalink to this section" class="hanchor" href="#step-2--configuration-no-more-magic-constants">¶</a></h2>
 <p><strong>Why now?</strong> After adding retry and logging, you will want to change the model name, the max iterations, or the workspace path without editing source. A single <code>Settings</code> object collects every tunable in one place and reads from environment variables, a project file, and CLI flags — in that order of precedence.</p>
 <p>The plain-dict equivalent is just:</p>
 <div class="highlight"><pre><span></span><code><span class="n">settings</span> <span class="o">=</span> <span class="p">{</span>
@@ -943,7 +943,7 @@ data they fill in. This is the package's <code>config.py</code>.</p>
 <span class="p">}</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-2">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-2" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-2">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-2">¶</a></h3>
 <p>One pasteability note first: the listing opens with <code>from .accounting import
 DEFAULT_PRICE_TABLE</code> — a <em>relative</em> import that only works when <code>config.py</code> lives
 inside a package directory (one with an <code>__init__.py</code>, like <code>agent_harness/</code>) and you
@@ -965,7 +965,7 @@ never <code>None</code> — so a flag the user <em>didn't type</em> would look l
 silently override env-var and <code>.agentrc</code> values. The CLI in Step 4 therefore declares its
 boolean flags with <code>default=None</code>.</p>
 <hr>
-<h2 id="step-3--system-prompt-engineering">Step 3 — System Prompt Engineering<a aria-hidden="true" class="hanchor" href="#step-3--system-prompt-engineering" tabindex="-1">¶</a></h2>
+<h2 id="step-3--system-prompt-engineering">Step 3 — System Prompt Engineering<a aria-label="Permalink to this section" class="hanchor" href="#step-3--system-prompt-engineering">¶</a></h2>
 <p><strong>Why now?</strong> With retry, logging, and config in place, the next lever is the instructions string. The right system prompt prevents whole classes of model mistakes before they happen: the agent knows its working directory, its permission mode, and whether the project has special conventions.</p>
 <p>Here is a production-grade prompt for a coding agent, with explanations of each section:</p>
 <blockquote>
@@ -1068,7 +1068,7 @@ built in <code>cli.py</code> and handed to <code>Agent</code> — remember the f
 </code></pre></div>
 
 <p>The memory file (Phase 6's <code>CLAUDE.md</code> or <code>AGENTS.md</code>) is injected here so the model always has project-specific context without consuming it as a conversation turn.</p>
-<h3 id="-run-it-now-3">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-3" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-3">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-3">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="n">instructions</span> <span class="o">=</span> <span class="n">build_instructions</span><span class="p">(</span>
     <span class="n">workspace_root</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
     <span class="n">permission_mode</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
@@ -1080,7 +1080,7 @@ built in <code>cli.py</code> and handed to <code>Agent</code> — remember the f
 
 <p>The model will now know exactly where it is and what it is allowed to do, without you having to repeat it in every user message.</p>
 <hr>
-<h2 id="step-4--the-cli--repl-the-face-of-the-harness">Step 4 — The CLI / REPL: The Face of the Harness<a aria-hidden="true" class="hanchor" href="#step-4--the-cli--repl-the-face-of-the-harness" tabindex="-1">¶</a></h2>
+<h2 id="step-4--the-cli--repl-the-face-of-the-harness">Step 4 — The CLI / REPL: The Face of the Harness<a aria-label="Permalink to this section" class="hanchor" href="#step-4--the-cli--repl-the-face-of-the-harness">¶</a></h2>
 <p><strong>Why now?</strong> With reliability, observability, and config in place, the last piece is a user interface you would actually want to use. The REPL is just a <code>while True</code> loop that reads a line, calls <code>agent.run_turn()</code>, and handles <code>/help</code>-style commands. The argparse layer adds <code>--model</code>, <code>--debug</code>, and <code>-p</code> (one-shot mode for CI).</p>
 <p>The full <code>cli.py</code> wires together everything built above. Read it as the final assembly step:</p>
 <blockquote>
@@ -1378,7 +1378,7 @@ line. <code>p.add_argument("--model", ...)</code> means: if the user types <code
 then <code>args.model</code> will be <code>"gpt-4o"</code>. You can replicate the whole thing with
 <code>sys.argv</code> and a dict; <code>argparse</code> just handles the parsing and <code>--help</code> for you.</p>
 </blockquote>
-<h3 id="-run-it-now-4">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-4" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-4">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-4">¶</a></h3>
 <p>This is the REPL you have spent eight phases earning — run it. The fastest route is the
 tested package, whose <code>cli.py</code> is the consolidated form of this listing (building from
 this phase's own listings instead works too, but needs the §8.0 layout to complete the
@@ -1406,7 +1406,7 @@ You: List the files in this directory and pick the most interesting one.
 real prompt and watch the full stack fire: permission gate, tool call, streamed answer.
 <code>/cost</code> shows you Step 1d's accounting; <code>/quit</code> exits.</p>
 <hr>
-<h2 id="5-reliability-production-shape-llmpy">5. Reliability (Production Shape: <code>llm.py</code>)<a aria-hidden="true" class="hanchor" href="#5-reliability-production-shape-llmpy" tabindex="-1">¶</a></h2>
+<h2 id="5-reliability-production-shape-llmpy">5. Reliability (Production Shape: <code>llm.py</code>)<a aria-label="Permalink to this section" class="hanchor" href="#5-reliability-production-shape-llmpy">¶</a></h2>
 <blockquote>
 <p><strong>Which rung is this?</strong> The listing below is the <strong>hardened V2 — functions</strong> form: the
 same rung as Step 0, with better error sorting. It is a hardening pass, not a climb.
@@ -1608,7 +1608,7 @@ so tests can hand it a <code>FakeClient</code> instead (§8). Same retry logic e
 </code></pre></div>
 
 <p>Call sites replace bare <code>client.responses.create(...)</code> with <code>llm.create(client, ...)</code> and the streaming form <code>client.responses.create(..., stream=True)</code> with <code>llm.stream(client, ...)</code>.</p>
-<h3 id="52-timeouts-and-keyboardinterrupt-handling">5.2 Timeouts and KeyboardInterrupt Handling<a aria-hidden="true" class="hanchor" href="#52-timeouts-and-keyboardinterrupt-handling" tabindex="-1">¶</a></h3>
+<h3 id="52-timeouts-and-keyboardinterrupt-handling">5.2 Timeouts and KeyboardInterrupt Handling<a aria-label="Permalink to this section" class="hanchor" href="#52-timeouts-and-keyboardinterrupt-handling">¶</a></h3>
 <p>A long-running turn should not lock up the REPL. Wrap each turn in a try/except for <code>KeyboardInterrupt</code> and let the thread finish cleanly:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Inside the REPL turn handler (see cli.py section)</span>
 <span class="k">try</span><span class="p">:</span>
@@ -1631,7 +1631,7 @@ so tests can hand it a <code>FakeClient</code> instead (§8). Same retry logic e
 <span class="p">)</span>
 </code></pre></div>
 
-<h3 id="53-idempotency-and-crash-resumability">5.3 Idempotency and Crash Resumability<a aria-hidden="true" class="hanchor" href="#53-idempotency-and-crash-resumability" tabindex="-1">¶</a></h3>
+<h3 id="53-idempotency-and-crash-resumability">5.3 Idempotency and Crash Resumability<a aria-label="Permalink to this section" class="hanchor" href="#53-idempotency-and-crash-resumability">¶</a></h3>
 <p>From Phase 3, <code>Conversation.save(path)</code> serialises <code>input_items</code> to JSON. Call it after every step:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># At the bottom of each loop iteration, before sleeping/continuing:</span>
 <span class="n">conversation</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">transcript_path</span><span class="p">)</span>
@@ -1644,7 +1644,7 @@ agent<span class="w"> </span>--resume<span class="w"> </span>--transcript<span c
 
 <p>On resume, the harness loads the transcript and prints a one-line summary (<code>"Resuming from N messages, last saved at &lt;timestamp&gt;"</code>), then drops straight back into the REPL. No special bookkeeping required: the transcript <em>is</em> the state.</p>
 <hr>
-<h2 id="6-the-definitive-agentrun_turn-loop">6. The Definitive <code>Agent.run_turn</code> Loop<a aria-hidden="true" class="hanchor" href="#6-the-definitive-agentrun_turn-loop" tabindex="-1">¶</a></h2>
+<h2 id="6-the-definitive-agentrun_turn-loop">6. The Definitive <code>Agent.run_turn</code> Loop<a aria-label="Permalink to this section" class="hanchor" href="#6-the-definitive-agentrun_turn-loop">¶</a></h2>
 <p>This is the fully-annotated reference implementation. It wires every middleware component in the correct order. Read it as the canonical specification.</p>
 <blockquote>
 <p><strong>Which rung is this?</strong> The <strong>top rung of the entire guide</strong>. The skeleton is Phase 1's
@@ -2062,8 +2062,8 @@ calling tools, so reaching the <code>else:</code> branch means exactly one thing
 in Python; nothing about it is error handling.</p>
 </blockquote>
 <hr>
-<h2 id="7-packaging-and-operations">7. Packaging and Operations<a aria-hidden="true" class="hanchor" href="#7-packaging-and-operations" tabindex="-1">¶</a></h2>
-<h3 id="project-layout">Project Layout<a aria-hidden="true" class="hanchor" href="#project-layout" tabindex="-1">¶</a></h3>
+<h2 id="7-packaging-and-operations">7. Packaging and Operations<a aria-label="Permalink to this section" class="hanchor" href="#7-packaging-and-operations">¶</a></h2>
+<h3 id="project-layout">Project Layout<a aria-label="Permalink to this section" class="hanchor" href="#project-layout">¶</a></h3>
 <div class="highlight nocopy"><pre><span></span><code>agent_harness/
 ├── __init__.py
 ├── accounting.py        # SessionAccounting, price table
@@ -2105,7 +2105,7 @@ it to <code>agent</code>, that is the command it means. Compare for yourself: th
 <a class="repo-file" href="../../code/agent_harness/" title="Opens a file in the repository checkout — not part of this site"><code>code/agent_harness/</code></a> and the name-by-name mapping table is in
 <a class="repo-file" href="../../code/README.md" title="Opens a file in the repository checkout — not part of this site"><code>code/README.md</code></a>.</p>
 </blockquote>
-<h3 id="pyprojecttoml"><code>pyproject.toml</code><a aria-hidden="true" class="hanchor" href="#pyprojecttoml" tabindex="-1">¶</a></h3>
+<h3 id="pyprojecttoml"><code>pyproject.toml</code><a aria-label="Permalink to this section" class="hanchor" href="#pyprojecttoml">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="k">[build-system]</span>
 <span class="n">requires</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;setuptools&gt;=68&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;wheel&quot;</span><span class="p">]</span>
 <span class="n">build-backend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;setuptools.build_meta&quot;</span>
@@ -2148,7 +2148,7 @@ agent-harness<span class="w"> </span>--resume<span class="w"> </span>--mode<span
 python<span class="w"> </span>-m<span class="w"> </span>agent_harness.cli<span class="w">        </span><span class="c1"># same entry point, no console script needed</span>
 </code></pre></div>
 
-<h3 id="running-the-bash-tool-safely-in-production">Running the Bash Tool Safely in Production<a aria-hidden="true" class="hanchor" href="#running-the-bash-tool-safely-in-production" tabindex="-1">¶</a></h3>
+<h3 id="running-the-bash-tool-safely-in-production">Running the Bash Tool Safely in Production<a aria-label="Permalink to this section" class="hanchor" href="#running-the-bash-tool-safely-in-production">¶</a></h3>
 <p>The <code>bash</code> tool (Phase 4) executes arbitrary shell commands inside <code>WORKSPACE_ROOT</code>. For real deployments, isolate it:</p>
 <ul>
 <li><strong>Docker container</strong>: mount the workspace directory read-write; use a network-disabled container for the agent process itself.</li>
@@ -2158,8 +2158,8 @@ python<span class="w"> </span>-m<span class="w"> </span>agent_harness.cli<span c
 </ul>
 <p>The harness does not enforce sandboxing itself; that is an infrastructure concern. Document your threat model and choose accordingly.</p>
 <hr>
-<h2 id="8-testing-the-harness">8. Testing the Harness<a aria-hidden="true" class="hanchor" href="#8-testing-the-harness" tabindex="-1">¶</a></h2>
-<h3 id="80-before-you-run-the-layout-and-the-four-shim-modules">8.0 Before You Run: the Layout and the Four Shim Modules<a aria-hidden="true" class="hanchor" href="#80-before-you-run-the-layout-and-the-four-shim-modules" tabindex="-1">¶</a></h3>
+<h2 id="8-testing-the-harness">8. Testing the Harness<a aria-label="Permalink to this section" class="hanchor" href="#8-testing-the-harness">¶</a></h2>
+<h3 id="80-before-you-run-the-layout-and-the-four-shim-modules">8.0 Before You Run: the Layout and the Four Shim Modules<a aria-label="Permalink to this section" class="hanchor" href="#80-before-you-run-the-layout-and-the-four-shim-modules">¶</a></h3>
 <p>The test files in §8.2–§8.3 are real, runnable code — but they import four modules
 this phase never prints: <code>permissions</code>, <code>hooks</code>, <code>conversation</code>, and <code>tools</code>. You
 <em>built</em> all four ideas in Phases 2, 3, and 5, under different spellings
@@ -2303,13 +2303,13 @@ honoring the interface §6's <code>agent.py</code> and §8.3's tests expect. Whe
 either swap in your real Phase 2/3/5 modules (translating method names with the §0
 table) or read the package's <code>tools/</code>, <code>conversation.py</code>, <code>permissions.py</code>, and
 <code>hooks.py</code> for the production form of each.</p>
-<h3 id="81-guiding-principles">8.1 Guiding Principles<a aria-hidden="true" class="hanchor" href="#81-guiding-principles" tabindex="-1">¶</a></h3>
+<h3 id="81-guiding-principles">8.1 Guiding Principles<a aria-label="Permalink to this section" class="hanchor" href="#81-guiding-principles">¶</a></h3>
 <ul>
 <li><strong>Unit-test tools directly</strong>: call <code>read_file({"path": "..."})</code> and assert the output. No LLM involved.</li>
 <li><strong>Mock the OpenAI client</strong> for loop tests: return canned responses.</li>
 <li><strong>Scripted tool calls</strong>: make the fake model emit known <code>function_call</code> items so you can assert the tool was called and the result fed back correctly.</li>
 </ul>
-<h3 id="82-a-fake-client">8.2 A Fake Client<a aria-hidden="true" class="hanchor" href="#82-a-fake-client" tabindex="-1">¶</a></h3>
+<h3 id="82-a-fake-client">8.2 A Fake Client<a aria-label="Permalink to this section" class="hanchor" href="#82-a-fake-client">¶</a></h3>
 <blockquote>
 <p><strong>Which rung is this?</strong> You met the V1 of this idea back in Step 0's ▶ Run it now — a
 fake client that fails twice then succeeds, written inline to test retry. This is its
@@ -2378,7 +2378,7 @@ package ships this as <code>testing.py</code>, and it only works because the cli
         <span class="bp">self</span><span class="o">.</span><span class="n">responses</span> <span class="o">=</span> <span class="n">FakeResponses</span><span class="p">(</span><span class="n">script</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="83-a-loop-test">8.3 A Loop Test<a aria-hidden="true" class="hanchor" href="#83-a-loop-test" tabindex="-1">¶</a></h3>
+<h3 id="83-a-loop-test">8.3 A Loop Test<a aria-label="Permalink to this section" class="hanchor" href="#83-a-loop-test">¶</a></h3>
 <p>This test drives a full two-iteration loop — and it passes only because <code>run_turn</code>
 normalizes output items at append time (<code>_to_dict</code>, §6): the <code>FakeFunctionCall</code> /
 <code>FakeMessage</code> dataclasses above enter the transcript as plain dicts (via
@@ -2536,7 +2536,7 @@ of the whole transcript — and <code>conversation.save()</code> work instead of
         <span class="k">assert</span> <span class="nb">any</span><span class="p">(</span><span class="s2">&quot;Error&quot;</span> <span class="ow">in</span> <span class="n">o</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-no-api-key-needed">▶ Run it now (no API key needed)<a aria-hidden="true" class="hanchor" href="#-run-it-now-no-api-key-needed" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-no-api-key-needed">▶ Run it now (no API key needed)<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-no-api-key-needed">¶</a></h3>
 <p>Run from the project root — the directory containing both <code>agent_harness/</code> and
 <code>tests/</code>, laid out as in §8.0:</p>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>tests/<span class="w"> </span>-v
@@ -2556,14 +2556,14 @@ the project root on <code>sys.path</code> so <code>tests.fake_client</code> reso
 because every test drives the real <code>Agent</code> through the scripted <code>FakeClient</code> in
 <code>testing.py</code>. Your seven ladders, assembled and proven, without a single network call.</p>
 <hr>
-<h2 id="9-where-to-go-next">9. Where to Go Next<a aria-hidden="true" class="hanchor" href="#9-where-to-go-next" tabindex="-1">¶</a></h2>
+<h2 id="9-where-to-go-next">9. Where to Go Next<a aria-label="Permalink to this section" class="hanchor" href="#9-where-to-go-next">¶</a></h2>
 <p><strong>Evals and benchmarks.</strong> Attach <a href="https://swe-bench.github.io/">SWE-bench</a> or a custom task suite to your harness. Score the agent on real codebases. Evals catch regressions from prompt or model changes before they hit users.</p>
 <p><strong>MCP-style external tool servers.</strong> The Model Context Protocol defines a JSON-RPC interface for serving tools from a separate process (or remote host). Replace the in-process <code>ToolRegistry</code> with an MCP client, and tools become independently deployable and language-agnostic.</p>
 <p><strong>Multi-model routing.</strong> Use a cheap model (<code>gpt-4.1-mini</code>) for tool-call-heavy iterations and a powerful model (<code>gpt-5</code>) only for reasoning-intensive turns. The <code>Settings.model</code> field can be changed per-turn based on heuristics (e.g., how many tokens remain, what kind of task is active).</p>
 <p><strong>Prompt caching and <code>previous_response_id</code>.</strong> If you pass <code>previous_response_id</code> instead of managing <code>input_items</code> yourself, the API handles state server-side and can cache the system prompt prefix cheaply. Useful when the instructions are large and stable. The trade-off: you lose offline resumability from a local transcript.</p>
 <p><strong>Richer TUI.</strong> Replace <code>print()</code> calls with <a href="https://github.com/Textualize/rich">Rich</a> for live progress panels, syntax-highlighted diffs, and tool-call spinners. The streaming renderer from Phase 3 is the right hook point.</p>
 <hr>
-<h2 id="10-closing-recap--production-properties-to-phases">10. Closing Recap — Production Properties to Phases<a aria-hidden="true" class="hanchor" href="#10-closing-recap--production-properties-to-phases" tabindex="-1">¶</a></h2>
+<h2 id="10-closing-recap--production-properties-to-phases">10. Closing Recap — Production Properties to Phases<a aria-label="Permalink to this section" class="hanchor" href="#10-closing-recap--production-properties-to-phases">¶</a></h2>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -2605,7 +2605,7 @@ because every test drives the real <code>Agent</code> through the scripted <code
 <p>Every abstraction introduced in earlier phases was chosen so it would slot cleanly into this final assembly. The <code>Conversation</code> owns the transcript as a plain list. The <code>ToolRegistry</code> produces JSON schemas on demand. The <code>PermissionPolicy</code> is a pure function of tool name and args. The <code>Agent</code> is a thin coordinator that calls each collaborator in a fixed order.</p>
 <p>The result is a harness where each concern is isolated, each component is testable independently, and the whole thing behaves predictably under the conditions that actually matter in production: slow networks, large files, adversarial model outputs, and impatient users who press Ctrl-C.</p>
 <hr>
-<h2 id="pitfalls">Pitfalls<a aria-hidden="true" class="hanchor" href="#pitfalls" tabindex="-1">¶</a></h2>
+<h2 id="pitfalls">Pitfalls<a aria-label="Permalink to this section" class="hanchor" href="#pitfalls">¶</a></h2>
 <blockquote>
 <p><strong>Watch out for these common mistakes.</strong></p>
 </blockquote>
@@ -2646,7 +2646,7 @@ because every test drives the real <code>Agent</code> through the scripted <code
 </tbody>
 </table></div>
 <hr>
-<h2 id="key-takeaways">Key takeaways<a aria-hidden="true" class="hanchor" href="#key-takeaways" tabindex="-1">¶</a></h2>
+<h2 id="key-takeaways">Key takeaways<a aria-label="Permalink to this section" class="hanchor" href="#key-takeaways">¶</a></h2>
 <ul>
 <li>The gap between a <strong>demo and a production harness</strong> is <em>not</em> new agent ideas — it's
   <strong>reliability, observability, configuration, and clean packaging</strong> around the same loop.</li>
@@ -2657,7 +2657,7 @@ because every test drives the real <code>Agent</code> through the scripted <code
 <li>It all assembles into <strong>one CLI</strong> (<code>argparse</code>) over the <code>Conversation</code>, <code>ToolRegistry</code>,
   and <code>PermissionPolicy</code> you've built since Phase 1 — each a separately testable piece.</li>
 </ul>
-<h2 id="check-yourself">Check yourself<a aria-hidden="true" class="hanchor" href="#check-yourself" tabindex="-1">¶</a></h2>
+<h2 id="check-yourself">Check yourself<a aria-label="Permalink to this section" class="hanchor" href="#check-yourself">¶</a></h2>
 <ol>
 <li>Name two things that separate a production harness from a demo.</li>
 <li>What technique rides out a transient <code>RateLimitError</code>?</li>
@@ -2677,7 +2677,7 @@ because every test drives the real <code>Agent</code> through the scripted <code
 </ol>
 </details>
 <hr>
-<h2 id="what-youll-have-built--the-final-checklist">What you'll have built — the final checklist<a aria-hidden="true" class="hanchor" href="#what-youll-have-built--the-final-checklist" tabindex="-1">¶</a></h2>
+<h2 id="what-youll-have-built--the-final-checklist">What you'll have built — the final checklist<a aria-label="Permalink to this section" class="hanchor" href="#what-youll-have-built--the-final-checklist">¶</a></h2>
 <p>Tick these off. Each line is a capability of the finished harness, the phase whose ladder
 taught it, and the module of the tested package
 (<a class="repo-file" href="../../code/agent_harness/" title="Opens a file in the repository checkout — not part of this site"><code>code/agent_harness/</code></a>) where its top rung now lives:</p>
@@ -2708,7 +2708,7 @@ Claude Code — and you understand every line of it.</p>
 <p><strong>Practice:</strong> the <a href="exercises.html#phase-8--the-production-harness">Phase 8 exercises</a>
 (plus the capstone) walk you through hardening and extending this assembly yourself.</p>
 <hr>
-<h2 id="graduation--run-the-real-thing">Graduation — run the real thing<a aria-hidden="true" class="hanchor" href="#graduation--run-the-real-thing" tabindex="-1">¶</a></h2>
+<h2 id="graduation--run-the-real-thing">Graduation — run the real thing<a aria-label="Permalink to this section" class="hanchor" href="#graduation--run-the-real-thing">¶</a></h2>
 <p>Don't close the tab on a checklist — close it on a running agent. The consolidated
 package is the maintained form of everything you just built, and it installs, runs, and
 proves itself in three commands:</p>
@@ -2770,6 +2770,18 @@ assembled and proven, without a single network call.</p>
     openedForPrint = [];
   });
 
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
+
   /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
      execCommand -> select the block and ask for Ctrl-C.  If no mechanism
      exists at all, inject nothing. */
@@ -2813,7 +2825,7 @@ assembled and proven, without a single network call.</p>
       setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
     }
     function fallback(pre, code) {
-      if (execCopy(code)) { flash('Copied!'); }
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
       else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
       else { flash('Copy failed'); }
     }

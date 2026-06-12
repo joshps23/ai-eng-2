@@ -14,7 +14,7 @@
 <div class="layout">
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
-<nav class="sidebar">
+<nav class="sidebar" aria-label="Guide pages">
 <p class="sidebar-heading">Start here</p>
 <ul>
 <li><a href="index.html">Guide hub</a></li>
@@ -48,7 +48,7 @@
 </details>
 <main id="main">
 <header class="page-header">
-<p class="source-link"><a href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/03-conversation-and-streaming.md">View the markdown source on GitHub</a></p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/03-conversation-and-streaming.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
@@ -59,20 +59,20 @@
 <li class="toc-h2"><a href="#version-1--line-by-line-the-transcript-is-just-a-list">Version 1 — Line-by-Line: the Transcript Is Just a List</a>
 <ul>
 <li class="toc-h3"><a href="#step-11--two-turns-fully-inline">Step 1.1 — Two turns, fully inline</a></li>
-<li class="toc-h3"><a href="#-run-it-now">▶ Run it now — Version 1 — Line-by-Line: the Transcript Is Just a List</a></li>
+<li class="toc-h3"><a href="#-run-it-now">▶ Run it now — Step 1.1</a></li>
 <li class="toc-h3"><a href="#step-12--a-chat-repl-the-same-two-turn-script-in-a-while-loop">Step 1.2 — A chat REPL: the same two-turn script, in a while loop</a></li>
-<li class="toc-h3"><a href="#-run-it-now-1">▶ Run it now — Version 1 — Line-by-Line: the Transcript Is Just a List</a></li>
+<li class="toc-h3"><a href="#-run-it-now-1">▶ Run it now — Step 1.2</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#version-2--functions-name-the-moves">Version 2 — Functions: Name the Moves</a>
 <ul>
 <li class="toc-h3"><a href="#what-changed-from-v1-to-v2">What changed from V1 to V2</a></li>
 <li class="toc-h3"><a href="#step-21--add-small-helper-functions">Step 2.1 — Add Small Helper Functions</a></li>
-<li class="toc-h3"><a href="#-run-it-now-2">▶ Run it now — Version 2 — Functions: Name the Moves</a></li>
+<li class="toc-h3"><a href="#-run-it-now-2">▶ Run it now — Step 2.1</a></li>
 <li class="toc-h3"><a href="#step-22--save-and-load-the-transcript">Step 2.2 — Save and Load the Transcript</a></li>
-<li class="toc-h3"><a href="#-run-it-now-3">▶ Run it now — Version 2 — Functions: Name the Moves</a></li>
+<li class="toc-h3"><a href="#-run-it-now-3">▶ Run it now — Step 2.2</a></li>
 <li class="toc-h3"><a href="#step-23--version-2-complete-chat_v2py">Step 2.3 — Version 2, complete: chat_v2.py</a></li>
-<li class="toc-h3"><a href="#-run-it-now-4">▶ Run it now — Version 2 — Functions: Name the Moves</a></li>
+<li class="toc-h3"><a href="#-run-it-now-4">▶ Run it now — Step 2.3</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#interlude--transcript-management-deep-dive">Interlude — Transcript Management Deep-Dive</a>
@@ -86,24 +86,24 @@
 <ul>
 <li class="toc-h3"><a href="#what-changed-from-v2-to-v3">What changed from V2 to V3</a></li>
 <li class="toc-h3"><a href="#step-31--the-conversation-class">Step 3.1 — The Conversation Class</a></li>
-<li class="toc-h3"><a href="#-run-it-now-5">▶ Run it now — Version 3 — Classes: the Conversation Object</a></li>
+<li class="toc-h3"><a href="#-run-it-now-5">▶ Run it now — Step 3.1</a></li>
 <li class="toc-h3"><a href="#step-32--reasoning-items-and-encrypted_content">Step 3.2 — Reasoning Items and encrypted_content</a></li>
 <li class="toc-h3"><a href="#step-33--the-instructions-field">Step 3.3 — The instructions Field</a></li>
 <li class="toc-h3"><a href="#step-34--a-non-streaming-agent-loop-primary-path">Step 3.4 — A Non-Streaming Agent Loop (Primary Path)</a></li>
-<li class="toc-h3"><a href="#-run-it-now-6">▶ Run it now — Version 3 — Classes: the Conversation Object</a></li>
+<li class="toc-h3"><a href="#-run-it-now-6">▶ Run it now — Step 3.4</a></li>
 <li class="toc-h3"><a href="#step-35--version-3-complete-chat_v3py">Step 3.5 — Version 3, complete: chat_v3.py</a></li>
-<li class="toc-h3"><a href="#-run-it-now-7">▶ Run it now — Version 3 — Classes: the Conversation Object</a></li>
+<li class="toc-h3"><a href="#-run-it-now-7">▶ Run it now — Step 3.5</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#version-4--streaming-the-same-harness-live-optional">Version 4 — Streaming: the Same Harness, Live (optional)</a>
 <ul>
 <li class="toc-h3"><a href="#what-changed-from-v3-to-v4">What changed from V3 to V4</a></li>
 <li class="toc-h3"><a href="#step-41--what-an-event-stream-is">Step 4.1 — What an Event Stream Is</a></li>
-<li class="toc-h3"><a href="#-run-it-now-8">▶ Run it now — Version 4 — Streaming: the Same Harness, Live (optional)</a></li>
+<li class="toc-h3"><a href="#-run-it-now-8">▶ Run it now — Step 4.1</a></li>
 <li class="toc-h3"><a href="#step-42--why-stream">Step 4.2 — Why Stream?</a></li>
 <li class="toc-h3"><a href="#step-43--event-reference">Step 4.3 — Event Reference</a></li>
 <li class="toc-h3"><a href="#step-44--stream_turn-full-implementation">Step 4.4 — stream_turn(): Full Implementation</a></li>
-<li class="toc-h3"><a href="#-run-it-now-9">▶ Run it now — Version 4 — Streaming: the Same Harness, Live (optional)</a></li>
+<li class="toc-h3"><a href="#-run-it-now-9">▶ Run it now — Step 4.4</a></li>
 <li class="toc-h3"><a href="#step-45--a-simpler-renderer-no-ansi">Step 4.5 — A Simpler Renderer (No ANSI)</a></li>
 <li class="toc-h3"><a href="#step-46--the-integrated-run_agent_streaming-loop">Step 4.6 — The Integrated run_agent_streaming Loop</a></li>
 <li class="toc-h3"><a href="#step-47--version-4-complete-the-full-streaming-harness">Step 4.7 — Version 4, complete: the Full Streaming Harness</a></li>
@@ -152,7 +152,7 @@ and how the answer is displayed (V4). If a version ever feels confusing, drop ba
 — the previous version is always still correct.</p>
 <hr>
 <blockquote class="beginner">
-<h2 id="-beginner-track-two-things-to-know-before-you-start">🟢 Beginner track: two things to know before you start<a aria-hidden="true" class="hanchor" href="#-beginner-track-two-things-to-know-before-you-start" tabindex="-1">¶</a></h2>
+<h2 id="-beginner-track-two-things-to-know-before-you-start">🟢 Beginner track: two things to know before you start<a aria-label="Permalink to this section" class="hanchor" href="#-beginner-track-two-things-to-know-before-you-start">¶</a></h2>
 <p><strong>1. The <code>Conversation</code> class is just the <code>input_items</code> list you already used —
 with a few helper functions.</strong> In Phase 1 you kept the whole conversation in a plain
 list and appended to it. This phase wraps that list in a <code>class</code> so it can also
@@ -217,10 +217,10 @@ you specifically want a live-typing UI.</p>
 <li><a href="#pitfalls">Pitfalls</a></li>
 </ul>
 <blockquote>
-<p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="../../notebooks/03-conversation-and-streaming.ipynb" title="Opens a file in the repository checkout — not part of this site"><code>notebooks/03-conversation-and-streaming.ipynb</code></a> executes this phase's checkpoints offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
+<p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/03-conversation-and-streaming.ipynb" title="Opens the notebook on GitHub (requires repo access) — or use its Open-in-Colab badge"><code>notebooks/03-conversation-and-streaming.ipynb</code></a> executes this phase's checkpoints offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
 </blockquote>
 <hr>
-<h2 id="two-orthogonal-concerns">Two Orthogonal Concerns<a aria-hidden="true" class="hanchor" href="#two-orthogonal-concerns" tabindex="-1">¶</a></h2>
+<h2 id="two-orthogonal-concerns">Two Orthogonal Concerns<a aria-label="Permalink to this section" class="hanchor" href="#two-orthogonal-concerns">¶</a></h2>
 <p><strong>Transcript management</strong> determines what you send in <code>input</code> on each call.  You have two
 options:</p>
 <ol>
@@ -232,11 +232,11 @@ options:</p>
 <p><strong>Streaming</strong> is independent of which state strategy you pick.  You can stream with either
 approach.</p>
 <hr>
-<h2 id="version-1--line-by-line-the-transcript-is-just-a-list">Version 1 — Line-by-Line: the Transcript Is Just a List<a aria-hidden="true" class="hanchor" href="#version-1--line-by-line-the-transcript-is-just-a-list" tabindex="-1">¶</a></h2>
+<h2 id="version-1--line-by-line-the-transcript-is-just-a-list">Version 1 — Line-by-Line: the Transcript Is Just a List<a aria-label="Permalink to this section" class="hanchor" href="#version-1--line-by-line-the-transcript-is-just-a-list">¶</a></h2>
 <p>The first rung is the whole idea of this phase with <strong>no <code>def</code> and no classes</strong> — just
 statements, a list, and (in Step 1.2) a <code>while</code> loop. If you understand Version 1 you
 already understand the whole phase; every later version is this code, reorganized.</p>
-<h3 id="step-11--two-turns-fully-inline">Step 1.1 — Two turns, fully inline<a aria-hidden="true" class="hanchor" href="#step-11--two-turns-fully-inline" tabindex="-1">¶</a></h3>
+<h3 id="step-11--two-turns-fully-inline">Step 1.1 — Two turns, fully inline<a aria-label="Permalink to this section" class="hanchor" href="#step-11--two-turns-fully-inline">¶</a></h3>
 <p>Before introducing any classes or helpers, let's see the core idea in the most direct form:
 a plain Python list that grows with every turn and gets passed back to the model so it
 "remembers" the conversation.</p>
@@ -281,7 +281,7 @@ about to write. If you understand this loop you already understand the whole pha
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Transcript now has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">input_items</span><span class="p">)</span><span class="si">}</span><span class="s2"> items.&quot;</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="-run-it-now">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now">¶</a></h3>
 <p>You should see:</p>
 <div class="highlight nocopy"><pre><span></span><code>Turn 1: Got it! I&#39;ll remember your name is Alex.
 Turn 2: Your name is Alex.
@@ -297,7 +297,7 @@ After each <code>responses.create()</code> call you called <code>.model_dump()</
 <code>dict</code>.  Plain dicts are JSON-serializable, easy to print, and accepted by the API
 as input on the next call.  You will use this pattern everywhere.</p>
 </blockquote>
-<h3 id="step-12--a-chat-repl-the-same-two-turn-script-in-a-while-loop">Step 1.2 — A chat REPL: the same two-turn script, in a <code>while</code> loop<a aria-hidden="true" class="hanchor" href="#step-12--a-chat-repl-the-same-two-turn-script-in-a-while-loop" tabindex="-1">¶</a></h3>
+<h3 id="step-12--a-chat-repl-the-same-two-turn-script-in-a-while-loop">Step 1.2 — A chat REPL: the same two-turn script, in a <code>while</code> loop<a aria-label="Permalink to this section" class="hanchor" href="#step-12--a-chat-repl-the-same-two-turn-script-in-a-while-loop">¶</a></h3>
 <p>The script above hard-codes exactly two turns. A real chat keeps going until <em>you</em> decide
 to stop. The fix is purely mechanical: put the per-turn statements inside a <code>while True:</code>
 loop and read the user's message with <code>input()</code>. Still no <code>def</code>, still no classes — the
@@ -340,7 +340,7 @@ everything that came before. The model itself remembers nothing — the list doe
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Goodbye — the transcript held </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">input_items</span><span class="p">)</span><span class="si">}</span><span class="s2"> items.&quot;</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-1">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-1" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-1">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-1">¶</a></h3>
 <p>Tell it your name on the first turn, then ask <code>What is my name?</code> on the
 second. It answers correctly — not because the model remembers, but because the turn-1
 exchange is still sitting in <code>input_items</code> and gets re-sent on turn 2:</p>
@@ -360,8 +360,8 @@ Goodbye — the transcript held 4 items.
 recreated every turn) and run it again — the model instantly "forgets" your name. Memory
 lives in that one line's placement.</p>
 <hr>
-<h2 id="version-2--functions-name-the-moves">Version 2 — Functions: Name the Moves<a aria-hidden="true" class="hanchor" href="#version-2--functions-name-the-moves" tabindex="-1">¶</a></h2>
-<h3 id="what-changed-from-v1-to-v2">What changed from V1 to V2<a aria-hidden="true" class="hanchor" href="#what-changed-from-v1-to-v2" tabindex="-1">¶</a></h3>
+<h2 id="version-2--functions-name-the-moves">Version 2 — Functions: Name the Moves<a aria-label="Permalink to this section" class="hanchor" href="#version-2--functions-name-the-moves">¶</a></h2>
+<h3 id="what-changed-from-v1-to-v2">What changed from V1 to V2<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v1-to-v2">¶</a></h3>
 <ul>
 <li><strong>Nothing about behavior.</strong> Version 2 is the exact same chat — same API calls, same
   transcript, same output.</li>
@@ -373,7 +373,7 @@ lives in that one line's placement.</p>
   <code>json.dump</code>/<code>json.load</code> — Version 2's one genuinely new capability.</li>
 <li>Still <strong>no classes</strong> — only plain functions taking <code>conv</code> as their first argument.</li>
 </ul>
-<h3 id="step-21--add-small-helper-functions">Step 2.1 — Add Small Helper Functions<a aria-hidden="true" class="hanchor" href="#step-21--add-small-helper-functions" tabindex="-1">¶</a></h3>
+<h3 id="step-21--add-small-helper-functions">Step 2.1 — Add Small Helper Functions<a aria-label="Permalink to this section" class="hanchor" href="#step-21--add-small-helper-functions">¶</a></h3>
 <p>The four operations you just did inline — add user message, extend with model output, add a
 tool result, return the list to pass as <code>input=</code> — will repeat every turn.  Naming them
 makes the loop easier to read and avoids copy-paste mistakes.</p>
@@ -436,11 +436,11 @@ makes the loop easier to read and avoids copy-paste mistakes.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transcript has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">conv</span><span class="p">[</span><span class="s1">&#39;items&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2"> items.&quot;</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-2">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-2" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-2">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-2">¶</a></h3>
 <p>Output should be the same as Step 1.1.  Nothing changed externally —
 only the code is cleaner.</p>
 <hr>
-<h3 id="step-22--save-and-load-the-transcript">Step 2.2 — Save and Load the Transcript<a aria-hidden="true" class="hanchor" href="#step-22--save-and-load-the-transcript" tabindex="-1">¶</a></h3>
+<h3 id="step-22--save-and-load-the-transcript">Step 2.2 — Save and Load the Transcript<a aria-label="Permalink to this section" class="hanchor" href="#step-22--save-and-load-the-transcript">¶</a></h3>
 <p>Right now, if the program restarts, the conversation is lost.  Because <code>conv</code> is just a
 dict with a list, saving it is one <code>json.dump()</code> call.</p>
 <p><strong>Why now?</strong> This is the whole point of owning the transcript locally — you can persist it,
@@ -486,7 +486,7 @@ reload it, and resume without touching the server.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Loaded session. Turn 2:&quot;</span><span class="p">,</span> <span class="n">resp2</span><span class="o">.</span><span class="n">output_text</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-3">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-3" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-3">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-3">¶</a></h3>
 <p>The model should still answer "Alex" on turn 2, even though the
 conversation dict was serialized to disk and loaded back.  Open <code>/tmp/my_session.json</code>
 in a text editor — you will see the full transcript as plain JSON.</p>
@@ -497,7 +497,7 @@ the simplest is a bare filename like <code>"my_session.json"</code> (saved in th
 Python from).</p>
 </blockquote>
 <hr>
-<h3 id="step-23--version-2-complete-chat_v2py">Step 2.3 — Version 2, complete: <code>chat_v2.py</code><a aria-hidden="true" class="hanchor" href="#step-23--version-2-complete-chat_v2py" tabindex="-1">¶</a></h3>
+<h3 id="step-23--version-2-complete-chat_v2py">Step 2.3 — Version 2, complete: <code>chat_v2.py</code><a aria-label="Permalink to this section" class="hanchor" href="#step-23--version-2-complete-chat_v2py">¶</a></h3>
 <p>You have now seen every Version 2 piece on its own. Here they are assembled into one
 complete file — the same chat REPL as <code>chat_v1.py</code>, reorganized into functions, with one
 genuinely new capability: the transcript autosaves after every turn, and if a saved
@@ -579,16 +579,16 @@ session exists the chat <strong>resumes</strong> it on startup.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Goodbye — transcript saved to </span><span class="si">{</span><span class="n">SESSION_PATH</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-4">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-4" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-4">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-4">¶</a></h3>
 <p>Tell it your name, type <code>quit</code>, then <strong>run the program again</strong> and ask
 <code>What is my name?</code>. It remembers — across a full process restart — because the transcript
 was sitting in <code>/tmp/chat_v2_session.json</code> the whole time. (Delete that file to start
 fresh.) Compare the <code>while</code> loop body to <code>chat_v1.py</code>: the same three moves, now named.</p>
 <hr>
-<h2 id="interlude--transcript-management-deep-dive">Interlude — Transcript Management Deep-Dive<a aria-hidden="true" class="hanchor" href="#interlude--transcript-management-deep-dive" tabindex="-1">¶</a></h2>
+<h2 id="interlude--transcript-management-deep-dive">Interlude — Transcript Management Deep-Dive<a aria-label="Permalink to this section" class="hanchor" href="#interlude--transcript-management-deep-dive">¶</a></h2>
 <p>Before climbing to Version 3, a short detour into the design decisions behind what you
 just built. No new code to run here — this is the "why" behind owning the list.</p>
-<h3 id="own-vs-delegate--which-should-you-choose">Own vs. Delegate — Which Should You Choose?<a aria-hidden="true" class="hanchor" href="#own-vs-delegate--which-should-you-choose" tabindex="-1">¶</a></h3>
+<h3 id="own-vs-delegate--which-should-you-choose">Own vs. Delegate — Which Should You Choose?<a aria-label="Permalink to this section" class="hanchor" href="#own-vs-delegate--which-should-you-choose">¶</a></h3>
 <p>The two-turn example above used <strong>owning the list</strong> (<code>input_items</code> / <code>conv["items"]</code>).
 The alternative is passing <code>previous_response_id=resp.id</code> and letting the server stitch
 history together.  Here is when each makes sense:</p>
@@ -639,7 +639,7 @@ growing payload is rarely a bottleneck in practice, and you control exactly what
 sees.</p>
 <p><code>previous_response_id</code> is worth revisiting when conversations are very long and you trust
 the server to retain history — Phase 8 covers it as an optimization.</p>
-<h3 id="serializing-sdk-objects">Serializing SDK Objects<a aria-hidden="true" class="hanchor" href="#serializing-sdk-objects" tabindex="-1">¶</a></h3>
+<h3 id="serializing-sdk-objects">Serializing SDK Objects<a aria-label="Permalink to this section" class="hanchor" href="#serializing-sdk-objects">¶</a></h3>
 <p><code>resp.output</code> is a list of typed SDK objects, not plain dicts.  If you put them straight
 back into <code>input</code> on the next call, that works for the current process.  But if you want to
 save the transcript to disk or send it across a process boundary you need plain dicts.</p>
@@ -650,7 +650,7 @@ save the transcript to disk or send it across a process boundary you need plain 
 
 <p>The <code>input</code> field of <code>client.responses.create()</code> accepts either SDK objects or plain dicts,
 so normalizing to dicts is safe.</p>
-<h3 id="the-to_input-helper">The <code>to_input()</code> Helper<a aria-hidden="true" class="hanchor" href="#the-to_input-helper" tabindex="-1">¶</a></h3>
+<h3 id="the-to_input-helper">The <code>to_input()</code> Helper<a aria-label="Permalink to this section" class="hanchor" href="#the-to_input-helper">¶</a></h3>
 <p>Before sending items back you need to strip any fields that are output-only and not accepted
 in <code>input</code>.  The simplest approach: let each item carry its <code>type</code> and the fields that matter
 for the input contract, and discard everything else.  A helper that works for all item types
@@ -671,8 +671,8 @@ produced by the API:</p>
 <p>This is intentionally minimal.  The API silently ignores unknown fields in input items, so
 including extra fields from <code>model_dump()</code> is harmless.</p>
 <hr>
-<h2 id="version-3--classes-the-conversation-object">Version 3 — Classes: the <code>Conversation</code> Object<a aria-hidden="true" class="hanchor" href="#version-3--classes-the-conversation-object" tabindex="-1">¶</a></h2>
-<h3 id="what-changed-from-v2-to-v3">What changed from V2 to V3<a aria-hidden="true" class="hanchor" href="#what-changed-from-v2-to-v3" tabindex="-1">¶</a></h3>
+<h2 id="version-3--classes-the-conversation-object">Version 3 — Classes: the <code>Conversation</code> Object<a aria-label="Permalink to this section" class="hanchor" href="#version-3--classes-the-conversation-object">¶</a></h2>
+<h3 id="what-changed-from-v2-to-v3">What changed from V2 to V3<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v2-to-v3">¶</a></h3>
 <ul>
 <li><strong>Nothing about behavior.</strong> Version 3 is the same chat-with-memory harness — same API
   calls, same transcript on disk, same answers.</li>
@@ -695,7 +695,7 @@ fine as standalone functions.</p>
 with the functions that operate on it, so you cannot accidentally call <code>add_user</code> on the
 wrong list.  It also gives you a natural home for the <code>save</code>/<code>load</code> pair.  The class below
 is <em>exactly the same logic</em> — just organized.</p>
-<h3 id="step-31--the-conversation-class">Step 3.1 — The <code>Conversation</code> Class<a aria-hidden="true" class="hanchor" href="#step-31--the-conversation-class" tabindex="-1">¶</a></h3>
+<h3 id="step-31--the-conversation-class">Step 3.1 — The <code>Conversation</code> Class<a aria-label="Permalink to this section" class="hanchor" href="#step-31--the-conversation-class">¶</a></h3>
 <blockquote class="beginner">
 <p>🟢 <strong>Reading the class.</strong> Each <code>def ...(self, ...)</code> below is a <strong>method</strong> — a
 function attached to the conversation object, where <code>self</code> is the object's own data
@@ -819,11 +819,11 @@ Phase 4 uses it more heavily.</p>
 <span class="n">conv</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;./sessions/session-001.json&quot;</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-5">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-5" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-5">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-5">¶</a></h3>
 <p>Same result as Step 1.1.  The only difference is <code>conv.add_user(...)</code>
 instead of <code>add_user(conv, ...)</code> and <code>conv.extend(...)</code> instead of
 <code>extend_items(conv, ...)</code>.  Everything else is identical.</p>
-<h3 id="step-32--reasoning-items-and-encrypted_content">Step 3.2 — Reasoning Items and <code>encrypted_content</code><a aria-hidden="true" class="hanchor" href="#step-32--reasoning-items-and-encrypted_content" tabindex="-1">¶</a></h3>
+<h3 id="step-32--reasoning-items-and-encrypted_content">Step 3.2 — Reasoning Items and <code>encrypted_content</code><a aria-label="Permalink to this section" class="hanchor" href="#step-32--reasoning-items-and-encrypted_content">¶</a></h3>
 <p>When you use a reasoning model (e.g. <code>o3</code>) you will see <code>reasoning</code> items in <code>resp.output</code>.
 <strong>Always append them with <code>conv.extend(resp.output)</code></strong> — including reasoning items — so the
 model can use that intermediate work in subsequent turns.</p>
@@ -850,7 +850,7 @@ content to you.</p>
   calls</li>
 </ul>
 <p>For non-reasoning models or <code>store=True</code>, ignore <code>encrypted_content</code> entirely.</p>
-<h3 id="step-33--the-instructions-field">Step 3.3 — The <code>instructions</code> Field<a aria-hidden="true" class="hanchor" href="#step-33--the-instructions-field" tabindex="-1">¶</a></h3>
+<h3 id="step-33--the-instructions-field">Step 3.3 — The <code>instructions</code> Field<a aria-label="Permalink to this section" class="hanchor" href="#step-33--the-instructions-field">¶</a></h3>
 <p><code>instructions</code> is <strong>not</strong> part of <code>input_items</code>.  It is a top-level parameter on
 <code>client.responses.create()</code>.  Pass it on every call:</p>
 <div class="highlight"><pre><span></span><code><span class="n">resp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">responses</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
@@ -864,7 +864,7 @@ content to you.</p>
 <p>If you change <code>instructions</code> mid-conversation, the new instructions apply immediately without
 any entry in the input list.</p>
 <hr>
-<h3 id="step-34--a-non-streaming-agent-loop-primary-path">Step 3.4 — A Non-Streaming Agent Loop (Primary Path)<a aria-hidden="true" class="hanchor" href="#step-34--a-non-streaming-agent-loop-primary-path" tabindex="-1">¶</a></h3>
+<h3 id="step-34--a-non-streaming-agent-loop-primary-path">Step 3.4 — A Non-Streaming Agent Loop (Primary Path)<a aria-label="Permalink to this section" class="hanchor" href="#step-34--a-non-streaming-agent-loop-primary-path">¶</a></h3>
 <p>So far Versions 1–3 have been pure chat — no tools.  Now bring back the Phase 2 tool loop,
 with the <code>Conversation</code> class managing the transcript.  This is the version you should
 understand first — streaming (Version 4) only changes how text is <em>displayed</em>, not how the
@@ -988,7 +988,7 @@ exactly the same as <code>def add(a, b): return a + b</code> and then using <cod
 <a href="glossary.html"><code>GLOSSARY.md</code></a> under <strong><code>lambda</code></strong>.) The complete Version 3 file below
 uses the same shortcut.</p>
 </blockquote>
-<h3 id="-run-it-now-6">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-6" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-6">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-6">¶</a></h3>
 <p>You should see:</p>
 <div class="highlight nocopy"><pre><span></span><code>Assistant: The sum of 1234 and 5678 is 6912.
 
@@ -1003,7 +1003,7 @@ concatenates all text content from the response into one string.  For most use c
 is all you need.  When you want to inspect individual items (e.g. to find tool calls),
 iterate <code>resp.output</code> directly.</p>
 </blockquote>
-<h3 id="step-35--version-3-complete-chat_v3py">Step 3.5 — Version 3, complete: <code>chat_v3.py</code><a aria-hidden="true" class="hanchor" href="#step-35--version-3-complete-chat_v3py" tabindex="-1">¶</a></h3>
+<h3 id="step-35--version-3-complete-chat_v3py">Step 3.5 — Version 3, complete: <code>chat_v3.py</code><a aria-label="Permalink to this section" class="hanchor" href="#step-35--version-3-complete-chat_v3py">¶</a></h3>
 <p>The snippets above introduced the class and the loop separately.  Here is Version 3 as one
 complete file you can paste and run — the <code>Conversation</code> class plus the non-streaming agent
 loop plus a tool, nothing else:</p>
@@ -1155,13 +1155,13 @@ loop plus a tool, nothing else:</p>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Saved to /tmp/phase3-chat-v3.json&quot;</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-7">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-7" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-7">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-7">¶</a></h3>
 <p>Same expected output as the Step 3.4 check (the answer 6912, then a
 4-item transcript).  Open <code>/tmp/phase3-chat-v3.json</code> — you can read the entire tool
 handshake (<code>function_call</code> → <code>function_call_output</code>, matched by <code>call_id</code>) in plain JSON.
 This file is the Version 3 harness in full; Version 4 changes exactly one thing about it.</p>
 <hr>
-<h2 id="version-4--streaming-the-same-harness-live-optional">Version 4 — Streaming: the Same Harness, Live (optional)<a aria-hidden="true" class="hanchor" href="#version-4--streaming-the-same-harness-live-optional" tabindex="-1">¶</a></h2>
+<h2 id="version-4--streaming-the-same-harness-live-optional">Version 4 — Streaming: the Same Harness, Live (optional)<a aria-label="Permalink to this section" class="hanchor" href="#version-4--streaming-the-same-harness-live-optional">¶</a></h2>
 <blockquote>
 <p><strong>This entire version is optional</strong> — the beginner box at the top of this phase
 already sanctioned skipping the whole streaming half. If streaming is not a priority
@@ -1169,7 +1169,7 @@ for you right now, skip ahead to <a href="#pitfalls">Pitfalls</a> — the non-st
 above is complete and correct.  Come back here when you specifically want characters
 to appear as the model types.</p>
 </blockquote>
-<h3 id="what-changed-from-v3-to-v4">What changed from V3 to V4<a aria-hidden="true" class="hanchor" href="#what-changed-from-v3-to-v4" tabindex="-1">¶</a></h3>
+<h3 id="what-changed-from-v3-to-v4">What changed from V3 to V4<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v3-to-v4">¶</a></h3>
 <ul>
 <li><strong>The loop, the <code>Conversation</code> class, the tools, and the transcript are untouched.</strong>
   Version 4 changes <em>presentation</em>, not logic — run V3 and V4 with the same prompt and
@@ -1190,7 +1190,7 @@ model's text reaches the terminal</em>: instead of printing <code>resp.output_te
 response arrives, you print each small text chunk (<code>delta</code>) as it streams in.</p>
 <p><strong>Why streaming?</strong> Faster perceived responsiveness, and tool calls become visible as they
 form — useful for debugging.</p>
-<h3 id="step-41--what-an-event-stream-is">Step 4.1 — What an Event Stream Is<a aria-hidden="true" class="hanchor" href="#step-41--what-an-event-stream-is" tabindex="-1">¶</a></h3>
+<h3 id="step-41--what-an-event-stream-is">Step 4.1 — What an Event Stream Is<a aria-label="Permalink to this section" class="hanchor" href="#step-41--what-an-event-stream-is">¶</a></h3>
 <p><strong>Why do we need a new mechanism at all?</strong> The model generates its answer one token at a
 time, but plain <code>create()</code> makes the server <em>buffer</em> the whole response and hand it to you
 only when generation finishes.  For a long answer that can mean staring at a frozen prompt
@@ -1233,7 +1233,7 @@ as they arrive, and keep the final object from <code>response.completed</code>.<
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;final.output_text:&quot;</span><span class="p">,</span> <span class="n">final</span><span class="o">.</span><span class="n">output_text</span><span class="p">[:</span><span class="mi">40</span><span class="p">],</span> <span class="s2">&quot;...&quot;</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-8">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-8" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-8">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-8">¶</a></h3>
 <p>Watch the numbers appear <em>as they are generated</em>, not all at once.  Then
 note the last line: <code>final</code> is a normal <code>Response</code> object — <code>.output</code>, <code>.output_text</code>,
 <code>.usage</code> all present — recovered from the <code>response.completed</code> event.  That object is what
@@ -1243,7 +1243,7 @@ the V3 loop already consumes, which is why streaming bolts on without touching t
 Python's output buffer; <code>flush=True</code> forces each delta onto the screen immediately.
 Forget it and your "stream" appears in jerky chunks or all at the end.</p>
 </blockquote>
-<h3 id="step-42--why-stream">Step 4.2 — Why Stream?<a aria-hidden="true" class="hanchor" href="#step-42--why-stream" tabindex="-1">¶</a></h3>
+<h3 id="step-42--why-stream">Step 4.2 — Why Stream?<a aria-label="Permalink to this section" class="hanchor" href="#step-42--why-stream">¶</a></h3>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -1270,7 +1270,7 @@ Forget it and your "stream" appears in jerky chunks or all at the end.</p>
 </tr>
 </tbody>
 </table></div>
-<h3 id="step-43--event-reference">Step 4.3 — Event Reference<a aria-hidden="true" class="hanchor" href="#step-43--event-reference" tabindex="-1">¶</a></h3>
+<h3 id="step-43--event-reference">Step 4.3 — Event Reference<a aria-label="Permalink to this section" class="hanchor" href="#step-43--event-reference">¶</a></h3>
 <p>The stream emits these event types (in rough order of appearance):</p>
 <div class="table-wrap"><table>
 <thead>
@@ -1367,7 +1367,7 @@ across turns:</p>
    reasoning items from the transcript</strong> — doing so breaks the chain (and, for some models,
    the API rejects a <code>function_call</code> whose preceding <code>reasoning</code> item is missing).</li>
 </ol>
-<h3 id="step-44--stream_turn-full-implementation">Step 4.4 — <code>stream_turn()</code>: Full Implementation<a aria-hidden="true" class="hanchor" href="#step-44--stream_turn-full-implementation" tabindex="-1">¶</a></h3>
+<h3 id="step-44--stream_turn-full-implementation">Step 4.4 — <code>stream_turn()</code>: Full Implementation<a aria-label="Permalink to this section" class="hanchor" href="#step-44--stream_turn-full-implementation">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">openai</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenAI</span>
@@ -1492,7 +1492,7 @@ across turns:</p>
   resource leak occurs.</li>
 <li>The dim ANSI escape <code>\033[2m</code> is purely cosmetic; remove it for plain terminals.</li>
 </ul>
-<h3 id="-run-it-now-9">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-9" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-9">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-9">¶</a></h3>
 <p>A streaming check: call <code>stream_turn</code> with a <code>Conversation</code> that has a
 user message, using <code>tools=[]</code>.  You should see the assistant's response print
 character-by-character.  The returned <code>final</code> object should have <code>.output_text</code> set.</p>
@@ -1502,7 +1502,7 @@ character-by-character.  The returned <code>final</code> object should have <cod
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Full response object output_text:&quot;</span><span class="p">,</span> <span class="n">final_resp</span><span class="o">.</span><span class="n">output_text</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="step-45--a-simpler-renderer-no-ansi">Step 4.5 — A Simpler Renderer (No ANSI)<a aria-hidden="true" class="hanchor" href="#step-45--a-simpler-renderer-no-ansi" tabindex="-1">¶</a></h3>
+<h3 id="step-45--a-simpler-renderer-no-ansi">Step 4.5 — A Simpler Renderer (No ANSI)<a aria-label="Permalink to this section" class="hanchor" href="#step-45--a-simpler-renderer-no-ansi">¶</a></h3>
 <p>If you want zero escape codes:</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stream_turn_plain</span><span class="p">(</span><span class="n">conversation</span><span class="p">,</span> <span class="n">tools</span><span class="p">,</span> <span class="n">instructions</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Assistant: &quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -1537,7 +1537,7 @@ character-by-character.  The returned <code>final</code> object should have <cod
 </code></pre></div>
 
 <hr>
-<h3 id="step-46--the-integrated-run_agent_streaming-loop">Step 4.6 — The Integrated <code>run_agent_streaming</code> Loop<a aria-hidden="true" class="hanchor" href="#step-46--the-integrated-run_agent_streaming-loop" tabindex="-1">¶</a></h3>
+<h3 id="step-46--the-integrated-run_agent_streaming-loop">Step 4.6 — The Integrated <code>run_agent_streaming</code> Loop<a aria-label="Permalink to this section" class="hanchor" href="#step-46--the-integrated-run_agent_streaming-loop">¶</a></h3>
 <p>This function wires together the <code>Conversation</code> class, <code>stream_turn()</code>, and the Phase 2
 parallel tool dispatcher.  Compare it line by line with Version 3's <code>run_agent</code>: the only
 structural difference is that <code>stream_turn(...)</code> replaces the bare
@@ -1693,7 +1693,7 @@ tool results reference <code>call_id</code> values that appear in <code>function
 must already be in the transcript when the tool results are appended, or the API will reject
 the sequence.</p>
 <hr>
-<h3 id="step-47--version-4-complete-the-full-streaming-harness">Step 4.7 — Version 4, complete: the Full Streaming Harness<a aria-hidden="true" class="hanchor" href="#step-47--version-4-complete-the-full-streaming-harness" tabindex="-1">¶</a></h3>
+<h3 id="step-47--version-4-complete-the-full-streaming-harness">Step 4.7 — Version 4, complete: the Full Streaming Harness<a aria-label="Permalink to this section" class="hanchor" href="#step-47--version-4-complete-the-full-streaming-harness">¶</a></h3>
 <p>Everything from this phase in one pasteable file: the <code>Conversation</code> class (Version 3),
 the Phase 2 registry, <code>stream_turn()</code>, and the integrated loop.  This is the phase's
 final form — and structurally it is still <code>chat_v1.py</code>: a list that grows, re-sent every
@@ -1969,7 +1969,7 @@ to type here — skim or skip. The maintained <code>Conversation</code> lives in
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transcript has </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">conv</span><span class="p">)</span><span class="si">}</span><span class="s2"> items.&quot;</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="expected-terminal-output-conceptual">Expected terminal output (conceptual)<a aria-hidden="true" class="hanchor" href="#expected-terminal-output-conceptual" tabindex="-1">¶</a></h3>
+<h3 id="expected-terminal-output-conceptual">Expected terminal output (conceptual)<a aria-label="Permalink to this section" class="hanchor" href="#expected-terminal-output-conceptual">¶</a></h3>
 <p>There is nothing new to run here — the file above assembles Steps 4.1–4.6, each of
 which you have already run. The transcript below shows what a full session looks like:
 the deltas stream in character-by-character; the tool-call lines appear as the model
@@ -2023,7 +2023,7 @@ so the same session saves <strong>8</strong> items: a <code>reasoning</code> ite
 <code>function_call</code> items (between items 1 and 2), and another before the final <code>message</code>
 (between items 5 and 6).</p>
 <hr>
-<h2 id="pitfalls">Pitfalls<a aria-hidden="true" class="hanchor" href="#pitfalls" tabindex="-1">¶</a></h2>
+<h2 id="pitfalls">Pitfalls<a aria-label="Permalink to this section" class="hanchor" href="#pitfalls">¶</a></h2>
 <blockquote>
 <p><strong>Pitfall 1 — Losing the final structured response</strong></p>
 <p>If you break out of the stream loop early, or never handle the <code>response.completed</code>
@@ -2079,7 +2079,7 @@ is silently swallowed.  Always handle <code>response.error</code> — at minimum
 and break, or raise an exception.</p>
 </blockquote>
 <hr>
-<h2 id="key-takeaways">Key takeaways<a aria-hidden="true" class="hanchor" href="#key-takeaways" tabindex="-1">¶</a></h2>
+<h2 id="key-takeaways">Key takeaways<a aria-label="Permalink to this section" class="hanchor" href="#key-takeaways">¶</a></h2>
 <ul>
 <li>This phase separates <strong>two orthogonal concerns</strong>: <em>owning the transcript</em> (state) and
   <em>streaming</em> (presentation). Each works without the other.</li>
@@ -2135,7 +2135,7 @@ and break, or raise an exception.</p>
 </tr>
 </tbody>
 </table></div>
-<h2 id="check-yourself">Check yourself<a aria-hidden="true" class="hanchor" href="#check-yourself" tabindex="-1">¶</a></h2>
+<h2 id="check-yourself">Check yourself<a aria-label="Permalink to this section" class="hanchor" href="#check-yourself">¶</a></h2>
 <ol>
 <li>What are the two orthogonal concerns this phase pulls apart?</li>
 <li>In what order must you append the model's items and the tool results each turn, and why?</li>
@@ -2155,7 +2155,7 @@ and break, or raise an exception.</p>
 </ol>
 </details>
 <hr>
-<h2 id="exercises">Exercises<a aria-hidden="true" class="hanchor" href="#exercises" tabindex="-1">¶</a></h2>
+<h2 id="exercises">Exercises<a aria-label="Permalink to this section" class="hanchor" href="#exercises">¶</a></h2>
 <p><strong>Practice:</strong> see <a href="exercises.html#phase-3--conversation--streaming"><code>EXERCISES.md</code> — Phase 3</a>
 for hands-on exercises (session persistence, replay, and streaming renderers) before
 moving on.</p>
@@ -2195,6 +2195,18 @@ moving on.</p>
     openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
     openedForPrint = [];
   });
+
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
 
   /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
      execCommand -> select the block and ask for Ctrl-C.  If no mechanism
@@ -2239,7 +2251,7 @@ moving on.</p>
       setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
     }
     function fallback(pre, code) {
-      if (execCopy(code)) { flash('Copied!'); }
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
       else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
       else { flash('Copy failed'); }
     }

@@ -14,7 +14,7 @@
 <div class="layout">
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
-<nav class="sidebar">
+<nav class="sidebar" aria-label="Guide pages">
 <p class="sidebar-heading">Start here</p>
 <ul>
 <li><a href="index.html">Guide hub</a></li>
@@ -48,7 +48,7 @@
 </details>
 <main id="main">
 <header class="page-header">
-<p class="source-link"><a href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/07-subagents-orchestration.md">View the markdown source on GitHub</a></p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/07-subagents-orchestration.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
@@ -67,18 +67,18 @@
 <li class="toc-h2"><a href="#version-1--line-by-line-the-same-loop-pasted-twice">Version 1 — Line-by-Line: the Same Loop, Pasted Twice</a>
 <ul>
 <li class="toc-h3"><a href="#step-11--the-outer-loop-with-a-stub-task-tool">Step 1.1 — The outer loop with a stub task tool</a></li>
-<li class="toc-h3"><a href="#-run-it-now">▶ Run it now — Version 1 — Line-by-Line: the Same Loop, Pasted Twice</a></li>
+<li class="toc-h3"><a href="#-run-it-now">▶ Run it now — Step 1.1</a></li>
 <li class="toc-h3"><a href="#step-12--paste-the-loop-again-inside-the-task-branch">Step 1.2 — Paste the loop again inside the task branch</a></li>
-<li class="toc-h3"><a href="#-run-it-now-1">▶ Run it now — Version 1 — Line-by-Line: the Same Loop, Pasted Twice</a></li>
+<li class="toc-h3"><a href="#-run-it-now-1">▶ Run it now — Step 1.2</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#version-2--functions-the-duplication-collapses">Version 2 — Functions: the Duplication Collapses</a>
 <ul>
 <li class="toc-h3"><a href="#what-changed-from-v1-to-v2">What changed from V1 to V2</a></li>
 <li class="toc-h3"><a href="#step-21--extract-the-inner-loop-into-run_subagent">Step 2.1 — Extract the inner loop into run_subagent</a></li>
-<li class="toc-h3"><a href="#-run-it-now-2">▶ Run it now — Version 2 — Functions: the Duplication Collapses</a></li>
+<li class="toc-h3"><a href="#-run-it-now-2">▶ Run it now — Step 2.1</a></li>
 <li class="toc-h3"><a href="#step-22--one-loop-function-for-both-run_agent">Step 2.2 — One loop function for both: run_agent</a></li>
-<li class="toc-h3"><a href="#-run-it-now-3">▶ Run it now — Version 2 — Functions: the Duplication Collapses</a></li>
+<li class="toc-h3"><a href="#-run-it-now-3">▶ Run it now — Step 2.2</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#version-3--classes-the-same-harness-organized">Version 3 — Classes: the Same Harness, Organized</a>
@@ -87,11 +87,11 @@
 <li class="toc-h3"><a href="#step-30--a-two-minute-bridge-teach-phase-2s-registry-three-new-names">Step 3.0 — A two-minute bridge: teach Phase 2&#x27;s registry three new names</a></li>
 <li class="toc-h3"><a href="#-check-it-now-no-api-key-needed">▶ Check it now (no API key needed)</a></li>
 <li class="toc-h3"><a href="#step-31--refactoring-the-loop-into-a-reusable-agent-class">Step 3.1 — Refactoring the Loop into a Reusable Agent Class</a></li>
-<li class="toc-h3"><a href="#-run-it-now-4">▶ Run it now — Version 3 — Classes: the Same Harness, Organized</a></li>
+<li class="toc-h3"><a href="#-run-it-now-4">▶ Run it now — Step 3.1</a></li>
 <li class="toc-h3"><a href="#step-32--agent-presets-named-roles-with-fixed-instructions-and-tools">Step 3.2 — Agent Presets: Named Roles with Fixed Instructions and Tools</a></li>
-<li class="toc-h3"><a href="#-run-it-now-5">▶ Run it now — Version 3 — Classes: the Same Harness, Organized</a></li>
+<li class="toc-h3"><a href="#-run-it-now-5">▶ Run it now — Step 3.2</a></li>
 <li class="toc-h3"><a href="#step-33--sub-agents-as-a-tool-wiring-it-to-the-orchestrator">Step 3.3 — Sub-Agents as a Tool: Wiring It to the Orchestrator</a></li>
-<li class="toc-h3"><a href="#-run-it-now-6">▶ Run it now — Version 3 — Classes: the Same Harness, Organized</a></li>
+<li class="toc-h3"><a href="#-run-it-now-6">▶ Run it now — Step 3.3</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#version-4--threads-parallel-sub-agents-optional-speed-up">Version 4 — Threads: Parallel Sub-Agents (Optional Speed-Up)</a>
@@ -106,7 +106,7 @@
 <li class="toc-h3"><a href="#step-43--integrating-parallel-dispatch-into-toolregistry">Step 4.3 — Integrating parallel dispatch into ToolRegistry</a></li>
 <li class="toc-h3"><a href="#step-44--why-this-is-safe">Step 4.4 — Why this is safe</a></li>
 <li class="toc-h3"><a href="#step-45--making-the-parallelism-visible--timestamps">Step 4.5 — Making the parallelism visible — timestamps</a></li>
-<li class="toc-h3"><a href="#-run-it-now-7">▶ Run it now — 🟢 Beginner track: what a thread is</a></li>
+<li class="toc-h3"><a href="#-run-it-now-7">▶ Run it now — Step 4.5</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#5-a-complete-worked-example--dynamic-fan-out">5. A Complete Worked Example — Dynamic Fan-Out</a>
@@ -149,16 +149,16 @@
 <p><strong>Series context:</strong> Phases 0–6 built a complete, production-grade single-agent harness: a working loop, a typed tool system with <code>@tool</code> and <code>ToolRegistry</code>, streaming, conversation management, permission hooks, and structured outputs. This phase is the headline feature: turning that single agent into an <strong>orchestrator</strong> that spawns worker agents at runtime, fans them out in parallel, and synthesises their results. Read the earlier phases first; this phase builds on every concept they introduced without repeating them.</p>
 </blockquote>
 <hr>
-<h2 id="1-why-one-agent-is-not-enough">1. Why One Agent Is Not Enough<a aria-hidden="true" class="hanchor" href="#1-why-one-agent-is-not-enough" tabindex="-1">¶</a></h2>
+<h2 id="1-why-one-agent-is-not-enough">1. Why One Agent Is Not Enough<a aria-label="Permalink to this section" class="hanchor" href="#1-why-one-agent-is-not-enough">¶</a></h2>
 <p>A single agent loop is surprisingly capable, but three hard limits surface quickly in real workloads.</p>
-<h3 id="11-context-window-pressure">1.1 Context-window pressure<a aria-hidden="true" class="hanchor" href="#11-context-window-pressure" tabindex="-1">¶</a></h3>
+<h3 id="11-context-window-pressure">1.1 Context-window pressure<a aria-label="Permalink to this section" class="hanchor" href="#11-context-window-pressure">¶</a></h3>
 <p>Every tool call and its output accumulates in <code>input_items</code>. A thorough web search, a large file read, or a detailed code analysis can produce thousands of tokens — most of which the agent never needs again after it has extracted the key fact. Those tokens sit in every subsequent API call, consuming quota, increasing latency, and eventually hitting the model's context limit.</p>
 <p>A sub-agent solves this cleanly: it does the noisy, expensive work in its <strong>own isolated transcript</strong>, produces a crisp summary, and the parent sees only that summary. The parent's context stays slim regardless of how much intermediate work happened.</p>
-<h3 id="12-wall-clock-parallelism">1.2 Wall-clock parallelism<a aria-hidden="true" class="hanchor" href="#12-wall-clock-parallelism" tabindex="-1">¶</a></h3>
+<h3 id="12-wall-clock-parallelism">1.2 Wall-clock parallelism<a aria-label="Permalink to this section" class="hanchor" href="#12-wall-clock-parallelism">¶</a></h3>
 <p>Independent subtasks executed serially add their latencies together. If summarising three code modules each takes four seconds, a serial approach takes twelve seconds. Three parallel sub-agents each with their own OpenAI connection take four seconds — the irreducible minimum. The OpenAI API is stateless and horizontally scalable; parallel calls are not just possible, they are encouraged.</p>
-<h3 id="13-specialisation">1.3 Specialisation<a aria-hidden="true" class="hanchor" href="#13-specialisation" tabindex="-1">¶</a></h3>
+<h3 id="13-specialisation">1.3 Specialisation<a aria-label="Permalink to this section" class="hanchor" href="#13-specialisation">¶</a></h3>
 <p>Different subtasks benefit from different system prompts and different toolsets. A "researcher" agent should have web-search tools and a prompt that emphasises accuracy and citation. A "coder" agent needs file-system tools and a prompt that emphasises correctness and minimal diffs. A "reviewer" agent needs read-only access and a prompt that emphasises finding bugs. Packing all three roles into one agent with one prompt compromises all three.</p>
-<h3 id="14-the-orchestrator-worker-pattern">1.4 The orchestrator-worker pattern<a aria-hidden="true" class="hanchor" href="#14-the-orchestrator-worker-pattern" tabindex="-1">¶</a></h3>
+<h3 id="14-the-orchestrator-worker-pattern">1.4 The orchestrator-worker pattern<a aria-label="Permalink to this section" class="hanchor" href="#14-the-orchestrator-worker-pattern">¶</a></h3>
 <p>The architecture this phase builds:</p>
 <div class="highlight nocopy"><pre><span></span><code>                     ┌─────────────────────────────────────┐
                      │           ORCHESTRATOR               │
@@ -185,7 +185,7 @@
 </code></pre></div>
 <p>The critical insight is that the orchestrator <strong>decides at runtime</strong> how many workers to spawn and what each does. This is a <em>dynamic</em> workflow, not a hardcoded pipeline. The model looks at the task, reasons about how to decompose it, and emits the appropriate <code>task</code> tool calls. If the task only warrants one worker, one is spawned. If it warrants seven, seven run in parallel.</p>
 <hr>
-<h2 id="2-the-key-trick--and-the-plan-for-this-phase">2. The Key Trick — and the Plan for This Phase<a aria-hidden="true" class="hanchor" href="#2-the-key-trick--and-the-plan-for-this-phase" tabindex="-1">¶</a></h2>
+<h2 id="2-the-key-trick--and-the-plan-for-this-phase">2. The Key Trick — and the Plan for This Phase<a aria-label="Permalink to this section" class="hanchor" href="#2-the-key-trick--and-the-plan-for-this-phase">¶</a></h2>
 <blockquote>
 <p><strong>Why now?</strong> Before any classes or config, you need to see the core idea working. Everything else in this phase is just that one idea, better organized.</p>
 </blockquote>
@@ -209,7 +209,7 @@ a <code>task</code> tool. Only the <em>organization</em> of the code changes:</p
 a reorganization of the previous one, never a brand-new program.</p>
 <p><strong>Contents:</strong></p>
 <blockquote>
-<p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="../../notebooks/07-subagents-orchestration.ipynb" title="Opens a file in the repository checkout — not part of this site"><code>notebooks/07-subagents-orchestration.ipynb</code></a> executes this phase's runnable core offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
+<p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/07-subagents-orchestration.ipynb" title="Opens the notebook on GitHub (requires repo access) — or use its Open-in-Colab badge"><code>notebooks/07-subagents-orchestration.ipynb</code></a> executes this phase's runnable core offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
 </blockquote>
 <ul>
 <li><a href="#version-1--line-by-line-the-same-loop-pasted-twice">Version 1 — line-by-line: the same loop, pasted twice</a></li>
@@ -223,7 +223,7 @@ a reorganization of the previous one, never a brand-new program.</p>
 <li><a href="#pitfalls">Pitfalls</a></li>
 </ul>
 <blockquote class="beginner">
-<h2 id="-beginner-track-a-sub-agent-is-just-calling-your-agent-loop-again">🟢 Beginner track: a "sub-agent" is just calling your agent loop again<a aria-hidden="true" class="hanchor" href="#-beginner-track-a-sub-agent-is-just-calling-your-agent-loop-again" tabindex="-1">¶</a></h2>
+<h2 id="-beginner-track-a-sub-agent-is-just-calling-your-agent-loop-again">🟢 Beginner track: a "sub-agent" is just calling your agent loop again<a aria-label="Permalink to this section" class="hanchor" href="#-beginner-track-a-sub-agent-is-just-calling-your-agent-loop-again">¶</a></h2>
 <p>This phase uses an <code>Agent</code> <strong>class</strong>, but the whole idea works with the
 <strong>agent-loop function</strong> you already wrote in Phases 1–2 plus a couple of dicts.
 Here's the entire concept:</p>
@@ -309,7 +309,7 @@ code just runs them at the same time to save wall-clock time. Start sequential.<
 file scopes). Build it with the functions above.</p>
 </blockquote>
 <hr>
-<h2 id="version-1--line-by-line-the-same-loop-pasted-twice">Version 1 — Line-by-Line: the Same Loop, Pasted Twice<a aria-hidden="true" class="hanchor" href="#version-1--line-by-line-the-same-loop-pasted-twice" tabindex="-1">¶</a></h2>
+<h2 id="version-1--line-by-line-the-same-loop-pasted-twice">Version 1 — Line-by-Line: the Same Loop, Pasted Twice<a aria-label="Permalink to this section" class="hanchor" href="#version-1--line-by-line-the-same-loop-pasted-twice">¶</a></h2>
 <blockquote>
 <p><strong>Why this version first?</strong> Because the entire phase rests on one claim — <em>a sub-agent
 is just the same loop run again</em> — and the most convincing proof is to literally paste
@@ -317,7 +317,7 @@ the loop a second time, inside the dispatch branch of a <code>task</code> tool, 
 No <code>def</code>, no classes: just statements, two <code>while</code> loops, and the Responses-API
 handshake you already know from Phase 1.</p>
 </blockquote>
-<h3 id="step-11--the-outer-loop-with-a-stub-task-tool">Step 1.1 — The outer loop with a <em>stub</em> <code>task</code> tool<a aria-hidden="true" class="hanchor" href="#step-11--the-outer-loop-with-a-stub-task-tool" tabindex="-1">¶</a></h3>
+<h3 id="step-11--the-outer-loop-with-a-stub-task-tool">Step 1.1 — The outer loop with a <em>stub</em> <code>task</code> tool<a aria-label="Permalink to this section" class="hanchor" href="#step-11--the-outer-loop-with-a-stub-task-tool">¶</a></h3>
 <p>First, build only the <strong>orchestrator</strong>: a straight-line script whose single tool, <code>task</code>,
 doesn't spawn anything yet — it returns a placeholder string. This proves the outer half
 of the handshake (the model calls <code>task</code>, we answer with a <code>function_call_output</code>
@@ -384,13 +384,13 @@ carrying the same <code>call_id</code>) before any sub-agent exists.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Final answer:&quot;</span><span class="p">,</span> <span class="n">outer_resp</span><span class="o">.</span><span class="n">output_text</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="-run-it-now">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now">¶</a></h3>
 <div class="highlight nocopy"><pre><span></span><code>python v1_subagent_inline.py
 </code></pre></div>
 <p>You should see <code>[outer] model called 'task'</code> once, then a final answer in which the
 orchestrator relays that delegation isn't implemented yet. Nothing new happened here —
 this is exactly the Phase 1 loop with one tool. The interesting part is next.</p>
-<h3 id="step-12--paste-the-loop-again-inside-the-task-branch">Step 1.2 — Paste the loop <em>again</em> inside the <code>task</code> branch<a aria-hidden="true" class="hanchor" href="#step-12--paste-the-loop-again-inside-the-task-branch" tabindex="-1">¶</a></h3>
+<h3 id="step-12--paste-the-loop-again-inside-the-task-branch">Step 1.2 — Paste the loop <em>again</em> inside the <code>task</code> branch<a aria-label="Permalink to this section" class="hanchor" href="#step-12--paste-the-loop-again-inside-the-task-branch">¶</a></h3>
 <p>Now replace the stub. What goes in its place? <strong>The same loop, copy-pasted</strong>, with three
 renames: its own transcript list (<code>inner_items</code> instead of <code>outer_items</code>), its own
 instructions, and its own tool (<code>read_file</code> instead of <code>task</code>). The inner loop's final
@@ -515,7 +515,7 @@ same code. That <em>is</em> the lesson.</p>
 orchestrator's conversation, and the orchestrator never sees the sub-agent's. The only
 thing that crosses the boundary is <code>inner_answer</code>, a plain string, handed back under the
 outer call's <code>call_id</code> exactly like any other tool result.</p>
-<h3 id="-run-it-now-1">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-1" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-1">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-1">¶</a></h3>
 <div class="highlight nocopy"><pre><span></span><code>python v1_subagent_inline.py
 </code></pre></div>
 <p>You should see <code>[outer] spawning a sub-agent...</code>, then one or more
@@ -526,8 +526,8 @@ synthesised answer. Two complete agent loops ran — one inside the other's disp
 have <em>two</em> tools, or sub-agents that can spawn sub-sub-agents, you'd be pasting loops
 inside loops inside loops. That itch is exactly what Version 2 scratches.</p>
 <hr>
-<h2 id="version-2--functions-the-duplication-collapses">Version 2 — Functions: the Duplication Collapses<a aria-hidden="true" class="hanchor" href="#version-2--functions-the-duplication-collapses" tabindex="-1">¶</a></h2>
-<h3 id="what-changed-from-v1-to-v2">What changed from V1 to V2<a aria-hidden="true" class="hanchor" href="#what-changed-from-v1-to-v2" tabindex="-1">¶</a></h3>
+<h2 id="version-2--functions-the-duplication-collapses">Version 2 — Functions: the Duplication Collapses<a aria-label="Permalink to this section" class="hanchor" href="#version-2--functions-the-duplication-collapses">¶</a></h2>
+<h3 id="what-changed-from-v1-to-v2">What changed from V1 to V2<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v1-to-v2">¶</a></h3>
 <ul>
 <li>The <strong>inner pasted loop becomes a plain function</strong>, <code>run_subagent(task_description) -&gt; str</code>,
   and the <code>task</code> dispatch branch shrinks to a single call.</li>
@@ -545,7 +545,7 @@ inside loops inside loops. That itch is exactly what Version 2 scratches.</p>
 <p><strong>Why now?</strong> Version 1 proved the idea by brute force — two copies of the loop. Version
 2 keeps the behavior and deletes the duplication, in two small moves.</p>
 </blockquote>
-<h3 id="step-21--extract-the-inner-loop-into-run_subagent">Step 2.1 — Extract the inner loop into <code>run_subagent</code><a aria-hidden="true" class="hanchor" href="#step-21--extract-the-inner-loop-into-run_subagent" tabindex="-1">¶</a></h3>
+<h3 id="step-21--extract-the-inner-loop-into-run_subagent">Step 2.1 — Extract the inner loop into <code>run_subagent</code><a aria-label="Permalink to this section" class="hanchor" href="#step-21--extract-the-inner-loop-into-run_subagent">¶</a></h3>
 <p>Take the pasted inner loop from Step 1.2, wrap it in a <code>def</code>, and return the final text.
 The <code>task</code> branch in the outer loop becomes one line:</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_subagent</span><span class="p">(</span><span class="n">task_description</span><span class="p">):</span>
@@ -586,11 +586,11 @@ The <code>task</code> branch in the outer loop becomes one line:</p>
         <span class="p">})</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-2">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-2" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-2">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-2">¶</a></h3>
 <p>Replace the inner-loop block in <code>v1_subagent_inline.py</code> with the function above (put the
 <code>def</code> near the top of the file) and run it again. Same output as Step 1.2 — the program
 didn't change, only its shape did.</p>
-<h3 id="step-22--one-loop-function-for-both-run_agent">Step 2.2 — One loop function for both: <code>run_agent</code><a aria-hidden="true" class="hanchor" href="#step-22--one-loop-function-for-both-run_agent" tabindex="-1">¶</a></h3>
+<h3 id="step-22--one-loop-function-for-both-run_agent">Step 2.2 — One loop function for both: <code>run_agent</code><a aria-label="Permalink to this section" class="hanchor" href="#step-22--one-loop-function-for-both-run_agent">¶</a></h3>
 <p>Look at <code>run_subagent</code> and the outer loop again. They differ only in their
 <em>configuration</em>: which instructions, which tools, which starting prompt. So generalize
 once — <code>run_agent(instructions, task, tools_dict)</code> — and call it twice.</p>
@@ -738,14 +738,14 @@ once — <code>run_agent(instructions, task, tools_dict)</code> — and call it 
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Final answer:&quot;</span><span class="p">,</span> <span class="n">answer</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-3">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-3" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-3">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-3">¶</a></h3>
 <div class="highlight nocopy"><pre><span></span><code>python v2_subagent.py
 </code></pre></div>
 <p>You should see one <code>[task] spawning sub-agent...</code> line appear while the orchestrator is running, then <code>[task] sub-agent finished.</code>, and finally the orchestrator's synthesised answer. The sub-agent ran a completely separate conversation with its own tool calls, returned plain text, and that text became the tool output the orchestrator reasoned about.</p>
 <p><strong>What you've just seen:</strong> one call to <code>run_agent</code> (the orchestrator) caused another call to <code>run_agent</code> (the sub-agent) through the <code>task</code> tool. That's the entire mechanism. Everything that follows is making this more organized and capable.</p>
 <hr>
-<h2 id="version-3--classes-the-same-harness-organized">Version 3 — Classes: the Same Harness, Organized<a aria-hidden="true" class="hanchor" href="#version-3--classes-the-same-harness-organized" tabindex="-1">¶</a></h2>
-<h3 id="what-changed-from-v2-to-v3">What changed from V2 to V3<a aria-hidden="true" class="hanchor" href="#what-changed-from-v2-to-v3" tabindex="-1">¶</a></h3>
+<h2 id="version-3--classes-the-same-harness-organized">Version 3 — Classes: the Same Harness, Organized<a aria-label="Permalink to this section" class="hanchor" href="#version-3--classes-the-same-harness-organized">¶</a></h2>
+<h3 id="what-changed-from-v2-to-v3">What changed from V2 to V3<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v2-to-v3">¶</a></h3>
 <ul>
 <li><code>run_agent</code>'s parameters (<code>instructions</code>, the tool set, plus model and client) become
   <strong>constructor arguments of an <code>Agent</code> class</strong>; the local <code>conversation</code> list becomes
@@ -770,7 +770,7 @@ class, turn roles into presets, and expose spawning as a registered <code>task</
 complete file for this version appears in <a href="#7-full-code--subagentspy">§7 — Full Code</a>;
 each step below is a replace-this-block increment toward it.</p>
 </blockquote>
-<h3 id="step-30--a-two-minute-bridge-teach-phase-2s-registry-three-new-names">Step 3.0 — A two-minute bridge: teach Phase 2's registry three new names<a aria-hidden="true" class="hanchor" href="#step-30--a-two-minute-bridge-teach-phase-2s-registry-three-new-names" tabindex="-1">¶</a></h3>
+<h3 id="step-30--a-two-minute-bridge-teach-phase-2s-registry-three-new-names">Step 3.0 — A two-minute bridge: teach Phase 2's registry three new names<a aria-label="Permalink to this section" class="hanchor" href="#step-30--a-two-minute-bridge-teach-phase-2s-registry-three-new-names">¶</a></h3>
 <blockquote>
 <p><strong>Why now?</strong> The <code>Agent</code> class in the next step calls <code>registry.schemas()</code> and
 <code>registry.dispatch_parallel(...)</code>, and the preset code in Step 3.2 calls
@@ -800,7 +800,7 @@ bridge methods <strong>inside</strong> the <code>ToolRegistry</code> class in yo
 <p>Each method is a single line of delegation — nothing about the registry's behavior
 changes; it just answers to the names the rest of this phase (and the consolidated
 package) uses.</p>
-<h3 id="-check-it-now-no-api-key-needed">▶ Check it now (no API key needed)<a aria-hidden="true" class="hanchor" href="#-check-it-now-no-api-key-needed" tabindex="-1">¶</a></h3>
+<h3 id="-check-it-now-no-api-key-needed">▶ Check it now (no API key needed)<a aria-label="Permalink to this section" class="hanchor" href="#-check-it-now-no-api-key-needed">¶</a></h3>
 <p>In a Python REPL with your Phase 2 <code>tools/</code> package on the path:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">tool</span><span class="p">,</span> <span class="n">ToolRegistry</span>
 
@@ -822,7 +822,7 @@ package) uses.</p>
 
 <p>If both lines print, the bridge is in place and every listing in this phase runs
 against the registry you already built.</p>
-<h3 id="step-31--refactoring-the-loop-into-a-reusable-agent-class">Step 3.1 — Refactoring the Loop into a Reusable <code>Agent</code> Class<a aria-hidden="true" class="hanchor" href="#step-31--refactoring-the-loop-into-a-reusable-agent-class" tabindex="-1">¶</a></h3>
+<h3 id="step-31--refactoring-the-loop-into-a-reusable-agent-class">Step 3.1 — Refactoring the Loop into a Reusable <code>Agent</code> Class<a aria-label="Permalink to this section" class="hanchor" href="#step-31--refactoring-the-loop-into-a-reusable-agent-class">¶</a></h3>
 <blockquote>
 <p><strong>Why now?</strong> In Version 2 we passed <code>instructions</code>, <code>task</code>, and <code>tools_dict</code> as separate arguments everywhere. When you want to run many sub-agents — or reuse the same agent for different tasks — it is cleaner to bundle the loop with its conversation into an object. This step does exactly that refactor. No new capability is added; the behavior is identical.</p>
 </blockquote>
@@ -1006,7 +1006,7 @@ Phase 2 file first).</p>
 <li><strong><code>depth</code> is carried from parent to child.</strong> When the orchestrator spawns a sub-agent it passes <code>depth=self.depth + 1</code>, allowing the guard to trigger before a recursion goes too deep.</li>
 <li><strong><code>registry.dispatch_parallel</code> is the Phase 2 machinery.</strong> Phase 2 already handles running multiple tool calls concurrently; nothing new is needed here.</li>
 </ul>
-<h3 id="-run-it-now-4">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-4" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-4">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-4">¶</a></h3>
 <p>After putting the <code>Agent</code> class in <code>agent.py</code>, rewrite Version 2's orchestrator using
 it. This is a <strong>complete</strong> file — it needs only <code>agent.py</code> (from this step) and your
 Phase 2 <code>tools/</code> package with the Step 3.0 bridge methods pasted in. Note how Phase 2's
@@ -1073,7 +1073,7 @@ orchestrator's synthesised answer. The behavior is identical to Version 2. The <
 class is just <code>run_agent</code> with its conversation stored as <code>self._conversation</code> and its
 configuration as constructor arguments — and the <code>task</code> tool is the same one-call-spawns-
 a-loop trick, now spelled <code>Agent(...).run(prompt)</code>.</p>
-<h3 id="step-32--agent-presets-named-roles-with-fixed-instructions-and-tools">Step 3.2 — Agent Presets: Named Roles with Fixed Instructions and Tools<a aria-hidden="true" class="hanchor" href="#step-32--agent-presets-named-roles-with-fixed-instructions-and-tools" tabindex="-1">¶</a></h3>
+<h3 id="step-32--agent-presets-named-roles-with-fixed-instructions-and-tools">Step 3.2 — Agent Presets: Named Roles with Fixed Instructions and Tools<a aria-label="Permalink to this section" class="hanchor" href="#step-32--agent-presets-named-roles-with-fixed-instructions-and-tools">¶</a></h3>
 <blockquote>
 <p><strong>Why now?</strong> In Step 3.1 you hardcoded the sub-agent's instructions and tool set inside the <code>task</code> tool. Once you have more than one role (researcher, coder, reviewer …) you want a lookup table so the orchestrator can ask for a role by name and get the right configuration automatically. That table is all a "preset" is.</p>
 </blockquote>
@@ -1201,7 +1201,7 @@ moment (Step 3.3 wires it back up as a tool) — doing a preset lookup:</p>
     <span class="k">return</span> <span class="n">worker</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-5">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-5" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-5">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-5">¶</a></h3>
 <p>One prerequisite before this runs: <code>task_fn</code> reads a module-level <code>full_registry</code> — a
 <code>ToolRegistry</code> holding every tool workers may draw from — which is only <em>defined</em> in
 Step 3.3's complete file. To try <code>task_fn</code> right now, build it yourself first, exactly
@@ -1217,7 +1217,7 @@ enough for the reviewer; Step 3.3 adds <code>list_directory</code>):</p>
 </code></pre></div>
 
 <p>The reviewer agent receives only <code>read_file</code> and <code>list_directory</code> — it literally cannot call <code>write_file</code> even if you wanted it to. That restricted view comes directly from <code>preset.allowed_tools</code>.</p>
-<h3 id="step-33--sub-agents-as-a-tool-wiring-it-to-the-orchestrator">Step 3.3 — Sub-Agents as a Tool: Wiring It to the Orchestrator<a aria-hidden="true" class="hanchor" href="#step-33--sub-agents-as-a-tool-wiring-it-to-the-orchestrator" tabindex="-1">¶</a></h3>
+<h3 id="step-33--sub-agents-as-a-tool-wiring-it-to-the-orchestrator">Step 3.3 — Sub-Agents as a Tool: Wiring It to the Orchestrator<a aria-label="Permalink to this section" class="hanchor" href="#step-33--sub-agents-as-a-tool-wiring-it-to-the-orchestrator">¶</a></h3>
 <blockquote>
 <p><strong>Why now?</strong> So far <code>task_fn</code> is a plain Python function. To let the orchestrator <em>model</em> decide when to delegate, you need to expose it as a tool the model can call — exactly the same way you exposed <code>read_file</code> in Phase 2.</p>
 </blockquote>
@@ -1367,7 +1367,7 @@ enough for the reviewer; Step 3.3 adds <code>list_directory</code>):</p>
 </code></pre></div>
 
 <p>Register this tool in the orchestrator's registry and the model gains the ability to spawn workers. The schema's <code>enum</code> for <code>role</code> tells the model exactly which values are valid, which reduces hallucination significantly.</p>
-<h3 id="-run-it-now-6">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-6" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-6">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-6">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="c1"># v3_task_tool.py  — orchestrator with a real task tool.</span>
 <span class="c1"># Needs: agent.py (Step 3.1), the Phase 2 tools/ package (with the Step 3.0</span>
 <span class="c1"># bridge), and subagents.py as built so far (AGENT_PRESETS from Step 3.2,</span>
@@ -1436,8 +1436,8 @@ enough for the reviewer; Step 3.3 adds <code>list_directory</code>):</p>
 
 <p>The orchestrator will call <code>task("reviewer", ..., "Check auth.py ...")</code>. Your harness intercepts that, runs a reviewer sub-agent with only <code>read_file</code> and <code>list_directory</code>, and returns the text. The model then synthesises the final report.</p>
 <hr>
-<h2 id="version-4--threads-parallel-sub-agents-optional-speed-up">Version 4 — Threads: Parallel Sub-Agents (Optional Speed-Up)<a aria-hidden="true" class="hanchor" href="#version-4--threads-parallel-sub-agents-optional-speed-up" tabindex="-1">¶</a></h2>
-<h3 id="what-changed-from-v3-to-v4">What changed from V3 to V4<a aria-hidden="true" class="hanchor" href="#what-changed-from-v3-to-v4" tabindex="-1">¶</a></h3>
+<h2 id="version-4--threads-parallel-sub-agents-optional-speed-up">Version 4 — Threads: Parallel Sub-Agents (Optional Speed-Up)<a aria-label="Permalink to this section" class="hanchor" href="#version-4--threads-parallel-sub-agents-optional-speed-up">¶</a></h2>
+<h3 id="what-changed-from-v3-to-v4">What changed from V3 to V4<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v3-to-v4">¶</a></h3>
 <ul>
 <li>Nothing about a <em>single</em> sub-agent changes — same <code>Agent</code>, same presets, same
   <code>dispatch_subagent</code>. What changes is <strong>how a batch of <code>task</code> calls is executed</strong>:
@@ -1455,14 +1455,14 @@ enough for the reviewer; Step 3.3 adds <code>list_directory</code>):</p>
 <blockquote>
 <p><strong>Why now?</strong> Everything so far works serially — sub-agents run one at a time. If the orchestrator issues multiple <code>task</code> calls in a single response, Phase 2's <code>dispatch_parallel</code> already runs them concurrently via <code>ThreadPoolExecutor</code>. This version makes that visible, adds per-worker timing, and explains when it helps. <strong>You can skip this version</strong> and everything still works; you just wait longer.</p>
 </blockquote>
-<h3 id="step-41--why-threads-and-what-a-thread-even-is">Step 4.1 — Why threads, and what a thread even is<a aria-hidden="true" class="hanchor" href="#step-41--why-threads-and-what-a-thread-even-is" tabindex="-1">¶</a></h3>
+<h3 id="step-41--why-threads-and-what-a-thread-even-is">Step 4.1 — Why threads, and what a thread even is<a aria-label="Permalink to this section" class="hanchor" href="#step-41--why-threads-and-what-a-thread-even-is">¶</a></h3>
 <p>First, why bother. A sub-agent spends almost all of its wall-clock time <strong>waiting for the
 network</strong> — the request is sent, and your Python process sits idle until OpenAI's servers
 respond. If three workers each take four seconds and you run them one after another,
 you wait twelve seconds while your CPU does essentially nothing. Running them <em>at the
 same time</em> means you wait only as long as the slowest one: four seconds.</p>
 <blockquote class="beginner">
-<h2 id="-beginner-track-what-a-thread-is">🟢 Beginner track: what a thread is<a aria-hidden="true" class="hanchor" href="#-beginner-track-what-a-thread-is" tabindex="-1">¶</a></h2>
+<h2 id="-beginner-track-what-a-thread-is">🟢 Beginner track: what a thread is<a aria-label="Permalink to this section" class="hanchor" href="#-beginner-track-what-a-thread-is">¶</a></h2>
 <p>A <strong>thread</strong> is a second line of execution inside your one Python program. Your script
 normally runs one statement at a time, top to bottom — that's the <em>main thread</em>. When
 you create more threads, the operating system interleaves them: while thread A is
@@ -1495,7 +1495,7 @@ changes <em>when</em> the work happens, never <em>what</em> the model sees.</p>
 <p>One more reassurance before the code: a plain <code>for</code> loop over the same <code>task</code> calls gives
 <strong>identical results</strong> — threads only change the wall-clock time. If threading ever
 confuses you, fall back to sequential dispatch and nothing breaks.</p>
-<h3 id="step-42--a-parallel-batch-runner">Step 4.2 — A parallel batch runner<a aria-hidden="true" class="hanchor" href="#step-42--a-parallel-batch-runner" tabindex="-1">¶</a></h3>
+<h3 id="step-42--a-parallel-batch-runner">Step 4.2 — A parallel batch runner<a aria-label="Permalink to this section" class="hanchor" href="#step-42--a-parallel-batch-runner">¶</a></h3>
 <p>When the orchestrator emits <strong>multiple <code>task</code> tool calls in a single response</strong>, Phase 2's <code>dispatch_parallel</code> runs them concurrently via <code>ThreadPoolExecutor</code>. Each sub-agent makes its own independent OpenAI HTTP calls and maintains its own transcript, so there is zero interference between workers.</p>
 <p>The mechanism is already built. This section shows it explicitly and adds a small wrapper that makes the concurrency visible and handles per-worker failure isolation.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># subagents.py (continued)</span>
@@ -1558,7 +1558,7 @@ confuses you, fall back to sequential dispatch and nothing breaks.</p>
     <span class="p">]</span>
 </code></pre></div>
 
-<h3 id="step-43--integrating-parallel-dispatch-into-toolregistry">Step 4.3 — Integrating parallel dispatch into <code>ToolRegistry</code><a aria-hidden="true" class="hanchor" href="#step-43--integrating-parallel-dispatch-into-toolregistry" tabindex="-1">¶</a></h3>
+<h3 id="step-43--integrating-parallel-dispatch-into-toolregistry">Step 4.3 — Integrating parallel dispatch into <code>ToolRegistry</code><a aria-label="Permalink to this section" class="hanchor" href="#step-43--integrating-parallel-dispatch-into-toolregistry">¶</a></h3>
 <p>Phase 2's <code>ToolRegistry.dispatch_parallel</code> already uses <code>ThreadPoolExecutor</code>. The only addition needed is separating <code>task</code> tool calls from regular tool calls so that <code>run_subagents_parallel</code> handles the former.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># In the agent loop — augmented dispatch step</span>
 <span class="c1"># (inside Agent.run, replacing the existing dispatch_parallel call)</span>
@@ -1610,7 +1610,7 @@ confuses you, fall back to sequential dispatch and nothing breaks.</p>
     <span class="k">return</span> <span class="n">outputs</span>
 </code></pre></div>
 
-<h3 id="step-44--why-this-is-safe">Step 4.4 — Why this is safe<a aria-hidden="true" class="hanchor" href="#step-44--why-this-is-safe" tabindex="-1">¶</a></h3>
+<h3 id="step-44--why-this-is-safe">Step 4.4 — Why this is safe<a aria-label="Permalink to this section" class="hanchor" href="#step-44--why-this-is-safe">¶</a></h3>
 <p>Each sub-agent is an independent Python object in its own thread. There is no shared mutable state between workers because:</p>
 <ul>
 <li>Each <code>Agent</code> instance owns its own <code>_conversation</code> list.</li>
@@ -1619,7 +1619,7 @@ confuses you, fall back to sequential dispatch and nothing breaks.</p>
 <li>A worker crash is caught by the <code>except</code> in <code>as_completed</code> and becomes an error string, not a propagated exception.</li>
 </ul>
 <p>The pattern is identical to Phase 2's parallel tool execution. The only difference is that each "tool" is itself an LLM call — potentially spawning further tool calls internally.</p>
-<h3 id="step-45--making-the-parallelism-visible--timestamps">Step 4.5 — Making the parallelism visible — timestamps<a aria-hidden="true" class="hanchor" href="#step-45--making-the-parallelism-visible--timestamps" tabindex="-1">¶</a></h3>
+<h3 id="step-45--making-the-parallelism-visible--timestamps">Step 4.5 — Making the parallelism visible — timestamps<a aria-label="Permalink to this section" class="hanchor" href="#step-45--making-the-parallelism-visible--timestamps">¶</a></h3>
 <p>Add a thin wrapper around <code>dispatch_subagent</code> for debugging:</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">timed_dispatch</span><span class="p">(</span><span class="n">role</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">description</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run a sub-agent and time it. Returns (elapsed_seconds, result).&quot;&quot;&quot;</span>
@@ -1665,7 +1665,7 @@ the worked example in §5 takes a different route — the <code>task</code> <em>
   [orchestrator] all sub-agents done in 6.2s
 </code></pre></div></p>
 <p>The wall time equals the slowest worker (researcher at 6.2 s), not their sum (16.1 s).</p>
-<h3 id="-run-it-now-7">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-7" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-7">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-7">¶</a></h3>
 <p>Version 4's complete runnable program is the worked example in §5 below
 (<code>example_orchestrator.py</code>), driven by the full <code>subagents.py</code> listing in §7 — together
 with <code>agent.py</code> from Step 3.1 (and your Phase 2 <code>tools/</code> package carrying the Step 3.0
@@ -1674,9 +1674,9 @@ them side by side, point <code>REPO_PATH</code> at a real repository, and run:</
 <div class="highlight nocopy"><pre><span></span><code>python example_orchestrator.py
 </code></pre></div>
 <hr>
-<h2 id="5-a-complete-worked-example--dynamic-fan-out">5. A Complete Worked Example — Dynamic Fan-Out<a aria-hidden="true" class="hanchor" href="#5-a-complete-worked-example--dynamic-fan-out" tabindex="-1">¶</a></h2>
+<h2 id="5-a-complete-worked-example--dynamic-fan-out">5. A Complete Worked Example — Dynamic Fan-Out<a aria-label="Permalink to this section" class="hanchor" href="#5-a-complete-worked-example--dynamic-fan-out">¶</a></h2>
 <p>This example demonstrates the full pattern end-to-end — it is <strong>Version 4 running for real</strong>. The orchestrator receives a repository audit task and autonomously decides to fan it out into three parallel workers.</p>
-<h3 id="51-setup">5.1 Setup<a aria-hidden="true" class="hanchor" href="#51-setup" tabindex="-1">¶</a></h3>
+<h3 id="51-setup">5.1 Setup<a aria-label="Permalink to this section" class="hanchor" href="#51-setup">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="c1"># example_orchestrator.py</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -1823,7 +1823,7 @@ them side by side, point <code>REPO_PATH</code> at a real repository, and run:</
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Token usage: </span><span class="si">{</span><span class="n">orchestrator</span><span class="o">.</span><span class="n">usage</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="52-representative-execution-transcript">5.2 Representative execution transcript<a aria-hidden="true" class="hanchor" href="#52-representative-execution-transcript" tabindex="-1">¶</a></h3>
+<h3 id="52-representative-execution-transcript">5.2 Representative execution transcript<a aria-label="Permalink to this section" class="hanchor" href="#52-representative-execution-transcript">¶</a></h3>
 <p>The progress lines below come from <code>TaskTool.run</code> (§7): when the orchestrator emits
 three <code>task</code> calls in one response, Phase 2's <code>dispatch_parallel</code> runs <code>TaskTool.run</code>
 on three pool threads, so the three <code>[task] spawning</code> lines appear together, then a
@@ -1886,8 +1886,8 @@ Token usage: UsageSummary(in=14823, out=2341, total=17164)
 </code></pre></div>
 <p>The three workers ran concurrently (6.2 s wall time vs. ~18 s serial) and the orchestrator spent 2.5 s synthesising the final report. The parent's transcript contains only three tool outputs — the summaries — rather than the raw file contents each worker processed.</p>
 <hr>
-<h2 id="6-design-considerations">6. Design Considerations<a aria-hidden="true" class="hanchor" href="#6-design-considerations" tabindex="-1">¶</a></h2>
-<h3 id="61-depth-limits-and-recursion-guards">6.1 Depth limits and recursion guards<a aria-hidden="true" class="hanchor" href="#61-depth-limits-and-recursion-guards" tabindex="-1">¶</a></h3>
+<h2 id="6-design-considerations">6. Design Considerations<a aria-label="Permalink to this section" class="hanchor" href="#6-design-considerations">¶</a></h2>
+<h3 id="61-depth-limits-and-recursion-guards">6.1 Depth limits and recursion guards<a aria-label="Permalink to this section" class="hanchor" href="#61-depth-limits-and-recursion-guards">¶</a></h3>
 <p>Sub-agents can spawn sub-sub-agents if their role allows the <code>task</code> tool. Without a guard this creates a fork bomb that multiplies cost exponentially.</p>
 <div class="highlight nocopy"><pre><span></span><code>depth 0: orchestrator spawns 3 workers
 depth 1: each worker spawns 3 sub-workers  → 9 agents
@@ -1912,7 +1912,7 @@ depth 3: …                                → 81 agents
     <span class="p">)</span>
 </code></pre></div>
 
-<h3 id="62-cost-and-token-accounting-across-the-tree">6.2 Cost and token accounting across the tree<a aria-hidden="true" class="hanchor" href="#62-cost-and-token-accounting-across-the-tree" tabindex="-1">¶</a></h3>
+<h3 id="62-cost-and-token-accounting-across-the-tree">6.2 Cost and token accounting across the tree<a aria-label="Permalink to this section" class="hanchor" href="#62-cost-and-token-accounting-across-the-tree">¶</a></h3>
 <p>Each sub-agent call to <code>responses.create</code> incurs its own token cost. The parent sees none of this; it only sees the output string. To get full cost visibility, aggregate usage bottom-up.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Augment dispatch_subagent to return usage alongside the result</span>
 <span class="nd">@dataclass</span>
@@ -1941,7 +1941,7 @@ depth 3: …                                → 81 agents
 </code></pre></div>
 
 <p>For production systems, log per-agent token consumption so you can identify which roles are most expensive.</p>
-<h3 id="63-context-isolation-as-a-design-feature">6.3 Context isolation as a design feature<a aria-hidden="true" class="hanchor" href="#63-context-isolation-as-a-design-feature" tabindex="-1">¶</a></h3>
+<h3 id="63-context-isolation-as-a-design-feature">6.3 Context isolation as a design feature<a aria-label="Permalink to this section" class="hanchor" href="#63-context-isolation-as-a-design-feature">¶</a></h3>
 <p>It is tempting to think that giving the orchestrator full visibility into every worker's internal reasoning would improve quality. In practice the opposite is true.</p>
 <p>The parent's context budget is finite. If each worker dumps 2,000 tokens of raw reasoning into the parent transcript, three workers consume 6,000 tokens before the orchestrator writes a single word. The model's attention on its own synthesis task diminishes as the context grows.</p>
 <p>The right interface between orchestrator and worker is a <strong>narrow, structured result</strong>. The orchestrator's prompt should specify the output format explicitly:</p>
@@ -1949,7 +1949,7 @@ depth 3: …                                → 81 agents
   &quot;summary&quot; (≤100 words), &quot;items&quot; (list of findings), &quot;confidence&quot; (&quot;high&quot;|&quot;medium&quot;|&quot;low&quot;)
 </code></pre></div>
 <p>This mirrors how good human teams work: the junior writes a full analysis in their notes, hands the manager a one-page memo.</p>
-<h3 id="64-when-not-to-use-sub-agents">6.4 When NOT to use sub-agents<a aria-hidden="true" class="hanchor" href="#64-when-not-to-use-sub-agents" tabindex="-1">¶</a></h3>
+<h3 id="64-when-not-to-use-sub-agents">6.4 When NOT to use sub-agents<a aria-label="Permalink to this section" class="hanchor" href="#64-when-not-to-use-sub-agents">¶</a></h3>
 <p>Sub-agents add latency (one full LLM call to spawn a worker that makes more LLM calls), token overhead (each agent has its own system prompt and task framing), and complexity. They are the wrong tool when:</p>
 <ul>
 <li><strong>Work is tightly sequential.</strong> If step B depends on step A's output, parallelism gains nothing. Run it in a single agent.</li>
@@ -1957,7 +1957,7 @@ depth 3: …                                → 81 agents
 <li><strong>The task is tiny.</strong> A sub-agent that does a single <code>read_file</code> and returns is slower than doing the read directly in the parent. Reserve sub-agents for tasks that justify the overhead: multi-step reasoning, multiple tool calls, or work that produces large intermediate output.</li>
 <li><strong>Reliability is critical and errors compound.</strong> Each hop is a new failure point. A three-deep tree with each node at 95% reliability has an 86% end-to-end reliability. Prefer shallow trees for production-critical paths.</li>
 </ul>
-<h3 id="65-result-schemas--getting-structured-output-from-workers">6.5 Result schemas — getting structured output from workers<a aria-hidden="true" class="hanchor" href="#65-result-schemas--getting-structured-output-from-workers" tabindex="-1">¶</a></h3>
+<h3 id="65-result-schemas--getting-structured-output-from-workers">6.5 Result schemas — getting structured output from workers<a aria-label="Permalink to this section" class="hanchor" href="#65-result-schemas--getting-structured-output-from-workers">¶</a></h3>
 <p>Workers should return structured, concise results. Two techniques:</p>
 <p><strong>Option A — Prompt engineering.</strong> The preset's <code>instructions</code> explicitly specifies the output format. Workers reliably follow format instructions when they are in the system prompt rather than the task prompt.</p>
 <p><strong>Option B — Structured outputs.</strong> Pass <code>text={"format": {"type": "json_schema", "name": "WorkerResult", "schema": {...}}}</code> to <code>responses.create</code> in the sub-agent's <code>run</code> method. This guarantees schema conformance at the API level. Particularly valuable when the orchestrator needs to parse and aggregate worker outputs programmatically.</p>
@@ -1989,7 +1989,7 @@ depth 3: …                                → 81 agents
 <span class="p">)</span>
 </code></pre></div>
 
-<h3 id="66-shared-workspace-coordination">6.6 Shared workspace coordination<a aria-hidden="true" class="hanchor" href="#66-shared-workspace-coordination" tabindex="-1">¶</a></h3>
+<h3 id="66-shared-workspace-coordination">6.6 Shared workspace coordination<a aria-label="Permalink to this section" class="hanchor" href="#66-shared-workspace-coordination">¶</a></h3>
 <p>Parallel coder agents editing the same files will produce last-write-wins conflicts. The strategies, in order of preference:</p>
 <ol>
 <li>
@@ -2010,7 +2010,7 @@ git<span class="w"> </span>worktree<span class="w"> </span>add<span class="w"> <
 </li>
 </ol>
 <hr>
-<h2 id="7-full-code--subagentspy">7. Full Code — <code>subagents.py</code><a aria-hidden="true" class="hanchor" href="#7-full-code--subagentspy" tabindex="-1">¶</a></h2>
+<h2 id="7-full-code--subagentspy">7. Full Code — <code>subagents.py</code><a aria-label="Permalink to this section" class="hanchor" href="#7-full-code--subagentspy">¶</a></h2>
 <p>This is the consolidated file the version ladder was building toward: the Version 3
 machinery (presets, <code>dispatch_subagent</code>, <code>make_task_tool</code>) and the Version 4 parallel
 runner in one place. It mirrors the shape of the tested package
@@ -2406,7 +2406,7 @@ skim or skip. The maintained version lives in
 </code></pre></div>
 
 <hr>
-<h2 id="8-async-alternative">8. Async Alternative<a aria-hidden="true" class="hanchor" href="#8-async-alternative" tabindex="-1">¶</a></h2>
+<h2 id="8-async-alternative">8. Async Alternative<a aria-label="Permalink to this section" class="hanchor" href="#8-async-alternative">¶</a></h2>
 <p>The guide uses <code>ThreadPoolExecutor</code> throughout because it works with the standard <code>OpenAI</code> client, requires no <code>asyncio</code> knowledge, and maps naturally to the I/O-bound nature of LLM calls. For completeness, here is the async equivalent.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># async_orchestrator.py (sketch)</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
@@ -2441,7 +2441,7 @@ skim or skip. The maintained version lives in
 <p><code>asyncio.gather</code> is the async analogue of <code>ThreadPoolExecutor</code> + <code>as_completed</code>. The semantics are identical: all coroutines are scheduled concurrently, <code>return_exceptions=True</code> prevents one failure from cancelling siblings, and results map back to call IDs in order.</p>
 <p>For HTTP-heavy workloads (many parallel sub-agents all making long-running API calls), the async approach is more efficient because it does not consume OS threads. For CPU-light, I/O-bound workloads like this one, the threaded approach is simpler and adequate.</p>
 <hr>
-<h2 id="whats-next">What's next<a aria-hidden="true" class="hanchor" href="#whats-next" tabindex="-1">¶</a></h2>
+<h2 id="whats-next">What's next<a aria-label="Permalink to this section" class="hanchor" href="#whats-next">¶</a></h2>
 <p>Phase 7 completes the orchestration story. One phase remains:</p>
 <ul>
 <li><strong>Phase 8 — The production harness:</strong> the final assembly. Reliability (retries with
@@ -2454,7 +2454,7 @@ skim or skip. The maintained version lives in
 structured output, and multi-agent orchestration — is production-grade. Phase 8 hardens,
 packages, and ships it.</p>
 <hr>
-<h2 id="pitfalls">Pitfalls<a aria-hidden="true" class="hanchor" href="#pitfalls" tabindex="-1">¶</a></h2>
+<h2 id="pitfalls">Pitfalls<a aria-label="Permalink to this section" class="hanchor" href="#pitfalls">¶</a></h2>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p><p><strong>Fork-bomb recursion.</strong> The single most dangerous failure mode. If a sub-agent's role includes the <code>task</code> tool and its prompt encourages decomposition, each generation spawns multiple children. At depth 4 with a fan-out of 3, you have 3⁴ = 81 concurrent agents, each making multiple API calls. <strong>Always cap depth and max-concurrent workers in harness code, not just in the prompt.</strong></p>
 </div>
@@ -2484,7 +2484,7 @@ packages, and ships it.</p>
 <p><strong>Transcript reuse between tasks.</strong> If you call <code>agent.run(task)</code> twice on the same <code>Agent</code> instance, the second call sees the first task's conversation. Call <code>agent.reset()</code> between tasks, or instantiate a fresh <code>Agent</code> for each independent use — which is what <code>dispatch_subagent</code> does.</p>
 </blockquote>
 <hr>
-<h2 id="key-takeaways">Key takeaways<a aria-hidden="true" class="hanchor" href="#key-takeaways" tabindex="-1">¶</a></h2>
+<h2 id="key-takeaways">Key takeaways<a aria-label="Permalink to this section" class="hanchor" href="#key-takeaways">¶</a></h2>
 <ul>
 <li><strong>One agent isn't enough</strong> for large jobs; the fix is to let the agent <strong>delegate</strong> to
   focused sub-agents.</li>
@@ -2496,7 +2496,7 @@ packages, and ships it.</p>
 <li>Give each sub-agent a <strong>narrow brief and limited tools</strong>, then combine their results —
   this keeps each context small and the blast radius contained.</li>
 </ul>
-<h2 id="check-yourself">Check yourself<a aria-hidden="true" class="hanchor" href="#check-yourself" tabindex="-1">¶</a></h2>
+<h2 id="check-yourself">Check yourself<a aria-label="Permalink to this section" class="hanchor" href="#check-yourself">¶</a></h2>
 <ol>
 <li>In one sentence, what <em>is</em> a sub-agent in this design?</li>
 <li>How does the <em>main</em> agent decide to delegate work to a sub-agent?</li>
@@ -2517,7 +2517,7 @@ packages, and ships it.</p>
 </ol>
 </details>
 <hr>
-<h2 id="exercises">Exercises<a aria-hidden="true" class="hanchor" href="#exercises" tabindex="-1">¶</a></h2>
+<h2 id="exercises">Exercises<a aria-label="Permalink to this section" class="hanchor" href="#exercises">¶</a></h2>
 <p>See <a href="exercises.html#phase-7--sub-agents--orchestration"><code>EXERCISES.md</code> — Phase 7</a> for
 hands-on practice:</p>
 <ul>
@@ -2567,6 +2567,18 @@ been building since Phase 1.</p>
     openedForPrint = [];
   });
 
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
+
   /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
      execCommand -> select the block and ask for Ctrl-C.  If no mechanism
      exists at all, inject nothing. */
@@ -2610,7 +2622,7 @@ been building since Phase 1.</p>
       setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
     }
     function fallback(pre, code) {
-      if (execCopy(code)) { flash('Copied!'); }
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
       else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
       else { flash('Copy failed'); }
     }

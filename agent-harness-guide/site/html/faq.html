@@ -14,7 +14,7 @@
 <div class="layout">
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
-<nav class="sidebar">
+<nav class="sidebar" aria-label="Guide pages">
 <p class="sidebar-heading">Start here</p>
 <ul>
 <li><a href="index.html">Guide hub</a></li>
@@ -48,7 +48,7 @@
 </details>
 <main id="main">
 <header class="page-header">
-<p class="source-link"><a href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/FAQ.md">View the markdown source on GitHub</a></p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/FAQ.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
@@ -74,7 +74,7 @@ Find your symptom below. For term definitions see the
 <strong><a href="learning-path.html">Learning Path</a></strong>.</p>
 </blockquote>
 <hr>
-<h2 id="setup--installation">Setup &amp; installation<a aria-hidden="true" class="hanchor" href="#setup--installation" tabindex="-1">¶</a></h2>
+<h2 id="setup--installation">Setup &amp; installation<a aria-label="Permalink to this section" class="hanchor" href="#setup--installation">¶</a></h2>
 <p>This is the canonical setup recipe — other pages link here instead of repeating it.
 From the <strong>repo root</strong>:</p>
 <div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>agent-harness-guide/code
@@ -151,7 +151,7 @@ they stop at <code>openai.OpenAIError: Missing credentials</code> (see below). T
 the "No API key?" box in Phase 0 gives the keyless alternatives: verify each
 checkpoint against its printed expected output, and run the offline test suite.</p>
 <hr>
-<h2 id="api-keys-models--cost">API keys, models &amp; cost<a aria-hidden="true" class="hanchor" href="#api-keys-models--cost" tabindex="-1">¶</a></h2>
+<h2 id="api-keys-models--cost">API keys, models &amp; cost<a aria-label="Permalink to this section" class="hanchor" href="#api-keys-models--cost">¶</a></h2>
 <p><strong>Q: How does the harness find my API key?</strong>
 It calls <code>OpenAI()</code> with no arguments, which reads the <strong><code>OPENAI_API_KEY</code></strong>
 environment variable. Set it before running:</p>
@@ -188,7 +188,7 @@ Use a smaller model (<code>--model gpt-4o-mini</code>), keep <code>--max-iterati
 the agent at a tiny scratch directory so tool output stays short. Tokens ≈ cost — the
 shorter the transcript, the cheaper the run.</p>
 <hr>
-<h2 id="running-the-agent">Running the agent<a aria-hidden="true" class="hanchor" href="#running-the-agent" tabindex="-1">¶</a></h2>
+<h2 id="running-the-agent">Running the agent<a aria-label="Permalink to this section" class="hanchor" href="#running-the-agent">¶</a></h2>
 <p><strong>Q: The agent answered in plain text but never used a tool I expected.</strong>
 The model <em>chooses</em> whether to call a tool. If it didn't, usually (a) the tool's
 <code>description</code>/schema doesn't make its purpose obvious, (b) the task didn't actually
@@ -211,7 +211,7 @@ and reloaded — that's the transcript-as-state idea from Phase 3.</p>
 That's the permission layer (Phase 5). Run with a stricter <code>--mode</code> so risky tools
 require approval, and keep the agent's <code>--workspace</code> pointed at a sandbox directory.</p>
 <hr>
-<h2 id="reading-tracebacks-a-20-second-skill">Reading tracebacks (a 20-second skill)<a aria-hidden="true" class="hanchor" href="#reading-tracebacks-a-20-second-skill" tabindex="-1">¶</a></h2>
+<h2 id="reading-tracebacks-a-20-second-skill">Reading tracebacks (a 20-second skill)<a aria-label="Permalink to this section" class="hanchor" href="#reading-tracebacks-a-20-second-skill">¶</a></h2>
 <p>Python prints the <strong>call stack oldest-first</strong>, so the <em>last</em> line is what actually
 went wrong — read a traceback <strong>bottom-up</strong>:
 - <code>ModuleNotFoundError</code> → something isn't installed in <em>this</em> interpreter (see setup).
@@ -221,7 +221,7 @@ went wrong — read a traceback <strong>bottom-up</strong>:
 - <code>openai.*Error</code> → the API rejected the request; the message says why (auth, model,
   rate limit).</p>
 <hr>
-<h2 id="platform-notes">Platform notes<a aria-hidden="true" class="hanchor" href="#platform-notes" tabindex="-1">¶</a></h2>
+<h2 id="platform-notes">Platform notes<a aria-label="Permalink to this section" class="hanchor" href="#platform-notes">¶</a></h2>
 <ul>
 <li><strong>Windows:</strong> activate the venv with <code>.venv\Scripts\activate</code>; set env vars with
   <code>$env:OPENAI_API_KEY="..."</code> (PowerShell). The <code>bash</code> tool (Phase 4) assumes a
@@ -266,6 +266,18 @@ went wrong — read a traceback <strong>bottom-up</strong>:
     openedForPrint = [];
   });
 
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
+
   /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
      execCommand -> select the block and ask for Ctrl-C.  If no mechanism
      exists at all, inject nothing. */
@@ -309,7 +321,7 @@ went wrong — read a traceback <strong>bottom-up</strong>:
       setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
     }
     function fallback(pre, code) {
-      if (execCopy(code)) { flash('Copied!'); }
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
       else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
       else { flash('Copy failed'); }
     }

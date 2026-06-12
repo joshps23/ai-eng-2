@@ -14,7 +14,7 @@
 <div class="layout">
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
-<nav class="sidebar">
+<nav class="sidebar" aria-label="Guide pages">
 <p class="sidebar-heading">Start here</p>
 <ul>
 <li><a href="index.html">Guide hub</a></li>
@@ -48,7 +48,7 @@
 </details>
 <main id="main">
 <header class="page-header">
-<p class="source-link"><a href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/GLOSSARY.md">View the markdown source on GitHub</a></p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/GLOSSARY.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
@@ -70,7 +70,7 @@ Terms are grouped, then alphabetical within a group. 🟢 marks the most
 beginner-essential entries.</p>
 </blockquote>
 <hr>
-<h2 id="harness--agent-concepts">Harness &amp; agent concepts<a aria-hidden="true" class="hanchor" href="#harness--agent-concepts" tabindex="-1">¶</a></h2>
+<h2 id="harness--agent-concepts">Harness &amp; agent concepts<a aria-label="Permalink to this section" class="hanchor" href="#harness--agent-concepts">¶</a></h2>
 <p><strong>Agent</strong> 🟢 — An LLM wrapped in a loop that lets it <em>act</em>: call tools, read the
 results, and decide what to do next, repeatedly, until the task is done. The model
 alone only produces text; the agent is the model <strong>plus</strong> the code around it.</p>
@@ -118,7 +118,7 @@ core loop (Phase 5).</p>
 <p><strong>Sandbox</strong> — Restricting what tools can touch (e.g. only files under one
 directory, no network) so a misbehaving model can't do damage.</p>
 <hr>
-<h2 id="model-api--token-concepts">Model, API &amp; token concepts<a aria-hidden="true" class="hanchor" href="#model-api--token-concepts" tabindex="-1">¶</a></h2>
+<h2 id="model-api--token-concepts">Model, API &amp; token concepts<a aria-label="Permalink to this section" class="hanchor" href="#model-api--token-concepts">¶</a></h2>
 <p><strong>LLM (large language model)</strong> 🟢 — The text-prediction model (e.g. GPT-class).
 Think of it as a pure function: text in, text out. It can't remember anything
 between calls or touch the world on its own — the harness supplies both.</p>
@@ -154,7 +154,7 @@ it returns an error; production harnesses retry with backoff (Phase 8).</p>
 <p><strong>Retry / backoff</strong> — Re-sending a failed request after waiting, with the wait
 growing each time (1s, 2s, 4s…), to ride out transient errors and rate limits.</p>
 <hr>
-<h2 id="python-youll-meet-beyond-your-five">Python you'll meet (beyond your five)<a aria-hidden="true" class="hanchor" href="#python-youll-meet-beyond-your-five" tabindex="-1">¶</a></h2>
+<h2 id="python-youll-meet-beyond-your-five">Python you'll meet (beyond your five)<a aria-label="Permalink to this section" class="hanchor" href="#python-youll-meet-beyond-your-five">¶</a></h2>
 <p><strong><code>class</code> / method / instance</strong> 🟢 — A <code>class</code> bundles related data with the
 functions that act on it (its <em>methods</em>); an <em>instance</em> is one such bundle.
 <code>obj.do(x)</code> means "run <code>do</code>, with <code>obj</code>'s data available." This guide's beginner
@@ -264,6 +264,18 @@ edits take effect immediately.</p>
     openedForPrint = [];
   });
 
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
+
   /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
      execCommand -> select the block and ask for Ctrl-C.  If no mechanism
      exists at all, inject nothing. */
@@ -307,7 +319,7 @@ edits take effect immediately.</p>
       setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
     }
     function fallback(pre, code) {
-      if (execCopy(code)) { flash('Copied!'); }
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
       else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
       else { flash('Copy failed'); }
     }

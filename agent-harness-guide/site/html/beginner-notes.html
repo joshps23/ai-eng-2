@@ -14,7 +14,7 @@
 <div class="layout">
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
-<nav class="sidebar">
+<nav class="sidebar" aria-label="Guide pages">
 <p class="sidebar-heading">Start here</p>
 <ul>
 <li><a href="index.html">Guide hub</a></li>
@@ -48,7 +48,7 @@
 </details>
 <main id="main">
 <header class="page-header">
-<p class="source-link"><a href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/BEGINNER-NOTES.md">View the markdown source on GitHub</a></p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/BEGINNER-NOTES.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
@@ -68,7 +68,7 @@ first time it shows up, in a 🟢 box — and summarized here in one or two sent
 each. Where the guide could use an advanced tool just for convenience, it also
 shows a plain-functions way to get the same result.</p>
 </blockquote>
-<h2 id="concepts-beyond-your-five">Concepts beyond your five<a aria-hidden="true" class="hanchor" href="#concepts-beyond-your-five" tabindex="-1">¶</a></h2>
+<h2 id="concepts-beyond-your-five">Concepts beyond your five<a aria-label="Permalink to this section" class="hanchor" href="#concepts-beyond-your-five">¶</a></h2>
 <p>Read these once. Each scaffolding box in the guide links back here.</p>
 <div class="table-wrap"><table>
 <thead>
@@ -171,6 +171,18 @@ in the guide. Ready? Head to <strong><a href="00-foundations.html">Phase 0</a></
     openedForPrint = [];
   });
 
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
+
   /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
      execCommand -> select the block and ask for Ctrl-C.  If no mechanism
      exists at all, inject nothing. */
@@ -214,7 +226,7 @@ in the guide. Ready? Head to <strong><a href="00-foundations.html">Phase 0</a></
       setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
     }
     function fallback(pre, code) {
-      if (execCopy(code)) { flash('Copied!'); }
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
       else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
       else { flash('Copy failed'); }
     }

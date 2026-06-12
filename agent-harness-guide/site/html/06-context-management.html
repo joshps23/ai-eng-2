@@ -14,7 +14,7 @@
 <div class="layout">
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
-<nav class="sidebar">
+<nav class="sidebar" aria-label="Guide pages">
 <p class="sidebar-heading">Start here</p>
 <ul>
 <li><a href="index.html">Guide hub</a></li>
@@ -48,7 +48,7 @@
 </details>
 <main id="main">
 <header class="page-header">
-<p class="source-link"><a href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/06-context-management.md">View the markdown source on GitHub</a></p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/06-context-management.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
@@ -61,10 +61,10 @@
 <li class="toc-h2"><a href="#version-1--line-by-line-watch-the-window-fill-up">Version 1 — line-by-line: watch the window fill up</a>
 <ul>
 <li class="toc-h3"><a href="#step-11--feel-the-growth-no-api-key-needed">Step 1.1 — Feel the growth (no API key needed)</a></li>
-<li class="toc-h3"><a href="#-run-it-now-no-api-key-needed">▶ Run it now (no API key needed) — Version 1 — line-by-line: watch the window fill up</a></li>
-<li class="toc-h3"><a href="#-run-it-now-no-api-key-needed-1">▶ Run it now (no API key needed) — Version 1 — line-by-line: watch the window fill up</a></li>
+<li class="toc-h3"><a href="#-run-it-now-no-api-key-needed">▶ Run it now (no API key needed) — Step 1.1</a></li>
+<li class="toc-h3"><a href="#-run-it-now-no-api-key-needed-1">▶ Run it now (no API key needed) — Step 1.1</a></li>
 <li class="toc-h3"><a href="#step-12--the-same-idea-inside-the-real-harness">Step 1.2 — The same idea inside the real harness</a></li>
-<li class="toc-h3"><a href="#-run-it-now">▶ Run it now — Version 1 — line-by-line: watch the window fill up</a></li>
+<li class="toc-h3"><a href="#-run-it-now">▶ Run it now — Step 1.2</a></li>
 <li class="toc-h3"><a href="#step-13--make-the-pain-visible-two-planted-bugs">Step 1.3 — Make the pain visible: two planted bugs</a></li>
 </ul>
 </li>
@@ -72,12 +72,12 @@
 <ul>
 <li class="toc-h3"><a href="#what-changed-from-v1-to-v2">What changed from V1 to V2</a></li>
 <li class="toc-h3"><a href="#step-21--name-the-estimate-count_tokens-and-count_items">Step 2.1 — Name the estimate: count_tokens and count_items</a></li>
-<li class="toc-h3"><a href="#-run-it-now-no-api-key-needed-2">▶ Run it now (no API key needed) — Version 2 — functions: count_tokens and prune_to_budget</a></li>
+<li class="toc-h3"><a href="#-run-it-now-no-api-key-needed-2">▶ Run it now (no API key needed) — Step 2.1</a></li>
 <li class="toc-h3"><a href="#step-22--rule-1-pairs-travel-together">Step 2.2 — Rule 1: pairs travel together</a></li>
 <li class="toc-h3"><a href="#step-23--rule-2-keep-the-first-user-message--prune_to_budget">Step 2.3 — Rule 2: keep the first user message — prune_to_budget</a></li>
-<li class="toc-h3"><a href="#-run-it-now-no-api-key-needed-3">▶ Run it now (no API key needed) — Version 2 — functions: count_tokens and prune_to_budget</a></li>
+<li class="toc-h3"><a href="#-run-it-now-no-api-key-needed-3">▶ Run it now (no API key needed) — Step 2.3</a></li>
 <li class="toc-h3"><a href="#step-24--the-full-version-2-file">Step 2.4 — The full Version 2 file</a></li>
-<li class="toc-h3"><a href="#-run-it-now-1">▶ Run it now — Version 2 — functions: count_tokens and prune_to_budget</a></li>
+<li class="toc-h3"><a href="#-run-it-now-1">▶ Run it now — Step 2.4</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#version-3--the-organized-form-a-contextpy-module-the-loop-consults">Version 3 — the organized form: a context.py module the loop consults</a>
@@ -88,11 +88,11 @@
 <li class="toc-h3"><a href="#step-33--ground-truth-from-respusage-and-running-totals">Step 3.3 — Ground truth from resp.usage and running totals</a></li>
 <li class="toc-h3"><a href="#step-34--budget-constants">Step 3.4 — Budget constants</a></li>
 <li class="toc-h3"><a href="#step-35--tactic-a-clip-tool-output-at-the-source">Step 3.5 — Tactic A: Clip Tool Output at the Source</a></li>
-<li class="toc-h3"><a href="#-check-it-now-no-api-key-needed">▶ Check it now (no API key needed) — Version 3 — the organized form: a context.py module the loop consults</a></li>
+<li class="toc-h3"><a href="#-check-it-now-no-api-key-needed">▶ Check it now (no API key needed) — Step 3.5</a></li>
 <li class="toc-h3"><a href="#step-36--tactic-b-sliding-window--recency-pruning">Step 3.6 — Tactic B: Sliding Window / Recency Pruning</a></li>
-<li class="toc-h3"><a href="#-check-it-now-no-api-key-needed-1">▶ Check it now (no API key needed) — Version 3 — the organized form: a context.py module the loop consults</a></li>
+<li class="toc-h3"><a href="#-check-it-now-no-api-key-needed-1">▶ Check it now (no API key needed) — Step 3.6</a></li>
 <li class="toc-h3"><a href="#step-37--the-loop-consults-the-module">Step 3.7 — The loop consults the module</a></li>
-<li class="toc-h3"><a href="#-run-it-now-2">▶ Run it now — Version 3 — the organized form: a context.py module the loop consults</a></li>
+<li class="toc-h3"><a href="#-run-it-now-2">▶ Run it now — Step 3.7</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#version-4--compact-spend-one-api-call-to-buy-back-context">Version 4 — compact: spend one API call to buy back context</a>
@@ -100,7 +100,7 @@
 <li class="toc-h3"><a href="#what-changed-from-v3-to-v4">What changed from V3 to V4</a></li>
 <li class="toc-h3"><a href="#step-41--tactic-c-summarisation--compaction">Step 4.1 — Tactic C: Summarisation / Compaction</a></li>
 <li class="toc-h3"><a href="#step-42--auto-compaction-trigger-in-the-agent-loop">Step 4.2 — Auto-Compaction Trigger in the Agent Loop</a></li>
-<li class="toc-h3"><a href="#-run-it-now-3">▶ Run it now — Version 4 — compact: spend one API call to buy back context</a></li>
+<li class="toc-h3"><a href="#-run-it-now-3">▶ Run it now — Step 4.2</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#beyond-the-ladder-keep-tokens-out-of-the-window-entirely">Beyond the ladder: keep tokens out of the window entirely</a>
@@ -144,7 +144,7 @@ session run for an hour instead of ten minutes.</p>
 <p>This phase adds active context management to the harness: token counting, a configurable budget, several compaction strategies in order of sophistication, and automatic triggering inside the agent loop.</p>
 <hr>
 <blockquote class="beginner">
-<h2 id="-beginner-track-one-idea-three-tactics--all-plain-functions">🟢 Beginner track: one idea, three tactics — all plain functions<a aria-hidden="true" class="hanchor" href="#-beginner-track-one-idea-three-tactics--all-plain-functions" tabindex="-1">¶</a></h2>
+<h2 id="-beginner-track-one-idea-three-tactics--all-plain-functions">🟢 Beginner track: one idea, three tactics — all plain functions<a aria-label="Permalink to this section" class="hanchor" href="#-beginner-track-one-idea-three-tactics--all-plain-functions">¶</a></h2>
 <p>Good news: this phase adds <strong>no classes and no decorators</strong>. It's all functions that
 take your <code>input_items</code> <strong>list</strong> and return a smaller list. The single idea:</p>
 <blockquote>
@@ -192,7 +192,7 @@ loop consults each turn (and upgrades counting and clipping). <strong>Version 4<
 tactic 3, <code>compact</code>. You can stop and run the harness at every rung.</p>
 </blockquote>
 <hr>
-<h2 id="how-this-phase-climbs-the-version-ladder">How this phase climbs (the version ladder)<a aria-hidden="true" class="hanchor" href="#how-this-phase-climbs-the-version-ladder" tabindex="-1">¶</a></h2>
+<h2 id="how-this-phase-climbs-the-version-ladder">How this phase climbs (the version ladder)<a aria-label="Permalink to this section" class="hanchor" href="#how-this-phase-climbs-the-version-ladder">¶</a></h2>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -238,10 +238,10 @@ tactic 3, <code>compact</code>. You can stop and run the harness at every rung.<
 <li><a href="#the-production-shape-full-contextpy">The production shape: full <code>context.py</code></a></li>
 </ul>
 <blockquote>
-<p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="../../notebooks/06-context-management.ipynb" title="Opens a file in the repository checkout — not part of this site"><code>notebooks/06-context-management.ipynb</code></a> executes this phase's checkpoints offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
+<p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/06-context-management.ipynb" title="Opens the notebook on GitHub (requires repo access) — or use its Open-in-Colab badge"><code>notebooks/06-context-management.ipynb</code></a> executes this phase's checkpoints offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
 </blockquote>
 <hr>
-<h2 id="the-problem-in-numbers">The Problem in Numbers<a aria-hidden="true" class="hanchor" href="#the-problem-in-numbers" tabindex="-1">¶</a></h2>
+<h2 id="the-problem-in-numbers">The Problem in Numbers<a aria-label="Permalink to this section" class="hanchor" href="#the-problem-in-numbers">¶</a></h2>
 <p>A model with a 128 k-token window sounds enormous, but consider a session where:</p>
 <ul>
 <li>The system instructions are 800 tokens.</li>
@@ -256,11 +256,11 @@ tactic 3, <code>compact</code>. You can stop and run the harness at every rung.<
 </code></pre></div>
 <p>That is already 41 % of a 128 k window — and the session has only begun. Without management the harness will eventually fail.</p>
 <hr>
-<h2 id="version-1--line-by-line-watch-the-window-fill-up">Version 1 — line-by-line: watch the window fill up<a aria-hidden="true" class="hanchor" href="#version-1--line-by-line-watch-the-window-fill-up" tabindex="-1">¶</a></h2>
+<h2 id="version-1--line-by-line-watch-the-window-fill-up">Version 1 — line-by-line: watch the window fill up<a aria-label="Permalink to this section" class="hanchor" href="#version-1--line-by-line-watch-the-window-fill-up">¶</a></h2>
 <p>No <code>def</code>, no classes — the whole harness straight down the page, with the token
 estimate and the truncation written inline where they run. First a tiny offline warm-up
 so you can see the <em>growth</em> without an API key, then the real harness.</p>
-<h3 id="step-11--feel-the-growth-no-api-key-needed">Step 1.1 — Feel the growth (no API key needed)<a aria-hidden="true" class="hanchor" href="#step-11--feel-the-growth-no-api-key-needed" tabindex="-1">¶</a></h3>
+<h3 id="step-11--feel-the-growth-no-api-key-needed">Step 1.1 — Feel the growth (no API key needed)<a aria-label="Permalink to this section" class="hanchor" href="#step-11--feel-the-growth-no-api-key-needed">¶</a></h3>
 <p>Before writing any strategy, let's see the problem in concrete numbers. Run this
 self-contained script — it needs only the Python standard library, and like everything
 in Version 1 it is <strong>straight-line code</strong>: no <code>def</code>, no classes, just statements top to
@@ -293,7 +293,7 @@ bottom. (Giving these fragments names is exactly what Version 2 will do.)</p>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;After turn </span><span class="si">{</span><span class="n">turn</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">transcript</span><span class="p">)</span><span class="si">}</span><span class="s2"> items, ~</span><span class="si">{</span><span class="n">total</span><span class="si">}</span><span class="s2"> tokens in transcript&quot;</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-no-api-key-needed">▶ Run it now (no API key needed)<a aria-hidden="true" class="hanchor" href="#-run-it-now-no-api-key-needed" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-no-api-key-needed">▶ Run it now (no API key needed)<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-no-api-key-needed">¶</a></h3>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>demo_context_problem.py
 </code></pre></div>
 
@@ -332,7 +332,7 @@ until the total fits. Still no <code>def</code> — just list operations.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dropped </span><span class="si">{</span><span class="n">dropped_count</span><span class="si">}</span><span class="s2"> items to stay under </span><span class="si">{</span><span class="n">TOKEN_BUDGET</span><span class="si">}</span><span class="s2"> tokens&quot;</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-no-api-key-needed-1">▶ Run it now (no API key needed)<a aria-hidden="true" class="hanchor" href="#-run-it-now-no-api-key-needed-1" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-no-api-key-needed-1">▶ Run it now (no API key needed)<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-no-api-key-needed-1">¶</a></h3>
 <p>Same file — just append the lines above and re-run:</p>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>demo_context_problem.py
 </code></pre></div>
@@ -345,7 +345,7 @@ Dropped 12 items to stay under 1000 tokens
 <p><strong>That's the whole idea.</strong> Everything in the rest of this phase is a refinement:
 counting tokens more accurately, handling the pairing rule, summarising instead of
 discarding, and wiring it into the agent loop.</p>
-<h3 id="step-12--the-same-idea-inside-the-real-harness">Step 1.2 — The same idea inside the real harness<a aria-hidden="true" class="hanchor" href="#step-12--the-same-idea-inside-the-real-harness" tabindex="-1">¶</a></h3>
+<h3 id="step-12--the-same-idea-inside-the-real-harness">Step 1.2 — The same idea inside the real harness<a aria-label="Permalink to this section" class="hanchor" href="#step-12--the-same-idea-inside-the-real-harness">¶</a></h3>
 <p><strong>Why now?</strong> The warm-up faked the transcript. The real pain only shows up when the
 transcript is fed back to <code>client.responses.create(...)</code> every turn — so let's put the
 estimate and the truncation <em>inside</em> the harness from Phase 1, written inline, no <code>def</code>
@@ -428,7 +428,7 @@ a token budget.</p>
 <p>The harness is exactly Phase 1's loop; the <em>only</em> new code is the block between the
 <code>──</code> rules: estimate the transcript size, print it, and pop the oldest item while over
 budget.</p>
-<h3 id="-run-it-now">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;The launch checklist: 1) freeze the schema. 2) tag the release. \</span>
 <span class="s2">3) run the smoke tests twice. 4) page the on-call before deploying.&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>notes.txt
 python<span class="w"> </span>harness_v1.py
@@ -453,7 +453,7 @@ agent&gt; ...
 problem of this phase, live on your screen. Keep chatting (or point <code>read_file</code> at a
 bigger file) until the estimate crosses 800 and you see
 <code>[context] over budget (800) — dropped oldest item</code> fire.</p>
-<h3 id="step-13--make-the-pain-visible-two-planted-bugs">Step 1.3 — Make the pain visible: two planted bugs<a aria-hidden="true" class="hanchor" href="#step-13--make-the-pain-visible-two-planted-bugs" tabindex="-1">¶</a></h3>
+<h3 id="step-13--make-the-pain-visible-two-planted-bugs">Step 1.3 — Make the pain visible: two planted bugs<a aria-label="Permalink to this section" class="hanchor" href="#step-13--make-the-pain-visible-two-planted-bugs">¶</a></h3>
 <p>Version 1 <em>works</em>, but its naive <code>pop(0)</code> has two failure modes you can reproduce:</p>
 <ol>
 <li><strong>It forgets the goal.</strong> The first thing dropped is your <em>first user message</em> — which
@@ -471,8 +471,8 @@ bigger file) until the estimate crosses 800 and you see
 list of interchangeable items, when really it has <em>structure</em> (a pinned goal, and pairs
 that must travel together). Encoding that structure is exactly what Version 2 does.</p>
 <hr>
-<h2 id="version-2--functions-count_tokens-and-prune_to_budget">Version 2 — functions: <code>count_tokens</code> and <code>prune_to_budget</code><a aria-hidden="true" class="hanchor" href="#version-2--functions-count_tokens-and-prune_to_budget" tabindex="-1">¶</a></h2>
-<h3 id="what-changed-from-v1-to-v2">What changed from V1 to V2<a aria-hidden="true" class="hanchor" href="#what-changed-from-v1-to-v2" tabindex="-1">¶</a></h3>
+<h2 id="version-2--functions-count_tokens-and-prune_to_budget">Version 2 — functions: <code>count_tokens</code> and <code>prune_to_budget</code><a aria-label="Permalink to this section" class="hanchor" href="#version-2--functions-count_tokens-and-prune_to_budget">¶</a></h2>
+<h3 id="what-changed-from-v1-to-v2">What changed from V1 to V2<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v1-to-v2">¶</a></h3>
 <ul>
 <li>The inline estimate gets a name: <code>count_tokens(text)</code> plus <code>count_items(items)</code> for a
   whole transcript — same <code>// 4</code> arithmetic, now callable and testable on its own.</li>
@@ -489,7 +489,7 @@ that must travel together). Encoding that structure is exactly what Version 2 do
 <p>Still no classes. We lift the three inline fragments into three plain functions and fix
 both planted bugs. These are the same two correctness rules the production package
 enforces in <code>code/agent_harness/context.py</code>.</p>
-<h3 id="step-21--name-the-estimate-count_tokens-and-count_items">Step 2.1 — Name the estimate: <code>count_tokens</code> and <code>count_items</code><a aria-hidden="true" class="hanchor" href="#step-21--name-the-estimate-count_tokens-and-count_items" tabindex="-1">¶</a></h3>
+<h3 id="step-21--name-the-estimate-count_tokens-and-count_items">Step 2.1 — Name the estimate: <code>count_tokens</code> and <code>count_items</code><a aria-label="Permalink to this section" class="hanchor" href="#step-21--name-the-estimate-count_tokens-and-count_items">¶</a></h3>
 <p><strong>Why now?</strong> Once the estimate is a function, you can test it offline, swap in a better
 implementation later (V3 does), and reuse it inside <code>prune_to_budget</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
@@ -510,13 +510,13 @@ For this to work on <em>every</em> item, the harness below converts the SDK obje
 same normalization trick <code>Conversation.to_input()</code> uses in Phase 3. (The tested
 package's <code>conversation.py</code> spells the same method <code>to_input_dict()</code>.)</p>
 </blockquote>
-<h3 id="-run-it-now-no-api-key-needed-2">▶ Run it now (no API key needed)<a aria-hidden="true" class="hanchor" href="#-run-it-now-no-api-key-needed-2" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-no-api-key-needed-2">▶ Run it now (no API key needed)<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-no-api-key-needed-2">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="n">items</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;hello&quot;</span><span class="p">},</span>
          <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;assistant&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;Hi! &quot;</span> <span class="o">*</span> <span class="mi">50</span><span class="p">}]</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">count_items</span><span class="p">(</span><span class="n">items</span><span class="p">))</span>    <span class="c1"># 68 — a number, instantly, no API</span>
 </code></pre></div>
 
-<h3 id="step-22--rule-1-pairs-travel-together">Step 2.2 — Rule 1: pairs travel together<a aria-hidden="true" class="hanchor" href="#step-22--rule-1-pairs-travel-together" tabindex="-1">¶</a></h3>
+<h3 id="step-22--rule-1-pairs-travel-together">Step 2.2 — Rule 1: pairs travel together<a aria-label="Permalink to this section" class="hanchor" href="#step-22--rule-1-pairs-travel-together">¶</a></h3>
 <p><strong>Why now?</strong> This is the fix for the <code>400</code> crash. Instead of dropping <em>items</em>, we drop
 <em>groups</em>: a <code>function_call</code> and its matching <code>function_call_output</code> (same <code>call_id</code>)
 form one group; everything else is a group of one. A group either survives whole or is
@@ -550,7 +550,7 @@ dropped whole — the API can never see half a pair.</p>
     <span class="k">return</span> <span class="n">groups</span>
 </code></pre></div>
 
-<h3 id="step-23--rule-2-keep-the-first-user-message--prune_to_budget">Step 2.3 — Rule 2: keep the first user message — <code>prune_to_budget</code><a aria-hidden="true" class="hanchor" href="#step-23--rule-2-keep-the-first-user-message--prune_to_budget" tabindex="-1">¶</a></h3>
+<h3 id="step-23--rule-2-keep-the-first-user-message--prune_to_budget">Step 2.3 — Rule 2: keep the first user message — <code>prune_to_budget</code><a aria-label="Permalink to this section" class="hanchor" href="#step-23--rule-2-keep-the-first-user-message--prune_to_budget">¶</a></h3>
 <p><strong>Why now?</strong> This is the fix for the forgotten goal. While dropping old groups, we
 <em>pin</em> the first group that contains a user message — it usually states the task, and an
 agent that forgets its task is useless.</p>
@@ -585,7 +585,7 @@ agent that forgets its task is useless.</p>
     <span class="k">return</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">kept</span> <span class="k">if</span> <span class="n">group</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">group</span><span class="p">]</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-no-api-key-needed-3">▶ Run it now (no API key needed)<a aria-hidden="true" class="hanchor" href="#-run-it-now-no-api-key-needed-3" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-no-api-key-needed-3">▶ Run it now (no API key needed)<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-no-api-key-needed-3">¶</a></h3>
 <p>Verify both rules offline:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Build a transcript: one goal message, then five tool round-trips.</span>
 <span class="n">items</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;Refactor the billing module.&quot;</span><span class="p">}]</span>
@@ -615,7 +615,7 @@ agent that forgets its task is useless.</p>
 After:  3 items, ~410 tokens
 Both rules hold: no orphans, goal preserved.
 </code></pre></div>
-<h3 id="step-24--the-full-version-2-file">Step 2.4 — The full Version 2 file<a aria-hidden="true" class="hanchor" href="#step-24--the-full-version-2-file" tabindex="-1">¶</a></h3>
+<h3 id="step-24--the-full-version-2-file">Step 2.4 — The full Version 2 file<a aria-label="Permalink to this section" class="hanchor" href="#step-24--the-full-version-2-file">¶</a></h3>
 <p>Here is the complete harness with the three functions in place of the inline block.
 The loop body is character-for-character the spirit of Version 1; only the marked lines
 changed.</p>
@@ -754,7 +754,7 @@ changed.</p>
             <span class="p">})</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-1">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-1" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-1">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-1">¶</a></h3>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>harness_v2.py
 </code></pre></div>
 
@@ -766,8 +766,8 @@ orphaned-pair <code>400</code> error.</p>
 drop the tool round-trip the model <em>just</em> made — there's no notion of "recent items are
 precious" yet. Version 3 fixes that with a recency window.</p>
 <hr>
-<h2 id="version-3--the-organized-form-a-contextpy-module-the-loop-consults">Version 3 — the organized form: a <code>context.py</code> module the loop consults<a aria-hidden="true" class="hanchor" href="#version-3--the-organized-form-a-contextpy-module-the-loop-consults" tabindex="-1">¶</a></h2>
-<h3 id="what-changed-from-v2-to-v3">What changed from V2 to V3<a aria-hidden="true" class="hanchor" href="#what-changed-from-v2-to-v3" tabindex="-1">¶</a></h3>
+<h2 id="version-3--the-organized-form-a-contextpy-module-the-loop-consults">Version 3 — the organized form: a <code>context.py</code> module the loop consults<a aria-label="Permalink to this section" class="hanchor" href="#version-3--the-organized-form-a-contextpy-module-the-loop-consults">¶</a></h2>
+<h3 id="what-changed-from-v2-to-v3">What changed from V2 to V3<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v2-to-v3">¶</a></h3>
 <ul>
 <li>The functions move out of the harness file into their own <strong><code>context.py</code> module</strong>;
   the loop just imports and consults it before every API call — the same shape the
@@ -787,7 +787,7 @@ precious" yet. Version 3 fixes that with a recency window.</p>
 into a module, hardened with exact counting, named constants, clipping, and a recency
 window. This is the shape the production package uses (<code>agent_harness/context.py</code>),
 where the <code>Agent</code> consults the context helpers at the top of every turn.</p>
-<h3 id="step-31--counting-tokens-exactly-tiktoken-with-a-tiered-fallback">Step 3.1 — Counting Tokens exactly: <code>tiktoken</code> with a tiered fallback<a aria-hidden="true" class="hanchor" href="#step-31--counting-tokens-exactly-tiktoken-with-a-tiered-fallback" tabindex="-1">¶</a></h3>
+<h3 id="step-31--counting-tokens-exactly-tiktoken-with-a-tiered-fallback">Step 3.1 — Counting Tokens exactly: <code>tiktoken</code> with a tiered fallback<a aria-label="Permalink to this section" class="hanchor" href="#step-31--counting-tokens-exactly-tiktoken-with-a-tiered-fallback">¶</a></h3>
 <p>The API returns ground-truth token counts in <code>resp.usage</code> after each call, but we also need <em>local</em> estimates to decide whether to compact <em>before</em> the next API call.</p>
 <p>First, install tiktoken — this step is <strong>optional</strong>: as the next paragraph explains, the
 code below falls back to the divide-by-4 heuristic whenever tiktoken is missing or you
@@ -859,7 +859,7 @@ ignores it. It silences the checker's complaint that <code>count_tokens</code> i
 (once in the <code>try</code>, once in the <code>except</code>); at runtime exactly one of the two
 definitions exists, which is the whole point of the fallback.</p>
 </blockquote>
-<h3 id="step-32--count_items--serialise-the-transcript">Step 3.2 — <code>count_items</code> — serialise the transcript<a aria-hidden="true" class="hanchor" href="#step-32--count_items--serialise-the-transcript" tabindex="-1">¶</a></h3>
+<h3 id="step-32--count_items--serialise-the-transcript">Step 3.2 — <code>count_items</code> — serialise the transcript<a aria-label="Permalink to this section" class="hanchor" href="#step-32--count_items--serialise-the-transcript">¶</a></h3>
 <p>The transcript is a list of dicts. We serialize each item to a compact JSON string, count its tokens, and sum.</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">_item_to_text</span><span class="p">(</span><span class="n">item</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Produce a text representation of one transcript item for token counting.&quot;&quot;&quot;</span>
@@ -901,7 +901,7 @@ definitions exists, which is the whole point of the fallback.</p>
     <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">count_tokens</span><span class="p">(</span><span class="n">_item_to_text</span><span class="p">(</span><span class="n">item</span><span class="p">))</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="step-33--ground-truth-from-respusage-and-running-totals">Step 3.3 — Ground truth from <code>resp.usage</code> and running totals<a aria-hidden="true" class="hanchor" href="#step-33--ground-truth-from-respusage-and-running-totals" tabindex="-1">¶</a></h3>
+<h3 id="step-33--ground-truth-from-respusage-and-running-totals">Step 3.3 — Ground truth from <code>resp.usage</code> and running totals<a aria-label="Permalink to this section" class="hanchor" href="#step-33--ground-truth-from-respusage-and-running-totals">¶</a></h3>
 <p>After every API call, reconcile the estimate with reality and update a running total.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># In your agent loop (agent.py):</span>
 
@@ -920,7 +920,7 @@ definitions exists, which is the whole point of the fallback.</p>
 </code></pre></div>
 
 <p>The per-call <code>input_tokens</code> count IS the true size of the full input the API processed (including system instructions, tools schema, all transcript items). Use it, not a cumulative sum across turns, for the most accurate picture of context pressure.</p>
-<h3 id="step-34--budget-constants">Step 3.4 — Budget constants<a aria-hidden="true" class="hanchor" href="#step-34--budget-constants" tabindex="-1">¶</a></h3>
+<h3 id="step-34--budget-constants">Step 3.4 — Budget constants<a aria-label="Permalink to this section" class="hanchor" href="#step-34--budget-constants">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="c1"># context.py — budget constants (tune per deployment)</span>
 
 <span class="c1"># Hard model limit — set to your actual model&#39;s context window.</span>
@@ -940,7 +940,7 @@ definitions exists, which is the whole point of the fallback.</p>
 </code></pre></div>
 
 <p>The strategies below are ordered from simplest to most powerful. Use them in layers: apply an earlier strategy before reaching for the next.</p>
-<h3 id="step-35--tactic-a-clip-tool-output-at-the-source">Step 3.5 — Tactic A: Clip Tool Output at the Source<a aria-hidden="true" class="hanchor" href="#step-35--tactic-a-clip-tool-output-at-the-source" tabindex="-1">¶</a></h3>
+<h3 id="step-35--tactic-a-clip-tool-output-at-the-source">Step 3.5 — Tactic A: Clip Tool Output at the Source<a aria-label="Permalink to this section" class="hanchor" href="#step-35--tactic-a-clip-tool-output-at-the-source">¶</a></h3>
 <p><strong>Why now?</strong> The cheapest token to save is the one that never enters the transcript.
 Before you think about compacting history, ensure each individual tool result is
 bounded. A <code>pytest --verbose</code> run can easily return 10 000+ characters; if you clip it
@@ -958,7 +958,7 @@ to 2 000 tokens at the point of collection, your transcript stays lean from the 
     <span class="k">return</span> <span class="n">clipped</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">... [output truncated to ~</span><span class="si">{</span><span class="n">max_tokens</span><span class="si">}</span><span class="s2"> tokens]&quot;</span>
 </code></pre></div>
 
-<h3 id="-check-it-now-no-api-key-needed">▶ Check it now (no API key needed)<a aria-hidden="true" class="hanchor" href="#-check-it-now-no-api-key-needed" tabindex="-1">¶</a></h3>
+<h3 id="-check-it-now-no-api-key-needed">▶ Check it now (no API key needed)<a aria-label="Permalink to this section" class="hanchor" href="#-check-it-now-no-api-key-needed">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="c1"># Quick test — no API needed</span>
 <span class="n">long_output</span> <span class="o">=</span> <span class="s2">&quot;line of output</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">*</span> <span class="mi">1000</span>   <span class="c1"># ~3 750 tokens</span>
 <span class="n">safe_output</span> <span class="o">=</span> <span class="n">clip_output</span><span class="p">(</span><span class="n">long_output</span><span class="p">)</span>
@@ -974,7 +974,7 @@ Clipped:  ~2009 tokens
 Last line: ... [output truncated to ~2000 tokens]
 </code></pre></div>
 <p><strong>Tradeoff:</strong> The agent may miss information present later in long outputs. Mitigate by having the agent request page ranges or grep patterns rather than whole files.</p>
-<h3 id="step-36--tactic-b-sliding-window--recency-pruning">Step 3.6 — Tactic B: Sliding Window / Recency Pruning<a aria-hidden="true" class="hanchor" href="#step-36--tactic-b-sliding-window--recency-pruning" tabindex="-1">¶</a></h3>
+<h3 id="step-36--tactic-b-sliding-window--recency-pruning">Step 3.6 — Tactic B: Sliding Window / Recency Pruning<a aria-label="Permalink to this section" class="hanchor" href="#step-36--tactic-b-sliding-window--recency-pruning">¶</a></h3>
 <p><strong>Why now?</strong> Clipping handles large individual results, but the transcript still grows
 turn-by-turn from normal conversation. Version 2's <code>prune_to_budget</code> already enforces
 the pairing rule and pins the first user message — but it will happily drop the tool
@@ -1114,7 +1114,7 @@ first-user-message pin too — the package version does both.)</p>
     <span class="k">return</span> <span class="kc">None</span>
 </code></pre></div>
 
-<h3 id="-check-it-now-no-api-key-needed-1">▶ Check it now (no API key needed)<a aria-hidden="true" class="hanchor" href="#-check-it-now-no-api-key-needed-1" tabindex="-1">¶</a></h3>
+<h3 id="-check-it-now-no-api-key-needed-1">▶ Check it now (no API key needed)<a aria-label="Permalink to this section" class="hanchor" href="#-check-it-now-no-api-key-needed-1">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="c1"># Quick check — build a transcript with tool calls and prune it</span>
 <span class="n">items</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
@@ -1150,7 +1150,7 @@ conflict, the window wins. (In the real harness this is the right trade: sending
 slightly-too-big input is recoverable, but orphaning the round-trip the model made one
 second ago is not.)</p>
 <p><strong>Tradeoff:</strong> The agent loses access to the full history of what it did and why. For short-horizon tasks this is fine; for long-horizon tasks (e.g. refactoring an entire codebase) the agent may repeat work or contradict earlier decisions. That is where compaction comes in.</p>
-<h3 id="step-37--the-loop-consults-the-module">Step 3.7 — The loop consults the module<a aria-hidden="true" class="hanchor" href="#step-37--the-loop-consults-the-module" tabindex="-1">¶</a></h3>
+<h3 id="step-37--the-loop-consults-the-module">Step 3.7 — The loop consults the module<a aria-label="Permalink to this section" class="hanchor" href="#step-37--the-loop-consults-the-module">¶</a></h3>
 <p><strong>Why now?</strong> This is the rung's payoff: the harness file shrinks back down because all
 the context machinery lives in <code>context.py</code>. The loop's only job is to <em>ask</em> before
 each call. (Compare with Version 2, where the functions sat in the same file — the same
@@ -1175,15 +1175,15 @@ idea, organized.)</p>
     <span class="c1"># pass through clip_output(result) before being appended ...</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-2">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-2" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-2">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-2">¶</a></h3>
 <p>Same conversation as before. With the real <code>INPUT_BUDGET</code> (≈124 k
 tokens) pruning won't fire in a short chat; to watch the same truncation behavior as V2,
 temporarily <em>replace the derived line</em> <code>INPUT_BUDGET = MAX_CONTEXT_TOKENS -
 RESPONSE_RESERVE</code> in <code>context.py</code> with <code>INPUT_BUDGET = 800</code> — now with the recency
 window keeping the latest round-trip intact. (Restore the derived line afterwards.)</p>
 <hr>
-<h2 id="version-4--compact-spend-one-api-call-to-buy-back-context">Version 4 — <code>compact</code>: spend one API call to buy back context<a aria-hidden="true" class="hanchor" href="#version-4--compact-spend-one-api-call-to-buy-back-context" tabindex="-1">¶</a></h2>
-<h3 id="what-changed-from-v3-to-v4">What changed from V3 to V4<a aria-hidden="true" class="hanchor" href="#what-changed-from-v3-to-v4" tabindex="-1">¶</a></h3>
+<h2 id="version-4--compact-spend-one-api-call-to-buy-back-context">Version 4 — <code>compact</code>: spend one API call to buy back context<a aria-label="Permalink to this section" class="hanchor" href="#version-4--compact-spend-one-api-call-to-buy-back-context">¶</a></h2>
+<h3 id="what-changed-from-v3-to-v4">What changed from V3 to V4<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v3-to-v4">¶</a></h3>
 <ul>
 <li>One new function in <code>context.py</code>: <strong><code>compact(conversation, client, model)</code></strong> — it
   spends <em>one extra API call</em> asking the model to summarize the older portion of the
@@ -1199,7 +1199,7 @@ window keeping the latest round-trip intact. (Restore the derived line afterward
 <p>The phase's advanced rung. Pruning is free but lossy; compaction costs one API call and
 a few seconds, and in exchange the agent <em>remembers</em> what it did. Same harness, one new
 mechanism.</p>
-<h3 id="step-41--tactic-c-summarisation--compaction">Step 4.1 — Tactic C: Summarisation / Compaction<a aria-hidden="true" class="hanchor" href="#step-41--tactic-c-summarisation--compaction" tabindex="-1">¶</a></h3>
+<h3 id="step-41--tactic-c-summarisation--compaction">Step 4.1 — Tactic C: Summarisation / Compaction<a aria-label="Permalink to this section" class="hanchor" href="#step-41--tactic-c-summarisation--compaction">¶</a></h3>
 <p><strong>Why now?</strong> Pruning silently discards old turns. For a long task — one that may span
 dozens of steps — you want the agent to <em>remember</em> key decisions, file paths it edited,
 and errors it resolved, even after those items are too old to keep verbatim. Compaction
@@ -1378,7 +1378,7 @@ call is for: one turn of API spend that shrinks every future turn.</p>
     <span class="bp">self</span><span class="o">.</span><span class="n">_items</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">new_items</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="step-42--auto-compaction-trigger-in-the-agent-loop">Step 4.2 — Auto-Compaction Trigger in the Agent Loop<a aria-hidden="true" class="hanchor" href="#step-42--auto-compaction-trigger-in-the-agent-loop" tabindex="-1">¶</a></h3>
+<h3 id="step-42--auto-compaction-trigger-in-the-agent-loop">Step 4.2 — Auto-Compaction Trigger in the Agent Loop<a aria-label="Permalink to this section" class="hanchor" href="#step-42--auto-compaction-trigger-in-the-agent-loop">¶</a></h3>
 <p>Wire the check into the top of the agent loop so compaction happens automatically before the next API call, not after an error.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># agent.py  (agent loop with context management integrated)</span>
 
@@ -1461,14 +1461,14 @@ call is for: one turn of API spend that shrinks every future turn.</p>
 </code></pre></div>
 
 <p>The ordering matters: <strong>check and compact first, then call the API.</strong> Do not call the API and then compact; that wastes tokens and may fail if you are already over the limit.</p>
-<h3 id="-run-it-now-3">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-3" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-3">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-3">¶</a></h3>
 <p>To see compaction fire without an hour-long session, temporarily set
 <code>COMPACT_TRIGGER = 800</code> and <code>KEEP_RECENT_VERBATIM = 4</code>, chat for a few file-reading
 turns, and watch the <code>[compact]</code> lines appear. Then ask the agent what it did earlier:
 unlike pruning, it can answer from the summary.</p>
 <hr>
-<h2 id="beyond-the-ladder-keep-tokens-out-of-the-window-entirely">Beyond the ladder: keep tokens out of the window entirely<a aria-hidden="true" class="hanchor" href="#beyond-the-ladder-keep-tokens-out-of-the-window-entirely" tabindex="-1">¶</a></h2>
-<h3 id="tactic-d-externalised-memory-filesystem-as-a-cache">Tactic D: Externalised Memory (Filesystem as a Cache)<a aria-hidden="true" class="hanchor" href="#tactic-d-externalised-memory-filesystem-as-a-cache" tabindex="-1">¶</a></h3>
+<h2 id="beyond-the-ladder-keep-tokens-out-of-the-window-entirely">Beyond the ladder: keep tokens out of the window entirely<a aria-label="Permalink to this section" class="hanchor" href="#beyond-the-ladder-keep-tokens-out-of-the-window-entirely">¶</a></h2>
+<h3 id="tactic-d-externalised-memory-filesystem-as-a-cache">Tactic D: Externalised Memory (Filesystem as a Cache)<a aria-label="Permalink to this section" class="hanchor" href="#tactic-d-externalised-memory-filesystem-as-a-cache">¶</a></h3>
 <p><strong>Why now?</strong> Even with pruning and compaction, some content shouldn't live in the
 transcript at all. Large artefacts — file contents, grep output, test logs — occupy the
 window for every subsequent turn, even after the agent is done with them. The fix is to
@@ -1487,12 +1487,12 @@ write them to disk immediately and keep only a path in the transcript.</p>
 <li>Intermediate results (e.g. grep output, compilation log): write to a temp file, return the path + a one-line summary.</li>
 <li>Always-needed reference material (API docs, schema): inject once at session start in <code>instructions</code>, not as a tool call.</li>
 </ul>
-<h3 id="-check-it-now">▶ Check it now<a aria-hidden="true" class="hanchor" href="#-check-it-now" tabindex="-1">¶</a></h3>
+<h3 id="-check-it-now">▶ Check it now<a aria-label="Permalink to this section" class="hanchor" href="#-check-it-now">¶</a></h3>
 <p>After adding <code>clip_output</code> and the filesystem rule to your tools, run a
 session and check <code>resp.usage.input_tokens</code> each turn. It should grow much more slowly
 than before.</p>
 <hr>
-<h2 id="what-to-preserve-vs-drop">What to Preserve vs Drop<a aria-hidden="true" class="hanchor" href="#what-to-preserve-vs-drop" tabindex="-1">¶</a></h2>
+<h2 id="what-to-preserve-vs-drop">What to Preserve vs Drop<a aria-label="Permalink to this section" class="hanchor" href="#what-to-preserve-vs-drop">¶</a></h2>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -1545,13 +1545,13 @@ than before.</p>
 </tbody>
 </table></div>
 <hr>
-<h2 id="persistent-memory-across-sessions">Persistent Memory Across Sessions<a aria-hidden="true" class="hanchor" href="#persistent-memory-across-sessions" tabindex="-1">¶</a></h2>
+<h2 id="persistent-memory-across-sessions">Persistent Memory Across Sessions<a aria-label="Permalink to this section" class="hanchor" href="#persistent-memory-across-sessions">¶</a></h2>
 <p><strong>Why this step?</strong> All the tactics so far manage context <em>within</em> a session. But
 tool-call history vanishes when the process exits. For a long-running project the agent
 needs a way to remember decisions made in previous sessions.</p>
 <p>Tool-call history vanishes when the process exits. For a long-running project the agent needs a way to remember decisions made in previous sessions.</p>
 <p>The pattern, inspired by <code>CLAUDE.md</code>: maintain a <strong>memory file</strong> (e.g. <code>agent_memory.md</code>) that the agent can write to, and inject its contents into <code>instructions</code> at startup.</p>
-<h3 id="writing-to-the-memory-file">Writing to the memory file<a aria-hidden="true" class="hanchor" href="#writing-to-the-memory-file" tabindex="-1">¶</a></h3>
+<h3 id="writing-to-the-memory-file">Writing to the memory file<a aria-label="Permalink to this section" class="hanchor" href="#writing-to-the-memory-file">¶</a></h3>
 <p>Register a tool:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># tools/memory.py</span>
 
@@ -1597,7 +1597,7 @@ needs a way to remember decisions made in previous sessions.</p>
 <span class="p">}</span>
 </code></pre></div>
 
-<h3 id="injecting-the-memory-file-at-startup">Injecting the memory file at startup<a aria-hidden="true" class="hanchor" href="#injecting-the-memory-file-at-startup" tabindex="-1">¶</a></h3>
+<h3 id="injecting-the-memory-file-at-startup">Injecting the memory file at startup<a aria-label="Permalink to this section" class="hanchor" href="#injecting-the-memory-file-at-startup">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="c1"># agent.py — startup</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pathlib</span>
@@ -1635,7 +1635,7 @@ needs a way to remember decisions made in previous sessions.</p>
 
 <p>The memory file is injected once into <code>instructions</code> — which is <strong>outside</strong> <code>input_items</code> — so it costs tokens every call but is never lost to compaction.</p>
 <hr>
-<h2 id="the-production-shape-full-contextpy">The production shape: full <code>context.py</code><a aria-hidden="true" class="hanchor" href="#the-production-shape-full-contextpy" tabindex="-1">¶</a></h2>
+<h2 id="the-production-shape-full-contextpy">The production shape: full <code>context.py</code><a aria-label="Permalink to this section" class="hanchor" href="#the-production-shape-full-contextpy">¶</a></h2>
 <p>This is the consolidated module — Versions 3 and 4 in one file, the form that maps onto
 <code>code/agent_harness/context.py</code> in the tested package.</p>
 <blockquote class="refcopy">
@@ -2020,7 +2020,7 @@ above. Both satisfy the same two correctness rules; as ever, when a guide snippe
 the package disagree, the package is the source of truth.</p>
 </blockquote>
 <hr>
-<h2 id="pitfalls">Pitfalls<a aria-hidden="true" class="hanchor" href="#pitfalls" tabindex="-1">¶</a></h2>
+<h2 id="pitfalls">Pitfalls<a aria-label="Permalink to this section" class="hanchor" href="#pitfalls">¶</a></h2>
 <blockquote>
 <p><strong>Watch out for these common mistakes.</strong></p>
 </blockquote>
@@ -2071,7 +2071,7 @@ the package disagree, the package is the source of truth.</p>
 </tbody>
 </table></div>
 <hr>
-<h2 id="key-takeaways">Key takeaways<a aria-hidden="true" class="hanchor" href="#key-takeaways" tabindex="-1">¶</a></h2>
+<h2 id="key-takeaways">Key takeaways<a aria-label="Permalink to this section" class="hanchor" href="#key-takeaways">¶</a></h2>
 <p>The five mechanisms at a glance:</p>
 <div class="table-wrap"><table>
 <thead>
@@ -2129,7 +2129,7 @@ the package disagree, the package is the source of truth.</p>
 <li><strong>Preserve vs drop:</strong> always keep the system prompt, the most recent turns, and
   task-critical facts; drop stale, reconstructable detail first.</li>
 </ul>
-<h2 id="check-yourself">Check yourself<a aria-hidden="true" class="hanchor" href="#check-yourself" tabindex="-1">¶</a></h2>
+<h2 id="check-yourself">Check yourself<a aria-label="Permalink to this section" class="hanchor" href="#check-yourself">¶</a></h2>
 <ol>
 <li>Why must a long agentic session eventually summarise or drop history?</li>
 <li>Give two ways to count tokens, and when you'd use each.</li>
@@ -2150,7 +2150,7 @@ the package disagree, the package is the source of truth.</p>
 </ol>
 </details>
 <hr>
-<h2 id="exercises">Exercises<a aria-hidden="true" class="hanchor" href="#exercises" tabindex="-1">¶</a></h2>
+<h2 id="exercises">Exercises<a aria-label="Permalink to this section" class="hanchor" href="#exercises">¶</a></h2>
 <p>See <a href="exercises.html"><code>EXERCISES.md</code> — Phase 6</a> for hands-on practice:</p>
 <ul>
 <li><strong>6.1 (warm-up):</strong> Set an artificially tiny token budget and run a long chat. Watch old turns get pruned/compacted. Confirm the system prompt and recent turns survive.</li>
@@ -2191,6 +2191,18 @@ the package disagree, the package is the source of truth.</p>
     openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
     openedForPrint = [];
   });
+
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
 
   /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
      execCommand -> select the block and ask for Ctrl-C.  If no mechanism
@@ -2235,7 +2247,7 @@ the package disagree, the package is the source of truth.</p>
       setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
     }
     function fallback(pre, code) {
-      if (execCopy(code)) { flash('Copied!'); }
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
       else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
       else { flash('Copy failed'); }
     }

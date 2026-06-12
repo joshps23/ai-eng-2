@@ -14,7 +14,7 @@
 <div class="layout">
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
-<nav class="sidebar">
+<nav class="sidebar" aria-label="Guide pages">
 <p class="sidebar-heading">Start here</p>
 <ul>
 <li><a href="index.html">Guide hub</a></li>
@@ -48,7 +48,7 @@
 </details>
 <main id="main">
 <header class="page-header">
-<p class="source-link"><a href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/09-library-reference.md">View the markdown source on GitHub</a></p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/09-library-reference.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
@@ -151,7 +151,7 @@ you see <code>with ... as x:</code> or <code>try/except</code> here, they mean t
 §1, skim §2–§4 for reference when you need them.</p>
 </blockquote>
 <hr>
-<h2 id="1-openai--the-responses-api">1. <code>openai</code> — the Responses API<a aria-hidden="true" class="hanchor" href="#1-openai--the-responses-api" tabindex="-1">¶</a></h2>
+<h2 id="1-openai--the-responses-api">1. <code>openai</code> — the Responses API<a aria-label="Permalink to this section" class="hanchor" href="#1-openai--the-responses-api">¶</a></h2>
 <p>The <code>openai</code> package is the official Python SDK. We use <strong>only</strong> the Responses API
 (<code>client.responses.*</code>). We never touch Chat Completions (<code>client.chat.completions.*</code>).</p>
 <blockquote>
@@ -159,7 +159,7 @@ you see <code>with ... as x:</code> or <code>try/except</code> here, they mean t
 Examples here were checked against <code>openai==2.x</code>. The shapes below are stable across
 that range.</p>
 </blockquote>
-<h3 id="11-creating-the-client--openaiopenai">1.1 Creating the client — <code>openai.OpenAI</code><a aria-hidden="true" class="hanchor" href="#11-creating-the-client--openaiopenai" tabindex="-1">¶</a></h3>
+<h3 id="11-creating-the-client--openaiopenai">1.1 Creating the client — <code>openai.OpenAI</code><a aria-label="Permalink to this section" class="hanchor" href="#11-creating-the-client--openaiopenai">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">openai</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenAI</span>
 
 <span class="n">client</span> <span class="o">=</span> <span class="n">OpenAI</span><span class="p">()</span>                       <span class="c1"># reads OPENAI_API_KEY from the environment</span>
@@ -204,7 +204,7 @@ that range.</p>
 </table></div>
 <p><strong>Returns:</strong> an <code>OpenAI</code> client instance. The only attribute we use is
 <code>client.responses</code>.</p>
-<h3 id="12-clientresponsescreate--one-model-turn">1.2 <code>client.responses.create(...)</code> — one model turn<a aria-hidden="true" class="hanchor" href="#12-clientresponsescreate--one-model-turn" tabindex="-1">¶</a></h3>
+<h3 id="12-clientresponsescreate--one-model-turn">1.2 <code>client.responses.create(...)</code> — one model turn<a aria-label="Permalink to this section" class="hanchor" href="#12-clientresponsescreate--one-model-turn">¶</a></h3>
 <p>This is the heart of the harness. One call = one model turn.</p>
 <div class="highlight"><pre><span></span><code><span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">responses</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
     <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4o&quot;</span><span class="p">,</span>
@@ -310,7 +310,7 @@ that range.</p>
 <p><strong>Raises</strong> (the ones worth catching — see §1.6): <code>RateLimitError</code>,
 <code>APIConnectionError</code>, <code>InternalServerError</code>, <code>BadRequestError</code>,
 <code>AuthenticationError</code>.</p>
-<h3 id="13-the-response-object">1.3 The <code>Response</code> object<a aria-hidden="true" class="hanchor" href="#13-the-response-object" tabindex="-1">¶</a></h3>
+<h3 id="13-the-response-object">1.3 The <code>Response</code> object<a aria-label="Permalink to this section" class="hanchor" href="#13-the-response-object">¶</a></h3>
 <p>The object returned by a non-streaming <code>create()</code>. Fields the harness reads:</p>
 <div class="table-wrap"><table>
 <thead>
@@ -359,7 +359,7 @@ that range.</p>
 <div class="highlight"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">usage</span><span class="o">.</span><span class="n">input_tokens</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">usage</span><span class="o">.</span><span class="n">output_tokens</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="14-output--input-item-shapes">1.4 Output / input <strong>item</strong> shapes<a aria-hidden="true" class="hanchor" href="#14-output--input-item-shapes" tabindex="-1">¶</a></h3>
+<h3 id="14-output--input-item-shapes">1.4 Output / input <strong>item</strong> shapes<a aria-label="Permalink to this section" class="hanchor" href="#14-output--input-item-shapes">¶</a></h3>
 <p>The Responses API speaks in <em>items</em>. You send a list of items as <code>input</code>; you get a
 list of items back as <code>response.output</code>. <strong>The core loop is: append every item in
 <code>response.output</code> to your running <code>input</code> list, then call <code>create()</code> again.</strong></p>
@@ -400,7 +400,7 @@ automatically, which is exactly what the API wants.</p>
    call <code>item.model_dump()</code>. Do <strong>not</strong> add a top-level <code>output_text</code> key to a
    <code>message</code> dict — that's a response-level accessor, not a valid input field.</p>
 </blockquote>
-<h3 id="15-tool-schemas--the-flat-shape">1.5 Tool schemas — the <strong>flat</strong> shape<a aria-hidden="true" class="hanchor" href="#15-tool-schemas--the-flat-shape" tabindex="-1">¶</a></h3>
+<h3 id="15-tool-schemas--the-flat-shape">1.5 Tool schemas — the <strong>flat</strong> shape<a aria-label="Permalink to this section" class="hanchor" href="#15-tool-schemas--the-flat-shape">¶</a></h3>
 <p>Function tools use a <strong>flat</strong> schema. The function fields are top-level — there is
 <strong>no</strong> nested <code>"function"</code> wrapper (that was the older Chat Completions shape).</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
@@ -427,7 +427,7 @@ have a plain optional parameter under strict mode — you'd model it as required
 a nullable type (<code>"type": ["string", "null"]</code>). The harness defaults to
 <strong>non-strict</strong> so tools can have ordinary optional parameters.</p>
 </blockquote>
-<h3 id="16-error-types-and-retries">1.6 Error types and retries<a aria-hidden="true" class="hanchor" href="#16-error-types-and-retries" tabindex="-1">¶</a></h3>
+<h3 id="16-error-types-and-retries">1.6 Error types and retries<a aria-label="Permalink to this section" class="hanchor" href="#16-error-types-and-retries">¶</a></h3>
 <p>Import these from the top-level package:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">openai</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">RateLimitError</span><span class="p">,</span>        <span class="c1"># 429 — back off and retry</span>
@@ -453,7 +453,7 @@ a nullable type (<code>"type": ["string", "null"]</code>). The harness defaults 
             <span class="n">delay</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">delay</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">60</span><span class="p">)</span>   <span class="c1"># exponential back-off, capped</span>
 </code></pre></div>
 
-<h3 id="17-streaming--clientresponsescreate-streamtrue">1.7 Streaming — <code>client.responses.create(..., stream=True)</code><a aria-hidden="true" class="hanchor" href="#17-streaming--clientresponsescreate-streamtrue" tabindex="-1">¶</a></h3>
+<h3 id="17-streaming--clientresponsescreate-streamtrue">1.7 Streaming — <code>client.responses.create(..., stream=True)</code><a aria-label="Permalink to this section" class="hanchor" href="#17-streaming--clientresponsescreate-streamtrue">¶</a></h3>
 <p>For live, token-by-token output, pass <code>stream=True</code> to the <strong>same</strong> <code>create()</code> call. It
 takes the same parameters as a non-streamed call but returns an iterator of typed events
 instead of a single <code>Response</code>. The returned object is itself a context manager, so the
@@ -524,7 +524,7 @@ can see exactly what that helper does under the hood. Everything here uses the l
 <code>create(stream=True)</code> primitive.</p>
 </blockquote>
 <hr>
-<h2 id="2-tiktoken--local-token-counting">2. <code>tiktoken</code> — local token counting<a aria-hidden="true" class="hanchor" href="#2-tiktoken--local-token-counting" tabindex="-1">¶</a></h2>
+<h2 id="2-tiktoken--local-token-counting">2. <code>tiktoken</code> — local token counting<a aria-label="Permalink to this section" class="hanchor" href="#2-tiktoken--local-token-counting">¶</a></h2>
 <p><code>tiktoken</code> is OpenAI's fast BPE tokenizer. We use it in Phase 6 to count tokens
 <strong>locally</strong> (no API call) so we can budget and prune the conversation. It's optional:
 the harness falls back to a <code>len(text) // 4</code> heuristic if it isn't installed or can't
@@ -535,7 +535,7 @@ tiktoken <strong>downloads the vocabulary file over the network</strong>. Offlin
 <code>requests</code> error (e.g. <code>HTTPError</code>), <strong>not</strong> a <code>KeyError</code>. Always catch broadly and
 fall back to the heuristic — see §2.4.</p>
 </blockquote>
-<h3 id="21-tiktokenencoding_for_modelmodel_name">2.1 <code>tiktoken.encoding_for_model(model_name)</code><a aria-hidden="true" class="hanchor" href="#21-tiktokenencoding_for_modelmodel_name" tabindex="-1">¶</a></h3>
+<h3 id="21-tiktokenencoding_for_modelmodel_name">2.1 <code>tiktoken.encoding_for_model(model_name)</code><a aria-label="Permalink to this section" class="hanchor" href="#21-tiktokenencoding_for_modelmodel_name">¶</a></h3>
 <p>Pick the right encoding for a model by name.</p>
 <div class="table-wrap"><table>
 <thead>
@@ -560,7 +560,7 @@ download).</p>
 <span class="n">enc</span> <span class="o">=</span> <span class="n">tiktoken</span><span class="o">.</span><span class="n">encoding_for_model</span><span class="p">(</span><span class="s2">&quot;gpt-4o&quot;</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="22-tiktokenget_encodingencoding_name">2.2 <code>tiktoken.get_encoding(encoding_name)</code><a aria-hidden="true" class="hanchor" href="#22-tiktokenget_encodingencoding_name" tabindex="-1">¶</a></h3>
+<h3 id="22-tiktokenget_encodingencoding_name">2.2 <code>tiktoken.get_encoding(encoding_name)</code><a aria-label="Permalink to this section" class="hanchor" href="#22-tiktokenget_encodingencoding_name">¶</a></h3>
 <p>Get an encoding by its raw name (use as a fallback for unknown models).</p>
 <div class="table-wrap"><table>
 <thead>
@@ -585,7 +585,7 @@ network error on first download).</p>
 
 <p><code>tiktoken.list_encoding_names()</code> <strong>returns</strong> <code>list[str]</code>, e.g.
 <code>['gpt2', 'r50k_base', 'p50k_base', 'p50k_edit', 'cl100k_base', 'o200k_base', 'o200k_harmony']</code>.</p>
-<h3 id="23-the-encoding-object">2.3 The <code>Encoding</code> object<a aria-hidden="true" class="hanchor" href="#23-the-encoding-object" tabindex="-1">¶</a></h3>
+<h3 id="23-the-encoding-object">2.3 The <code>Encoding</code> object<a aria-label="Permalink to this section" class="hanchor" href="#23-the-encoding-object">¶</a></h3>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -621,7 +621,7 @@ network error on first download).</p>
 <span class="n">text_again</span> <span class="o">=</span> <span class="n">enc</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>         <span class="c1"># &quot;hello world&quot;</span>
 </code></pre></div>
 
-<h3 id="24-the-robust-pattern-the-harness-uses">2.4 The robust pattern the harness uses<a aria-hidden="true" class="hanchor" href="#24-the-robust-pattern-the-harness-uses" tabindex="-1">¶</a></h3>
+<h3 id="24-the-robust-pattern-the-harness-uses">2.4 The robust pattern the harness uses<a aria-label="Permalink to this section" class="hanchor" href="#24-the-robust-pattern-the-harness-uses">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">_heuristic</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">//</span> <span class="mi">4</span><span class="p">)</span>    <span class="c1"># ~4 chars/token; overestimates slightly (safe)</span>
 
@@ -642,12 +642,12 @@ network error on first download).</p>
 <p>This never crashes: missing package, unknown model, or no network all degrade
 gracefully to the heuristic.</p>
 <hr>
-<h2 id="3-concurrentfutures--running-tools-in-parallel">3. <code>concurrent.futures</code> — running tools in parallel<a aria-hidden="true" class="hanchor" href="#3-concurrentfutures--running-tools-in-parallel" tabindex="-1">¶</a></h2>
+<h2 id="3-concurrentfutures--running-tools-in-parallel">3. <code>concurrent.futures</code> — running tools in parallel<a aria-label="Permalink to this section" class="hanchor" href="#3-concurrentfutures--running-tools-in-parallel">¶</a></h2>
 <p>Standard library. The harness uses a <code>ThreadPoolExecutor</code> to run independent tool
 calls (and sub-agents) at the same time. Threads are the right tool here because the
 work is <strong>I/O-bound</strong> (waiting on the network / disk / subprocesses), so the GIL isn't
 a bottleneck.</p>
-<h3 id="31-threadpoolexecutor">3.1 <code>ThreadPoolExecutor</code><a aria-hidden="true" class="hanchor" href="#31-threadpoolexecutor" tabindex="-1">¶</a></h3>
+<h3 id="31-threadpoolexecutor">3.1 <code>ThreadPoolExecutor</code><a aria-label="Permalink to this section" class="hanchor" href="#31-threadpoolexecutor">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThreadPoolExecutor</span><span class="p">,</span> <span class="n">as_completed</span>
 </code></pre></div>
 
@@ -698,7 +698,7 @@ a bottleneck.</p>
 </tr>
 </tbody>
 </table></div>
-<h3 id="32-the-future-key-idiom">3.2 The <code>{future: key}</code> idiom<a aria-hidden="true" class="hanchor" href="#32-the-future-key-idiom" tabindex="-1">¶</a></h3>
+<h3 id="32-the-future-key-idiom">3.2 The <code>{future: key}</code> idiom<a aria-label="Permalink to this section" class="hanchor" href="#32-the-future-key-idiom">¶</a></h3>
 <p>Because <code>as_completed</code> yields in completion order, map each future back to its input:</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_in_parallel</span><span class="p">(</span><span class="n">calls</span><span class="p">):</span>
     <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
@@ -719,7 +719,7 @@ a bottleneck.</p>
 <p>Returning results keyed by <code>call_id</code> is exactly why ordering doesn't matter for the
 Responses API — <code>function_call_output</code> items are matched to calls by <code>call_id</code>.</p>
 <hr>
-<h2 id="4-subprocess--running-shell-commands">4. <code>subprocess</code> — running shell commands<a aria-hidden="true" class="hanchor" href="#4-subprocess--running-shell-commands" tabindex="-1">¶</a></h2>
+<h2 id="4-subprocess--running-shell-commands">4. <code>subprocess</code> — running shell commands<a aria-label="Permalink to this section" class="hanchor" href="#4-subprocess--running-shell-commands">¶</a></h2>
 <p>Standard library. Powers the <code>bash</code> tool. We use <code>subprocess.run</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
 
@@ -814,7 +814,7 @@ Responses API — <code>function_call_output</code> items are matched to calls b
 </code></pre></div>
 
 <hr>
-<h2 id="where-to-go-next">Where to go next<a aria-hidden="true" class="hanchor" href="#where-to-go-next" tabindex="-1">¶</a></h2>
+<h2 id="where-to-go-next">Where to go next<a aria-label="Permalink to this section" class="hanchor" href="#where-to-go-next">¶</a></h2>
 <ul>
 <li><strong>OpenAI Responses API</strong> — official docs: <a href="https://platform.openai.com/docs/api-reference/responses">https://platform.openai.com/docs/api-reference/responses</a></li>
 <li><strong>tiktoken</strong> — <a href="https://github.com/openai/tiktoken">https://github.com/openai/tiktoken</a></li>
@@ -857,6 +857,18 @@ box.</p>
     openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
     openedForPrint = [];
   });
+
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
 
   /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
      execCommand -> select the block and ask for Ctrl-C.  If no mechanism
@@ -901,7 +913,7 @@ box.</p>
       setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
     }
     function fallback(pre, code) {
-      if (execCopy(code)) { flash('Copied!'); }
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
       else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
       else { flash('Copy failed'); }
     }

@@ -14,7 +14,7 @@
 <div class="layout">
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
-<nav class="sidebar">
+<nav class="sidebar" aria-label="Guide pages">
 <p class="sidebar-heading">Start here</p>
 <ul>
 <li><a href="index.html">Guide hub</a></li>
@@ -48,7 +48,7 @@
 </details>
 <main id="main">
 <header class="page-header">
-<p class="source-link"><a href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/00-foundations.md">View the markdown source on GitHub</a></p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/00-foundations.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
@@ -63,14 +63,14 @@
 <ul>
 <li class="toc-h3"><a href="#031-installation--client">0.3.1 Installation &amp; client</a></li>
 <li class="toc-h3"><a href="#032-step-1--the-simplest-possible-call-text-in-text-out">0.3.2 Step 1 — the simplest possible call (text in, text out)</a></li>
-<li class="toc-h3"><a href="#-run-it-now">▶ Run it now — 0.3 Version 1 — the whole handshake, line by line</a></li>
+<li class="toc-h3"><a href="#-run-it-now">▶ Run it now — 0.3.2 Step 1</a></li>
 <li class="toc-h3"><a href="#033-step-2--input-as-a-list-of-items">0.3.3 Step 2 — input as a list of items</a></li>
-<li class="toc-h3"><a href="#-run-it-now-1">▶ Run it now — 0.3 Version 1 — the whole handshake, line by line</a></li>
+<li class="toc-h3"><a href="#-run-it-now-1">▶ Run it now — 0.3.3 Step 2</a></li>
 <li class="toc-h3"><a href="#034-the-output-a-list-of-typed-items">0.3.4 The output: a list of typed items</a></li>
 <li class="toc-h3"><a href="#035-step-3--defining-a-tool-and-seeing-the-model-request-it">0.3.5 Step 3 — defining a tool and seeing the model request it</a></li>
-<li class="toc-h3"><a href="#-run-it-now-2">▶ Run it now — 0.3 Version 1 — the whole handshake, line by line</a></li>
+<li class="toc-h3"><a href="#-run-it-now-2">▶ Run it now — 0.3.5 Step 3</a></li>
 <li class="toc-h3"><a href="#036-step-4--the-tool-call--result-handshake-the-critical-step">0.3.6 Step 4 — the tool call → result handshake (the critical step)</a></li>
-<li class="toc-h3"><a href="#-run-it-now-3">▶ Run it now — 0.3 Version 1 — the whole handshake, line by line</a></li>
+<li class="toc-h3"><a href="#-run-it-now-3">▶ Run it now — 0.3.6 Step 4</a></li>
 <li class="toc-h3"><a href="#037-carrying-model-output-back-into-the-conversation">0.3.7 Carrying model output back into the conversation</a></li>
 </ul>
 </li>
@@ -78,11 +78,11 @@
 <ul>
 <li class="toc-h3"><a href="#what-changed-from-v1-to-v2">What changed from V1 to V2</a></li>
 <li class="toc-h3"><a href="#041-step-1--name-the-model-call-call_model">0.4.1 Step 1 — name the model call: call_model</a></li>
-<li class="toc-h3"><a href="#-run-it-now-4">▶ Run it now — 0.4 Version 2 — the same handshake, organized into functions</a></li>
+<li class="toc-h3"><a href="#-run-it-now-4">▶ Run it now — 0.4.1 Step 1</a></li>
 <li class="toc-h3"><a href="#042-step-2--name-the-tools-work-run_tool">0.4.2 Step 2 — name the tool&#x27;s work: run_tool</a></li>
 <li class="toc-h3"><a href="#043-step-3--name-the-handshake-bookkeeping-handle_tool_calls">0.4.3 Step 3 — name the handshake bookkeeping: handle_tool_calls</a></li>
 <li class="toc-h3"><a href="#044-the-complete-version-2-program">0.4.4 The complete Version 2 program</a></li>
-<li class="toc-h3"><a href="#-run-it-now-5">▶ Run it now — 0.4 Version 2 — the same handshake, organized into functions</a></li>
+<li class="toc-h3"><a href="#-run-it-now-5">▶ Run it now — 0.4.4 The complete Version 2 program</a></li>
 <li class="toc-h3"><a href="#045-where-is-version-3">0.4.5 Where is Version 3?</a></li>
 </ul>
 </li>
@@ -147,10 +147,10 @@ comes up.</p>
 <li><a href="#08-sanity-check-script">0.8 Sanity-check script</a></li>
 </ul>
 <blockquote>
-<p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="../../notebooks/00-foundations.ipynb" title="Opens a file in the repository checkout — not part of this site"><code>notebooks/00-foundations.ipynb</code></a> executes this phase's checkpoints offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
+<p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/00-foundations.ipynb" title="Opens the notebook on GitHub (requires repo access) — or use its Open-in-Colab badge"><code>notebooks/00-foundations.ipynb</code></a> executes this phase's checkpoints offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
 </blockquote>
 <hr>
-<h2 id="01-what-is-an-agent-harness">0.1 What is an "agent harness"?<a aria-hidden="true" class="hanchor" href="#01-what-is-an-agent-harness" tabindex="-1">¶</a></h2>
+<h2 id="01-what-is-an-agent-harness">0.1 What is an "agent harness"?<a aria-label="Permalink to this section" class="hanchor" href="#01-what-is-an-agent-harness">¶</a></h2>
 <p>An LLM by itself is a <strong>pure function</strong>: text in, text out. It cannot read a file,
 run a command, call an API, or remember anything between calls. It is frozen.</p>
 <p>An <strong>agent harness</strong> is the program wrapped <em>around</em> the model that gives it hands
@@ -183,7 +183,7 @@ compaction, retries) is refinement on top of this loop.</p>
 <p>Claude Code, Cursor, and every "coding agent" you've used is — at its core — this
 loop with a good set of tools and a lot of production polish. We will build up to
 that polish phase by phase.</p>
-<h3 id="the-phase-map">The phase map<a aria-hidden="true" class="hanchor" href="#the-phase-map" tabindex="-1">¶</a></h3>
+<h3 id="the-phase-map">The phase map<a aria-label="Permalink to this section" class="hanchor" href="#the-phase-map">¶</a></h3>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -242,7 +242,7 @@ that polish phase by phase.</p>
 </table></div>
 <p>Each phase is runnable on its own and builds directly on the previous one.</p>
 <hr>
-<h2 id="02-why-the-responses-api-and-not-chat-completions">0.2 Why the Responses API (and not Chat Completions)?<a aria-hidden="true" class="hanchor" href="#02-why-the-responses-api-and-not-chat-completions" tabindex="-1">¶</a></h2>
+<h2 id="02-why-the-responses-api-and-not-chat-completions">0.2 Why the Responses API (and not Chat Completions)?<a aria-label="Permalink to this section" class="hanchor" href="#02-why-the-responses-api-and-not-chat-completions">¶</a></h2>
 <p>OpenAI has two surfaces for talking to its models:</p>
 <ul>
 <li><strong>Chat Completions</strong> (<code>/v1/chat/completions</code>) — the older, stateless,
@@ -269,7 +269,7 @@ agent loop:</p>
 messages" and start thinking "a running list of typed items."</em></p>
 </blockquote>
 <hr>
-<h2 id="03-version-1--the-whole-handshake-line-by-line">0.3 Version 1 — the whole handshake, line by line<a aria-hidden="true" class="hanchor" href="#03-version-1--the-whole-handshake-line-by-line" tabindex="-1">¶</a></h2>
+<h2 id="03-version-1--the-whole-handshake-line-by-line">0.3 Version 1 — the whole handshake, line by line<a aria-label="Permalink to this section" class="hanchor" href="#03-version-1--the-whole-handshake-line-by-line">¶</a></h2>
 <p>This section is the <strong>single source of truth</strong> every later phase relies on. We
 introduce each piece one at a time, with a working checkpoint after each new idea.
 If a code sample in a later phase looks unfamiliar, come back here.</p>
@@ -293,7 +293,7 @@ levels of abstraction, never with new behavior smuggled in.</p>
 <code>input</code> as a list, then the two output item types you must recognize (<code>message</code>
 vs <code>function_call</code>), and finally the <code>function_call_output</code> echo that completes
 the handshake. Each step ends with a <strong>▶ Run it now</strong> checkpoint.</p>
-<h3 id="031-installation--client">0.3.1 Installation &amp; client<a aria-hidden="true" class="hanchor" href="#031-installation--client" tabindex="-1">¶</a></h3>
+<h3 id="031-installation--client">0.3.1 Installation &amp; client<a aria-label="Permalink to this section" class="hanchor" href="#031-installation--client">¶</a></h3>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>openai
 <span class="nb">export</span><span class="w"> </span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span><span class="s2">&quot;sk-...&quot;</span>
 </code></pre></div>
@@ -312,7 +312,7 @@ the handshake. Each step ends with a <strong>▶ Run it now</strong> checkpoint.
 latest model available to you. Reasoning-capable models give the best agentic
 behavior; everything here also works on smaller/faster models.</p>
 </blockquote>
-<h3 id="032-step-1--the-simplest-possible-call-text-in-text-out">0.3.2 Step 1 — the simplest possible call (text in, text out)<a aria-hidden="true" class="hanchor" href="#032-step-1--the-simplest-possible-call-text-in-text-out" tabindex="-1">¶</a></h3>
+<h3 id="032-step-1--the-simplest-possible-call-text-in-text-out">0.3.2 Step 1 — the simplest possible call (text in, text out)<a aria-label="Permalink to this section" class="hanchor" href="#032-step-1--the-simplest-possible-call-text-in-text-out">¶</a></h3>
 <p>Before tools, loops, or state: just ask the model a question and print its answer.
 This is the smallest end-to-end program we can write.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># step1_hello.py</span>
@@ -340,7 +340,7 @@ This is the smallest end-to-end program we can write.</p>
 <li><strong><code>input</code></strong> — either a plain string (shorthand for one user message) or a <strong>list
   of input items</strong> (the real, full-control form we use everywhere).</li>
 </ul>
-<h3 id="-run-it-now">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now">¶</a></h3>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>step1_hello.py
 </code></pre></div>
 
@@ -373,7 +373,7 @@ out. Use these checkpoints instead:</p>
 <p>Wherever a checkpoint says "once this works," keyless readers can read it as:
 "once you could predict the output shown."</p>
 </blockquote>
-<h3 id="033-step-2--input-as-a-list-of-items">0.3.3 Step 2 — <code>input</code> as a list of items<a aria-hidden="true" class="hanchor" href="#033-step-2--input-as-a-list-of-items" tabindex="-1">¶</a></h3>
+<h3 id="033-step-2--input-as-a-list-of-items">0.3.3 Step 2 — <code>input</code> as a list of items<a aria-label="Permalink to this section" class="hanchor" href="#033-step-2--input-as-a-list-of-items">¶</a></h3>
 <p>The plain-string shortcut is convenient, but the harness needs precise control over
 the conversation history. The full form passes a Python list you own and append to:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># step2_list_input.py</span>
@@ -394,14 +394,14 @@ and <code>content</code>. Content can be a simple string, or a list of typed con
 (<code>{"type": "input_text", "text": "..."}</code> for user input,
 <code>{"type": "output_text", "text": "..."}</code> for assistant output). For our purposes,
 plain-string content for user messages is fine.</p>
-<h3 id="-run-it-now-1">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-1" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-1">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-1">¶</a></h3>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>step2_list_input.py
 </code></pre></div>
 
 <p>You should see "Paris" (or a short sentence containing it). This is the form we'll
 use for every multi-turn conversation because we can append new items as the
 conversation grows.</p>
-<h3 id="034-the-output-a-list-of-typed-items">0.3.4 The output: a list of typed items<a aria-hidden="true" class="hanchor" href="#034-the-output-a-list-of-typed-items" tabindex="-1">¶</a></h3>
+<h3 id="034-the-output-a-list-of-typed-items">0.3.4 The output: a list of typed items<a aria-label="Permalink to this section" class="hanchor" href="#034-the-output-a-list-of-typed-items">¶</a></h3>
 <blockquote class="beginner">
 <p>🟢 <strong><code>item.type</code> uses a dot, not <code>["type"]</code>.</strong> The API gives back <em>objects</em>, not
 plain dicts. Reading a field with a dot — <code>item.type</code>, <code>item.name</code> — is the same
@@ -441,7 +441,7 @@ a dot.</p>
 directly so we can see tool calls.</p>
 <p>You already saw <code>resp.output_text</code> in Steps 1 and 2. In Step 3 you'll see why we
 need to iterate <code>resp.output</code> directly.</p>
-<h3 id="035-step-3--defining-a-tool-and-seeing-the-model-request-it">0.3.5 Step 3 — defining a tool and seeing the model request it<a aria-hidden="true" class="hanchor" href="#035-step-3--defining-a-tool-and-seeing-the-model-request-it" tabindex="-1">¶</a></h3>
+<h3 id="035-step-3--defining-a-tool-and-seeing-the-model-request-it">0.3.5 Step 3 — defining a tool and seeing the model request it<a aria-label="Permalink to this section" class="hanchor" href="#035-step-3--defining-a-tool-and-seeing-the-model-request-it">¶</a></h3>
 <p>Now we add one tool and observe the two-turn handshake. In the Responses API a
 function tool is a <strong>flat</strong> object (note: no nested <code>"function": {...}</code> wrapper like
 Chat Completions used):</p>
@@ -516,7 +516,7 @@ to do (call it, or answer directly):</p>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  call_id   = </span><span class="si">{</span><span class="n">item</span><span class="o">.</span><span class="n">call_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-2">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-2" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-2">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-2">¶</a></h3>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>step3_tool_request.py
 </code></pre></div>
 
@@ -528,7 +528,7 @@ to do (call it, or answer directly):</p>
 </code></pre></div>
 <p>The model did <strong>not</strong> answer in text — it instead asked you to run <code>get_weather</code>.
 That <code>call_id</code> is critical: you must echo it back in the next step.</p>
-<h3 id="036-step-4--the-tool-call--result-handshake-the-critical-step">0.3.6 Step 4 — the tool call → result handshake (the critical step)<a aria-hidden="true" class="hanchor" href="#036-step-4--the-tool-call--result-handshake-the-critical-step" tabindex="-1">¶</a></h3>
+<h3 id="036-step-4--the-tool-call--result-handshake-the-critical-step">0.3.6 Step 4 — the tool call → result handshake (the critical step)<a aria-label="Permalink to this section" class="hanchor" href="#036-step-4--the-tool-call--result-handshake-the-critical-step">¶</a></h3>
 <p>When the model wants a tool, <code>resp.output</code> contains a <code>function_call</code> item:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># pseudo-shape of a function_call item</span>
 <span class="p">{</span>
@@ -619,7 +619,7 @@ single thing this program does is visible on one screen, in the order it happens
 <span class="nb">print</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">output_text</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-3">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-3" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-3">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-3">¶</a></h3>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>version1_handshake.py
 </code></pre></div>
 
@@ -630,7 +630,7 @@ single thing this program does is visible on one screen, in the order it happens
 successfully run the <strong>complete agent loop</strong> — model asks for a tool, you run it,
 you feed the result back, and the model answers. Phase 1 simply wraps this pattern
 in a <code>while</code> loop.</p>
-<h3 id="037-carrying-model-output-back-into-the-conversation">0.3.7 Carrying model output back into the conversation<a aria-hidden="true" class="hanchor" href="#037-carrying-model-output-back-into-the-conversation" tabindex="-1">¶</a></h3>
+<h3 id="037-carrying-model-output-back-into-the-conversation">0.3.7 Carrying model output back into the conversation<a aria-label="Permalink to this section" class="hanchor" href="#037-carrying-model-output-back-into-the-conversation">¶</a></h3>
 <p>The cleanest, least error-prone pattern — and the one we standardize on — is to
 append the model's <strong>raw output items</strong> to our list and then append our tool
 results:</p>
@@ -649,7 +649,7 @@ is the key line that makes the conversation grow correctly.</p>
 file. Next we climb one rung of the ladder — the <em>same</em> program, reorganized into
 functions.</p>
 <hr>
-<h2 id="04-version-2--the-same-handshake-organized-into-functions">0.4 Version 2 — the same handshake, organized into functions<a aria-hidden="true" class="hanchor" href="#04-version-2--the-same-handshake-organized-into-functions" tabindex="-1">¶</a></h2>
+<h2 id="04-version-2--the-same-handshake-organized-into-functions">0.4 Version 2 — the same handshake, organized into functions<a aria-label="Permalink to this section" class="hanchor" href="#04-version-2--the-same-handshake-organized-into-functions">¶</a></h2>
 <p>Version 1 works, and you should keep it — it is the version where nothing is
 hidden. But it has a cost you'll feel the moment the program grows: everything is
 one anonymous blob. If a friend asked <em>"which lines are the tool?"</em> you'd have to
@@ -667,7 +667,7 @@ give each of its three jobs a <strong>name</strong>:</p>
 <p>Same behavior. Same two API calls. Same output. If you run Version 1 and
 Version 2 side by side, the model cannot tell them apart — because on the wire
 they are the same program.</p>
-<h3 id="what-changed-from-v1-to-v2">What changed from V1 to V2<a aria-hidden="true" class="hanchor" href="#what-changed-from-v1-to-v2" tabindex="-1">¶</a></h3>
+<h3 id="what-changed-from-v1-to-v2">What changed from V1 to V2<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v1-to-v2">¶</a></h3>
 <ul>
 <li><strong>Behavior: nothing.</strong> Same two turns, same handshake, same printed answer.</li>
 <li>The <code>client.responses.create(...)</code> call, previously pasted twice, now lives in
@@ -687,7 +687,7 @@ Version 2 you can understand the <em>program</em> by reading three function name
 and dive into a body only when you care. Every later phase repeats this move:
 first the flat version, then the same thing with names.</p>
 </blockquote>
-<h3 id="041-step-1--name-the-model-call-call_model">0.4.1 Step 1 — name the model call: <code>call_model</code><a aria-hidden="true" class="hanchor" href="#041-step-1--name-the-model-call-call_model" tabindex="-1">¶</a></h3>
+<h3 id="041-step-1--name-the-model-call-call_model">0.4.1 Step 1 — name the model call: <code>call_model</code><a aria-label="Permalink to this section" class="hanchor" href="#041-step-1--name-the-model-call-call_model">¶</a></h3>
 <p>The round trip to the model is one line, but it's the line every phase of this
 guide revolves around, and Version 1 repeats it. Give it a name:</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">call_model</span><span class="p">(</span><span class="n">input_items</span><span class="p">):</span>
@@ -698,13 +698,13 @@ guide revolves around, and Version 1 repeats it. Give it a name:</p>
 <p>Nothing else changes — <code>call_model(input_items)</code> returns the exact same <code>resp</code>
 object you've been using, with the same <code>resp.output</code> list and
 <code>resp.output_text</code> convenience.</p>
-<h3 id="-run-it-now-4">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-4" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-4">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-4">¶</a></h3>
 <p>A 30-second check: open your <code>version1_handshake.py</code>, paste
 this <code>def</code> near the top (after <code>tools</code> is defined), and replace both
 <code>client.responses.create(model=MODEL, input=input_items, tools=tools)</code> lines
 with <code>call_model(input_items)</code>. Run it — the output is unchanged. You have just
 performed your first <em>refactor</em>: same program, one new name.</p>
-<h3 id="042-step-2--name-the-tools-work-run_tool">0.4.2 Step 2 — name the tool's work: <code>run_tool</code><a aria-hidden="true" class="hanchor" href="#042-step-2--name-the-tools-work-run_tool" tabindex="-1">¶</a></h3>
+<h3 id="042-step-2--name-the-tools-work-run_tool">0.4.2 Step 2 — name the tool's work: <code>run_tool</code><a aria-label="Permalink to this section" class="hanchor" href="#042-step-2--name-the-tools-work-run_tool">¶</a></h3>
 <p>In Version 1 the "tool" was an f-string inlined in the dispatch loop. Pull just
 that — the part that <em>is</em> the tool, not the bookkeeping around it — into its own
 function:</p>
@@ -726,7 +726,7 @@ function:</p>
   error-handling stance in §0.7.4 — tools report failures as strings, they
   don't crash the program.</li>
 </ul>
-<h3 id="043-step-3--name-the-handshake-bookkeeping-handle_tool_calls">0.4.3 Step 3 — name the handshake bookkeeping: <code>handle_tool_calls</code><a aria-hidden="true" class="hanchor" href="#043-step-3--name-the-handshake-bookkeeping-handle_tool_calls" tabindex="-1">¶</a></h3>
+<h3 id="043-step-3--name-the-handshake-bookkeeping-handle_tool_calls">0.4.3 Step 3 — name the handshake bookkeeping: <code>handle_tool_calls</code><a aria-label="Permalink to this section" class="hanchor" href="#043-step-3--name-the-handshake-bookkeeping-handle_tool_calls">¶</a></h3>
 <p>What's left in Version 1's <code>for</code> loop is pure protocol: find each
 <code>function_call</code> item, decode its <code>arguments</code>, run the tool, and append a
 <code>function_call_output</code> with the <strong>same <code>call_id</code></strong>. That ritual never changes,
@@ -747,7 +747,7 @@ thinking about:</p>
 
 <p>This function <em>mutates</em> the <code>input_items</code> list you pass in — it appends the
 tool results directly, the same way Version 1 did with the list at top level.</p>
-<h3 id="044-the-complete-version-2-program">0.4.4 The complete Version 2 program<a aria-hidden="true" class="hanchor" href="#044-the-complete-version-2-program" tabindex="-1">¶</a></h3>
+<h3 id="044-the-complete-version-2-program">0.4.4 The complete Version 2 program<a aria-label="Permalink to this section" class="hanchor" href="#044-the-complete-version-2-program">¶</a></h3>
 <p>Here is the whole file. Compare it to <code>version1_handshake.py</code> — every line of
 Version 1 is still here, just sorted into named drawers, and the top-level
 script at the bottom now tells the story in four lines:</p>
@@ -808,7 +808,7 @@ script at the bottom now tells the story in four lines:</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">output_text</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-5">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-5" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-5">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-5">¶</a></h3>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>version2_functions.py
 </code></pre></div>
 
@@ -819,7 +819,7 @@ script at the bottom now tells the story in four lines:</p>
 If both versions print a sentence quoting the stub data, you've confirmed the
 key claim of this guide's ladder: <strong>abstraction changes how code is arranged,
 never what it does.</strong></p>
-<h3 id="045-where-is-version-3">0.4.5 Where is Version 3?<a aria-hidden="true" class="hanchor" href="#045-where-is-version-3" tabindex="-1">¶</a></h3>
+<h3 id="045-where-is-version-3">0.4.5 Where is Version 3?<a aria-label="Permalink to this section" class="hanchor" href="#045-where-is-version-3">¶</a></h3>
 <p>There deliberately isn't one in Phase 0. This phase stays conceptual: its job is
 the API contract, and two rungs of the ladder are enough to show the
 contract from both altitudes. Classes arrive only after you've run the plain
@@ -828,7 +828,7 @@ its own ladder, and <strong>Phase 2</strong> introduces the <code>Tool</code> ab
 <code>ToolRegistry</code>, and (as its Version 4) the <code>@tool</code> decorator. When you meet
 them, remember they are this same handshake, climbing the same ladder.</p>
 <hr>
-<h2 id="05-preview-streaming-full-treatment-in-phase-3">0.5 Preview: streaming (full treatment in Phase 3)<a aria-hidden="true" class="hanchor" href="#05-preview-streaming-full-treatment-in-phase-3" tabindex="-1">¶</a></h2>
+<h2 id="05-preview-streaming-full-treatment-in-phase-3">0.5 Preview: streaming (full treatment in Phase 3)<a aria-label="Permalink to this section" class="hanchor" href="#05-preview-streaming-full-treatment-in-phase-3">¶</a></h2>
 <blockquote>
 <p><strong>This section is optional for now.</strong> Skip it on your first pass. Come back after
 you have Phase 1 working. Streaming is a UI enhancement — it does not change the
@@ -864,7 +864,7 @@ purpose — the harness drives the event loop itself.) Key event types you'll us
 <code>response.output_text.delta</code>, <code>response.function_call_arguments.delta</code>,
 <code>response.output_item.added</code>, <code>response.completed</code>. Phase 3 builds a full streaming renderer.</p>
 <hr>
-<h2 id="06-preview-usage--cost-full-treatment-in-phase-6">0.6 Preview: usage &amp; cost (full treatment in Phase 6)<a aria-hidden="true" class="hanchor" href="#06-preview-usage--cost-full-treatment-in-phase-6" tabindex="-1">¶</a></h2>
+<h2 id="06-preview-usage--cost-full-treatment-in-phase-6">0.6 Preview: usage &amp; cost (full treatment in Phase 6)<a aria-label="Permalink to this section" class="hanchor" href="#06-preview-usage--cost-full-treatment-in-phase-6">¶</a></h2>
 <blockquote>
 <p><strong>This section is optional for now.</strong> Skip it on your first pass. Token accounting
 matters a lot once your conversations grow long — but first get the handshake
@@ -878,9 +878,9 @@ working.</p>
 
 <p>We track these in Phase 6 (context budgeting) and Phase 8 (observability).</p>
 <hr>
-<h2 id="07-project-conventions-used-by-every-phase">0.7 Project conventions (used by every phase)<a aria-hidden="true" class="hanchor" href="#07-project-conventions-used-by-every-phase" tabindex="-1">¶</a></h2>
+<h2 id="07-project-conventions-used-by-every-phase">0.7 Project conventions (used by every phase)<a aria-label="Permalink to this section" class="hanchor" href="#07-project-conventions-used-by-every-phase">¶</a></h2>
 <p>To keep eight phases coherent, we fix these conventions now.</p>
-<h3 id="071-repository-layout">0.7.1 Repository layout<a aria-hidden="true" class="hanchor" href="#071-repository-layout" tabindex="-1">¶</a></h3>
+<h3 id="071-repository-layout">0.7.1 Repository layout<a aria-label="Permalink to this section" class="hanchor" href="#071-repository-layout">¶</a></h3>
 <p>By the end of the guide the consolidated package lives in <code>code/</code> and looks like:</p>
 <div class="highlight nocopy"><pre><span></span><code>agent_harness/
 ├── __init__.py
@@ -904,7 +904,7 @@ working.</p>
 </code></pre></div>
 <p>Each phase introduces the file(s) it needs; later phases extend them. You can build
 the whole thing incrementally in one folder and watch it grow.</p>
-<h3 id="072-the-vocabulary-we-use-consistently">0.7.2 The vocabulary we use consistently<a aria-hidden="true" class="hanchor" href="#072-the-vocabulary-we-use-consistently" tabindex="-1">¶</a></h3>
+<h3 id="072-the-vocabulary-we-use-consistently">0.7.2 The vocabulary we use consistently<a aria-label="Permalink to this section" class="hanchor" href="#072-the-vocabulary-we-use-consistently">¶</a></h3>
 <ul>
 <li><strong>item</strong> — one element of <code>input</code>/<code>output</code> (a message, function_call, reasoning…).</li>
 <li><strong>turn</strong> — one round trip to the model (<code>responses.create</code> → its <code>output</code>).</li>
@@ -915,7 +915,7 @@ the whole thing incrementally in one folder and watch it grow.</p>
 <li><strong>transcript / history</strong> — our owned <code>input_items</code> list, the full conversation.</li>
 <li><strong>harness / agent</strong> — the loop object that drives all of the above.</li>
 </ul>
-<h3 id="073-data-shapes-we-standardize-on">0.7.3 Data shapes we standardize on<a aria-hidden="true" class="hanchor" href="#073-data-shapes-we-standardize-on" tabindex="-1">¶</a></h3>
+<h3 id="073-data-shapes-we-standardize-on">0.7.3 Data shapes we standardize on<a aria-label="Permalink to this section" class="hanchor" href="#073-data-shapes-we-standardize-on">¶</a></h3>
 <p>A <strong>tool result</strong> that the harness produces internally is always:</p>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
     <span class="s2">&quot;call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;echoed call_id&gt;&quot;</span><span class="p">,</span>
@@ -926,13 +926,13 @@ the whole thing incrementally in one folder and watch it grow.</p>
 <p>A <strong>tool definition</strong> the harness registers is always a Python object exposing:
 <code>name</code>, <code>description</code>, <code>parameters</code> (JSON Schema dict), and a <code>run(**kwargs)</code> method.
 We formalize this <code>Tool</code> abstraction in Phase 2.</p>
-<h3 id="074-error-handling-stance">0.7.4 Error-handling stance<a aria-hidden="true" class="hanchor" href="#074-error-handling-stance" tabindex="-1">¶</a></h3>
+<h3 id="074-error-handling-stance">0.7.4 Error-handling stance<a aria-label="Permalink to this section" class="hanchor" href="#074-error-handling-stance">¶</a></h3>
 <p>Tools <strong>never raise into the loop</strong>. A tool that fails returns its error <em>as a
 string result</em> so the model can read it and recover (retry, try another path, or
 report). A raised exception kills the agent; a returned error string makes the agent
 self-correct. This single rule is responsible for a huge fraction of an agent's
 apparent "intelligence."</p>
-<h3 id="075-async-vs-sync">0.7.5 Async vs sync<a aria-hidden="true" class="hanchor" href="#075-async-vs-sync" tabindex="-1">¶</a></h3>
+<h3 id="075-async-vs-sync">0.7.5 Async vs sync<a aria-label="Permalink to this section" class="hanchor" href="#075-async-vs-sync">¶</a></h3>
 <p>Phases 1–5 use the <strong>synchronous</strong> client for clarity. Phase 7 (sub-agents) and
 Phase 8 (production) introduce concurrency for parallel tool calls and parallel
 agents — we use <code>concurrent.futures.ThreadPoolExecutor</code> for tool/agent parallelism
@@ -948,7 +948,7 @@ example runs the simple one-after-another way, and when threads appear, this ver
 shows the sequential version first so you can see they produce the same result.</p>
 </blockquote>
 <hr>
-<h2 id="08-sanity-check-script">0.8 Sanity-check script<a aria-hidden="true" class="hanchor" href="#08-sanity-check-script" tabindex="-1">¶</a></h2>
+<h2 id="08-sanity-check-script">0.8 Sanity-check script<a aria-label="Permalink to this section" class="hanchor" href="#08-sanity-check-script">¶</a></h2>
 <p>Before moving to Phase 1, confirm your environment works end to end. This script is
 a variant of <code>version1_handshake.py</code> (§0.3.6) that swaps the weather stub for an
 integer <code>add</code> tool — it exercises the exact handshake you just learned, with a tool
@@ -1000,14 +1000,14 @@ Version 2 function shape (and adding a <code>multiply</code> tool) is the Phase 
 <span class="nb">print</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">output_text</span><span class="p">)</span>   <span class="c1"># -&gt; something like &quot;21 + 21 = 42&quot;</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-6">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-6" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-6">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-6">¶</a></h3>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>check_setup.py
 </code></pre></div>
 
 <p>If that prints a sentence containing "42", your key, model access, and understanding of the
 handshake are all good. <strong>You now have everything you need to build the loop.</strong></p>
 <hr>
-<h2 id="key-takeaways">Key takeaways<a aria-hidden="true" class="hanchor" href="#key-takeaways" tabindex="-1">¶</a></h2>
+<h2 id="key-takeaways">Key takeaways<a aria-label="Permalink to this section" class="hanchor" href="#key-takeaways">¶</a></h2>
 <ul>
 <li>An LLM is <strong>stateless</strong>: text in, text out. The harness supplies the two things it
   lacks — <strong>memory</strong> (the growing <code>input</code> list) and <strong>hands</strong> (tools).</li>
@@ -1020,7 +1020,7 @@ handshake are all good. <strong>You now have everything you need to build the lo
 <li>The conversation is <strong>append-only</strong>: the model's own output items travel back into
   the next call's <code>input</code>. That re-sent list <em>is</em> the model's memory.</li>
 </ul>
-<h2 id="check-yourself">Check yourself<a aria-hidden="true" class="hanchor" href="#check-yourself" tabindex="-1">¶</a></h2>
+<h2 id="check-yourself">Check yourself<a aria-label="Permalink to this section" class="hanchor" href="#check-yourself">¶</a></h2>
 <p>Before moving on, can you answer these?</p>
 <ol>
 <li>What two capabilities does a harness add to a stateless LLM?</li>
@@ -1041,7 +1041,7 @@ handshake are all good. <strong>You now have everything you need to build the lo
 </ol>
 </details>
 <hr>
-<h2 id="exercises">Exercises<a aria-hidden="true" class="hanchor" href="#exercises" tabindex="-1">¶</a></h2>
+<h2 id="exercises">Exercises<a aria-label="Permalink to this section" class="hanchor" href="#exercises">¶</a></h2>
 <p>See <a href="exercises.html#phase-0--foundations"><code>EXERCISES.md</code> — Phase 0</a>: reorganize the <code>check_setup.py</code>
 sanity script (§0.8) into the Version 2 function shape and add a <code>multiply</code> tool.</p>
 <hr>
@@ -1079,6 +1079,18 @@ sanity script (§0.8) into the Version 2 function shape and add a <code>multiply
     openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
     openedForPrint = [];
   });
+
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
 
   /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
      execCommand -> select the block and ask for Ctrl-C.  If no mechanism
@@ -1123,7 +1135,7 @@ sanity script (§0.8) into the Version 2 function shape and add a <code>multiply
       setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
     }
     function fallback(pre, code) {
-      if (execCopy(code)) { flash('Copied!'); }
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
       else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
       else { flash('Copy failed'); }
     }

