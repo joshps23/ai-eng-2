@@ -871,7 +871,8 @@ h3 {
   font-size: 1.1875rem; line-height: 1.35; font-weight: 650;
   letter-spacing: -0.008em; margin: 2.25rem 0 0.75rem;
 }
-h4 { font-size: 1rem; line-height: 1.4; font-weight: 600; letter-spacing: 0; }
+h4 { font-size: 1rem; line-height: 1.4; font-weight: 600; letter-spacing: 0;
+  margin: 1.75rem 0 0.625rem; }
 .hanchor {
   margin-left: 0.35em; font-size: 0.8em; text-decoration: none;
   color: var(--muted); opacity: 0; transition: opacity 120ms ease-out;
@@ -888,7 +889,6 @@ th, td { border: 0; border-bottom: 1px solid var(--border);
 th { background: transparent; border-bottom: 2px solid var(--border-strong);
   font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;
   color: var(--muted); }
-tr:nth-child(2n) td { background: transparent; }
 tbody tr:hover td { background: color-mix(in srgb, var(--fg) 3%, transparent); }
 code, pre, kbd {
   font-family: var(--font-mono);
@@ -1013,7 +1013,7 @@ a.repo-file::after { content: " ↗"; font-size: 0.85em; }
   font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
   letter-spacing: 0.08em; color: var(--accent-deep); margin: 0 0 0.75rem;
 }
-.page-index h1 { font-size: clamp(2rem, 4.5vw, 2.75rem); border: 0; }
+.page-index h1 { font-size: clamp(2rem, 4.5vw, 2.75rem); }
 .hero blockquote {
   border: 0; padding: 0; background: transparent;
   font-size: 1.1875rem; line-height: 1.6; color: #444B5A;  /* 8.61:1 on bg */
