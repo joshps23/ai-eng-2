@@ -34,6 +34,17 @@ GUIDE_DIR = SITE_DIR.parent
 HTML_DIR = SITE_DIR / "html"
 GITHUB_BLOB = "https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/"
 GITHUB_TREE = "https://github.com/joshps23/ai-eng-2/tree/main/agent-harness-guide/"
+SITE_URL = "https://joshps23.github.io/ai-eng-2/"
+
+# The loop mark — an open circular arrow, white on harness indigo — as an
+# inline SVG data URI: zero extra requests, works in light and dark tabs.
+FAVICON = ("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' "
+           "viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' "
+           "fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' "
+           "fill='none' stroke='white' stroke-width='1.6' "
+           "stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' "
+           "fill='none' stroke='white' stroke-width='1.6' "
+           "stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
 
 # ---------------------------------------------------------------------------
 # Page mapping (deterministic).  source path is relative to GUIDE_DIR.
@@ -630,6 +641,27 @@ def build_toc(toc: list[tuple[int, str, str]]) -> str:
     )
 
 
+def index_hero(body: str) -> str:
+    """Index-only landing treatment: wrap the lead h1 + standfirst blockquote
+    in a hero, add the eyebrow kicker before the h1 and the CTA buttons after
+    the blockquote.  Pure string post-processing; the markdown is untouched."""
+    start = body.find("<h1")
+    end = body.find("</blockquote>", start)
+    if start == -1 or end == -1:
+        return body
+    end += len("</blockquote>")
+    return (
+        body[:start]
+        + '<div class="hero">\n<p class="hero-eyebrow">The Agent Harness Guide</p>\n'
+        + body[start:end]
+        + '\n<p class="hero-cta">\n'
+        + '<a class="btn btn-primary" href="00-foundations.html">Start with Phase 0 →</a>\n'
+        + '<a class="btn btn-ghost" href="learning-path.html">Pick a learning path</a>\n'
+        + '</p>\n</div>'
+        + body[end:]
+    )
+
+
 def build_page(out_name: str, src_rel: str, body: str, ctx: PageContext,
                idx: int) -> str:
     h1 = ctx.h1 or PAGES[idx][2]
@@ -651,6 +683,12 @@ def build_page(out_name: str, src_rel: str, body: str, ctx: PageContext,
     repo_note = (" Links marked ↗ open files of this project on GitHub."
                  if ctx.repo_links else "")
 
+    is_index = out_name == "index.html"
+    if is_index:
+        body = index_hero(body)
+    body_class = ' class="page-index"' if is_index else ""
+    og_type = "website" if is_index else "article"
+
     return f"""<!DOCTYPE html>
 <!-- GENERATED from {src_rel} — do not edit; run site/build_site.py -->
 <html lang="en">
@@ -658,22 +696,31 @@ def build_page(out_name: str, src_rel: str, body: str, ctx: PageContext,
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="{esc(desc)}">
+<link rel="canonical" href="{SITE_URL}{out_name}">
+<meta property="og:type" content="{og_type}">
+<meta property="og:url" content="{SITE_URL}{out_name}">
+<meta property="og:site_name" content="Agent Harness Guide">
+<meta property="og:title" content="{esc(title)}">
+<meta property="og:description" content="{esc(desc)}">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#FDFDFE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
 <title>{esc(title)}</title>
 <link rel="stylesheet" href="style.css">
-<link rel="icon" href="data:,">
+<link rel="icon" href="{FAVICON}">
 </head>
-<body>
+<body{body_class}>
 <a class="skip-link" href="#main">Skip to content</a>
 <div class="layout">
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
 <nav class="sidebar" aria-label="Guide pages">
+<p class="site-mark"><span class="site-mark-glyph" aria-hidden="true">⟲</span> Agent Harness Guide</p>
 {build_sidebar(out_name)}
 </nav>
 </details>
 <main id="main">
 <header class="page-header">
-<p class="source-link"><a class="repo-file" href="{GITHUB_BLOB}{src_rel}" title="Requires access to the repository">View the markdown source on GitHub</a></p>
 {build_toc(ctx.toc)}
 </header>
 <article>
@@ -685,6 +732,7 @@ def build_page(out_name: str, src_rel: str, body: str, ctx: PageContext,
 {next_link}
 </nav>
 <p class="generated-note">Generated from <code>{esc(src_rel)}</code> — the markdown is the source of truth.{repo_note}</p>
+<p class="source-link"><a class="repo-file" href="{GITHUB_BLOB}{src_rel}" title="Requires access to the repository">View the markdown source on GitHub</a></p>
 </footer>
 <a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
 </main>
@@ -701,25 +749,61 @@ def build_page(out_name: str, src_rel: str, body: str, ctx: PageContext,
 # ---------------------------------------------------------------------------
 BASE_CSS = """\
 /* GENERATED by site/build_site.py — do not edit. */
+/* Contrast ratios in comments are WCAG 2.x, recomputed against this palette. */
 :root {
   color-scheme: light dark;
-  --bg: #ffffff; --fg: #1f2328; --muted: #59636e; --border: #d1d9e0;
-  --accent: #0969da; --code-bg: #f6f8fa; --sidebar-bg: #f6f8fa;
-  --warn: #9a6700; --warn-border: #d4a72c; --green: #1a7f37;
+  /* "harness indigo" light scheme */
+  --bg: #FDFDFE;            /* off-white, cool cast */
+  --fg: #1B1F27;            /* 16.24:1 on bg */
+  --muted: #5A6172;         /* 6.10:1 on bg; 5.79:1 on code-bg; 5.88:1 on sidebar-bg */
+  --border: #E3E6EC;        /* hairlines, decorative */
+  --border-strong: #C9CEDA; /* table rules, control borders (decorative — labels carry contrast) */
+  --accent: #4F46E5;        /* links: 6.19:1 on bg, 5.87:1 on code-bg; white on it: 6.29:1 */
+  --accent-deep: #4338CA;   /* hover / text-on-tint: 7.77:1 on bg, 6.47:1 on 10% accent tint */
+  --code-bg: #F6F7FA;
+  --sidebar-bg: #F8F9FB;
+  --green: #166F33;         /* 6.16:1 on bg, 5.57:1 on its 7% tint */
+  --warn: #8A5C04;          /* 5.72:1 on bg, 5.39:1 on its 8% tint */
+  --warn-border: #D4A72C;
+  --selection: #CDD3FF;     /* fg on it: 11.29:1 */
+  --font-sans: ui-sans-serif, -apple-system, BlinkMacSystemFont,
+    "Segoe UI Variable Text", "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, "Cascadia Code",
+    "JetBrains Mono", Menlo, Consolas, "Liberation Mono", monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --border: #3d444d;
-    --accent: #4493f8; --code-bg: #161b22; --sidebar-bg: #161b22;
-    --warn: #d29922; --warn-border: #9e6a03; --green: #3fb950;
+    --bg: #0E1016;            /* violet-black, not GitHub navy */
+    --fg: #E7EAF3;            /* 15.81:1 on bg, 14.45:1 on code-bg */
+    --muted: #99A1B3;         /* 7.34:1 on bg, 6.71:1 on code-bg */
+    --border: #2A2F3C;
+    --border-strong: #3A4150;
+    --accent: #8C9BFF;        /* 7.47:1 on bg, 6.82:1 on code-bg; dark text on it: 7.47:1 */
+    --accent-deep: #8C9BFF;   /* same in dark; 6.19:1 on 10% accent tint */
+    --code-bg: #171A23;
+    --sidebar-bg: #12141C;
+    --green: #3FB950;         /* 7.49:1 on bg, 6.68:1 on its 9% tint */
+    --warn: #D29922;          /* 7.53:1 on bg, 7.01:1 on its 9% tint */
+    --warn-border: #9E6A03;
+    --selection: #3D4380;     /* fg on it: 7.55:1 */
   }
 }
 * { box-sizing: border-box; }
 body {
   margin: 0; background: var(--bg); color: var(--fg);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
-    sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  font-family: var(--font-sans);
   line-height: 1.6;
+}
+::selection { background: var(--selection); color: var(--fg); } /* 11.29:1 light, 7.55:1 dark */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sidebar a:focus-visible, .btn:focus-visible { outline-offset: 0; } /* inside rounded rows */
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important; }
 }
 .skip-link {
   position: absolute; left: -999px; top: 0; background: var(--accent);
@@ -737,7 +821,12 @@ body {
   list-style: none; display: block;
 }
 .sidebar-toggle::-webkit-details-marker { display: none; }
-.sidebar { padding: 0 1rem 1rem; }
+.sidebar { padding: 0 1rem 1rem; font-size: 0.875rem; line-height: 1.5; }
+.site-mark {
+  font-weight: 700; font-size: 0.9375rem; letter-spacing: -0.01em;
+  margin: 0.75rem 0 0.25rem; color: var(--fg);
+}
+.site-mark-glyph { color: var(--accent); }
 .sidebar .sidebar-heading {
   font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
   letter-spacing: 0.05em; color: var(--muted); margin: 1.25em 0 0.25em;
@@ -745,13 +834,21 @@ body {
 .sidebar ul { list-style: none; margin: 0; padding: 0; }
 .sidebar li { margin: 0; }
 .sidebar a {
-  display: block; padding: 0.2em 0.5em; border-radius: 6px;
+  display: block; padding: 0.3em 0.625em; border-radius: 6px;
   color: var(--fg); text-decoration: none; font-size: 0.875rem;
+  transition: background-color 120ms ease-out, color 120ms ease-out;
 }
-.sidebar a:hover { background: var(--border); }
-.sidebar li.current > a { background: var(--accent); color: #fff; }
+.sidebar a:hover { background: color-mix(in srgb, var(--fg) 7%, transparent); }
+.sidebar li.current > a {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent-deep); font-weight: 600;
+  box-shadow: inset 2px 0 0 var(--accent);
+}
 main { flex: 1; min-width: 0; padding: 1.5rem 2rem 3rem; max-width: 80ch; }
-article { max-width: 75ch; }
+article { max-width: 75ch; font-size: 1.0625rem; line-height: 1.7; }
+article p, article ul, article ol { margin: 0 0 1.25rem; }
+article blockquote > :last-child, article .admonition > :last-child,
+article details > :last-child { margin-bottom: 0; }
 @media (max-width: 800px) {
   .layout { flex-direction: column; }
   .sidebar-wrap { position: static; flex: none; width: 100%; max-height: none;
@@ -760,91 +857,142 @@ article { max-width: 75ch; }
   /* keep the fixed back-to-top control clear of the next-phase link */
   .page-footer { padding-bottom: 3.5rem; }
 }
-h1, h2, h3, h4 { line-height: 1.25; scroll-margin-top: 0.5em; }
-.hanchor {
-  margin-left: 0.35em; font-size: 0.85em; text-decoration: none;
-  color: var(--muted); opacity: 0;
+h1, h2, h3, h4 { scroll-margin-top: 1.25rem; }
+h1 {
+  font-size: 2.25rem; line-height: 1.15; font-weight: 800;
+  letter-spacing: -0.022em; margin: 0 0 1rem;
 }
-h2:hover > .hanchor, h3:hover > .hanchor, .hanchor:focus,
-.hanchor:focus-visible { opacity: 1; }
-h1 { font-size: 1.8rem; border-bottom: 1px solid var(--border); padding-bottom: 0.3em; }
-h2 { font-size: 1.4rem; border-bottom: 1px solid var(--border); padding-bottom: 0.3em; margin-top: 1.6em; }
-h3 { font-size: 1.15rem; margin-top: 1.4em; }
+h2 {
+  font-size: 1.5rem; line-height: 1.25; font-weight: 700;
+  letter-spacing: -0.015em; margin: 3rem 0 1rem; padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+h3 {
+  font-size: 1.1875rem; line-height: 1.35; font-weight: 650;
+  letter-spacing: -0.008em; margin: 2.25rem 0 0.75rem;
+}
+h4 { font-size: 1rem; line-height: 1.4; font-weight: 600; letter-spacing: 0;
+  margin: 1.75rem 0 0.625rem; }
+.hanchor {
+  margin-left: 0.35em; font-size: 0.8em; text-decoration: none;
+  color: var(--muted); opacity: 0; transition: opacity 120ms ease-out;
+}
+h2:hover > .hanchor, h3:hover > .hanchor, .hanchor:focus-visible { opacity: 1; }
+.hanchor:hover { color: var(--accent-deep); }
 a { color: var(--accent); }
 hr { border: none; border-top: 1px solid var(--border); margin: 2em 0; }
-.table-wrap { overflow-x: auto; max-width: 100%; }
-table { border-collapse: collapse; }
-th, td { border: 1px solid var(--border); padding: 0.4em 0.8em; }
-th { background: var(--code-bg); }
-tr:nth-child(2n) td { background: var(--code-bg); }
+/* tables: rows by rule, not grid+zebra */
+.table-wrap { overflow-x: auto; max-width: 100%; margin: 0 0 1.25rem; }
+table { border-collapse: collapse; width: 100%; font-size: 0.9375rem; }
+th, td { border: 0; border-bottom: 1px solid var(--border);
+  padding: 0.5em 0.875em; text-align: left; }
+th { background: transparent; border-bottom: 2px solid var(--border-strong);
+  font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--muted); }
+tbody tr:hover td { background: color-mix(in srgb, var(--fg) 3%, transparent); }
 code, pre, kbd {
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
-    "Liberation Mono", monospace;
+  font-family: var(--font-mono);
   font-size: 0.875em;
 }
 code { background: var(--code-bg); padding: 0.15em 0.35em; border-radius: 4px; }
-pre { line-height: 1.45; }
 pre code { background: none; padding: 0; font-size: 1em; }
 div.highlight {
   position: relative; background: var(--code-bg);
-  border: 1px solid var(--border); border-radius: 6px; margin: 1em 0;
+  border: 1px solid var(--border); border-radius: 8px; margin: 1.25rem 0;
 }
-div.highlight pre { margin: 0; padding: 0.85em 1em; overflow-x: auto; }
+/* div.highlight pre (0,1,1) must beat the appended pygments `pre` (0,0,1),
+   which sets line-height 125% — specificity wins regardless of order. */
+div.highlight pre { margin: 0; padding: 0.875rem 1rem; overflow-x: auto;
+  line-height: 1.6; font-size: 0.875rem; }
+div.highlight pre, .sidebar-wrap {
+  scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+div.highlight pre::-webkit-scrollbar { height: 8px; }
+div.highlight pre::-webkit-scrollbar-thumb {
+  background: var(--border-strong); border-radius: 4px; }
+div.highlight pre::-webkit-scrollbar-track { background: transparent; }
 .copy-btn {
-  position: absolute; top: 0.4em; right: 0.4em; padding: 0.15em 0.6em;
-  font-size: 0.75rem; cursor: pointer; border: 1px solid var(--border);
-  border-radius: 6px; background: var(--bg); color: var(--fg); opacity: 0.7;
+  position: absolute; top: 0.5rem; right: 0.5rem;
+  padding: 0.25em 0.7em; font-size: 0.75rem; font-family: var(--font-sans);
+  cursor: pointer; border: 1px solid var(--border-strong); border-radius: 6px;
+  background: var(--bg); color: var(--muted); opacity: 0;
+  transition: opacity 120ms ease-out, color 120ms ease-out;
 }
-.copy-btn:hover, .copy-btn:focus-visible { opacity: 1; }
+div.highlight:hover .copy-btn, .copy-btn:focus-visible { opacity: 1; }
+.copy-btn:hover { color: var(--fg); }
+@media (hover: none) { .copy-btn { opacity: 0.7; } }  /* touch: always visible */
 blockquote {
-  margin: 1em 0; padding: 0.1em 1em; color: var(--muted);
-  border-left: 4px solid var(--border);
+  margin: 1.25rem 0; padding: 0.75rem 1.25rem; color: var(--muted);
+  border-left: 3px solid var(--border-strong); border-radius: 0 8px 8px 0;
 }
 blockquote.beginner {
   border-left-color: var(--green);
-  background: color-mix(in srgb, var(--green) 6%, transparent);
+  background: color-mix(in srgb, var(--green) 7%, var(--bg));
   color: var(--fg);
 }
 blockquote.refcopy {
-  border-left: 4px solid var(--muted);
-  background: color-mix(in srgb, var(--muted) 8%, transparent);
+  border-left-color: var(--muted);
+  background: color-mix(in srgb, var(--muted) 8%, var(--bg));
   color: var(--fg);
 }
 blockquote.refcopy > p:first-child::before { content: "🔖 "; }
 .admonition {
-  margin: 1em 0; padding: 0.1em 1em; border-left: 4px solid var(--warn-border);
-  background: color-mix(in srgb, var(--warn-border) 8%, transparent);
+  margin: 1.25rem 0; padding: 0.75rem 1.25rem;
+  border-left: 3px solid var(--warn-border); border-radius: 0 8px 8px 0;
+  background: color-mix(in srgb, var(--warn-border) 8%, var(--bg));
 }
+.admonition > .admonition-title { margin: 0 0 0.5rem; }
 .admonition-title { font-weight: 700; color: var(--warn); }
 .admonition-title::before { content: "⚠ "; }
 .admonition.note, .admonition.tip, .admonition.important {
   border-left-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  background: color-mix(in srgb, var(--accent) 7%, var(--bg));
 }
 .admonition.note .admonition-title, .admonition.tip .admonition-title,
 .admonition.important .admonition-title { color: var(--accent); }
 .admonition.note .admonition-title::before, .admonition.tip .admonition-title::before,
 .admonition.important .admonition-title::before { content: "ℹ "; }
-details { margin: 1em 0; }
+details { margin: 1.25rem 0; }
 details > summary { cursor: pointer; font-weight: 600; }
 article details:not(.page-toc) {
-  border: 1px solid var(--border); border-radius: 6px; padding: 0.5em 1em;
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 0.625rem 1rem; background: transparent;
 }
 .page-toc {
-  background: var(--code-bg); border: 1px solid var(--border);
-  border-radius: 6px; padding: 0.5em 1em; font-size: 0.9rem;
+  background: transparent; border: 1px solid var(--border);
+  border-radius: 10px; padding: 0.625rem 1rem; font-size: 0.875rem;
+}
+.page-toc > summary {
+  color: var(--muted); font-weight: 600; font-size: 0.8125rem;
+  text-transform: uppercase; letter-spacing: 0.05em;
 }
 .page-toc ul { list-style: none; padding-left: 0; margin: 0.5em 0; }
 .page-toc ul ul { padding-left: 1.5em; margin: 0; }
-.page-toc a { text-decoration: none; }
+.page-toc li { margin: 0.25em 0; }
+.page-toc a { color: var(--fg); text-decoration: none; }
+.page-toc a:hover { color: var(--accent-deep); }
+.page-toc li.toc-h2 > a { font-weight: 600; }
 ul.contains-task-list { list-style: none; padding-left: 1em; }
 .task-list-item input { margin-right: 0.5em; }
-.source-link { font-size: 0.85rem; margin: 0 0 0.5em; }
 .page-footer { margin-top: 3em; border-top: 1px solid var(--border); padding-top: 1em; }
-.prevnext { display: flex; justify-content: space-between; gap: 1em; }
-.prevnext a { text-decoration: none; font-weight: 600; }
-.prevnext .next { margin-left: auto; }
-.generated-note { color: var(--muted); font-size: 0.8rem; }
+.prevnext { display: flex; justify-content: space-between; gap: 1rem; }
+.prevnext a {
+  flex: 0 1 48%; padding: 0.75rem 1rem;
+  border: 1px solid var(--border); border-radius: 10px;
+  text-decoration: none; font-weight: 600; font-size: 0.9375rem;
+  color: var(--fg);
+  transition: border-color 120ms ease-out, color 120ms ease-out;
+}
+.prevnext a:hover { border-color: var(--accent); color: var(--accent-deep); }
+.prevnext .prev::before { content: "Previous"; }
+.prevnext .next::before { content: "Next"; }
+.prevnext a::before {
+  display: block; font-size: 0.6875rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted);
+  margin-bottom: 0.2rem;
+}
+.prevnext .next { margin-left: auto; text-align: right; }
+.generated-note { color: var(--muted); font-size: 0.8125rem; line-height: 1.5; }
+.source-link { font-size: 0.8125rem; line-height: 1.5; margin: 0.5em 0 0; }
 a.repo-file::after { content: " ↗"; font-size: 0.85em; }
 .back-to-top {
   position: fixed; right: 1rem; bottom: 1rem; z-index: 5;
@@ -852,18 +1000,54 @@ a.repo-file::after { content: " ↗"; font-size: 0.85em; }
   border: 1px solid var(--border); border-radius: 6px;
   padding: 0.35em 0.7em; font-size: 0.8rem; text-decoration: none;
   opacity: 0.85;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+  transition: opacity 160ms ease-out, visibility 160ms;
 }
 .back-to-top:hover, .back-to-top:focus-visible { opacity: 1; }
 /* JS adds/removes this near the top of the page; with JS disabled the
    class is never applied and the control stays visible. */
 .back-to-top.btt-hidden { visibility: hidden; opacity: 0; pointer-events: none; }
+/* ---- index landing page (body.page-index only) ---- */
+.hero { padding: 1.5rem 0 0.5rem; }
+.hero .hero-eyebrow {
+  font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--accent-deep); margin: 0 0 0.75rem;
+}
+.page-index h1 { font-size: clamp(2rem, 4.5vw, 2.75rem); }
+.hero blockquote {
+  border: 0; padding: 0; background: transparent;
+  font-size: 1.1875rem; line-height: 1.6; color: #444B5A;  /* 8.61:1 on bg */
+}
+.hero .hero-cta { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 1.5rem 0 0; }
+.btn {
+  display: inline-block; padding: 0.6em 1.2em; border-radius: 8px;
+  font-weight: 600; font-size: 0.9375rem; text-decoration: none;
+  transition: background-color 120ms ease-out, border-color 120ms ease-out;
+}
+.btn-primary { background: var(--accent); color: #fff; }   /* 6.29:1 */
+.btn-primary:hover { background: var(--accent-deep); }     /* white on it: 7.90:1 */
+.btn-ghost { border: 1px solid var(--border-strong); color: var(--fg); }
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent-deep); }
+.page-index .hero + hr { display: none; }
+.page-index .page-header { display: none; }
+.page-index .table-wrap td:first-child strong {
+  font-size: 1.25rem; color: var(--accent-deep);
+  font-variant-numeric: tabular-nums;
+}
 @media (prefers-color-scheme: dark) {
-  /* white-on-accent is 3.1:1 in the dark palette; the page bg is 6.7:1 */
-  .skip-link, .sidebar li.current > a { color: var(--bg); }
+  /* dark text on the accent fill: 7.47:1 on #8C9BFF */
+  .skip-link { color: var(--bg); }
+  .btn-primary { color: var(--bg); }
+  .btn-primary:hover { background: #A5B0FF; }  /* dark text on it: 9.28:1 */
+  .hero blockquote { color: var(--muted); }    /* 7.34:1 */
+  blockquote.beginner { background: color-mix(in srgb, var(--green) 9%, var(--bg)); }
+  .admonition { background: color-mix(in srgb, var(--warn-border) 9%, var(--bg)); }
+  .admonition.note, .admonition.tip, .admonition.important {
+    background: color-mix(in srgb, var(--accent) 10%, var(--bg)); }
 }
 @media print {
   .sidebar-wrap, .skip-link, .copy-btn, .page-header, .prevnext,
-  .back-to-top, .hanchor { display: none !important; }
+  .back-to-top, .hanchor, .hero-cta, .source-link { display: none !important; }
   div.highlight pre { white-space: pre-wrap; overflow-x: visible; }
   .table-wrap { overflow-x: visible; }
   th, td { word-break: break-word; }

@@ -61,6 +61,10 @@ Status: ☐ todo · ◐ in progress · ☑ done
 
 Newest first. One line per shipped iteration.
 
+- **2026-06-12** — Cycles 12–13: \$10k-designer persona critiqued the site (tier 2/5,
+  found the pygments line-height bug) and shipped a computed design spec; implemented
+  end-to-end (indigo identity, type scale, index hero, component redesigns, detail
+  kit). Designer sign-off: tier 4.5/5, approved as \$10k work.
 - **2026-06-12** — Cycle 11: three-persona re-verification — all fixes confirmed,
   beginner verdict upgraded to "the best way to learn this guide"; 8 residual polish
   items closed (TOC suffixes, .ipynb→GitHub, back-to-top reveal, keyboard anchors).

@@ -111,7 +111,7 @@ Score each phase 1–5 on each axis; the loop revises the lowest-scoring phase n
 
 The evaluator-reviser loop runs **at most 20 times**, then stops on its own.
 
-- Iterations used: **14 / 20** *(cap raised 10 → 20 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
+- Iterations used: **16 / 20** *(cap raised 10 → 20 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
 - Per iteration: score all phases on the rubric, pick the weakest, revise it one notch
   more incremental, increment the counter here, log it below, commit, push. Stop when the
   counter hits 20 **or** every phase scores ≥4 on every axis.
@@ -132,6 +132,21 @@ The evaluator-reviser loop runs **at most 20 times**, then stops on its own.
   Phase 5 gained an explicit "V1+V2 is a legitimate stopping point" paragraph.
 
 ## Revision log (newest first)
+
+- **2026-06-12 — Iterations 15–16: \$10k-designer pass on the site (cycles 12–13).**
+  New verification persona by maintainer instruction: an elite front-end designer
+  ("creates \$10,000 webpages") critiqued the site's design quality. Verdict: "tier 2
+  of 5 — a competent generated mirror wearing GitHub's clothes," with a real rendering
+  bug found (pygments' line-height:125% silently overriding the intended 1.6 on every
+  code block). The designer shipped a fully computed spec (type scale, harness-indigo
+  palette with AA ratios for every pair, component redesigns, index landing treatment,
+  the expensive-details kit). Iteration 16 implemented it end-to-end in build_site.py:
+  48/48 recomputed contrast pairs pass both schemes, 513 heading ids byte-stable,
+  protect list held (anchors, no-JS fallbacks, print, pygments, mobile),
+  byte-idempotent. Designer sign-off review: all five implementation deviations
+  approved (one fixed a bug in the spec itself); **final verdict tier 4.5/5 — signed
+  off as \$10k work** (remaining half-tier: an og.png social card, deferred). Cycles
+  ran ~290k of a 1M budget.
 
 - **2026-06-12 — Iteration 14: site re-verification + sign-off polish (cycle 11).**
   The three personas re-reviewed the fixed site: front-end — ship-ready, all ten
