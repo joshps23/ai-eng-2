@@ -33,17 +33,18 @@ SHOTS = [
     ("phase01-top-light", "01-bare-harness.html", (1440, 900), "light", False, []),
     ("phase01-top-dark", "01-bare-harness.html", (1440, 900), "dark", False, []),
     ("phase01-code-light", "01-bare-harness.html#-run-it-now", (1440, 900), "light", False,
-     [("hover", "div.highlight")]),
+     [("hover", "div.highlight:not(.nocopy)")]),
     ("phase01-code-dark", "01-bare-harness.html#-run-it-now", (1440, 900), "dark", False, []),
     ("phase04-toc-open-light", "04-real-tools.html", (1440, 900), "light", False,
      [("click", ".page-toc > summary")]),
     ("phase04-footer-light", "04-real-tools.html", (1440, 900), "light", False,
      [("scroll-bottom", None)]),
     ("phase01-mobile-light", "01-bare-harness.html", (390, 844), "light", False, []),
-    ("learning-path-light", "learning-path.html", (1440, 900), "light", False, []),
+    ("learning-path-light", "learning-path.html", (1440, 900), "light", False,
+     [("scroll", "table")]),
     ("glossary-dark", "glossary.html", (1440, 900), "dark", False, []),
     ("phase01-print", "01-bare-harness.html", (1240, 1600), "light", False,
-     [("media-print", None)]),
+     [("media-print", None), ("open-details", None), ("scroll", "div.highlight")]),
 ]
 
 
@@ -93,6 +94,16 @@ def main() -> None:
                         ".scrollIntoView({behavior: 'instant', block: 'end'})")
                 elif kind == "media-print":
                     page.emulate_media(media="print")
+                elif kind == "open-details":
+                    # print *emulation* doesn't fire beforeprint; open manually
+                    page.evaluate(
+                        "document.querySelectorAll('article details')"
+                        ".forEach(d => d.setAttribute('open', ''))")
+                elif kind == "scroll":
+                    page.evaluate(
+                        "sel => document.querySelector(sel)"
+                        ".scrollIntoView({behavior: 'instant', block: 'center'})",
+                        sel)
             page.wait_for_timeout(350)
             dest = os.path.join(args.out, f"{name}.png")
             page.screenshot(path=dest, full_page=full)

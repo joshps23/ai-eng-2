@@ -135,7 +135,7 @@
 </details>
 </header>
 <article>
-<p><a href="04-real-tools.html">← Phase 4: Real-World Tools</a> · <a href="index.html">Guide index</a> · <a href="06-context-management.html">Phase 6: Context Management →</a></p>
+<p class="md-breadcrumb"><a href="04-real-tools.html">← Phase 4: Real-World Tools</a> · <a href="index.html">Guide index</a> · <a href="06-context-management.html">Phase 6: Context Management →</a></p>
 <h1 id="phase-5--permissions-safety--the-hook-system">Phase 5 — Permissions, Safety &amp; the Hook System</h1>
 <p>An agent that can write files and run arbitrary shell commands is, in a very real sense, a remote-code-execution endpoint you are handing to a language model. Phase 4 gave you real tools — <code>bash</code>, <code>write_file</code>, <code>edit_file</code>. This phase installs the layer that stands between the model wanting to act and the action actually happening. Without it, a single confused completion can wipe a directory, exfiltrate secrets, or be hijacked by data the model read from an untrusted source.</p>
 <h2 id="the-plan-four-versions-of-the-same-harness">The plan: four versions of the same harness<a aria-label="Permalink to this section" class="hanchor" href="#the-plan-four-versions-of-the-same-harness">¶</a></h2>

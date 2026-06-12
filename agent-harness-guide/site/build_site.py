@@ -334,6 +334,10 @@ class GuideTreeprocessor(Treeprocessor):
                     outside = outside.replace(chunk, "", 1)
                 if text and outside.strip(" \n·•|/←→­–—-"):
                     self.ctx.first_para = text
+                else:
+                    # a link-only paragraph is a markdown breadcrumb: useless
+                    # in print, and quieter on screen
+                    el.set("class", (el.get("class", "") + " md-breadcrumb").strip())
         self._wrap_tables(root)
 
     def _wrap_tables(self, root: etree.Element) -> None:
@@ -851,6 +855,9 @@ article blockquote > :last-child, article .admonition > :last-child,
 article details > :last-child { margin-bottom: 0; }
 @media (max-width: 800px) {
   .layout { flex-direction: column; }
+  /* column flex: align-items flex-start would shrink main to max-content
+     (~80ch), clipping at narrow viewports — found by the Playwright pass */
+  main { width: 100%; }
   .sidebar-wrap { position: static; flex: none; width: 100%; max-height: none;
     border-right: none; border-bottom: 1px solid var(--border); }
   main { padding: 1rem; }
@@ -858,6 +865,7 @@ article details > :last-child { margin-bottom: 0; }
   .page-footer { padding-bottom: 3.5rem; }
 }
 h1, h2, h3, h4 { scroll-margin-top: 1.25rem; }
+.md-breadcrumb { font-size: 0.8125rem; color: var(--muted); }
 h1 {
   font-size: 2.25rem; line-height: 1.15; font-weight: 800;
   letter-spacing: -0.022em; margin: 0 0 1rem;
@@ -1013,7 +1021,7 @@ a.repo-file::after { content: " ↗"; font-size: 0.85em; }
   font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
   letter-spacing: 0.08em; color: var(--accent-deep); margin: 0 0 0.75rem;
 }
-.page-index h1 { font-size: clamp(2rem, 4.5vw, 2.75rem); }
+.page-index h1 { font-size: clamp(2rem, 4.5vw, 2.75rem); text-wrap: balance; }
 .hero blockquote {
   border: 0; padding: 0; background: transparent;
   font-size: 1.1875rem; line-height: 1.6; color: #444B5A;  /* 8.61:1 on bg */
@@ -1047,7 +1055,9 @@ a.repo-file::after { content: " ↗"; font-size: 0.85em; }
 }
 @media print {
   .sidebar-wrap, .skip-link, .copy-btn, .page-header, .prevnext,
-  .back-to-top, .hanchor, .hero-cta, .source-link { display: none !important; }
+  .back-to-top, .hanchor, .hero-cta, .source-link,
+  .md-breadcrumb { display: none !important; }
+  article a { color: inherit; }
   div.highlight pre { white-space: pre-wrap; overflow-x: visible; }
   .table-wrap { overflow-x: visible; }
   th, td { word-break: break-word; }
