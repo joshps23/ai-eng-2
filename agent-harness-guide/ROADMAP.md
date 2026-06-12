@@ -61,6 +61,10 @@ Status: ☐ todo · ◐ in progress · ☑ done
 
 Newest first. One line per shipped iteration.
 
+- **2026-06-12** — Cycle 14: visual verification via Playwright/Chromium (committed
+  screenshot harness; 13 renders reviewed by the designer persona). Caught and fixed
+  a mobile-clipping bug, printing breadcrumbs, and a hero widow; copy-button and
+  print behaviors verified in pixels. \$10k verdict reinstated.
 - **2026-06-12** — Cycles 12–13: \$10k-designer persona critiqued the site (tier 2/5,
   found the pygments line-height bug) and shipped a computed design spec; implemented
   end-to-end (indigo identity, type scale, index hero, component redesigns, detail

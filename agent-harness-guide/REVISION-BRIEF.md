@@ -111,7 +111,7 @@ Score each phase 1–5 on each axis; the loop revises the lowest-scoring phase n
 
 The evaluator-reviser loop runs **at most 20 times**, then stops on its own.
 
-- Iterations used: **16 / 20** *(cap raised 10 → 20 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
+- Iterations used: **17 / 20** *(cap raised 10 → 20 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
 - Per iteration: score all phases on the rubric, pick the weakest, revise it one notch
   more incremental, increment the counter here, log it below, commit, push. Stop when the
   counter hits 20 **or** every phase scores ≥4 on every axis.
@@ -132,6 +132,20 @@ The evaluator-reviser loop runs **at most 20 times**, then stops on its own.
   Phase 5 gained an explicit "V1+V2 is a legitimate stopping point" paragraph.
 
 ## Revision log (newest first)
+
+- **2026-06-12 — Iteration 17: Playwright visual verification (cycle 14).** By
+  maintainer instruction, the verification phase now renders real pixels: a committed
+  harness (site/screenshot_site.py) drives headless Chromium over the served site —
+  13 captures across desktop/mobile, light/dark, hover states, the opened long-page
+  TOC, and print emulation. The designer persona reviewed the renders and found what
+  CSS reading missed: a tier-killing mobile bug (column-flex align-items shrank main
+  to max-content, clipping every line at 390px), the markdown breadcrumb printing as
+  indigo links, a hero widow, and an unverified copy-button state (the capture had
+  hovered a nocopy diagram — itself praised as correct design). All fixed and
+  re-verified in pixels: mobile full-width, Copy pill reveals on hover, print
+  chrome-free. Designer verdict: 4/5 pending these fixes → criteria met for the
+  reinstated 4.5/5. Harness gotcha for posterity: smooth-scroll leaves unpainted
+  white tiles in headless screenshots — use instant scrolls.
 
 - **2026-06-12 — Iterations 15–16: \$10k-designer pass on the site (cycles 12–13).**
   New verification persona by maintainer instruction: an elite front-end designer
