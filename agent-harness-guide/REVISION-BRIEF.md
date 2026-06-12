@@ -111,7 +111,7 @@ Score each phase 1–5 on each axis; the loop revises the lowest-scoring phase n
 
 The evaluator-reviser loop runs **at most 20 times**, then stops on its own.
 
-- Iterations used: **12 / 20** *(cap raised 10 → 20 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
+- Iterations used: **13 / 20** *(cap raised 10 → 20 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
 - Per iteration: score all phases on the rubric, pick the weakest, revise it one notch
   more incremental, increment the counter here, log it below, commit, push. Stop when the
   counter hits 20 **or** every phase scores ≥4 on every axis.
@@ -132,6 +132,18 @@ The evaluator-reviser loop runs **at most 20 times**, then stops on its own.
   Phase 5 gained an explicit "V1+V2 is a legitimate stopping point" paragraph.
 
 ## Revision log (newest first)
+
+- **2026-06-12 — Iteration 13: HTML-site fix cycle (cycle 10).** Applied all three
+  cycle-9 persona reviews: root-cause repair of the blockquote-list fence indentation
+  (04's split/renumbered list — fix also caught a latent identical split in 07),
+  dark-mode AA contrast, print stylesheet + beforeprint details-opener, mobile sidebar
+  collapsed by default, copy-button fallback chain, semantic table wrappers + th
+  scopes, nested/disambiguated long-page TOCs + back-to-top, a distinct Reference-copy
+  component, hover heading anchors, repo-file link affordances (↗ + footer explainer),
+  plus the markdown-side fixes (surface-neutral Warning legend, Exercises deep links,
+  FAQ list spacing, hint/heading name match, Phase-6 box link) and a pinned CI drift
+  gate that regenerates the site and fails on diff. Output re-verified: byte-
+  idempotent, 0 broken links/anchors, all pages parse, tests green.
 
 - **2026-06-12 — Iteration 12: generated HTML site + three-persona review (cycle 9;
   build + verify only, fixes deferred by maintainer instruction).** Shipped

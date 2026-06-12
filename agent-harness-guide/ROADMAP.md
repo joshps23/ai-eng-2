@@ -61,6 +61,8 @@ Status: ☐ todo · ◐ in progress · ☑ done
 
 Newest first. One line per shipped iteration.
 
+- **2026-06-12** — Cycle 10: all ~15 banked site fixes applied (generator + markdown)
+  with a pinned CI drift gate for site/html; output byte-idempotent, 0 broken links.
 - **2026-06-12** — Cycle 9 (build + verify; fixes deferred): generated HTML mirror of
   the guide (site/build_site.py, 17 offline pages, GitHub-parity anchors, 0 broken
   links, byte-idempotent) reviewed by front-end/UX/beginner personas — beginner
