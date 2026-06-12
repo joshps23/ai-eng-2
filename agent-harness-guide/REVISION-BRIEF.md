@@ -111,7 +111,7 @@ Score each phase 1–5 on each axis; the loop revises the lowest-scoring phase n
 
 The evaluator-reviser loop runs **at most 20 times**, then stops on its own.
 
-- Iterations used: **13 / 20** *(cap raised 10 → 20 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
+- Iterations used: **14 / 20** *(cap raised 10 → 20 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
 - Per iteration: score all phases on the rubric, pick the weakest, revise it one notch
   more incremental, increment the counter here, log it below, commit, push. Stop when the
   counter hits 20 **or** every phase scores ≥4 on every axis.
@@ -132,6 +132,17 @@ The evaluator-reviser loop runs **at most 20 times**, then stops on its own.
   Phase 5 gained an explicit "V1+V2 is a legitimate stopping point" paragraph.
 
 ## Revision log (newest first)
+
+- **2026-06-12 — Iteration 14: site re-verification + sign-off polish (cycle 11).**
+  The three personas re-reviewed the fixed site: front-end — ship-ready, all ten
+  findings resolved, zero regressions (heading ids byte-stable vs the old build);
+  UX — 8/12 fully resolved, flagged the TOC-suffix regression and the .ipynb raw-JSON
+  dead-end; beginner — everything resolved, verdict upgraded to "clearly the best way
+  to learn this guide". Their 8 residual items closed in one polish pass (short
+  nearest-step TOC suffixes, .ipynb → GitHub routing, scroll-revealed back-to-top,
+  keyboard-reachable permalink anchors, labeled navs, print tables, index title,
+  focus restore). Final state: byte-idempotent, 0 broken links/anchors, 513 heading
+  ids unchanged, tests green. Cycles 10–11 ran ~420k of the refreshed 1M budget.
 
 - **2026-06-12 — Iteration 13: HTML-site fix cycle (cycle 10).** Applied all three
   cycle-9 persona reviews: root-cause repair of the blockquote-list fence indentation
