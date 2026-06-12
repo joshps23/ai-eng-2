@@ -57,8 +57,8 @@ Claude-Code-shaped harness.
 
 ### Prefer to run it as notebooks?
 
-Phases **0, 1, 2, 3, and 6** (plus a setup check) have companion **Jupyter
-notebooks** in [`notebooks/`](./notebooks/README.md) — small, run-top-to-bottom
+**Every phase (0–8)** (plus a setup check) has a companion **Jupyter
+notebook** in [`notebooks/`](./notebooks/README.md) — small, run-top-to-bottom
 checkpoint runners that execute each phase's ideas against the tested package,
 **fully offline by default** (no API key needed). The phases keep the narrative;
 the notebooks run things. Setup and conventions:

@@ -42,7 +42,7 @@ tab. If you're newer to Python, read the
    "No API key?" box in Phase 0 shows how to verify each checkpoint keylessly:
    check the printed expected output, and lean on the offline test suite above.)
 
-> **Prefer notebooks?** Phases 0, 1, 2, 3, and 6 (plus a setup check) have optional
+> **Prefer notebooks?** Every phase 0–8 (plus a setup check) has an optional
 > companion **Jupyter notebooks** — run-top-to-bottom checkpoint runners that work
 > **fully offline**, no API key needed. They're companions, not replacements: the
 > phases carry the explanations. Setup and the list:

@@ -111,7 +111,7 @@ Score each phase 1–5 on each axis; the loop revises the lowest-scoring phase n
 
 The evaluator-reviser loop runs **at most 20 times**, then stops on its own.
 
-- Iterations used: **10 / 20** *(cap raised 10 → 20 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
+- Iterations used: **11 / 20** *(cap raised 10 → 20 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
 - Per iteration: score all phases on the rubric, pick the weakest, revise it one notch
   more incremental, increment the counter here, log it below, commit, push. Stop when the
   counter hits 20 **or** every phase scores ≥4 on every axis.
@@ -132,6 +132,20 @@ The evaluator-reviser loop runs **at most 20 times**, then stops on its own.
   Phase 5 gained an explicit "V1+V2 is a legitimate stopping point" paragraph.
 
 ## Revision log (newest first)
+
+- **2026-06-12 — Iteration 11: companion notebooks for phases 4/5/7/8 (cycle 8, ROADMAP
+  Item 12).** Built to the cycle-5 Jupyter-expert v1-scope verdict via a cycle-8
+  addendum to the build contract: 04 (confinement arc in a throwaway tmpdir; production
+  tools imported from the package, nothing rebuilt), 05 (risk-by-mode decision table;
+  scripted asker replacing input() with the StdinNotImplementedError explanation;
+  deny-beats-session-memory asserted; env-allowlisted sandbox), 07 (recursive task tool
+  with one FakeClient per agent; depth guard asserted both sides; model-free
+  sequential-vs-threaded timing), 08 (the honest thin slice: retry backoff with
+  no-sleep-after-final-attempt assert; JSONL tracer + cost accounting; the package's
+  56-test suite run and machine-asserted from a cell). Docs: four table rows replacing
+  the 'no notebook on purpose' note, phase pointer lines, 'every phase 0–8' coverage
+  mentions. Acceptance: all TEN notebooks execute headlessly keyless, 20 pair files in
+  sync, tests green. Ran under a 900k budget (~300k used).
 
 - **2026-06-11 — Iteration 10: Colab seamlessness (cycle 7, user-seeded).** A real
   Colab user hit `ModuleNotFoundError: No module named 'agent_harness'` on the first
