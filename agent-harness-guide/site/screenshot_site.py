@@ -60,6 +60,27 @@ SHOTS = [
     ("phase04-refsection-deeplink-light",
      "04-real-tools.html#bash-production-form--shell-command-execution",
      (1440, 900), "light", False, [("wait", 800)]),
+    # lesson view: the phase hub (lesson 1) with the generated lesson plan
+    ("hub04-plan-desktop-light", "04-real-tools-1.html", (1440, 900), "light", False,
+     [("scroll", ".lesson-plan")]),
+    ("hub04-plan-desktop-dark", "04-real-tools-1.html", (1440, 900), "dark", False,
+     [("scroll", ".lesson-plan")]),
+    ("hub04-plan-mobile-light", "04-real-tools-1.html", (390, 844), "light", False,
+     [("scroll", ".lesson-plan")]),
+    ("hub04-plan-mobile-dark", "04-real-tools-1.html", (390, 844), "dark", False,
+     [("scroll", ".lesson-plan")]),
+    # a mid-phase lesson top: kicker + time chip + phase rail + lesson rail
+    ("lesson04-5-top-light", "04-real-tools-5.html", (1440, 900), "light", False, []),
+    ("lesson04-5-top-dark", "04-real-tools-5.html", (1440, 900), "dark", False, []),
+    # the lesson rail at phone width (must hold ≤2 rows with 12 lessons)
+    ("lesson04-5-rail-mobile-light", "04-real-tools-5.html", (390, 844), "light", False, []),
+    # the Continue card at the bottom of a lesson, desktop and phone
+    ("lesson04-5-continue-light", "04-real-tools-5.html", (1440, 900), "light", False,
+     [("scroll-bottom", None)]),
+    ("lesson04-5-continue-dark", "04-real-tools-5.html", (1440, 900), "dark", False,
+     [("scroll-bottom", None)]),
+    ("lesson04-5-continue-mobile-light", "04-real-tools-5.html", (390, 844), "light", False,
+     [("scroll-bottom", None)]),
 ]
 
 

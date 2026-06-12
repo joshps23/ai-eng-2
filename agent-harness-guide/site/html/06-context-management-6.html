@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<!-- GENERATED from 06-context-management.md — do not edit; run site/build_site.py -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="The phase&#x27;s advanced rung. Pruning is free but lossy; compaction costs one API call and a few seconds, and in exchange the agent remembers what it did. Same…">
+<link rel="canonical" href="https://joshps23.github.io/ai-eng-2/06-context-management.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://joshps23.github.io/ai-eng-2/06-context-management-6.html">
+<meta property="og:site_name" content="Agent Harness Guide">
+<meta property="og:title" content="Phase 6 · Lesson 6 — compact — Agent Harness Guide">
+<meta property="og:description" content="The phase&#x27;s advanced rung. Pruning is free but lossy; compaction costs one API call and a few seconds, and in exchange the agent remembers what it did. Same…">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#FDFDFE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
+<title>Phase 6 · Lesson 6 — compact — Agent Harness Guide</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body>
+<div class="progress-bar" aria-hidden="true"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="layout">
+<details class="sidebar-wrap" open>
+<summary class="sidebar-toggle">Guide navigation</summary>
+<nav class="sidebar" aria-label="Guide pages">
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
+<p class="sidebar-heading">Start here</p>
+<ul>
+<li><a href="index.html">Guide hub</a></li>
+<li><a href="learning-path.html">Learning Path</a></li>
+<li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
+<li><a href="faq.html">Setup &amp; FAQ</a></li>
+</ul>
+<p class="sidebar-heading">Phases</p>
+<ul>
+<li><a href="00-foundations-1.html">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness-1.html">Phase 1 — Bare Harness</a></li>
+<li><a href="02-tool-system-1.html">Phase 2 — Tool System</a></li>
+<li><a href="03-conversation-and-streaming-1.html">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools-1.html">Phase 4 — Real Tools</a></li>
+<li><a href="05-permissions-and-safety-1.html">Phase 5 — Permissions &amp; Safety</a></li>
+<li class="current"><a href="06-context-management-1.html" aria-current="true">Phase 6 — Context Management</a></li>
+<li><a href="07-subagents-orchestration-1.html">Phase 7 — Sub-agents</a></li>
+<li><a href="08-production-harness-1.html">Phase 8 — Production Harness</a></li>
+</ul>
+<p class="sidebar-heading">Appendix</p>
+<ul>
+<li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
+</ul>
+<p class="sidebar-heading">Practice</p>
+<ul>
+<li><a href="exercises.html">Exercises</a></li>
+<li><a href="glossary.html">Glossary</a></li>
+<li><a href="notebooks.html">Notebooks</a></li>
+</ul>
+</nav>
+</details>
+<main id="main">
+<header class="page-header">
+<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">6</span><span class="phase-kicker">Phase 6 · Lesson 6 of 8</span><span class="lesson-time">~14 min</span><span class="lesson-cp">1 <span aria-hidden="true">▶</span> checkpoint</span></p>
+<nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations-1.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness-1.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system-1.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming-1.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools-1.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety-1.html" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management-1.html" aria-current="true" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration-1.html" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness-1.html" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
+<nav class="lesson-rail" aria-label="Lessons in this phase"><a class="lesson-tick" href="06-context-management-1.html" title="Lesson 1: Context Management (~8 min)" aria-label="Lesson 1: Context Management (~8 min)">1</a><a class="lesson-tick" href="06-context-management-2.html" title="Lesson 2: line-by-line (~16 min)" aria-label="Lesson 2: line-by-line (~16 min)">2</a><a class="lesson-tick" href="06-context-management-3.html" title="Lesson 3: functions (~17 min)" aria-label="Lesson 3: functions (~17 min)">3</a><a class="lesson-tick" href="06-context-management-4.html" title="Lesson 4: the organized form · part 1 of 2 (~12 min)" aria-label="Lesson 4: the organized form · part 1 of 2 (~12 min)">4</a><a class="lesson-tick" href="06-context-management-5.html" title="Lesson 5: the organized form · part 2 of 2 (~13 min)" aria-label="Lesson 5: the organized form · part 2 of 2 (~13 min)">5</a><a class="lesson-tick" href="06-context-management-6.html" aria-current="page" title="Lesson 6: compact (~14 min)" aria-label="Lesson 6: compact (~14 min)">6</a><a class="lesson-tick" href="06-context-management-7.html" title="Lesson 7: Beyond the ladder (~8 min)" aria-label="Lesson 7: Beyond the ladder (~8 min)">7</a><a class="lesson-tick" href="06-context-management-8.html" title="Wrap-up: Pitfalls (~5 min)" aria-label="Wrap-up: Pitfalls (~5 min)">8</a></nav>
+<nav class="ladder" aria-label="Version ladder"><a class="ladder-rung" href="06-context-management-2.html#version-1--line-by-line-watch-the-window-fill-up"><span class="ladder-medallion">V1</span> line-by-line</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="06-context-management-3.html#version-2--functions-count_tokens-and-prune_to_budget"><span class="ladder-medallion">V2</span> functions</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="06-context-management-4.html#version-3--the-organized-form-a-contextpy-module-the-loop-consults"><span class="ladder-medallion">V3</span> the organized form</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="06-context-management-6.html#version-4--compact-spend-one-api-call-to-buy-back-context"><span class="ladder-medallion">V4</span> compact</a></nav>
+<details class="page-toc">
+<summary>On this page</summary>
+<ul>
+<li class="toc-h2"><a href="#version-4--compact-spend-one-api-call-to-buy-back-context">Version 4 — compact: spend one API call to buy back context</a>
+<ul>
+<li class="toc-h3"><a href="#what-changed-from-v3-to-v4">What changed from V3 to V4</a></li>
+<li class="toc-h3"><a href="#step-41--tactic-c-summarisation--compaction">Step 4.1 — Tactic C: Summarisation / Compaction</a></li>
+<li class="toc-h3"><a href="#step-42--auto-compaction-trigger-in-the-agent-loop">Step 4.2 — Auto-Compaction Trigger in the Agent Loop</a></li>
+</ul>
+</li>
+</ul>
+</details>
+</header>
+<article>
+<h2 id="version-4--compact-spend-one-api-call-to-buy-back-context">Version 4 — <code>compact</code>: spend one API call to buy back context<a aria-label="Permalink to this section" class="hanchor" href="06-context-management.html#version-4--compact-spend-one-api-call-to-buy-back-context">¶</a></h2>
+<h3 id="what-changed-from-v3-to-v4">What changed from V3 to V4<a aria-label="Permalink to this section" class="hanchor" href="06-context-management.html#what-changed-from-v3-to-v4">¶</a></h3>
+<ul>
+<li>One new function in <code>context.py</code>: <strong><code>compact(conversation, client, model)</code></strong> — it
+  spends <em>one extra API call</em> asking the model to summarize the older portion of the
+  transcript, then splices the summary in where those items used to be.</li>
+<li>A pair of carefully-written <strong>summarisation prompts</strong> (system + instruction) tell the
+  summarizer exactly what a future turn will need: decisions, file paths, errors, TODOs.</li>
+<li>The <code>Conversation</code> class from Phase 3 gains a tiny <strong><code>replace_items()</code></strong> method so
+  compaction can swap the transcript wholesale.</li>
+<li>The loop's pre-call check becomes two-tier: <strong>compact at 75 % of budget</strong> (preserve
+  the gist), <strong>prune as the fallback</strong> (when the transcript is too short to compact).</li>
+<li>Information is now <em>summarized</em> instead of <em>discarded</em> — old turns survive as gist.</li>
+</ul>
+<p>The phase's advanced rung. Pruning is free but lossy; compaction costs one API call and
+a few seconds, and in exchange the agent <em>remembers</em> what it did. Same harness, one new
+mechanism.</p>
+<h3 id="step-41--tactic-c-summarisation--compaction">Step 4.1 — Tactic C: Summarisation / Compaction<a aria-label="Permalink to this section" class="hanchor" href="06-context-management.html#step-41--tactic-c-summarisation--compaction">¶</a></h3>
+<p><strong>Why now?</strong> Pruning silently discards old turns. For a long task — one that may span
+dozens of steps — you want the agent to <em>remember</em> key decisions, file paths it edited,
+and errors it resolved, even after those items are too old to keep verbatim. Compaction
+replaces the old turns with a dense model-generated summary, so the gist survives while
+the bulk is shed.</p>
+<p>This is the deep solution — the equivalent of Claude Code's <code>/compact</code> command. Instead of silently dropping old turns, you ask the model itself to distill the older portion of the transcript into a dense summary, then replace those items with the summary.</p>
+<p><strong>Why let the model summarise?</strong> Because it understands the semantics. A dumb truncation might drop "we decided to use PostgreSQL, not SQLite" while keeping ten lines of boilerplate; the model will prioritise what actually matters.</p>
+<h4 id="the-summarisation-prompt">The summarisation prompt</h4>
+<div class="highlight"><pre><span></span><code><span class="n">SUMMARIZATION_SYSTEM</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s2">You are a precise technical summariser. You will be given a partial transcript </span><span class="se">\</span>
+<span class="s2">of an AI agent session. Produce a compact structured summary that captures </span><span class="se">\</span>
+<span class="s2">everything a continuation of that session needs to know. Do not editorialize. </span><span class="se">\</span>
+<span class="s2">Be specific: use exact file paths, function names, error messages, and decisions </span><span class="se">\</span>
+<span class="s2">rather than vague descriptions.</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="n">SUMMARIZATION_INSTRUCTION</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+<span class="s2">Summarise the following agent session transcript into a single dense note. </span><span class="se">\</span>
+<span class="s2">Include ALL of the following that are present:</span>
+
+<span class="s2">1. **Current task** — the user&#39;s goal as stated and any refinements agreed so far.</span>
+<span class="s2">2. **Key decisions** — architectural choices, technology choices, any explicit </span><span class="se">\</span>
+<span class="s2">   &quot;we decided to …&quot; moments.</span>
+<span class="s2">3. **Work completed** — files created or modified (list exact paths), commands </span><span class="se">\</span>
+<span class="s2">   run and their outcomes, tests passed or failed.</span>
+<span class="s2">4. **Important facts discovered** — error messages, surprising findings, </span><span class="se">\</span>
+<span class="s2">   constraints uncovered.</span>
+<span class="s2">5. **Open TODOs** — what the agent was about to do or has been asked to do next.</span>
+<span class="s2">6. **Critical file paths / identifiers** — anything the agent will need to </span><span class="se">\</span>
+<span class="s2">   reference going forward.</span>
+
+<span class="s2">Format as terse bullet points under those headings. Do not include conversational </span><span class="se">\</span>
+<span class="s2">filler. Omit any heading whose content is empty. Maximum 600 tokens.</span>
+<span class="s2">&quot;&quot;&quot;</span>
+</code></pre></div>
+<h4 id="compact--the-full-function"><code>compact()</code> — the full function</h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># context.py  (continued)</span>
+<span class="c1">#</span>
+<span class="c1"># Deliberately NO module-level `import openai` here: compact() only ever</span>
+<span class="c1"># *receives* an already-built client, so the type hint below is written as</span>
+<span class="c1"># the string &quot;openai.OpenAI&quot;. That keeps context.py importable — and all its</span>
+<span class="c1"># offline functions usable — on a machine without the openai package. The</span>
+<span class="c1"># consolidated listing at the end of this phase makes the same choice.</span>
+
+<span class="c1"># Number of recent items to keep verbatim after compaction.</span>
+<span class="c1"># These items will NOT be fed to the summariser — they stay intact.</span>
+<span class="n">KEEP_RECENT_VERBATIM</span> <span class="o">=</span> <span class="mi">10</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">compact</span><span class="p">(</span>
+    <span class="n">conversation</span><span class="p">:</span> <span class="s2">&quot;Conversation&quot;</span><span class="p">,</span>
+    <span class="n">client</span><span class="p">:</span> <span class="s2">&quot;openai.OpenAI&quot;</span><span class="p">,</span>
+    <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">keep_recent</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">KEEP_RECENT_VERBATIM</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Summarise the older portion of *conversation*&#39;s transcript and replace it</span>
+<span class="sd">    with a single compact summary item.</span>
+
+<span class="sd">    Returns the summary text so the caller can log or inspect it.</span>
+
+<span class="sd">    The *conversation* object is mutated in place.  Call ``conversation.save()``</span>
+<span class="sd">    afterwards if persistence is enabled.</span>
+
+<span class="sd">    Raises ``ValueError`` if there is nothing old enough to summarise</span>
+<span class="sd">    (i.e. the transcript has fewer than ``keep_recent + 2`` items).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">items</span> <span class="o">=</span> <span class="n">conversation</span><span class="o">.</span><span class="n">to_input</span><span class="p">()</span>  <span class="c1"># returns list[dict]</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">keep_recent</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Transcript too short to compact: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">)</span><span class="si">}</span><span class="s2"> items, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;need at least </span><span class="si">{</span><span class="n">keep_recent</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Split: items to summarise vs items to keep verbatim.</span>
+    <span class="n">cutoff</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">)</span> <span class="o">-</span> <span class="n">keep_recent</span>
+    <span class="n">to_summarise</span> <span class="o">=</span> <span class="n">items</span><span class="p">[:</span><span class="n">cutoff</span><span class="p">]</span>
+    <span class="n">to_keep</span> <span class="o">=</span> <span class="n">items</span><span class="p">[</span><span class="n">cutoff</span><span class="p">:]</span>
+
+    <span class="c1"># Ensure we don&#39;t break a function_call / function_call_output pair across</span>
+    <span class="c1"># the boundary.  If the last item in to_summarise is a function_call whose</span>
+    <span class="c1"># output is the first item in to_keep, move the call into to_keep as well.</span>
+    <span class="k">while</span> <span class="n">to_summarise</span> <span class="ow">and</span> <span class="n">to_keep</span><span class="p">:</span>
+        <span class="n">last</span> <span class="o">=</span> <span class="n">to_summarise</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">last</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;function_call&quot;</span><span class="p">:</span>
+            <span class="n">cid</span> <span class="o">=</span> <span class="n">last</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;call_id&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">last</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span>
+            <span class="n">first_keep</span> <span class="o">=</span> <span class="n">to_keep</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">first_keep</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;function_call_output&quot;</span>
+                <span class="ow">and</span> <span class="p">(</span><span class="n">first_keep</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;call_id&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">cid</span> <span class="ow">or</span> <span class="n">first_keep</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">cid</span><span class="p">)</span>
+            <span class="p">):</span>
+                <span class="c1"># Move the function_call into the verbatim section.</span>
+                <span class="n">to_keep</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">to_summarise</span><span class="o">.</span><span class="n">pop</span><span class="p">())</span>
+        <span class="k">break</span>  <span class="c1"># Only need to check the boundary once.</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">to_summarise</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Nothing left to summarise after boundary adjustment.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Build the transcript text to feed the summariser.</span>
+    <span class="n">transcript_text</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;item&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">_item_to_text</span><span class="p">(</span><span class="n">item</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">to_summarise</span>
+    <span class="p">)</span>
+
+    <span class="n">summarise_input</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;message&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">(</span>
+                <span class="n">SUMMARIZATION_INSTRUCTION</span>
+                <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">---</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+                <span class="o">+</span> <span class="n">transcript_text</span>
+            <span class="p">),</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[compact] Calling model to summarise older transcript…&quot;</span><span class="p">)</span>
+    <span class="n">summary_resp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">responses</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+        <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+        <span class="n">instructions</span><span class="o">=</span><span class="n">SUMMARIZATION_SYSTEM</span><span class="p">,</span>
+        <span class="nb">input</span><span class="o">=</span><span class="n">summarise_input</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Extract the summary text from the response.</span>
+    <span class="n">summary_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">out_item</span> <span class="ow">in</span> <span class="n">summary_resp</span><span class="o">.</span><span class="n">output</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">out_item</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;message&quot;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">out_item</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+                <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;output_text&quot;</span><span class="p">:</span>
+                    <span class="n">summary_text</span> <span class="o">+=</span> <span class="n">block</span><span class="o">.</span><span class="n">text</span>
+    <span class="n">summary_text</span> <span class="o">=</span> <span class="n">summary_text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">summary_text</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Compaction produced an empty summary — aborting.&quot;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;[compact] Summarised </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">to_summarise</span><span class="p">)</span><span class="si">}</span><span class="s2"> items → &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">count_tokens</span><span class="p">(</span><span class="n">summary_text</span><span class="p">)</span><span class="si">}</span><span class="s2"> tokens. &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;Keeping </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">to_keep</span><span class="p">)</span><span class="si">}</span><span class="s2"> recent items verbatim.&quot;</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Build the replacement item — a user-role message marked as a summary note.</span>
+    <span class="n">summary_item</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;message&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">(</span>
+            <span class="s2">&quot;[CONTEXT SUMMARY — earlier transcript compacted]</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+            <span class="o">+</span> <span class="n">summary_text</span>
+        <span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Splice: replace old items with the summary, then append the recent items.</span>
+    <span class="n">new_items</span> <span class="o">=</span> <span class="p">[</span><span class="n">summary_item</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">to_keep</span><span class="p">)</span>
+    <span class="n">conversation</span><span class="o">.</span><span class="n">replace_items</span><span class="p">(</span><span class="n">new_items</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">summary_text</span>
+</code></pre></div>
+<blockquote class="beginner">
+<p>🟢 Read the body top to bottom and notice it's all moves you've made before: split a
+list with slicing, nudge the boundary so a pair isn't split (Version 2's rule 1
+again), build one <code>client.responses.create(...)</code> call, pull the text out of
+<code>resp.output</code>, and splice lists back together. The only <em>new</em> idea is <strong>what</strong> the
+call is for: one turn of API spend that shrinks every future turn.</p>
+</blockquote>
+<h4 id="required-addition-to-the-conversation-class">Required addition to the <code>Conversation</code> class</h4>
+<p><code>compact()</code> calls <code>conversation.replace_items(new_items)</code>. Add this method to the <code>Conversation</code> class from Phase 3:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># conversation.py  (add to Conversation class)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">replace_items</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_items</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Replace the entire transcript with *new_items* (used by compaction).&quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_items</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_items</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">new_items</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="step-42--auto-compaction-trigger-in-the-agent-loop">Step 4.2 — Auto-Compaction Trigger in the Agent Loop<a aria-label="Permalink to this section" class="hanchor" href="06-context-management.html#step-42--auto-compaction-trigger-in-the-agent-loop">¶</a></h3>
+<p>Wire the check into the top of the agent loop so compaction happens automatically before the next API call, not after an error.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># agent.py  (agent loop with context management integrated)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">context</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">INPUT_BUDGET</span><span class="p">,</span>
+    <span class="n">COMPACT_TRIGGER</span><span class="p">,</span>
+    <span class="n">count_items</span><span class="p">,</span>
+    <span class="n">prune_to_budget</span><span class="p">,</span>
+    <span class="n">compact</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">run_agent</span><span class="p">(</span>
+    <span class="n">conversation</span><span class="p">:</span> <span class="n">Conversation</span><span class="p">,</span>
+    <span class="n">client</span><span class="p">:</span> <span class="n">openai</span><span class="o">.</span><span class="n">OpenAI</span><span class="p">,</span>
+    <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">instructions</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">tools</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span>
+    <span class="n">tool_registry</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">total_input_tokens</span>  <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">total_output_tokens</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="c1"># ------------------------------------------------------------------ #</span>
+        <span class="c1"># Context management — check before every API call                   #</span>
+        <span class="c1"># ------------------------------------------------------------------ #</span>
+        <span class="n">current_items</span> <span class="o">=</span> <span class="n">conversation</span><span class="o">.</span><span class="n">to_input</span><span class="p">()</span>
+        <span class="n">estimated_tokens</span> <span class="o">=</span> <span class="n">count_items</span><span class="p">(</span><span class="n">current_items</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">estimated_tokens</span> <span class="o">&gt;</span> <span class="n">COMPACT_TRIGGER</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;[context] Estimated input </span><span class="si">{</span><span class="n">estimated_tokens</span><span class="si">}</span><span class="s2"> tokens exceeds &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;compact trigger </span><span class="si">{</span><span class="n">COMPACT_TRIGGER</span><span class="si">}</span><span class="s2">. Compacting…&quot;</span>
+            <span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">compact</span><span class="p">(</span><span class="n">conversation</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="c1"># Transcript too short to compact — fall back to pruning.</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[context] Compaction skipped (</span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">). Pruning instead.&quot;</span><span class="p">)</span>
+                <span class="n">pruned</span> <span class="o">=</span> <span class="n">prune_to_budget</span><span class="p">(</span><span class="n">conversation</span><span class="o">.</span><span class="n">to_input</span><span class="p">(),</span> <span class="n">INPUT_BUDGET</span><span class="p">)</span>
+                <span class="n">conversation</span><span class="o">.</span><span class="n">replace_items</span><span class="p">(</span><span class="n">pruned</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">estimated_tokens</span> <span class="o">&gt;</span> <span class="n">INPUT_BUDGET</span><span class="p">:</span>
+            <span class="c1"># Already over hard budget but below compact trigger — prune.</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;[context] Estimated input </span><span class="si">{</span><span class="n">estimated_tokens</span><span class="si">}</span><span class="s2"> tokens exceeds &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;hard budget </span><span class="si">{</span><span class="n">INPUT_BUDGET</span><span class="si">}</span><span class="s2">. Pruning.&quot;</span>
+            <span class="p">)</span>
+            <span class="n">pruned</span> <span class="o">=</span> <span class="n">prune_to_budget</span><span class="p">(</span><span class="n">conversation</span><span class="o">.</span><span class="n">to_input</span><span class="p">(),</span> <span class="n">INPUT_BUDGET</span><span class="p">)</span>
+            <span class="n">conversation</span><span class="o">.</span><span class="n">replace_items</span><span class="p">(</span><span class="n">pruned</span><span class="p">)</span>
+
+        <span class="c1"># ------------------------------------------------------------------ #</span>
+        <span class="c1"># Normal agent turn                                                   #</span>
+        <span class="c1"># ------------------------------------------------------------------ #</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">responses</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+            <span class="n">instructions</span><span class="o">=</span><span class="n">instructions</span><span class="p">,</span>
+            <span class="nb">input</span><span class="o">=</span><span class="n">conversation</span><span class="o">.</span><span class="n">to_input</span><span class="p">(),</span>
+            <span class="n">tools</span><span class="o">=</span><span class="n">tools</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">total_input_tokens</span>  <span class="o">+=</span> <span class="n">resp</span><span class="o">.</span><span class="n">usage</span><span class="o">.</span><span class="n">input_tokens</span>
+        <span class="n">total_output_tokens</span> <span class="o">+=</span> <span class="n">resp</span><span class="o">.</span><span class="n">usage</span><span class="o">.</span><span class="n">output_tokens</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;[tokens] in=</span><span class="si">{</span><span class="n">resp</span><span class="o">.</span><span class="n">usage</span><span class="o">.</span><span class="n">input_tokens</span><span class="si">}</span><span class="s2"> &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;out=</span><span class="si">{</span><span class="n">resp</span><span class="o">.</span><span class="n">usage</span><span class="o">.</span><span class="n">output_tokens</span><span class="si">}</span><span class="s2"> &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;total_session=</span><span class="si">{</span><span class="n">total_input_tokens</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">total_output_tokens</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+        <span class="c1"># … process resp.output, append items, handle tool calls …</span>
+        <span class="c1"># (see Phase 2 / Phase 3 for the full turn-processing code)</span>
+
+        <span class="c1"># Done when the model issued no function_call items this turn —</span>
+        <span class="c1"># the same stop condition every loop in this guide has used.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;function_call&quot;</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">resp</span><span class="o">.</span><span class="n">output</span>
+        <span class="p">):</span>
+            <span class="k">break</span>
+</code></pre></div>
+<p>The ordering matters: <strong>check and compact first, then call the API.</strong> Do not call the API and then compact; that wastes tokens and may fail if you are already over the limit.</p>
+<h3 id="-run-it-now-3">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="06-context-management.html#-run-it-now-3">¶</a></h3>
+<p>To see compaction fire without an hour-long session, temporarily set
+<code>COMPACT_TRIGGER = 800</code> and <code>KEEP_RECENT_VERBATIM = 4</code>, chat for a few file-reading
+turns, and watch the <code>[compact]</code> lines appear. Then ask the agent what it did earlier:
+unlike pruning, it can answer from the summary.</p>
+</article>
+<footer class="page-footer">
+<nav class="continue" aria-label="Continue">
+<a class="continue-card" href="06-context-management-7.html" rel="next">
+<span class="continue-kicker">Next · Lesson 7 of 8</span>
+<span class="continue-title">Beyond the ladder<span class="continue-time">~8 min</span><span class="continue-arrow" aria-hidden="true">→</span></span>
+</a>
+<p class="continue-aux">
+<a href="06-context-management-5.html" rel="prev">← Lesson 5 · the organized form · part 2 of 2</a>
+<a class="continue-fullpage" href="06-context-management.html#version-4--compact-spend-one-api-call-to-buy-back-context">View this lesson on the single page</a>
+</p>
+</nav>
+<p class="generated-note">Generated from <code>06-context-management.md</code> — lesson 6 of 8 in the derived lesson view (boundaries may move when the markdown changes; the <a href="06-context-management.html">single page</a> is the permanent address).</p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/06-context-management.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
+</footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
+</main>
+</div>
+<script>
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards.
+     diagram-text mirrors are excluded — print hides them entirely (the SVG
+     figure already prints; opening the ASCII would print the diagram twice). */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not(.diagram-text):not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
+  });
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
+
+  /* Reading progress: the fixed 3px accent bar tracks scroll position.
+     Without JS the element simply stays at width 0 — invisible, harmless. */
+  var pbar = document.querySelector('.progress-bar');
+  if (pbar) {
+    var setProgress = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      pbar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    };
+    window.addEventListener('scroll', setProgress, { passive: true });
+    setProgress();
+  }
+
+  /* Deep links into collapsed sections: open every <details> ancestor of the
+     target, and the refsection that immediately follows a target heading.
+     Re-scroll only if something actually opened (the layout above the target
+     just changed), and instantly — the CSS smooth scroll would crawl across
+     tens of thousands of pixels on the long phase pages. */
+  function openForHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) { return; }
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    var opened = false;
+    var d = el.closest('details');
+    while (d) {
+      if (!d.hasAttribute('open')) { d.setAttribute('open', ''); opened = true; }
+      d = d.parentElement && d.parentElement.closest('details');
+    }
+    var sib = el.nextElementSibling;
+    if (sib && sib.matches('details.refsection') && !sib.hasAttribute('open')) {
+      sib.setAttribute('open', '');
+      opened = true;
+    }
+    if (!opened) { return; }
+    var jump = function () {
+      var y = el.getBoundingClientRect().top + window.scrollY - 16;
+      try { window.scrollTo({ top: y, behavior: 'instant' }); }
+      catch (e) { window.scrollTo(0, y); }
+    };
+    jump();
+    /* the browser's own fragment scroll was computed against the collapsed
+       layout and may still be animating (CSS smooth) — re-assert once, which
+       cancels it */
+    setTimeout(jump, 100);
+  }
+  window.addEventListener('hashchange', openForHash);
+  openForHash();
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
+</script>
+</body>
+</html>

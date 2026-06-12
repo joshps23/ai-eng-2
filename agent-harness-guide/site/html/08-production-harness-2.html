@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<!-- GENERATED from 08-production-harness.md — do not edit; run site/build_site.py -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Why now? Networks are unreliable. The OpenAI API sometimes returns a 429 (rate limit) or a 500 (server error). Without retry logic, your agent dies on the fi…">
+<link rel="canonical" href="https://joshps23.github.io/ai-eng-2/08-production-harness.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://joshps23.github.io/ai-eng-2/08-production-harness-2.html">
+<meta property="og:site_name" content="Agent Harness Guide">
+<meta property="og:title" content="Phase 8 · Lesson 2 — The Smallest Reliability Win — Agent Harness Guide">
+<meta property="og:description" content="Why now? Networks are unreliable. The OpenAI API sometimes returns a 429 (rate limit) or a 500 (server error). Without retry logic, your agent dies on the fi…">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#FDFDFE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
+<title>Phase 8 · Lesson 2 — The Smallest Reliability Win — Agent Harness Guide</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body>
+<div class="progress-bar" aria-hidden="true"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="layout">
+<details class="sidebar-wrap" open>
+<summary class="sidebar-toggle">Guide navigation</summary>
+<nav class="sidebar" aria-label="Guide pages">
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
+<p class="sidebar-heading">Start here</p>
+<ul>
+<li><a href="index.html">Guide hub</a></li>
+<li><a href="learning-path.html">Learning Path</a></li>
+<li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
+<li><a href="faq.html">Setup &amp; FAQ</a></li>
+</ul>
+<p class="sidebar-heading">Phases</p>
+<ul>
+<li><a href="00-foundations-1.html">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness-1.html">Phase 1 — Bare Harness</a></li>
+<li><a href="02-tool-system-1.html">Phase 2 — Tool System</a></li>
+<li><a href="03-conversation-and-streaming-1.html">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools-1.html">Phase 4 — Real Tools</a></li>
+<li><a href="05-permissions-and-safety-1.html">Phase 5 — Permissions &amp; Safety</a></li>
+<li><a href="06-context-management-1.html">Phase 6 — Context Management</a></li>
+<li><a href="07-subagents-orchestration-1.html">Phase 7 — Sub-agents</a></li>
+<li class="current"><a href="08-production-harness-1.html" aria-current="true">Phase 8 — Production Harness</a></li>
+</ul>
+<p class="sidebar-heading">Appendix</p>
+<ul>
+<li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
+</ul>
+<p class="sidebar-heading">Practice</p>
+<ul>
+<li><a href="exercises.html">Exercises</a></li>
+<li><a href="glossary.html">Glossary</a></li>
+<li><a href="notebooks.html">Notebooks</a></li>
+</ul>
+</nav>
+</details>
+<main id="main">
+<header class="page-header">
+<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">8</span><span class="phase-kicker">Phase 8 · Lesson 2 of 10</span><span class="lesson-time">~6 min</span><span class="lesson-cp">1 <span aria-hidden="true">▶</span> checkpoint</span></p>
+<nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations-1.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness-1.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system-1.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming-1.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools-1.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety-1.html" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management-1.html" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration-1.html" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness-1.html" aria-current="true" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
+<nav class="lesson-rail" aria-label="Lessons in this phase"><a class="lesson-tick" href="08-production-harness-1.html" title="Lesson 1: The Production Harness (~11 min)" aria-label="Lesson 1: The Production Harness (~11 min)">1</a><a class="lesson-tick" href="08-production-harness-2.html" aria-current="page" title="Lesson 2: The Smallest Reliability Win (~6 min)" aria-label="Lesson 2: The Smallest Reliability Win (~6 min)">2</a><a class="lesson-tick" href="08-production-harness-3.html" title="Lesson 3: Observability (~12 min)" aria-label="Lesson 3: Observability (~12 min)">3</a><a class="lesson-tick" href="08-production-harness-4.html" title="Lesson 4: Configuration (~15 min)" aria-label="Lesson 4: Configuration (~15 min)">4</a><a class="lesson-tick" href="08-production-harness-5.html" title="Lesson 5: The CLI / REPL (~11 min)" aria-label="Lesson 5: The CLI / REPL (~11 min)">5</a><a class="lesson-tick" href="08-production-harness-6.html" title="Lesson 6: 5. Reliability (Production… (~8 min)" aria-label="Lesson 6: 5. Reliability (Production… (~8 min)">6</a><a class="lesson-tick" href="08-production-harness-7.html" title="Lesson 7: 6. The Definitive… (~11 min)" aria-label="Lesson 7: 6. The Definitive… (~11 min)">7</a><a class="lesson-tick" href="08-production-harness-8.html" title="Lesson 8: 7. Packaging and Operations (~4 min)" aria-label="Lesson 8: 7. Packaging and Operations (~4 min)">8</a><a class="lesson-tick" href="08-production-harness-9.html" title="Lesson 9: 8. Testing the Harness (~17 min)" aria-label="Lesson 9: 8. Testing the Harness (~17 min)">9</a><a class="lesson-tick" href="08-production-harness-10.html" title="Wrap-up: Pitfalls (~7 min)" aria-label="Wrap-up: Pitfalls (~7 min)">10</a></nav>
+</header>
+<article>
+<h2 id="step-0--the-smallest-reliability-win-retry-with-backoff">Step 0 — The Smallest Reliability Win: Retry with Backoff<a aria-label="Permalink to this section" class="hanchor" href="08-production-harness.html#step-0--the-smallest-reliability-win-retry-with-backoff">¶</a></h2>
+<p><strong>Why now?</strong> Networks are unreliable. The OpenAI API sometimes returns a 429 (rate limit) or a 500 (server error). Without retry logic, your agent dies on the first hiccup. With it, the agent waits a moment and tries again — the user never notices.</p>
+<p>Here is the complete retry wrapper using only a <code>for</code> loop, <code>try</code>/<code>except</code>, and <code>time.sleep</code> — no new imports beyond <code>time</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">create_with_retry</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Call the API; if it fails, wait a bit and try again, up to 5 times.&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">responses</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">attempt</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>             <span class="c1"># that was the last attempt —</span>
+                <span class="k">break</span>                    <span class="c1"># don&#39;t sleep just to give up</span>
+            <span class="n">wait</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">**</span> <span class="n">attempt</span>          <span class="c1"># 1s, 2s, 4s, 8s</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;API error (</span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">); retrying in </span><span class="si">{</span><span class="n">wait</span><span class="si">}</span><span class="s2">s…&quot;</span><span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">wait</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;API still failing after 5 tries&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>That is it. The <code>2 ** attempt</code> pattern is called <strong>exponential backoff</strong>: each failure waits twice as long as the last, giving the server time to recover. (The <code>if attempt == 4: break</code> guard matters: without it, the function would sleep a final 16 s after the <em>last</em> failure — pure dead time before raising anyway.)</p>
+<p>Use <code>create_with_retry(client, model=..., input=..., tools=...)</code> anywhere the guide calls <code>client.responses.create(...)</code>. That one change captures 90% of the value of the much longer <code>llm.py</code> shown later.</p>
+<blockquote>
+<p><strong>Which rung is this?</strong> This is the <strong>V2 — functions</strong> rung of <code>llm.py</code>'s ladder: one
+plain function, no classes, no decorators. §5 shows the hardened V2 form (smarter error
+sorting, jitter, <code>Retry-After</code>), and the tested package takes one final small step to
+<strong>V3</strong>: a tiny <code>LLMClient</code> class whose only state is <em>which client to wrap</em> — that
+injectability is exactly what makes the offline <code>FakeClient</code> testing in §8 possible.</p>
+</blockquote>
+<h3 id="-run-it-now">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="08-production-harness.html#-run-it-now">¶</a></h3>
+<p>You can test retry logic without a real API by using a fake client that fails the first two times:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">FakeClient</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fails twice, then succeeds. Simulates a flaky network.&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">responses</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_call_count</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_call_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_count</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Simulated network error (attempt </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_call_count</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="c1"># Third attempt succeeds — return a minimal fake response</span>
+        <span class="k">class</span><span class="w"> </span><span class="nc">FakeResp</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">class</span><span class="w"> </span><span class="nc">usage</span><span class="p">:</span>
+                <span class="n">input_tokens</span> <span class="o">=</span> <span class="mi">10</span>
+                <span class="n">output_tokens</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="k">return</span> <span class="n">FakeResp</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">create_with_retry</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">responses</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">attempt</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">wait</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">**</span> <span class="n">attempt</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;API error (</span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">); retrying in </span><span class="si">{</span><span class="n">wait</span><span class="si">}</span><span class="s2">s…&quot;</span><span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">wait</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;API still failing after 5 tries&quot;</span><span class="p">)</span>
+
+
+<span class="n">fake</span> <span class="o">=</span> <span class="n">FakeClient</span><span class="p">()</span>
+<span class="n">resp</span> <span class="o">=</span> <span class="n">create_with_retry</span><span class="p">(</span><span class="n">fake</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4o&quot;</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="p">[],</span> <span class="n">tools</span><span class="o">=</span><span class="p">[])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Success on attempt&quot;</span><span class="p">,</span> <span class="n">fake</span><span class="o">.</span><span class="n">_call_count</span><span class="p">)</span>
+</code></pre></div>
+<p>Expected output (with actual 1s + 2s sleeps):
+<div class="highlight nocopy"><pre><span></span><code>API error (Simulated network error (attempt 1)); retrying in 1s…
+API error (Simulated network error (attempt 2)); retrying in 2s…
+Success on attempt 3
+</code></pre></div></p>
+<p>Once this works, every call in your loop is retry-safe. The rest of this phase wraps the same loop in progressively more production machinery.</p>
+</article>
+<footer class="page-footer">
+<nav class="continue" aria-label="Continue">
+<a class="continue-card" href="08-production-harness-3.html" rel="next">
+<span class="continue-kicker">Next · Lesson 3 of 10</span>
+<span class="continue-title">Observability<span class="continue-time">~12 min</span><span class="continue-arrow" aria-hidden="true">→</span></span>
+</a>
+<p class="continue-aux">
+<a href="08-production-harness-1.html" rel="prev">← Lesson 1 · The Production Harness</a>
+<a class="continue-fullpage" href="08-production-harness.html#step-0--the-smallest-reliability-win-retry-with-backoff">View this lesson on the single page</a>
+</p>
+</nav>
+<p class="generated-note">Generated from <code>08-production-harness.md</code> — lesson 2 of 10 in the derived lesson view (boundaries may move when the markdown changes; the <a href="08-production-harness.html">single page</a> is the permanent address).</p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/08-production-harness.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
+</footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
+</main>
+</div>
+<script>
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards.
+     diagram-text mirrors are excluded — print hides them entirely (the SVG
+     figure already prints; opening the ASCII would print the diagram twice). */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not(.diagram-text):not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
+  });
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
+
+  /* Reading progress: the fixed 3px accent bar tracks scroll position.
+     Without JS the element simply stays at width 0 — invisible, harmless. */
+  var pbar = document.querySelector('.progress-bar');
+  if (pbar) {
+    var setProgress = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      pbar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    };
+    window.addEventListener('scroll', setProgress, { passive: true });
+    setProgress();
+  }
+
+  /* Deep links into collapsed sections: open every <details> ancestor of the
+     target, and the refsection that immediately follows a target heading.
+     Re-scroll only if something actually opened (the layout above the target
+     just changed), and instantly — the CSS smooth scroll would crawl across
+     tens of thousands of pixels on the long phase pages. */
+  function openForHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) { return; }
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    var opened = false;
+    var d = el.closest('details');
+    while (d) {
+      if (!d.hasAttribute('open')) { d.setAttribute('open', ''); opened = true; }
+      d = d.parentElement && d.parentElement.closest('details');
+    }
+    var sib = el.nextElementSibling;
+    if (sib && sib.matches('details.refsection') && !sib.hasAttribute('open')) {
+      sib.setAttribute('open', '');
+      opened = true;
+    }
+    if (!opened) { return; }
+    var jump = function () {
+      var y = el.getBoundingClientRect().top + window.scrollY - 16;
+      try { window.scrollTo({ top: y, behavior: 'instant' }); }
+      catch (e) { window.scrollTo(0, y); }
+    };
+    jump();
+    /* the browser's own fragment scroll was computed against the collapsed
+       layout and may still be animating (CSS smooth) — re-assert once, which
+       cancels it */
+    setTimeout(jump, 100);
+  }
+  window.addEventListener('hashchange', openForHash);
+  openForHash();
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
+</script>
+</body>
+</html>

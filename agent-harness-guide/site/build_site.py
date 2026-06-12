@@ -88,6 +88,32 @@ ALERT_TYPES = {"NOTE": "Note", "TIP": "Tip", "IMPORTANT": "Important",
                "WARNING": "Warning", "CAUTION": "Caution"}
 ALERT_RE = re.compile(r"^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*", re.S)
 
+# ---------------------------------------------------------------------------
+# Lesson view (bite-sized delivery of the Phases pages).
+#
+# Each phase page is additionally sliced into flat ordinal lesson pages
+# (04-real-tools-5.html) derived purely from heading structure — zero
+# per-phase configuration.  The full pages stay the permanent addresses
+# (identical id sets, canonical targets); lessons are a derived reading path
+# whose boundaries may move when the markdown is edited.  The split rule:
+# pack consecutive h2 sections greedily (a "Version N" h2 always starts a new
+# lesson), budgeted by visible words (refsection content excluded at the
+# collapsed-unit granularity); sub-split any lesson over LESSON_HARD at h3
+# boundaries (a ▶ checkpoint h3 never begins a fragment); everything from the
+# first "Pitfalls"/"Key takeaways" h2 onward is one terminal wrap-up lesson.
+# ---------------------------------------------------------------------------
+LESSON_CEIL = 1600        # visible-word packing budget per lesson
+LESSON_FLOOR = 400        # below this a lesson never forces a break / merges back
+LESSON_HARD = 2400        # hard ceiling: sub-split within the h2 (build-failing)
+LESSON_WPM = 130          # reading pace for the ~N min estimate
+LESSON_CHECKPOINT_MIN = 2  # extra minutes per ▶ run-it-now checkpoint
+LESSON_MIN_MINUTES = 3
+VERSION_RE = re.compile(r"\bVersion (\d)\b")   # same rung regex as the ladder
+RITUAL_RE = re.compile(r"^(pitfalls|key takeaways)\b", re.I)
+TAG_RE = re.compile(r"<[^>]+>")
+ID_RE = re.compile(r'id="([^"]*)"')
+ANCHOR_BASELINE = "anchor-baseline.txt"   # pinned id snapshot, lives in site/
+
 # Fingerprints from figures.FIGURES that matched a fence during this build.
 # main()'s drift gate fails the build if any figure never matched — the
 # markdown diagram changed, so the SVG must be redrawn or re-fingerprinted.
@@ -106,6 +132,17 @@ def gh_slug(text: str) -> str:
     text = text.strip().lower()
     kept = [ch for ch in text if ch.isalnum() or ch in "-_ "]
     return "".join(kept).replace(" ", "-")
+
+
+def short_label(text: str) -> str:
+    """Short label for a heading: text after the first em dash, cut at any
+    ':', truncated near 28 chars.  Used by the ladder rungs and (identically,
+    per the lesson spec) by derived lesson titles."""
+    label = text.split("—", 1)[1] if "—" in text else text
+    label = label.split(":", 1)[0].strip()
+    if len(label) > 28:
+        label = label[:28].rsplit(" ", 1)[0].rstrip(" ,;:—-") + "…"
+    return label
 
 
 class SlugDeduper:
@@ -322,17 +359,12 @@ class GuideTreeprocessor(Treeprocessor):
                     # version-ladder rungs for the header map: the first h2
                     # mentioning each "Version N", with a short label (text
                     # after the first em dash, cut at any ":").
-                    vm = re.search(r"\bVersion (\d)\b", text)
+                    vm = VERSION_RE.search(text)
                     if vm and all(r[0] != int(vm.group(1))
                                   for r in self.ctx.ladder):
-                        label = (text.split("—", 1)[1] if "—" in text
-                                 else text)
-                        label = label.split(":", 1)[0].strip()
-                        if len(label) > 28:
-                            label = (label[:28].rsplit(" ", 1)[0]
-                                     .rstrip(" ,;:—-") + "…")
                         self.ctx.ladder.append(
-                            (int(vm.group(1)), label, el.get("id")))
+                            (int(vm.group(1)), short_label(text),
+                             el.get("id")))
                 if tag in ("h2", "h3"):
                     # "▶ Run it now" checkpoints repeat near-identically and
                     # drown the page outline — keep their ids (GitHub anchor
@@ -382,6 +414,11 @@ class GuideTreeprocessor(Treeprocessor):
                     el.set("class", (el.get("class", "") + " md-breadcrumb").strip())
         self._collapse_refsections(root)
         self._wrap_tables(root)
+        # guide_tree is the last treeprocessor (priority 5): the tree is now
+        # final — ids assigned, refsections collapsed.  Keep a reference so
+        # the lesson splitter can slice the *rendered* tree (B2: lessons must
+        # inherit the full page's exact ids).
+        self.ctx.root = root
 
     HEADING_LEVELS = {"h1": 1, "h2": 2, "h3": 3, "h4": 4, "h5": 5, "h6": 6}
 
@@ -516,6 +553,7 @@ class PageContext:
         self.toc: list[tuple[int, str, str]] = []
         self.ladder: list[tuple[int, str, str]] = []  # (version, label, slug)
         self.repo_links = 0                   # links that leave the site
+        self.root: etree.Element | None = None  # final rendered tree (guide_tree)
 
 
 class GuideExtension(Extension):
@@ -555,6 +593,270 @@ def rewrite_href(href: str, source_dir: str) -> str:
     if resolved.endswith("/"):
         return GITHUB_TREE + resolved.rstrip("/") + sep + frag
     return GITHUB_BLOB + resolved + sep + frag
+
+
+# ---------------------------------------------------------------------------
+# Lesson partitioning
+# ---------------------------------------------------------------------------
+def hub_name(out_name: str) -> str:
+    """A phase's lesson-1 page doubles as its hub."""
+    return out_name[:-len(".html")] + "-1.html"
+
+
+def lesson_name(out_name: str, k: int) -> str:
+    return out_name[:-len(".html")] + f"-{k}.html"
+
+
+def heading_text(el: etree.Element) -> str:
+    """Heading text without the appended ¶ permalink anchor."""
+    text = "".join(el.itertext())
+    if text.endswith("¶"):
+        text = text[:-1]
+    return text.strip()
+
+
+def render_chunk(md: markdown.Markdown, el: etree.Element) -> str:
+    """Serialize ONE top-level element of the rendered tree to final HTML,
+    running the same serializer + postprocessors `md.convert` used (the
+    htmlStash is still populated — `md.reset()` is never called), so the
+    concatenation of chunks reproduces the full page's article nodes."""
+    wrapper = etree.Element("div")
+    wrapper.append(el)          # ElementTree keeps `el` in its original tree
+    out = md.serializer(wrapper)
+    out = out[out.index(">") + 1:out.rindex("</div>")]
+    for pp in md.postprocessors:
+        out = pp.run(out)
+    return out.strip()
+
+
+class Chunk:
+    """One top-level node of a phase's rendered tree, with split metadata."""
+
+    __slots__ = ("el", "html", "level", "text", "is_ref", "words",
+                 "is_checkpoint")
+
+    def __init__(self, md: markdown.Markdown, el: etree.Element) -> None:
+        self.el = el
+        self.html = render_chunk(md, el)
+        self.level = GuideTreeprocessor.HEADING_LEVELS.get(el.tag)
+        self.text = heading_text(el) if self.level else None
+        self.is_ref = (el.tag == "details"
+                       and "refsection" in (el.get("class") or ""))
+        # Visible-word budget: refsection content is excluded at exactly the
+        # collapsed-unit granularity (a refsection is always a top-level
+        # <details> — _collapse_refsections works on root children only).
+        # Tags are stripped with "" (itertext() semantics): pygments wraps
+        # every code token in a span, and a " " replacement would count
+        # `client.responses.create(...)` as half a dozen words.
+        self.words = 0 if self.is_ref else len(
+            html_mod.unescape(TAG_RE.sub("", self.html)).split())
+        self.is_checkpoint = (self.level == 3
+                              and (self.text or "").startswith("▶"))
+
+
+class Lesson:
+    """One derived lesson page of a phase."""
+
+    def __init__(self, idxs: list[int], part: tuple[int, int] | None,
+                 owner_idx: int | None = None) -> None:
+        self.idxs = idxs              # chunk indices (full partition: struck
+        self.part = part              # hrs stay accounted here, skipped only
+        self.owner_idx = owner_idx    # owning-h2 chunk for h3-split fragments
+        self.number = 0               # when the body html is joined)
+        self.out = ""
+        self.title = ""
+        self.is_wrapup = False
+        self.words = 0
+        self.checkpoints = 0
+        self.minutes = 0
+        self.ids: set[str] = set()
+        self.first_heading_id: str | None = None
+        self.toc: list[tuple[int, str, str]] = []
+        self.body = ""
+        self.desc = ""
+
+
+class PhasePlan:
+    """A phase page's derived lesson partition plus everything the lesson
+    templates and the verification battery need."""
+
+    def __init__(self, out_name: str, src_rel: str, phase_no: int,
+                 body: str, ctx: PageContext, md: markdown.Markdown) -> None:
+        self.out = out_name
+        self.src_rel = src_rel
+        self.phase_no = phase_no
+        self.body = body              # full-page body (reconstruction gate)
+        self.ctx = ctx
+        self.chunks = [Chunk(md, el) for el in list(ctx.root)]
+        # mirror HR_BEFORE_H2: an <hr> directly before an <h2> is struck from
+        # the final page, so it is skipped when lesson bodies are joined
+        self.struck = {i for i in range(len(self.chunks) - 1)
+                       if self.chunks[i].el.tag == "hr"
+                       and self.chunks[i + 1].html.startswith("<h2")}
+        self.lessons = self._partition()
+        self._finalize(md)
+        self.total_minutes = sum(l.minutes for l in self.lessons)
+        mins = sorted(l.minutes for l in self.lessons)
+        mid = len(mins) // 2
+        self.median_minutes = (mins[mid] if len(mins) % 2
+                               else round((mins[mid - 1] + mins[mid]) / 2))
+        # h2 id -> containing lesson (for the full page's per-h2 links) and
+        # any id -> lesson (for cross-lesson ladder rungs)
+        self.lesson_of_id: dict[str, Lesson] = {}
+        for lesson in self.lessons:
+            for i in lesson.ids:
+                self.lesson_of_id.setdefault(i, lesson)
+        self.h2_lessons: list[tuple[str, Lesson]] = []
+        for lesson in self.lessons:
+            for i in lesson.idxs:
+                c = self.chunks[i]
+                if c.level == 2 and c.el.get("id"):
+                    self.h2_lessons.append((c.el.get("id"), lesson))
+
+    # -- the split rule (A1.1–A1.7) ------------------------------------
+    def _partition(self) -> list[Lesson]:
+        chunks = self.chunks
+        h2s = [i for i, c in enumerate(chunks) if c.level == 2]
+        if not h2s:                      # never the case for a phase page
+            return [Lesson(list(range(len(chunks))), None)]
+        sections = []                    # (start, end, version, ref, ritual)
+        for a, b in zip(h2s, h2s[1:] + [len(chunks)]):
+            title = chunks[a].text or ""
+            content = chunks[a + 1:b]
+            ref_owned = (any(c.is_ref for c in content)
+                         and all(c.is_ref or c.el.tag == "hr"
+                                 for c in content))
+            sections.append((a, b, bool(VERSION_RE.search(title)), ref_owned,
+                             bool(RITUAL_RE.match(title))))
+        tail_at = next((k for k, s in enumerate(sections) if s[4]),
+                       len(sections))
+        # content before the first h2 seeds Lesson 1 (the hub)
+        groups: list[list[int]] = []
+        cur = list(range(0, h2s[0]))
+        cur_w = sum(chunks[i].words for i in cur)
+        for a, b, version, ref, _ritual in sections[:tail_at]:
+            sec = list(range(a, b))
+            sec_w = sum(chunks[i].words for i in sec)
+            if cur and ((version and not ref)
+                        or (cur_w + sec_w > LESSON_CEIL
+                            and cur_w >= LESSON_FLOOR)):
+                groups.append(cur)
+                cur, cur_w = [], 0
+            cur += sec
+            cur_w += sec_w
+        if cur:
+            if cur_w < LESSON_FLOOR and groups:   # sliver: merge backward
+                groups[-1] += cur
+            else:
+                groups.append(cur)
+        lessons: list[Lesson] = []
+        for g in groups:
+            if sum(chunks[i].words for i in g) > LESSON_HARD:
+                lessons.extend(self._sub_split(g))
+            else:
+                lessons.append(Lesson(g, None))
+        if tail_at < len(sections):               # one terminal wrap-up
+            wrap = Lesson(list(range(sections[tail_at][0], len(chunks))),
+                          None)
+            wrap.is_wrapup = True
+            lessons.append(wrap)
+        return lessons
+
+    def _sub_split(self, idxs: list[int]) -> list[Lesson]:
+        """Split an oversize lesson at top-level h3 (and h2) boundaries.  A
+        ▶ checkpoint h3 never begins a fragment, and the first fragment
+        always retains the section's opening run."""
+        chunks = self.chunks
+        units: list[list[int]] = [[idxs[0]]]
+        for i in idxs[1:]:
+            c = chunks[i]
+            if c.level in (2, 3) and not c.is_checkpoint:
+                units.append([i])
+            else:
+                units[-1].append(i)
+        frags: list[list[int]] = []
+        cur: list[int] = []
+        cur_w = 0
+        for u in units:
+            u_w = sum(chunks[i].words for i in u)
+            if cur and cur_w + u_w > LESSON_CEIL and cur_w >= LESSON_FLOOR:
+                frags.append(cur)
+                cur, cur_w = [], 0
+            cur += u
+            cur_w += u_w
+        if cur:
+            if cur_w < LESSON_FLOOR and frags:
+                frags[-1] += cur
+            else:
+                frags.append(cur)
+        if len(frags) == 1:
+            return [Lesson(frags[0], None)]
+        # A1.5: fragments are titled "<h2 short label> · part k of m"
+        owner = next((i for i in idxs if chunks[i].level in (1, 2)), idxs[0])
+        return [Lesson(f, (k, len(frags)), owner)
+                for k, f in enumerate(frags, start=1)]
+
+    # -- per-lesson metadata and body ----------------------------------
+    def _finalize(self, md: markdown.Markdown) -> None:
+        chunks, ctx = self.chunks, self.ctx
+        for k, lesson in enumerate(self.lessons, start=1):
+            lesson.number = k
+            lesson.out = lesson_name(self.out, k)
+            lesson.words = sum(chunks[i].words for i in lesson.idxs)
+            lesson.checkpoints = sum(
+                1 for i in lesson.idxs if chunks[i].is_checkpoint)
+            lesson.minutes = max(LESSON_MIN_MINUTES, round(
+                lesson.words / LESSON_WPM
+                + LESSON_CHECKPOINT_MIN * lesson.checkpoints))
+            first = chunks[lesson.idxs[0]]
+            if k == 1 and not lesson.part:
+                lesson.title = short_label(ctx.h1 or self.out)
+            elif lesson.owner_idx is not None:
+                owner = chunks[lesson.owner_idx]
+                lesson.title = short_label(
+                    (ctx.h1 if owner.level == 1 else owner.text)
+                    or self.out)
+            else:
+                head = next((chunks[i] for i in lesson.idxs
+                             if chunks[i].level in (1, 2)), first)
+                lesson.title = short_label(head.text or ctx.h1 or self.out)
+            if lesson.part:
+                lesson.title += f" · part {lesson.part[0]} of {lesson.part[1]}"
+            for i in lesson.idxs:
+                for el in chunks[i].el.iter():
+                    if el.get("id"):
+                        lesson.ids.add(el.get("id"))
+                if (chunks[i].level and lesson.first_heading_id is None
+                        and chunks[i].el.get("id")):
+                    lesson.first_heading_id = chunks[i].el.get("id")
+            lesson.toc = [e for e in ctx.toc if e[2] in lesson.ids]
+            # first paragraph (skipping breadcrumbs) -> og description
+            for i in lesson.idxs:
+                el = chunks[i].el
+                if (el.tag == "p"
+                        and "md-breadcrumb" not in (el.get("class") or "")):
+                    text = " ".join("".join(el.itertext()).split())
+                    if text:
+                        lesson.desc = text
+                        break
+            if not lesson.desc:
+                lesson.desc = f"{lesson.title} — lesson {k} of " \
+                              f"{len(self.lessons)} in {ctx.h1 or self.out}."
+            body = "\n".join(chunks[i].html for i in lesson.idxs
+                             if i not in self.struck)
+            body = postprocess_body(body)
+            # ¶ permalinks on a lesson always target the full page (B1: the
+            # permanent addresses are the full pages and their fragments)
+            body = body.replace('class="hanchor" href="#',
+                                f'class="hanchor" href="{self.out}#')
+            # any other same-page fragment whose target lives in a different
+            # lesson is a consultation -> send it to the full page (B2)
+            def _relocalize(m: re.Match) -> str:
+                frag = m.group(1)
+                if frag in lesson.ids or frag == "top":
+                    return m.group(0)
+                return f'href="{self.out}#{frag}"'
+            lesson.body = re.sub(r'href="#([^"]*)"', _relocalize, body)
 
 
 # ---------------------------------------------------------------------------
@@ -719,16 +1021,28 @@ def esc(text: str) -> str:
     return html_mod.escape(text, quote=True)
 
 
-def build_sidebar(current: str) -> str:
+def build_sidebar(current: str, current_phase: str | None = None) -> str:
+    """One sidebar for the whole site.  Phase entries point at the lesson-1
+    hubs (the default reading path); `current_phase` is the Phases out-name
+    the rendered page belongs to (the full page itself or any of its
+    lessons), whose entry is marked current."""
     parts = []
     for section in NAV_SECTIONS:
         items = []
         for out, _src, label, sec in PAGES:
             if sec != section:
                 continue
-            cls = ' class="current"' if out == current else ""
-            aria = ' aria-current="page"' if out == current else ""
-            items.append(f'<li{cls}><a href="{out}"{aria}>{esc(label)}</a></li>')
+            href = hub_name(out) if sec == "Phases" else out
+            if sec == "Phases":
+                is_current = out == current_phase
+            else:
+                is_current = out == current
+            cls = ' class="current"' if is_current else ""
+            aria = ""
+            if is_current:
+                aria = (' aria-current="page"' if current == href
+                        else ' aria-current="true"')
+            items.append(f'<li{cls}><a href="{href}"{aria}>{esc(label)}</a></li>')
         parts.append(
             f'<p class="sidebar-heading">{esc(section)}</p>\n<ul>\n'
             + "\n".join(items) + "\n</ul>")
@@ -817,6 +1131,184 @@ def build_toc(toc: list[tuple[int, str, str]]) -> str:
     )
 
 
+# ---------------------------------------------------------------------------
+# Lesson chrome (kicker, rails, hub plan, Continue card, full-page strip)
+# ---------------------------------------------------------------------------
+def build_lesson_strip(plan: PhasePlan) -> str:
+    """Slim strip under the full page's phase header: the labeled crossing
+    into the lesson track (the only full-page addition besides the per-h2
+    lesson links)."""
+    n = len(plan.lessons)
+    return (
+        '<p class="lesson-strip">This phase is also available as '
+        f'{n} lessons of ~{plan.median_minutes} min — '
+        f'<a href="{hub_name(plan.out)}">start Lesson 1 →</a> '
+        '<span class="lesson-strip-note">(this single page is best for '
+        'printing)</span></p>')
+
+
+def build_lesson_header(plan: PhasePlan, lesson: Lesson) -> str:
+    """Wayfinding chrome for a lesson page: medallion + position kicker +
+    time/checkpoint chips, the 0–8 phase rail (targeting the lesson-1 hubs),
+    the lesson rail, the cross-lesson version ladder, and the conditional
+    per-lesson TOC."""
+    n = len(plan.lessons)
+    p = plan.phase_no
+    kicker = (f"Phase {p} · Wrap-up" if lesson.is_wrapup
+              else f"Phase {p} · Lesson {lesson.number} of {n}")
+    chips = f'<span class="lesson-time">~{lesson.minutes} min</span>'
+    if lesson.checkpoints:
+        noun = ("checkpoint" if lesson.checkpoints == 1 else "checkpoints")
+        chips += (f'<span class="lesson-cp">{lesson.checkpoints} '
+                  f'<span aria-hidden="true">▶</span> {noun}</span>')
+    parts = [
+        '<p class="phase-eyebrow"><span class="phase-medallion" '
+        f'aria-hidden="true">{p}</span>'
+        f'<span class="phase-kicker">{esc(kicker)}</span>{chips}</p>'
+    ]
+    dots = []
+    for i, (out, label) in enumerate(PHASE_PAGES):
+        if i:
+            dots.append('<span class="rail-link" aria-hidden="true"></span>')
+        cur = ' aria-current="true"' if out == plan.out else ""
+        dots.append(f'<a class="rail-dot" href="{hub_name(out)}"{cur} '
+                    f'title="{esc(label)}" aria-label="{esc(label)}">{i}</a>')
+    parts.append('<nav class="phase-rail" aria-label="All phases">'
+                 + "".join(dots) + "</nav>")
+    ticks = []
+    for sib in plan.lessons:
+        cur = ' aria-current="page"' if sib.number == lesson.number else ""
+        what = "Wrap-up" if sib.is_wrapup else f"Lesson {sib.number}"
+        label = f"{what}: {sib.title} (~{sib.minutes} min)"
+        ticks.append(f'<a class="lesson-tick" href="{sib.out}"{cur} '
+                     f'title="{esc(label)}" aria-label="{esc(label)}">'
+                     f'{sib.number}</a>')
+    parts.append('<nav class="lesson-rail" aria-label="Lessons in this phase">'
+                 + "".join(ticks) + "</nav>")
+    if len(plan.ctx.ladder) >= 2:
+        rungs = []
+        for k, (v, label, slug) in enumerate(plan.ctx.ladder):
+            if k:
+                rungs.append('<span class="ladder-sep" aria-hidden="true">'
+                             "→</span>")
+            target = plan.lesson_of_id.get(slug)
+            href = f"{target.out}#{slug}" if target else f"{plan.out}#{slug}"
+            rungs.append(f'<a class="ladder-rung" href="{href}">'
+                         f'<span class="ladder-medallion">V{v}</span> '
+                         f"{esc(label)}</a>")
+        parts.append('<nav class="ladder" aria-label="Version ladder">'
+                     + "".join(rungs) + "</nav>")
+    if len(lesson.toc) >= 3:
+        parts.append(build_toc(lesson.toc))
+    return "\n".join(parts)
+
+
+def build_lesson_plan(plan: PhasePlan) -> str:
+    """The hub's generated lesson plan: every lesson with title, time and
+    checkpoint badge, the phase total, and the labeled single-page escape
+    hatch.  Pure structure — no authored prose is invented."""
+    n = len(plan.lessons)
+    items = []
+    for lesson in plan.lessons:
+        meta = f"~{lesson.minutes} min"
+        if lesson.checkpoints:
+            noun = ("checkpoint" if lesson.checkpoints == 1
+                    else "checkpoints")
+            meta += (f' · {lesson.checkpoints} <span aria-hidden="true">▶'
+                     f'</span><span class="visually-hidden"> {noun}</span>')
+        badge = (' <span class="plan-badge">Wrap-up</span>'
+                 if lesson.is_wrapup else "")
+        inner = (f'<span class="plan-num" aria-hidden="true">'
+                 f'{lesson.number}</span>'
+                 f'<span class="plan-title">{esc(lesson.title)}{badge}</span>'
+                 f'<span class="plan-meta">{meta}</span>')
+        if lesson.number == 1:
+            items.append('<li class="plan-here" aria-current="page">'
+                         f'<span class="plan-row">{inner}</span></li>')
+        else:
+            items.append(f'<li><a class="plan-row" href="{lesson.out}">'
+                         f'{inner}</a></li>')
+    return (
+        '<section class="lesson-plan" aria-label="Lesson plan">\n'
+        '<p class="plan-kicker">Lesson plan <span class="plan-total">'
+        f'{n} lessons · ~{plan.total_minutes} min</span></p>\n'
+        '<ol class="plan-list">\n' + "\n".join(items) + '\n</ol>\n'
+        f'<p class="plan-single">Prefer one scroll? <a href="{plan.out}">'
+        'Read this phase as a single page</a>.</p>\n'
+        '</section>')
+
+
+def build_continue(plan: PhasePlan, lesson: Lesson,
+                   plans: list[PhasePlan]) -> str:
+    """The Continue card: one prominent next-step card (next title + its
+    time + k+1 of n), a quieter previous link, and the labeled crossing to
+    the single page."""
+    n = len(plan.lessons)
+    k = lesson.number
+    # -- next: lesson k+1, or the next phase's hub, or the PAGES chain
+    if k < n:
+        nxt = plan.lessons[k]
+        kicker = (f"Next · Wrap-up · Lesson {nxt.number} of {n}"
+                  if nxt.is_wrapup else f"Next · Lesson {nxt.number} of {n}")
+        href, title = nxt.out, nxt.title
+        time_chip = f'<span class="continue-time">~{nxt.minutes} min</span>'
+    elif plan.phase_no + 1 < len(plans):
+        nplan = plans[plan.phase_no + 1]
+        first = nplan.lessons[0]
+        kicker = (f"Next · Phase {nplan.phase_no} · Lesson 1 of "
+                  f"{len(nplan.lessons)}")
+        href, title = first.out, first.title
+        time_chip = f'<span class="continue-time">~{first.minutes} min</span>'
+    else:
+        idx = next(i for i, pg in enumerate(PAGES) if pg[0] == plan.out)
+        href, title = PAGES[idx + 1][0], PAGES[idx + 1][2]
+        kicker, time_chip = "Next", ""
+    card = (
+        f'<a class="continue-card" href="{href}" rel="next">\n'
+        f'<span class="continue-kicker">{esc(kicker)}</span>\n'
+        f'<span class="continue-title">{esc(title)}{time_chip}'
+        '<span class="continue-arrow" aria-hidden="true">→</span></span>\n'
+        '</a>')
+    # -- quieter previous link
+    if k > 1:
+        prev = plan.lessons[k - 2]
+        what = "Wrap-up" if prev.is_wrapup else f"Lesson {prev.number}"
+        prev_link = (f'<a href="{prev.out}" rel="prev">← {what} · '
+                     f'{esc(prev.title)}</a>')
+    elif plan.phase_no > 0:
+        pplan = plans[plan.phase_no - 1]
+        prev = pplan.lessons[-1]
+        prev_link = (f'<a href="{prev.out}" rel="prev">← Phase '
+                     f'{pplan.phase_no} · Wrap-up</a>')
+    else:
+        idx = next(i for i, pg in enumerate(PAGES) if pg[0] == plan.out)
+        prev_link = (f'<a href="{PAGES[idx - 1][0]}" rel="prev">← '
+                     f'{esc(PAGES[idx - 1][2])}</a>')
+    single = (f'<a class="continue-fullpage" href="{plan.out}'
+              + (f'#{lesson.first_heading_id}' if lesson.first_heading_id
+                 else "")
+              + '">View this lesson on the single page</a>')
+    return ('<nav class="continue" aria-label="Continue">\n'
+            + card + '\n<p class="continue-aux">\n'
+            + prev_link + '\n' + single + '\n</p>\n</nav>')
+
+
+def inject_lesson_links(body: str, plan: PhasePlan) -> str:
+    """Full pages, SHOULD C8: a small lesson-view link next to each h2's ¶
+    anchor, targeting the lesson containing that h2.  Adds no ids — the
+    anchor-parity contract is untouched."""
+    n = len(plan.lessons)
+    for h2_id, lesson in plan.h2_lessons:
+        needle = f'class="hanchor" href="#{h2_id}">¶</a></h2>'
+        link = (f'<a class="lesson-link" href="{lesson.out}" '
+                f'title="Read this section in lesson view (Lesson '
+                f'{lesson.number} of {n})">lesson {lesson.number}</a>')
+        body = body.replace(
+            needle,
+            f'class="hanchor" href="#{h2_id}">¶</a>{link}</h2>', 1)
+    return body
+
+
 # A source `---` divider directly above an `##` renders as <hr> + <h2>, but
 # every h2 already carries its own bottom border — the section would open
 # with a double rule.  Strike the <hr> (string post-processing, like
@@ -861,8 +1353,61 @@ def index_hero(body: str) -> str:
     )
 
 
+PAGE_SHELL = """<!DOCTYPE html>
+<!-- GENERATED from {src_rel} — do not edit; run site/build_site.py -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="{desc}">
+<link rel="canonical" href="{canonical}">
+<meta property="og:type" content="{og_type}">
+<meta property="og:url" content="{og_url}">
+<meta property="og:site_name" content="Agent Harness Guide">
+<meta property="og:title" content="{title}">
+<meta property="og:description" content="{desc}">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#FDFDFE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
+<title>{title}</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="{favicon}">
+</head>
+<body{body_class}>
+<div class="progress-bar" aria-hidden="true"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="layout">
+<details class="sidebar-wrap" open>
+<summary class="sidebar-toggle">Guide navigation</summary>
+<nav class="sidebar" aria-label="Guide pages">
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
+{sidebar}
+</nav>
+</details>
+<main id="main">
+<header class="page-header">
+{header}
+</header>
+<article>
+{body}
+</article>
+{after_article}<footer class="page-footer">
+{footer_nav}
+<p class="generated-note">{generated_note}</p>
+<p class="source-link"><a class="repo-file" href="{source_url}" title="Requires access to the repository">View the markdown source on GitHub</a></p>
+</footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
+</main>
+</div>
+<script>
+{page_js}</script>
+</body>
+</html>
+"""
+
+
 def build_page(out_name: str, src_rel: str, body: str, ctx: PageContext,
-               idx: int) -> str:
+               idx: int, plan: PhasePlan | None = None) -> str:
     h1 = ctx.h1 or PAGES[idx][2]
     # the hub's h1 is ~90 chars; use its short nav label in the tab title
     title_text = PAGES[idx][2] if out_name == "index.html" else h1
@@ -886,66 +1431,78 @@ def build_page(out_name: str, src_rel: str, body: str, ctx: PageContext,
     body = postprocess_body(body)
     if is_index:
         body = index_hero(body)
-    body_class = ' class="page-index"' if is_index else ""
-    og_type = "website" if is_index else "article"
+    if plan is not None:
+        body = inject_lesson_links(body, plan)
     header = "\n".join(part for part in
                        (build_phase_header(out_name, ctx.ladder),
+                        build_lesson_strip(plan) if plan else "",
                         build_toc(ctx.toc)) if part)
 
-    return f"""<!DOCTYPE html>
-<!-- GENERATED from {src_rel} — do not edit; run site/build_site.py -->
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="{esc(desc)}">
-<link rel="canonical" href="{SITE_URL}{out_name}">
-<meta property="og:type" content="{og_type}">
-<meta property="og:url" content="{SITE_URL}{out_name}">
-<meta property="og:site_name" content="Agent Harness Guide">
-<meta property="og:title" content="{esc(title)}">
-<meta property="og:description" content="{esc(desc)}">
-<meta name="twitter:card" content="summary">
-<meta name="theme-color" content="#FDFDFE" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
-<title>{esc(title)}</title>
-<link rel="stylesheet" href="style.css">
-<link rel="icon" href="{FAVICON}">
-</head>
-<body{body_class}>
-<div class="progress-bar" aria-hidden="true"></div>
-<a class="skip-link" href="#main">Skip to content</a>
-<div class="layout">
-<details class="sidebar-wrap" open>
-<summary class="sidebar-toggle">Guide navigation</summary>
-<nav class="sidebar" aria-label="Guide pages">
-<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
-{build_sidebar(out_name)}
-</nav>
-</details>
-<main id="main">
-<header class="page-header">
-{header}
-</header>
-<article>
-{body}
-</article>
-<footer class="page-footer">
-<nav class="prevnext" aria-label="Previous and next page">
-{prev_link}
-{next_link}
-</nav>
-<p class="generated-note">Generated from <code>{esc(src_rel)}</code> — the markdown is the source of truth.{repo_note}</p>
-<p class="source-link"><a class="repo-file" href="{GITHUB_BLOB}{src_rel}" title="Requires access to the repository">View the markdown source on GitHub</a></p>
-</footer>
-<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
-</main>
-</div>
-<script>
-{PAGE_JS}</script>
-</body>
-</html>
-"""
+    return PAGE_SHELL.format(
+        src_rel=src_rel,
+        desc=esc(desc),
+        canonical=f"{SITE_URL}{out_name}",
+        og_type="website" if is_index else "article",
+        og_url=f"{SITE_URL}{out_name}",
+        title=esc(title),
+        favicon=FAVICON,
+        body_class=' class="page-index"' if is_index else "",
+        sidebar=build_sidebar(out_name, plan.out if plan else None),
+        header=header,
+        body=body,
+        after_article="",
+        footer_nav=('<nav class="prevnext" aria-label="Previous and next '
+                    f'page">\n{prev_link}\n{next_link}\n</nav>'),
+        generated_note=(f"Generated from <code>{esc(src_rel)}</code> — the "
+                        f"markdown is the source of truth.{repo_note}"),
+        source_url=f"{GITHUB_BLOB}{src_rel}",
+        page_js=PAGE_JS,
+    )
+
+
+def build_lesson_page(plan: PhasePlan, lesson: Lesson,
+                      plans: list[PhasePlan]) -> str:
+    """One derived lesson page.  Same chrome as build_page; the canonical
+    URL points at the full page (the permanent address), the footer is the
+    Continue card, and lesson 1 doubles as the phase hub (lesson plan
+    injected after its content)."""
+    n = len(plan.lessons)
+    what = ("Wrap-up" if lesson.is_wrapup
+            else f"Lesson {lesson.number}")
+    title = (f"Phase {plan.phase_no} · {what} — {lesson.title} "
+             "— Agent Harness Guide")
+    desc = lesson.desc.replace("\n", " ")
+    if len(desc) > 158:
+        desc = desc[:157].rstrip() + "…"
+    repo_note = (" Links marked ↗ open files of this project on GitHub."
+                 if ' repo-file"' in lesson.body
+                 or " repo-file " in lesson.body else "")
+    after = ""
+    if lesson.number == 1:
+        after = build_lesson_plan(plan) + "\n"
+    generated_note = (
+        f"Generated from <code>{esc(plan.src_rel)}</code> — lesson "
+        f"{lesson.number} of {n} in the derived lesson view (boundaries may "
+        f'move when the markdown changes; the <a href="{plan.out}">single '
+        f"page</a> is the permanent address).{repo_note}")
+    return PAGE_SHELL.format(
+        src_rel=plan.src_rel,
+        desc=esc(desc),
+        canonical=f"{SITE_URL}{plan.out}",
+        og_type="article",
+        og_url=f"{SITE_URL}{lesson.out}",
+        title=esc(title),
+        favicon=FAVICON,
+        body_class="",
+        sidebar=build_sidebar(lesson.out, plan.out),
+        header=build_lesson_header(plan, lesson),
+        body=lesson.body,
+        after_article=after,
+        footer_nav=build_continue(plan, lesson, plans),
+        generated_note=generated_note,
+        source_url=f"{GITHUB_BLOB}{plan.src_rel}",
+        page_js=PAGE_JS,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -1310,7 +1867,7 @@ details.diagram-text > summary {
   transition: border-color 120ms ease-out, color 120ms ease-out;
 }
 .rail-dot:hover { border-color: var(--accent); color: var(--accent-deep); }
-.rail-dot[aria-current="page"] {
+.rail-dot[aria-current] {
   background: var(--accent); border-color: var(--accent);
   color: #fff;                                        /* 6.29:1 */
 }
@@ -1333,6 +1890,138 @@ details.diagram-text > summary {
   color: var(--accent-deep); border-radius: 999px; padding: 0.15em 0.5em;
 }
 .ladder-sep { color: var(--muted); }
+/* ---- lesson view (derived bite-size pages) ---- */
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+.phase-eyebrow { flex-wrap: wrap; }
+.lesson-time, .lesson-cp {
+  font: 600 0.75rem var(--font-mono); letter-spacing: 0.02em;
+  border: 1px solid var(--border-strong); border-radius: 999px;
+  padding: 0.2em 0.7em; color: var(--muted); white-space: nowrap;
+}
+.lesson-cp {
+  color: var(--accent-deep);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+/* full-page strip: the labeled crossing into the lesson track */
+.lesson-strip {
+  margin: 0 0 1rem; padding: 0.625rem 1rem; font-size: 0.875rem;
+  border: 1px solid var(--border); border-radius: 10px;
+  background: color-mix(in srgb, var(--accent) 5%, var(--bg));
+}
+.lesson-strip a { font-weight: 600; }
+.lesson-strip-note { color: var(--muted); }
+/* lesson rail: one tick per lesson, 18px gaps -> 44px tap pitch */
+.lesson-rail {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: 1.125rem; margin: 0 0 1rem;
+}
+.lesson-tick {
+  position: relative; flex: none; width: 26px; height: 26px;
+  border-radius: 8px; border: 1px solid var(--border-strong);
+  background: var(--bg); color: var(--muted);              /* 6.10:1 */
+  display: flex; align-items: center; justify-content: center;
+  font: 600 0.75rem var(--font-mono); text-decoration: none;
+  transition: border-color 120ms ease-out, color 120ms ease-out;
+}
+.lesson-tick::after { content: ""; position: absolute; inset: -9px; } /* 44px target */
+.lesson-tick:hover { border-color: var(--accent); color: var(--accent-deep); }
+.lesson-tick[aria-current="page"] {
+  background: var(--accent); border-color: var(--accent);
+  color: #fff;                                             /* 6.29:1 */
+}
+/* hub lesson plan */
+.lesson-plan {
+  margin: 2.5rem 0 0; padding: 1rem 1.25rem;
+  border: 1px solid var(--border); border-radius: 12px;
+}
+.plan-kicker {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 1rem; flex-wrap: wrap; margin: 0 0 0.5rem;
+  font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted);
+}
+.plan-total { color: var(--accent-deep); letter-spacing: 0.02em; }
+.plan-list { list-style: none; margin: 0 0 1rem; padding: 0; }
+.plan-list li { margin: 0; border-bottom: 1px solid var(--border); }
+.plan-list li:last-child { border-bottom: 0; }
+.plan-row {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.55rem 0.375rem; border-radius: 8px;
+  text-decoration: none; color: var(--fg);
+  transition: background-color 120ms ease-out, color 120ms ease-out;
+}
+a.plan-row:hover { background: color-mix(in srgb, var(--accent) 7%, transparent); }
+a.plan-row:hover .plan-title { color: var(--accent-deep); }
+.plan-num {
+  flex: none; width: 1.9em; height: 1.9em; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font: 700 0.75rem var(--font-mono);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent-deep);
+}
+.plan-title { font-weight: 600; font-size: 0.9375rem; min-width: 0; }
+.plan-meta {
+  margin-left: auto; text-align: right;
+  font: 600 0.75rem var(--font-mono); color: var(--muted);
+  white-space: nowrap;
+}
+.plan-badge {
+  font: 700 0.625rem var(--font-mono); text-transform: uppercase;
+  letter-spacing: 0.08em; white-space: nowrap; color: var(--green);
+  border: 1px solid color-mix(in srgb, var(--green) 45%, transparent);
+  border-radius: 999px; padding: 0.1em 0.6em; margin-left: 0.4em;
+}
+.plan-here .plan-row { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.plan-here .plan-title::after {
+  content: " — you are here"; font-weight: 400; font-size: 0.8125rem;
+  color: var(--muted);
+}
+.plan-single { margin: 0; font-size: 0.875rem; color: var(--muted); }
+/* Continue card: the goal-gradient pull at the end of every lesson */
+.continue { margin: 0; }
+.continue-card {
+  display: block; padding: 1rem 1.25rem; text-decoration: none;
+  border: 1px solid var(--border-strong); border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 4%, var(--bg));
+  transition: border-color 120ms ease-out;
+}
+.continue-card:hover { border-color: var(--accent); }
+.continue-kicker {
+  display: block; margin-bottom: 0.3rem;
+  font-family: var(--font-mono); font-size: 0.6875rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted);
+}
+.continue-title {
+  display: flex; align-items: baseline; gap: 0.6em; flex-wrap: wrap;
+  font-weight: 700; font-size: 1.125rem; color: var(--fg);
+}
+.continue-card:hover .continue-title { color: var(--accent-deep); }
+.continue-time {
+  font: 600 0.75rem var(--font-mono); color: var(--muted);
+  white-space: nowrap;
+}
+.continue-arrow { margin-left: auto; color: var(--accent); }
+.continue-aux {
+  display: flex; justify-content: space-between; gap: 0.5rem 1.5rem;
+  flex-wrap: wrap; margin: 0.75rem 0 0; font-size: 0.875rem;
+}
+.continue-aux a { color: var(--muted); text-decoration: none; }
+.continue-aux a:hover { color: var(--accent-deep); text-decoration: underline; }
+/* per-h2 lesson-view links on full pages: hover-revealed, like ¶ */
+.lesson-link {
+  margin-left: 0.6em; padding: 0.1em 0.6em; white-space: nowrap;
+  font: 600 0.6875rem var(--font-mono); letter-spacing: 0.04em;
+  text-transform: uppercase; text-decoration: none; color: var(--muted);
+  border: 1px solid var(--border-strong); border-radius: 999px;
+  vertical-align: 0.2em;
+  opacity: 0; transition: opacity 120ms ease-out, color 120ms ease-out,
+    border-color 120ms ease-out;
+}
+h2:hover > .lesson-link, .lesson-link:focus-visible { opacity: 1; }
+.lesson-link:hover { color: var(--accent-deep); border-color: var(--accent); }
 /* ---- index landing page (body.page-index only) ---- */
 .hero { padding: 1.5rem 0 0.5rem; }
 .hero .hero-eyebrow {
@@ -1365,7 +2054,8 @@ details.diagram-text > summary {
   .skip-link { color: var(--bg); }
   .btn-primary { color: var(--bg); }
   .phase-medallion { color: var(--bg); }                   /* 7.47:1 */
-  .rail-dot[aria-current="page"] { color: var(--bg); }     /* 7.47:1 */
+  .rail-dot[aria-current] { color: var(--bg); }            /* 7.47:1 */
+  .lesson-tick[aria-current="page"] { color: var(--bg); }  /* 7.47:1 */
   .btn-primary:hover { background: #A5B0FF; }  /* dark text on it: 9.28:1 */
   .hero blockquote { color: var(--muted); }    /* 7.34:1 */
   blockquote.beginner { background: color-mix(in srgb, var(--green) 9%, var(--bg)); }
@@ -1376,7 +2066,8 @@ details.diagram-text > summary {
 @media print {
   .sidebar-wrap, .skip-link, .copy-btn, .page-header, .page-toc, .prevnext,
   .back-to-top, .hanchor, .hero-cta, .source-link, .progress-bar,
-  .diagram-text, .md-breadcrumb { display: none !important; }
+  .diagram-text, .md-breadcrumb, .lesson-strip, .lesson-rail, .lesson-link,
+  .lesson-plan, .continue { display: none !important; }
   /* use the sheet: drop the screen column, center the text at a book-like
      measure instead of hugging the left half of the page */
   .layout { max-width: none; }
@@ -1488,7 +2179,7 @@ def build_css() -> str:
 # ---------------------------------------------------------------------------
 # Build
 # ---------------------------------------------------------------------------
-def convert_page(src_rel: str) -> tuple[str, PageContext]:
+def convert_page(src_rel: str) -> tuple[str, PageContext, markdown.Markdown]:
     source = (GUIDE_DIR / src_rel).read_text(encoding="utf-8")
     ctx = PageContext(source_dir=posixpath.dirname(src_rel))
     md = markdown.Markdown(
@@ -1500,17 +2191,168 @@ def convert_page(src_rel: str) -> tuple[str, PageContext]:
         output_format="html5",
     )
     body = md.convert(source)
-    return body, ctx
+    # md is returned un-reset: render_chunk needs the live serializer,
+    # postprocessors and htmlStash to slice lessons out of ctx.root.
+    return body, ctx, md
+
+
+# ---------------------------------------------------------------------------
+# Verification battery (anchor parity, partition completeness, link
+# integrity and the lesson word ceiling are build-failing gates; the
+# checkpoint report is a warning).
+# ---------------------------------------------------------------------------
+def anchor_snapshot(written: dict[str, str]) -> str:
+    """Ordered id lists of the full (non-lesson) pages, in the exact format
+    pinned in site/anchor-baseline.txt."""
+    lines = []
+    for name in sorted(out for out, _src, _l, _s in PAGES):
+        ids = ID_RE.findall(written[name])
+        lines.append(f"== {name} ({len(ids)} ids)")
+        lines.extend(ids)
+    return "\n".join(lines) + "\n"
+
+
+def run_battery(written: dict[str, str], plans: list[PhasePlan]) -> None:
+    errors: list[str] = []
+    norm = lambda s: re.sub(r"\s+", " ", s).strip()  # noqa: E731
+
+    # 1. Anchor parity: the full pages' ordered id lists must be byte-equal
+    #    to the pinned snapshot (the permanent-address contract, B2).
+    snap = anchor_snapshot(written)
+    baseline = SITE_DIR / ANCHOR_BASELINE
+    if baseline.exists():
+        if baseline.read_text(encoding="utf-8") != snap:
+            import difflib
+            diff = list(difflib.unified_diff(
+                baseline.read_text(encoding="utf-8").splitlines(),
+                snap.splitlines(), ANCHOR_BASELINE, "this build",
+                lineterm="", n=1))
+            errors.append(
+                "ANCHOR PARITY: full-page id lists drifted from the pinned "
+                f"site/{ANCHOR_BASELINE}.  If the markdown legitimately "
+                "changed, re-pin the baseline deliberately.  Diff (first 40 "
+                "lines):\n  " + "\n  ".join(diff[:40]))
+    else:
+        baseline.write_text(snap, encoding="utf-8")
+        print(f"NOTE: pinned new anchor snapshot at site/{ANCHOR_BASELINE}")
+
+    # 2. Partition completeness: every top-level rendered node of each phase
+    #    appears in exactly one lesson, and the chunk rendering reproduces
+    #    the full page's article (whitespace-normalized).
+    for plan in plans:
+        allocated = sorted(i for l in plan.lessons for i in l.idxs)
+        if allocated != list(range(len(plan.chunks))):
+            errors.append(f"PARTITION: {plan.out}: lessons do not cover the "
+                          "article nodes exactly (lost/duplicated chunks)")
+        if norm("\n".join(c.html for c in plan.chunks)) != norm(plan.body):
+            errors.append(f"PARTITION: {plan.out}: per-chunk rendering does "
+                          "not reconstruct the full-page article")
+        got = written[plan.out].count('class="lesson-link"')
+        if got != len(plan.h2_lessons):
+            errors.append(f"PARTITION: {plan.out}: expected "
+                          f"{len(plan.h2_lessons)} per-h2 lesson links, "
+                          f"injected {got}")
+
+    # 3. Link integrity: every internal href in every generated page (full
+    #    pages AND lessons) resolves to an existing file, and every fragment
+    #    to an id present in the target.
+    ids_by_file = {name: set(ID_RE.findall(text))
+                   for name, text in written.items()}
+    for name, text in sorted(written.items()):
+        for href in sorted(set(re.findall(r'href="([^"]*)"', text))):
+            href = html_mod.unescape(href)
+            if href.startswith(("http://", "https://", "mailto:", "data:")):
+                continue
+            path, _, frag = href.partition("#")
+            if not path:
+                if frag in ("", "top") or frag in ids_by_file[name]:
+                    continue  # #top is the browser-native back-to-top target
+                errors.append(f"LINK: {name}: dangling fragment #{frag}")
+            elif path == "style.css":
+                continue
+            elif path not in ids_by_file:
+                errors.append(f"LINK: {name}: target file missing: {href}")
+            elif frag and frag not in ids_by_file[path]:
+                errors.append(f"LINK: {name}: missing fragment: {href}")
+
+    # 4. Pedagogy gates: hard word ceiling (fail) + checkpoint report (warn),
+    #    with the per-phase lesson plan printed so drift is visible.
+    warnings: list[str] = []
+    print("\nDerived lesson plan:")
+    for plan in plans:
+        print(f"  Phase {plan.phase_no}  {plan.out}: {len(plan.lessons)} "
+              f"lessons · ~{plan.total_minutes} min")
+        for lesson in plan.lessons:
+            tag = "wrap-up" if lesson.is_wrapup else f"L{lesson.number}"
+            print(f"    {tag:>7}  {lesson.words:5d}w  "
+                  f"{lesson.checkpoints}cp  ~{lesson.minutes:2d} min  "
+                  f"{lesson.title}")
+            if lesson.words > LESSON_HARD:
+                if lesson.is_wrapup:  # A1.6: the ritual is never split
+                    print(f"    NOTE: wrap-up over {LESSON_HARD}w "
+                          "(never split by rule A1.6)")
+                else:
+                    errors.append(f"CEILING: {lesson.out}: {lesson.words} "
+                                  f"visible words > LESSON_HARD "
+                                  f"{LESSON_HARD} after sub-split")
+            if (lesson.number > 1 and not lesson.is_wrapup
+                    and lesson.checkpoints == 0):
+                warnings.append(f"{lesson.out} ({lesson.title}): no ▶ "
+                                "checkpoint (bridge/design lesson? "
+                                "seed item D3)")
+    if warnings:
+        print(f"\nWARNING: {len(warnings)} checkpoint-less content "
+              "lesson(s) (non-failing; feeds the markdown-side worklist):")
+        for w in warnings:
+            print(f"  - {w}")
+    if errors:
+        print(f"\nverification battery FAILED ({len(errors)} error(s)):",
+              file=sys.stderr)
+        for e in errors:
+            print(f"ERROR: {e}", file=sys.stderr)
+        raise SystemExit(1)
+    total = sum(len(p.lessons) for p in plans)
+    print(f"\nverification battery passed: anchor parity OK, partition "
+          f"complete OK, link integrity OK, word ceiling OK "
+          f"({total} lessons across {len(plans)} phases)")
 
 
 def main() -> None:
     HTML_DIR.mkdir(parents=True, exist_ok=True)
     FIGURE_HITS.clear()
-    for idx, (out_name, src_rel, _label, _sec) in enumerate(PAGES):
-        body, ctx = convert_page(src_rel)
-        page = build_page(out_name, src_rel, body, ctx, idx)
+    # Pass 1: convert every page once (lessons are sliced, never
+    # re-converted), and derive each phase's lesson plan.
+    converted = []
+    plans: list[PhasePlan] = []
+    for idx, (out_name, src_rel, _label, sec) in enumerate(PAGES):
+        body, ctx, md = convert_page(src_rel)
+        plan = None
+        if sec == "Phases":
+            phase_no = [o for o, _ in PHASE_PAGES].index(out_name)
+            plan = PhasePlan(out_name, src_rel, phase_no, body, ctx, md)
+            plans.append(plan)
+        converted.append((out_name, src_rel, body, ctx, idx, plan))
+    # Pass 2: write the full pages, then the lesson pages (cross-phase
+    # Continue cards need every plan).
+    written: dict[str, str] = {}
+    for out_name, src_rel, body, ctx, idx, plan in converted:
+        page = build_page(out_name, src_rel, body, ctx, idx, plan)
         (HTML_DIR / out_name).write_text(page, encoding="utf-8")
+        written[out_name] = page
         print(f"wrote html/{out_name}  <- {src_rel}")
+    for plan in plans:
+        for lesson in plan.lessons:
+            page = build_lesson_page(plan, lesson, plans)
+            (HTML_DIR / lesson.out).write_text(page, encoding="utf-8")
+            written[lesson.out] = page
+        print(f"wrote html/{lesson_name(plan.out, 1)} … "
+              f"html/{plan.lessons[-1].out}  ({len(plan.lessons)} lessons)")
+    # Lesson boundaries are derived; a re-split can shrink the count — drop
+    # any stale lesson page so html/ holds exactly this build's output.
+    for path in sorted(HTML_DIR.glob("*.html")):
+        if path.name not in written:
+            path.unlink()
+            print(f"removed stale html/{path.name}")
     # Drift gate: every figure in figures.FIGURES must have matched a fence.
     # An unmatched key means the markdown diagram changed (or moved) — fail
     # loudly so the SVG is redrawn or re-fingerprinted, never silently stale.
@@ -1524,6 +2366,7 @@ def main() -> None:
         raise SystemExit(1)
     (HTML_DIR / "style.css").write_text(build_css(), encoding="utf-8")
     print("wrote html/style.css")
+    run_battery(written, plans)
 
 
 if __name__ == "__main__":

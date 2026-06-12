@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<!-- GENERATED from 05-permissions-and-safety.md — do not edit; run site/build_site.py -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Beyond modes, you want structured allow/deny rules — a policy that can say &quot;allow bash(git *) but deny bash(rm *) regardless of mode.&quot; Implement this as an o…">
+<link rel="canonical" href="https://joshps23.github.io/ai-eng-2/05-permissions-and-safety.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://joshps23.github.io/ai-eng-2/05-permissions-and-safety-5.html">
+<meta property="og:site_name" content="Agent Harness Guide">
+<meta property="og:title" content="Phase 5 · Lesson 5 — classes · part 2 of 3 — Agent Harness Guide">
+<meta property="og:description" content="Beyond modes, you want structured allow/deny rules — a policy that can say &quot;allow bash(git *) but deny bash(rm *) regardless of mode.&quot; Implement this as an o…">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#FDFDFE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
+<title>Phase 5 · Lesson 5 — classes · part 2 of 3 — Agent Harness Guide</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body>
+<div class="progress-bar" aria-hidden="true"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="layout">
+<details class="sidebar-wrap" open>
+<summary class="sidebar-toggle">Guide navigation</summary>
+<nav class="sidebar" aria-label="Guide pages">
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
+<p class="sidebar-heading">Start here</p>
+<ul>
+<li><a href="index.html">Guide hub</a></li>
+<li><a href="learning-path.html">Learning Path</a></li>
+<li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
+<li><a href="faq.html">Setup &amp; FAQ</a></li>
+</ul>
+<p class="sidebar-heading">Phases</p>
+<ul>
+<li><a href="00-foundations-1.html">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness-1.html">Phase 1 — Bare Harness</a></li>
+<li><a href="02-tool-system-1.html">Phase 2 — Tool System</a></li>
+<li><a href="03-conversation-and-streaming-1.html">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools-1.html">Phase 4 — Real Tools</a></li>
+<li class="current"><a href="05-permissions-and-safety-1.html" aria-current="true">Phase 5 — Permissions &amp; Safety</a></li>
+<li><a href="06-context-management-1.html">Phase 6 — Context Management</a></li>
+<li><a href="07-subagents-orchestration-1.html">Phase 7 — Sub-agents</a></li>
+<li><a href="08-production-harness-1.html">Phase 8 — Production Harness</a></li>
+</ul>
+<p class="sidebar-heading">Appendix</p>
+<ul>
+<li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
+</ul>
+<p class="sidebar-heading">Practice</p>
+<ul>
+<li><a href="exercises.html">Exercises</a></li>
+<li><a href="glossary.html">Glossary</a></li>
+<li><a href="notebooks.html">Notebooks</a></li>
+</ul>
+</nav>
+</details>
+<main id="main">
+<header class="page-header">
+<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">5</span><span class="phase-kicker">Phase 5 · Lesson 5 of 9</span><span class="lesson-time">~11 min</span></p>
+<nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations-1.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness-1.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system-1.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming-1.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools-1.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety-1.html" aria-current="true" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management-1.html" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration-1.html" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness-1.html" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
+<nav class="lesson-rail" aria-label="Lessons in this phase"><a class="lesson-tick" href="05-permissions-and-safety-1.html" title="Lesson 1: Permissions, Safety &amp; the… (~3 min)" aria-label="Lesson 1: Permissions, Safety &amp; the… (~3 min)">1</a><a class="lesson-tick" href="05-permissions-and-safety-2.html" title="Lesson 2: line-by-line (~7 min)" aria-label="Lesson 2: line-by-line (~7 min)">2</a><a class="lesson-tick" href="05-permissions-and-safety-3.html" title="Lesson 3: functions (~22 min)" aria-label="Lesson 3: functions (~22 min)">3</a><a class="lesson-tick" href="05-permissions-and-safety-4.html" title="Lesson 4: classes · part 1 of 3 (~9 min)" aria-label="Lesson 4: classes · part 1 of 3 (~9 min)">4</a><a class="lesson-tick" href="05-permissions-and-safety-5.html" aria-current="page" title="Lesson 5: classes · part 2 of 3 (~11 min)" aria-label="Lesson 5: classes · part 2 of 3 (~11 min)">5</a><a class="lesson-tick" href="05-permissions-and-safety-6.html" title="Lesson 6: classes · part 3 of 3 (~10 min)" aria-label="Lesson 6: classes · part 3 of 3 (~10 min)">6</a><a class="lesson-tick" href="05-permissions-and-safety-7.html" title="Lesson 7: hooks (~16 min)" aria-label="Lesson 7: hooks (~16 min)">7</a><a class="lesson-tick" href="05-permissions-and-safety-8.html" title="Lesson 8: Sandboxing (~19 min)" aria-label="Lesson 8: Sandboxing (~19 min)">8</a><a class="lesson-tick" href="05-permissions-and-safety-9.html" title="Wrap-up: Pitfalls (~6 min)" aria-label="Wrap-up: Pitfalls (~6 min)">9</a></nav>
+<nav class="ladder" aria-label="Version ladder"><a class="ladder-rung" href="05-permissions-and-safety-2.html#version-1--line-by-line-one-inline-if-before-the-tool-runs"><span class="ladder-medallion">V1</span> line-by-line</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="05-permissions-and-safety-3.html#version-2--functions-a-check_permission-you-can-call-and-test"><span class="ladder-medallion">V2</span> functions</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="05-permissions-and-safety-4.html#version-3--classes-the-same-gate-as-policy-objects"><span class="ladder-medallion">V3</span> classes</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="05-permissions-and-safety-7.html#version-4--hooks-functions-you-hand-to-the-harness"><span class="ladder-medallion">V4</span> hooks</a></nav>
+</header>
+<article>
+<h3 id="step-33--the-policy-engine-production-shape">Step 3.3 — The Policy Engine (production shape)<a aria-label="Permalink to this section" class="hanchor" href="05-permissions-and-safety.html#step-33--the-policy-engine-production-shape">¶</a></h3>
+<blockquote>
+<p><strong>Why a <code>PermissionPolicy</code> class?</strong> Your Step 2.3 <code>DEFAULT_RULES</code> list works fine for a few rules. When rules multiply, you want: (a) richer matching (regex, not just <code>in</code>), (b) a predicate function for complex logic, (c) the <code>evaluate()</code> method to live next to the data. This is exactly what the dataclass + class approach provides — it is the Step 2.3 list, organized.</p>
+</blockquote>
+<p>Beyond modes, you want structured allow/deny rules — a policy that can say "allow <code>bash(git *)</code> but deny <code>bash(rm *)</code> regardless of mode." Implement this as an ordered list of rules evaluated top-to-bottom, first match wins.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># permissions.py  (continued)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">fnmatch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Decision</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+    <span class="n">ALLOW</span> <span class="o">=</span> <span class="s2">&quot;allow&quot;</span>
+    <span class="n">DENY</span>  <span class="o">=</span> <span class="s2">&quot;deny&quot;</span>
+    <span class="n">ASK</span>   <span class="o">=</span> <span class="s2">&quot;ask&quot;</span>
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PolicyRule</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A single allow/deny/ask rule.</span>
+
+<span class="sd">    `pattern` is an fnmatch glob matched against a canonical string</span>
+<span class="sd">    `tool_name(arg_summary)`.  Optionally supply `predicate` for richer</span>
+<span class="sd">    checks; if both are present, *both* must match for the rule to fire.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">decision</span><span class="p">:</span> <span class="n">Decision</span>
+    <span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span>                                  <span class="c1"># e.g. &quot;bash(*)&quot;, &quot;read_file(*)&quot;</span>
+    <span class="n">predicate</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="n">summary</span> <span class="o">=</span> <span class="n">_render_summary</span><span class="p">(</span><span class="n">tool_name</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">fnmatch</span><span class="p">(</span><span class="n">summary</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pattern</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">predicate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">predicate</span><span class="p">(</span><span class="n">tool_name</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_render_summary</span><span class="p">(</span><span class="n">tool_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Produce a short string like `bash(git status)` or `write_file(README.md)`</span>
+<span class="sd">    used for fnmatch pattern matching.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">tool_name</span> <span class="o">==</span> <span class="s2">&quot;bash&quot;</span> <span class="ow">and</span> <span class="s2">&quot;command&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+        <span class="n">arg_part</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;command&quot;</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="s2">&quot;path&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+        <span class="n">arg_part</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;path&quot;</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">args</span><span class="p">:</span>
+        <span class="c1"># first string value, truncated</span>
+        <span class="n">arg_part</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">values</span><span class="p">())))[:</span><span class="mi">80</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">arg_part</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tool_name</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="n">arg_part</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PermissionPolicy</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Ordered list of rules.  First matching rule wins.</span>
+<span class="sd">    If no rule matches, returns ASK.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rules</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">PolicyRule</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Decision</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">rule</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="n">tool_name</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">rule</span><span class="o">.</span><span class="n">decision</span>
+        <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">ASK</span>     <span class="c1"># default: ask the user</span>
+
+
+<span class="c1"># --- Convenience constructors for common predicates ---</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">bash_command_matches</span><span class="p">(</span><span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a predicate that matches bash calls whose command matches `pattern` (fnmatch).&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_pred</span><span class="p">(</span><span class="n">tool_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">tool_name</span> <span class="o">==</span> <span class="s2">&quot;bash&quot;</span> <span class="ow">and</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">fnmatch</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;command&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span> <span class="n">pattern</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_pred</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">bash_command_regex</span><span class="p">(</span><span class="n">rx</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]:</span>
+    <span class="n">compiled</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">rx</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_pred</span><span class="p">(</span><span class="n">tool_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">tool_name</span> <span class="o">==</span> <span class="s2">&quot;bash&quot;</span> <span class="ow">and</span> <span class="nb">bool</span><span class="p">(</span><span class="n">compiled</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;command&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">_pred</span>
+
+
+<span class="c1"># --- A sensible default policy ---</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">default_policy</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">PermissionPolicy</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Deny obviously destructive patterns; allow common read-only git commands</span>
+<span class="sd">    without prompting; everything else defers to the mode.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">PermissionPolicy</span><span class="p">(</span><span class="n">rules</span><span class="o">=</span><span class="p">[</span>
+        <span class="c1"># Hard denials — match first, cannot be overridden by later rules.</span>
+        <span class="c1"># Note the *leading* wildcard in &quot;*rm -rf*&quot;: it matches &#39;rm -rf&#39; anywhere</span>
+        <span class="c1"># in the command, so compounds like &#39;cd / &amp;&amp; rm -rf x&#39; are caught too —</span>
+        <span class="c1"># an anchored &quot;bash(rm -rf*)&quot; would miss them.</span>
+        <span class="n">PolicyRule</span><span class="p">(</span><span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">,</span>  <span class="s2">&quot;bash(*rm -rf*)&quot;</span><span class="p">,</span>    <span class="n">bash_command_matches</span><span class="p">(</span><span class="s2">&quot;*rm -rf*&quot;</span><span class="p">)),</span>
+        <span class="n">PolicyRule</span><span class="p">(</span><span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">,</span>  <span class="s2">&quot;bash(:(){*)&quot;</span><span class="p">,</span>       <span class="n">bash_command_regex</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;:\(\)\{&quot;</span><span class="p">)),</span>   <span class="c1"># fork bomb</span>
+        <span class="n">PolicyRule</span><span class="p">(</span><span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">,</span>  <span class="s2">&quot;bash(* /dev/sd*)&quot;</span><span class="p">,</span>  <span class="n">bash_command_regex</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;/dev/sd&quot;</span><span class="p">)),</span>
+        <span class="n">PolicyRule</span><span class="p">(</span><span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">,</span>  <span class="s2">&quot;bash(* /dev/nvme*)&quot;</span><span class="p">,</span><span class="n">bash_command_regex</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;/dev/nvme&quot;</span><span class="p">)),</span>
+        <span class="n">PolicyRule</span><span class="p">(</span><span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">,</span>  <span class="s2">&quot;bash(sudo *)&quot;</span><span class="p">,</span>      <span class="n">bash_command_matches</span><span class="p">(</span><span class="s2">&quot;sudo *&quot;</span><span class="p">)),</span>
+        <span class="n">PolicyRule</span><span class="p">(</span><span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">,</span>  <span class="s2">&quot;bash(su *)&quot;</span><span class="p">,</span>        <span class="n">bash_command_matches</span><span class="p">(</span><span class="s2">&quot;su *&quot;</span><span class="p">)),</span>
+        <span class="c1"># Allow common safe git read commands without prompting</span>
+        <span class="n">PolicyRule</span><span class="p">(</span><span class="n">Decision</span><span class="o">.</span><span class="n">ALLOW</span><span class="p">,</span> <span class="s2">&quot;bash(git status*)&quot;</span><span class="p">,</span> <span class="n">bash_command_matches</span><span class="p">(</span><span class="s2">&quot;git status*&quot;</span><span class="p">)),</span>
+        <span class="n">PolicyRule</span><span class="p">(</span><span class="n">Decision</span><span class="o">.</span><span class="n">ALLOW</span><span class="p">,</span> <span class="s2">&quot;bash(git log*)&quot;</span><span class="p">,</span>    <span class="n">bash_command_matches</span><span class="p">(</span><span class="s2">&quot;git log*&quot;</span><span class="p">)),</span>
+        <span class="n">PolicyRule</span><span class="p">(</span><span class="n">Decision</span><span class="o">.</span><span class="n">ALLOW</span><span class="p">,</span> <span class="s2">&quot;bash(git diff*)&quot;</span><span class="p">,</span>   <span class="n">bash_command_matches</span><span class="p">(</span><span class="s2">&quot;git diff*&quot;</span><span class="p">)),</span>
+        <span class="n">PolicyRule</span><span class="p">(</span><span class="n">Decision</span><span class="o">.</span><span class="n">ALLOW</span><span class="p">,</span> <span class="s2">&quot;bash(git show*)&quot;</span><span class="p">,</span>   <span class="n">bash_command_matches</span><span class="p">(</span><span class="s2">&quot;git show*&quot;</span><span class="p">)),</span>
+    <span class="p">])</span>
+</code></pre></div>
+<blockquote class="beginner">
+<p>🟢 <strong>Two bits of new syntax in that listing.</strong></p>
+<ol>
+<li><strong><code>rules: list[PolicyRule] = field(default_factory=list)</code></strong> — in a dataclass you
+   cannot write <code>rules: list = []</code> (Python would share <em>one</em> list between every
+   <code>PermissionPolicy</code> instance and refuses with an error). <code>field(default_factory=list)</code>
+   is the standard workaround: "call <code>list()</code> to build a fresh empty list for each new
+   instance."</li>
+<li><strong><code>bash_command_matches</code> is a function that <em>returns a function</em>.</strong> Calling
+   <code>bash_command_matches("rm -rf*")</code> does not check anything — it builds the little
+   inner function <code>_pred</code> and hands it back, and <code>_pred</code> <em>remembers</em> the <code>pattern</code> it
+   was built with even after the outer function has returned (Python calls this a
+   <em>closure</em>). The policy stores <code>_pred</code> and calls it later, once per tool call. If
+   "passing a function around as a value" feels alien, Step 4.0 below has a runnable
+   sixty-second demo of exactly this idea — peek ahead and come back.</li>
+</ol>
+</blockquote>
+<hr>
+<h3 id="step-34--the-approval-gate-production-shape">Step 3.4 — The Approval Gate (production shape)<a aria-label="Permalink to this section" class="hanchor" href="05-permissions-and-safety.html#step-34--the-approval-gate-production-shape">¶</a></h3>
+<blockquote>
+<p><strong>Why upgrade from the Version 2 gate?</strong> The simple gate returned just <code>"allow"/"deny"/"ask"</code>. The production gate also returns a <em>reason string</em>, remembers per-session y/a/d/n answers across loop iterations (so it does not ask twice about the same tool), and integrates with the <code>Tool</code> dataclass's <code>.risk</code> field and the <code>PermissionPolicy</code> rules.</p>
+</blockquote>
+<p>The gate combines mode, policy, and per-session memory into a single decision function. When the answer is ASK, it prompts the terminal and remembers the choice for the rest of the session.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># permissions.py  (continued)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+<span class="c1"># Session memory: tool names the user said &quot;always allow&quot; or &quot;always deny&quot; this run.</span>
+<span class="n">_session_always_allow</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<span class="n">_session_always_deny</span><span class="p">:</span>  <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">check_permission</span><span class="p">(</span>
+    <span class="n">tool</span><span class="p">:</span> <span class="s2">&quot;Tool&quot;</span><span class="p">,</span>
+    <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+    <span class="n">policy</span><span class="p">:</span> <span class="n">PermissionPolicy</span><span class="p">,</span>
+    <span class="n">mode</span><span class="p">:</span> <span class="n">Mode</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Decision</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return (decision, reason_string).</span>
+
+<span class="sd">    The reason is a human/model-readable explanation used when the decision</span>
+<span class="sd">    is DENY so the model can incorporate it as feedback.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tool_name</span> <span class="o">=</span> <span class="n">tool</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="c1"># --- 1. Hard denials first: mode, then policy DENY rules. ---</span>
+    <span class="c1"># Session memory must NEVER outrank these — &quot;always allow&quot; (the `a` answer)</span>
+    <span class="c1"># is a convenience for repeated prompts, not a licence to bypass the deny list.</span>
+    <span class="n">hard_deny_risks</span> <span class="o">=</span> <span class="n">_HARD_DENY_IN_MODE</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="nb">set</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">tool</span><span class="o">.</span><span class="n">risk</span> <span class="ow">in</span> <span class="n">hard_deny_risks</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;Mode &#39;</span><span class="si">{</span><span class="n">mode</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&#39; does not allow &#39;</span><span class="si">{</span><span class="n">tool</span><span class="o">.</span><span class="n">risk</span><span class="si">}</span><span class="s2">&#39; tools. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Running in plan/read-only mode.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">policy_decision</span> <span class="o">=</span> <span class="n">policy</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">tool_name</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">policy_decision</span> <span class="o">==</span> <span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Blocked by policy rule matching &#39;</span><span class="si">{</span><span class="n">_render_summary</span><span class="p">(</span><span class="n">tool_name</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
+
+    <span class="c1"># --- 2. Session memory (only consulted once nothing hard-denies) ---</span>
+    <span class="k">if</span> <span class="n">tool_name</span> <span class="ow">in</span> <span class="n">_session_always_deny</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Denied for this session (you denied &#39;</span><span class="si">{</span><span class="n">tool_name</span><span class="si">}</span><span class="s2">&#39; earlier).&quot;</span>
+    <span class="k">if</span> <span class="n">tool_name</span> <span class="ow">in</span> <span class="n">_session_always_allow</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">ALLOW</span><span class="p">,</span> <span class="s2">&quot;Allowed by session memory.&quot;</span>
+
+    <span class="c1"># --- 3. Policy ALLOW ---</span>
+    <span class="k">if</span> <span class="n">policy_decision</span> <span class="o">==</span> <span class="n">Decision</span><span class="o">.</span><span class="n">ALLOW</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">ALLOW</span><span class="p">,</span> <span class="s2">&quot;Explicitly allowed by policy rule.&quot;</span>
+
+    <span class="c1"># policy_decision == ASK — fall through to mode check</span>
+
+    <span class="c1"># --- 4. Mode auto-approval ---</span>
+    <span class="k">if</span> <span class="n">tool</span><span class="o">.</span><span class="n">risk</span> <span class="ow">in</span> <span class="n">_AUTO_APPROVED</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="nb">set</span><span class="p">()):</span>
+        <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">ALLOW</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Auto-approved in mode &#39;</span><span class="si">{</span><span class="n">mode</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&#39; (risk=&#39;</span><span class="si">{</span><span class="n">tool</span><span class="o">.</span><span class="n">risk</span><span class="si">}</span><span class="s2">&#39;).&quot;</span>
+
+    <span class="c1"># --- 5. Must ask the user ---</span>
+    <span class="k">return</span> <span class="n">_ask_user</span><span class="p">(</span><span class="n">tool_name</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_ask_user</span><span class="p">(</span><span class="n">tool_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Decision</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="n">summary</span> <span class="o">=</span> <span class="n">_render_summary</span><span class="p">(</span><span class="n">tool_name</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">[Permission required]  </span><span class="si">{</span><span class="n">summary</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  y = allow once   n = deny once&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  a = always allow this tool this session&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  d = always deny  this tool this session&quot;</span><span class="p">)</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">answer</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;  Allow? [y/n/a/d] &gt; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">EOFError</span><span class="p">,</span> <span class="ne">KeyboardInterrupt</span><span class="p">):</span>
+            <span class="c1"># Non-interactive environment — default to deny</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">(Non-interactive; defaulting to deny)&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">,</span> <span class="s2">&quot;Denied: non-interactive environment.&quot;</span>
+        <span class="k">if</span> <span class="n">answer</span> <span class="o">==</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">ALLOW</span><span class="p">,</span> <span class="s2">&quot;Allowed by user (once).&quot;</span>
+        <span class="k">if</span> <span class="n">answer</span> <span class="o">==</span> <span class="s2">&quot;n&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">,</span> <span class="s2">&quot;Denied by user.&quot;</span>
+        <span class="k">if</span> <span class="n">answer</span> <span class="o">==</span> <span class="s2">&quot;a&quot;</span><span class="p">:</span>
+            <span class="n">_session_always_allow</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">tool_name</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">ALLOW</span><span class="p">,</span> <span class="s2">&quot;Allowed by user (session).&quot;</span>
+        <span class="k">if</span> <span class="n">answer</span> <span class="o">==</span> <span class="s2">&quot;d&quot;</span><span class="p">:</span>
+            <span class="n">_session_always_deny</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">tool_name</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">,</span> <span class="s2">&quot;Denied by user (session).&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Please type y, n, a, or d.&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p><p><strong>The order of the checks is load-bearing.</strong> Hard denials — the mode's hard-deny set and
+the policy's DENY rules — are evaluated <em>before</em> session memory. Session memory is filled
+in when the user answers <code>a</code> once, for <em>any</em> call of that tool, however harmless; if it
+were consulted first, a single <code>a</code> on <code>bash(ls)</code> would silently re-enable
+<code>bash(rm -rf /)</code> for the rest of the session. Convenience layers must never outrank the
+deny list.</p>
+</div>
+<!-- bq-split -->
+<blockquote class="beginner">
+<p>🟢 <strong>Why is the parameter type written <code>"Tool"</code> — in quotes?</strong> A string in a
+type-hint position is a <em>forward reference</em>: at the point this function is defined,
+the <code>Tool</code> class lives in another file (or further down the same file), so quoting the
+name tells Python "don't look this up now — it's only for type checkers." Annotations
+are never executed at runtime, so this costs nothing. Two related incantations you'll
+see in the final files: <code>from __future__ import annotations</code> (makes <em>every</em> annotation
+behave like a string, so the quotes become optional) and <code>if TYPE_CHECKING: from
+risk_tools import Tool</code> (an import that only happens during static type checking,
+never at runtime — handy for avoiding circular imports). All three are cosmetic
+machinery for tooling; the running program ignores them.</p>
+</blockquote>
+<p><strong>Critical design point:</strong> a DENY does not raise an exception. It returns a <code>(Decision.DENY, reason)</code> tuple. The caller converts this into a tool result string and appends it to <code>input_items</code>. The model sees "Permission denied by policy: ..." and can adapt — ask for a safer alternative, explain what it was trying to do, or give up gracefully. Crashing or silently skipping would make the loop incoherent.</p>
+</article>
+<footer class="page-footer">
+<nav class="continue" aria-label="Continue">
+<a class="continue-card" href="05-permissions-and-safety-6.html" rel="next">
+<span class="continue-kicker">Next · Lesson 6 of 9</span>
+<span class="continue-title">classes · part 3 of 3<span class="continue-time">~10 min</span><span class="continue-arrow" aria-hidden="true">→</span></span>
+</a>
+<p class="continue-aux">
+<a href="05-permissions-and-safety-4.html" rel="prev">← Lesson 4 · classes · part 1 of 3</a>
+<a class="continue-fullpage" href="05-permissions-and-safety.html#step-33--the-policy-engine-production-shape">View this lesson on the single page</a>
+</p>
+</nav>
+<p class="generated-note">Generated from <code>05-permissions-and-safety.md</code> — lesson 5 of 9 in the derived lesson view (boundaries may move when the markdown changes; the <a href="05-permissions-and-safety.html">single page</a> is the permanent address).</p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/05-permissions-and-safety.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
+</footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
+</main>
+</div>
+<script>
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards.
+     diagram-text mirrors are excluded — print hides them entirely (the SVG
+     figure already prints; opening the ASCII would print the diagram twice). */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not(.diagram-text):not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
+  });
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
+
+  /* Reading progress: the fixed 3px accent bar tracks scroll position.
+     Without JS the element simply stays at width 0 — invisible, harmless. */
+  var pbar = document.querySelector('.progress-bar');
+  if (pbar) {
+    var setProgress = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      pbar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    };
+    window.addEventListener('scroll', setProgress, { passive: true });
+    setProgress();
+  }
+
+  /* Deep links into collapsed sections: open every <details> ancestor of the
+     target, and the refsection that immediately follows a target heading.
+     Re-scroll only if something actually opened (the layout above the target
+     just changed), and instantly — the CSS smooth scroll would crawl across
+     tens of thousands of pixels on the long phase pages. */
+  function openForHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) { return; }
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    var opened = false;
+    var d = el.closest('details');
+    while (d) {
+      if (!d.hasAttribute('open')) { d.setAttribute('open', ''); opened = true; }
+      d = d.parentElement && d.parentElement.closest('details');
+    }
+    var sib = el.nextElementSibling;
+    if (sib && sib.matches('details.refsection') && !sib.hasAttribute('open')) {
+      sib.setAttribute('open', '');
+      opened = true;
+    }
+    if (!opened) { return; }
+    var jump = function () {
+      var y = el.getBoundingClientRect().top + window.scrollY - 16;
+      try { window.scrollTo({ top: y, behavior: 'instant' }); }
+      catch (e) { window.scrollTo(0, y); }
+    };
+    jump();
+    /* the browser's own fragment scroll was computed against the collapsed
+       layout and may still be animating (CSS smooth) — re-assert once, which
+       cancels it */
+    setTimeout(jump, 100);
+  }
+  window.addEventListener('hashchange', openForHash);
+  openForHash();
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
+</script>
+</body>
+</html>

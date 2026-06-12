@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<!-- GENERATED from 05-permissions-and-safety.md — do not edit; run site/build_site.py -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="The same harness, reorganized. The idea is still: before running a tool, ask &quot;is this allowed?&quot; and only run it if the answer is yes — but now the asking is…">
+<link rel="canonical" href="https://joshps23.github.io/ai-eng-2/05-permissions-and-safety.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://joshps23.github.io/ai-eng-2/05-permissions-and-safety-3.html">
+<meta property="og:site_name" content="Agent Harness Guide">
+<meta property="og:title" content="Phase 5 · Lesson 3 — functions — Agent Harness Guide">
+<meta property="og:description" content="The same harness, reorganized. The idea is still: before running a tool, ask &quot;is this allowed?&quot; and only run it if the answer is yes — but now the asking is…">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#FDFDFE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
+<title>Phase 5 · Lesson 3 — functions — Agent Harness Guide</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body>
+<div class="progress-bar" aria-hidden="true"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="layout">
+<details class="sidebar-wrap" open>
+<summary class="sidebar-toggle">Guide navigation</summary>
+<nav class="sidebar" aria-label="Guide pages">
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
+<p class="sidebar-heading">Start here</p>
+<ul>
+<li><a href="index.html">Guide hub</a></li>
+<li><a href="learning-path.html">Learning Path</a></li>
+<li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
+<li><a href="faq.html">Setup &amp; FAQ</a></li>
+</ul>
+<p class="sidebar-heading">Phases</p>
+<ul>
+<li><a href="00-foundations-1.html">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness-1.html">Phase 1 — Bare Harness</a></li>
+<li><a href="02-tool-system-1.html">Phase 2 — Tool System</a></li>
+<li><a href="03-conversation-and-streaming-1.html">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools-1.html">Phase 4 — Real Tools</a></li>
+<li class="current"><a href="05-permissions-and-safety-1.html" aria-current="true">Phase 5 — Permissions &amp; Safety</a></li>
+<li><a href="06-context-management-1.html">Phase 6 — Context Management</a></li>
+<li><a href="07-subagents-orchestration-1.html">Phase 7 — Sub-agents</a></li>
+<li><a href="08-production-harness-1.html">Phase 8 — Production Harness</a></li>
+</ul>
+<p class="sidebar-heading">Appendix</p>
+<ul>
+<li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
+</ul>
+<p class="sidebar-heading">Practice</p>
+<ul>
+<li><a href="exercises.html">Exercises</a></li>
+<li><a href="glossary.html">Glossary</a></li>
+<li><a href="notebooks.html">Notebooks</a></li>
+</ul>
+</nav>
+</details>
+<main id="main">
+<header class="page-header">
+<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">5</span><span class="phase-kicker">Phase 5 · Lesson 3 of 9</span><span class="lesson-time">~22 min</span><span class="lesson-cp">3 <span aria-hidden="true">▶</span> checkpoints</span></p>
+<nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations-1.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness-1.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system-1.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming-1.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools-1.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety-1.html" aria-current="true" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management-1.html" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration-1.html" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness-1.html" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
+<nav class="lesson-rail" aria-label="Lessons in this phase"><a class="lesson-tick" href="05-permissions-and-safety-1.html" title="Lesson 1: Permissions, Safety &amp; the… (~3 min)" aria-label="Lesson 1: Permissions, Safety &amp; the… (~3 min)">1</a><a class="lesson-tick" href="05-permissions-and-safety-2.html" title="Lesson 2: line-by-line (~7 min)" aria-label="Lesson 2: line-by-line (~7 min)">2</a><a class="lesson-tick" href="05-permissions-and-safety-3.html" aria-current="page" title="Lesson 3: functions (~22 min)" aria-label="Lesson 3: functions (~22 min)">3</a><a class="lesson-tick" href="05-permissions-and-safety-4.html" title="Lesson 4: classes · part 1 of 3 (~9 min)" aria-label="Lesson 4: classes · part 1 of 3 (~9 min)">4</a><a class="lesson-tick" href="05-permissions-and-safety-5.html" title="Lesson 5: classes · part 2 of 3 (~11 min)" aria-label="Lesson 5: classes · part 2 of 3 (~11 min)">5</a><a class="lesson-tick" href="05-permissions-and-safety-6.html" title="Lesson 6: classes · part 3 of 3 (~10 min)" aria-label="Lesson 6: classes · part 3 of 3 (~10 min)">6</a><a class="lesson-tick" href="05-permissions-and-safety-7.html" title="Lesson 7: hooks (~16 min)" aria-label="Lesson 7: hooks (~16 min)">7</a><a class="lesson-tick" href="05-permissions-and-safety-8.html" title="Lesson 8: Sandboxing (~19 min)" aria-label="Lesson 8: Sandboxing (~19 min)">8</a><a class="lesson-tick" href="05-permissions-and-safety-9.html" title="Wrap-up: Pitfalls (~6 min)" aria-label="Wrap-up: Pitfalls (~6 min)">9</a></nav>
+<nav class="ladder" aria-label="Version ladder"><a class="ladder-rung" href="05-permissions-and-safety-2.html#version-1--line-by-line-one-inline-if-before-the-tool-runs"><span class="ladder-medallion">V1</span> line-by-line</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="05-permissions-and-safety-3.html#version-2--functions-a-check_permission-you-can-call-and-test"><span class="ladder-medallion">V2</span> functions</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="05-permissions-and-safety-4.html#version-3--classes-the-same-gate-as-policy-objects"><span class="ladder-medallion">V3</span> classes</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="05-permissions-and-safety-7.html#version-4--hooks-functions-you-hand-to-the-harness"><span class="ladder-medallion">V4</span> hooks</a></nav>
+<details class="page-toc">
+<summary>On this page</summary>
+<ul>
+<li class="toc-h2"><a href="#version-2--functions-a-check_permission-you-can-call-and-test">Version 2 — functions: a check_permission you can call and test</a>
+<ul>
+<li class="toc-h3"><a href="#what-changed-from-v1-to-v2">What changed from V1 to V2</a></li>
+<li class="toc-h3"><a href="#step-21--the-gate-as-a-function">Step 2.1 — The gate as a function</a></li>
+<li class="toc-h3"><a href="#step-22--add-permission-modes-one-new-idea-a-mode-controls-whats-auto-allowed">Step 2.2 — Add permission modes (one new idea: a mode controls what&#x27;s auto-allowed)</a></li>
+<li class="toc-h3"><a href="#step-23--add-structured-rules-one-new-idea-a-list-of-rules-first-match-wins">Step 2.3 — Add structured rules (one new idea: a list of rules, first match wins)</a></li>
+</ul>
+</li>
+<li class="toc-h2"><a href="#recap-what-youve-built-so-far">Recap: what you&#x27;ve built so far</a>
+</li>
+</ul>
+</details>
+</header>
+<article>
+<h2 id="version-2--functions-a-check_permission-you-can-call-and-test">Version 2 — functions: a <code>check_permission</code> you can call and test<a aria-label="Permalink to this section" class="hanchor" href="05-permissions-and-safety.html#version-2--functions-a-check_permission-you-can-call-and-test">¶</a></h2>
+<h3 id="what-changed-from-v1-to-v2">What changed from V1 to V2<a aria-label="Permalink to this section" class="hanchor" href="05-permissions-and-safety.html#what-changed-from-v1-to-v2">¶</a></h3>
+<ul>
+<li>The inline <code>if "rm -rf" in command</code> check moves into a named function,
+  <code>check_permission(tool_name, arg)</code>, that returns <code>"allow"</code>, <code>"deny"</code>, or <code>"ask"</code> —
+  you can now test the <em>decision</em> in isolation, without an API call or a real shell.</li>
+<li>The knowledge of "which tools are risky" moves out of the dispatch branches into one
+  <code>TOOL_RISK</code> dict, so adding a tool means adding a dict entry, not another <code>elif</code>.</li>
+<li>The <code>input()</code> prompt moves into its own <code>ask_user()</code> function, keeping the decision
+  logic pure (no I/O mixed into it).</li>
+<li>The tool bodies and the loop become functions too (<code>read_file</code>, <code>bash</code>, <code>dispatch</code>,
+  <code>run_agent</code>) — the same statements, now with names.</li>
+<li>Behavior is identical: safe tools pass, blocked patterns are denied, everything else asks.</li>
+</ul>
+<p>The same harness, reorganized. The idea is still: <strong>before running a tool, ask
+"is this allowed?" and only run it if the answer is yes</strong> — but now the asking is a
+function, so you can build a useful safety layer with nothing more than a dict, a
+list, and <code>if</code>/<code>else</code>.</p>
+<h3 id="step-21--the-gate-as-a-function">Step 2.1 — The gate as a function<a aria-label="Permalink to this section" class="hanchor" href="05-permissions-and-safety.html#step-21--the-gate-as-a-function">¶</a></h3>
+<p>Here is the simplest version that actually works:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># How risky is each tool?</span>
+<span class="n">TOOL_RISK</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;read_file&quot;</span><span class="p">:</span> <span class="s2">&quot;safe&quot;</span><span class="p">,</span> <span class="s2">&quot;glob&quot;</span><span class="p">:</span> <span class="s2">&quot;safe&quot;</span><span class="p">,</span> <span class="s2">&quot;grep&quot;</span><span class="p">:</span> <span class="s2">&quot;safe&quot;</span><span class="p">,</span> <span class="s2">&quot;list_dir&quot;</span><span class="p">:</span> <span class="s2">&quot;safe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;write_file&quot;</span><span class="p">:</span> <span class="s2">&quot;caution&quot;</span><span class="p">,</span> <span class="s2">&quot;edit_file&quot;</span><span class="p">:</span> <span class="s2">&quot;caution&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;bash&quot;</span><span class="p">:</span> <span class="s2">&quot;dangerous&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">check_permission</span><span class="p">(</span><span class="n">tool_name</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return &#39;allow&#39;, &#39;deny&#39;, or &#39;ask&#39;.&quot;&quot;&quot;</span>
+    <span class="c1"># Always block a few obviously destructive commands.</span>
+    <span class="k">if</span> <span class="n">tool_name</span> <span class="o">==</span> <span class="s2">&quot;bash&quot;</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">bad</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;rm -rf&quot;</span><span class="p">,</span> <span class="s2">&quot;sudo &quot;</span><span class="p">,</span> <span class="s2">&quot;:(){&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">bad</span> <span class="ow">in</span> <span class="n">arg</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;deny&quot;</span>
+    <span class="c1"># Safe tools always pass.</span>
+    <span class="n">risk</span> <span class="o">=</span> <span class="n">TOOL_RISK</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tool_name</span><span class="p">,</span> <span class="s2">&quot;dangerous&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">risk</span> <span class="o">==</span> <span class="s2">&quot;safe&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;allow&quot;</span>
+    <span class="c1"># Everything else: ask the user.</span>
+    <span class="k">return</span> <span class="s2">&quot;ask&quot;</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">ask_user</span><span class="p">(</span><span class="n">tool_name</span><span class="p">):</span>
+    <span class="n">answer</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Allow </span><span class="si">{</span><span class="n">tool_name</span><span class="si">}</span><span class="s2">? [y/n] &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">return</span> <span class="s2">&quot;allow&quot;</span> <span class="k">if</span> <span class="n">answer</span> <span class="o">==</span> <span class="s2">&quot;y&quot;</span> <span class="k">else</span> <span class="s2">&quot;deny&quot;</span>
+</code></pre></div>
+<p>Wire it into your dispatch path right before running a tool — these lines replace the bare <code>dispatch(...)</code> call:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Inside your tool-call handling loop, right after args = json.loads(tc.arguments):</span>
+<span class="n">arg</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;command&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;path&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+<span class="n">decision</span> <span class="o">=</span> <span class="n">check_permission</span><span class="p">(</span><span class="n">tc</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">arg</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">decision</span> <span class="o">==</span> <span class="s2">&quot;ask&quot;</span><span class="p">:</span>
+    <span class="n">decision</span> <span class="o">=</span> <span class="n">ask_user</span><span class="p">(</span><span class="n">tc</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">decision</span> <span class="o">==</span> <span class="s2">&quot;deny&quot;</span><span class="p">:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="s2">&quot;Permission denied by the harness.&quot;</span>   <span class="c1"># becomes the tool result</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">dispatch</span><span class="p">(</span><span class="n">tc</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>               <span class="c1"># run it normally</span>
+</code></pre></div>
+<p>(This matches the <code>dispatch(name, args)</code> defined in the full file below, which takes the
+<strong>parsed dict</strong>. If you are instead wiring the gate into Phase 2/4's
+<code>ToolRegistry.dispatch</code>, remember that one takes the <strong>raw JSON string</strong> — pass
+<code>tc.arguments</code> there, not <code>args</code>.)</p>
+<p>That is the entire safety mechanism. A safe tool (<code>read_file</code>, <code>grep</code>) passes straight through. A dangerous command like <code>bash("rm -rf .")</code> is blocked before the shell ever sees it. Anything in between stops to ask you.</p>
+<p>Here is Version 2 in full — one paste-able file. It is <code>agent_v1.py</code> with names: the
+tool bodies became functions, the dispatch <code>elif</code> chain became <code>dispatch()</code>, the loop
+became <code>run_agent()</code>, and the safety layer is the three pieces you just read. A
+<code>write_file</code> tool is added so the <code>"caution"</code> risk level has something to gate.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p><p><strong>One thing these inline tools deliberately leave out:</strong> Phase 4's <code>_safe_path</code>
+workspace confinement. To keep V1–V3 short, <code>read_file</code>/<code>write_file</code> here accept any
+path. This version at least <em>asks</em> before every <code>write_file</code> — but once modes arrive
+in Step 2.2, the default <code>auto</code> mode will auto-approve <code>caution</code> tools, so the model
+could write anywhere your user account can. The permission layer and the path guard
+are <strong>different layers</strong> (one decides <em>whether</em> a tool runs, the other constrains
+<em>where</em> it can reach) — you want both. Run V1–V3 only in a scratch folder; the
+confinement returns at the end of the phase, when <code>phase5_tools.py</code> re-adopts
+Phase 4's confined tools.</p>
+</div>
+<div class="highlight"><pre><span></span><code><span class="c1"># agent_v2.py — Phase 5, Version 2: the same harness, reorganized into functions.</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">openai</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenAI</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">OpenAI</span><span class="p">()</span>   <span class="c1"># reads OPENAI_API_KEY from the environment</span>
+
+<span class="c1"># ── Tools: plain functions (as in Phase 4) ────────────────────────────────────</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">read_file</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;replace&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Error: cannot read file: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">write_file</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Wrote </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">content</span><span class="p">)</span><span class="si">}</span><span class="s2"> characters to </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">.&quot;</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Error: cannot write file: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">bash</span><span class="p">(</span><span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">proc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="n">command</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">proc</span><span class="o">.</span><span class="n">stdout</span> <span class="o">+</span> <span class="n">proc</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;(no output)&quot;</span>
+    <span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">TimeoutExpired</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;Error: command timed out after 30s.&quot;</span>
+
+<span class="n">TOOLS</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;read_file&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Read a text file and return its contents.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">}},</span>
+            <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;path&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;write_file&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Write content to a file, overwriting it.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">},</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">}},</span>
+            <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;path&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;bash&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Run a shell command and return its combined stdout/stderr.&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;command&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">}},</span>
+            <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;command&quot;</span><span class="p">],</span>
+        <span class="p">},</span>
+    <span class="p">},</span>
+<span class="p">]</span>
+
+<span class="c1"># ── The permission layer (this phase&#39;s new code, from above) ──────────────────</span>
+
+<span class="n">TOOL_RISK</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;read_file&quot;</span><span class="p">:</span> <span class="s2">&quot;safe&quot;</span><span class="p">,</span> <span class="s2">&quot;glob&quot;</span><span class="p">:</span> <span class="s2">&quot;safe&quot;</span><span class="p">,</span> <span class="s2">&quot;grep&quot;</span><span class="p">:</span> <span class="s2">&quot;safe&quot;</span><span class="p">,</span> <span class="s2">&quot;list_dir&quot;</span><span class="p">:</span> <span class="s2">&quot;safe&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;write_file&quot;</span><span class="p">:</span> <span class="s2">&quot;caution&quot;</span><span class="p">,</span> <span class="s2">&quot;edit_file&quot;</span><span class="p">:</span> <span class="s2">&quot;caution&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;bash&quot;</span><span class="p">:</span> <span class="s2">&quot;dangerous&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">check_permission</span><span class="p">(</span><span class="n">tool_name</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return &#39;allow&#39;, &#39;deny&#39;, or &#39;ask&#39;.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">tool_name</span> <span class="o">==</span> <span class="s2">&quot;bash&quot;</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">bad</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;rm -rf&quot;</span><span class="p">,</span> <span class="s2">&quot;sudo &quot;</span><span class="p">,</span> <span class="s2">&quot;:(){&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">bad</span> <span class="ow">in</span> <span class="n">arg</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;deny&quot;</span>
+    <span class="n">risk</span> <span class="o">=</span> <span class="n">TOOL_RISK</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tool_name</span><span class="p">,</span> <span class="s2">&quot;dangerous&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">risk</span> <span class="o">==</span> <span class="s2">&quot;safe&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;allow&quot;</span>
+    <span class="k">return</span> <span class="s2">&quot;ask&quot;</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">ask_user</span><span class="p">(</span><span class="n">tool_name</span><span class="p">):</span>
+    <span class="n">answer</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Allow </span><span class="si">{</span><span class="n">tool_name</span><span class="si">}</span><span class="s2">? [y/n] &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">return</span> <span class="s2">&quot;allow&quot;</span> <span class="k">if</span> <span class="n">answer</span> <span class="o">==</span> <span class="s2">&quot;y&quot;</span> <span class="k">else</span> <span class="s2">&quot;deny&quot;</span>
+
+<span class="c1"># ── Dispatch: the V1 elif-chain, named ────────────────────────────────────────</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">dispatch</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;read_file&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">read_file</span><span class="p">(</span><span class="o">**</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;write_file&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">write_file</span><span class="p">(</span><span class="o">**</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;bash&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">bash</span><span class="p">(</span><span class="o">**</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Error: unknown tool &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+
+<span class="c1"># ── The loop: the V1 while-loop, named ────────────────────────────────────────</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">run_agent</span><span class="p">(</span><span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">input_items</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">task</span><span class="p">}]</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">responses</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4o&quot;</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="n">input_items</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span><span class="n">TOOLS</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">resp</span><span class="o">.</span><span class="n">output</span><span class="p">:</span>
+            <span class="n">input_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">model_dump</span><span class="p">())</span>
+
+        <span class="n">tool_calls</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">resp</span><span class="o">.</span><span class="n">output</span> <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;function_call&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">tool_calls</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">resp</span><span class="o">.</span><span class="n">output</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;message&quot;</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">content</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">block</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;output_text&quot;</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ANSWER:&quot;</span><span class="p">,</span> <span class="n">block</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">for</span> <span class="n">tc</span> <span class="ow">in</span> <span class="n">tool_calls</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">tc</span><span class="o">.</span><span class="n">arguments</span><span class="p">)</span>
+            <span class="c1"># The permission gate — the four lines from above:</span>
+            <span class="n">arg</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;command&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;path&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+            <span class="n">decision</span> <span class="o">=</span> <span class="n">check_permission</span><span class="p">(</span><span class="n">tc</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">arg</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">decision</span> <span class="o">==</span> <span class="s2">&quot;ask&quot;</span><span class="p">:</span>
+                <span class="n">decision</span> <span class="o">=</span> <span class="n">ask_user</span><span class="p">(</span><span class="n">tc</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">decision</span> <span class="o">==</span> <span class="s2">&quot;deny&quot;</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="s2">&quot;Permission denied by the harness.&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">dispatch</span><span class="p">(</span><span class="n">tc</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+
+            <span class="n">input_items</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function_call_output&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;call_id&quot;</span><span class="p">:</span> <span class="n">tc</span><span class="o">.</span><span class="n">call_id</span><span class="p">,</span>
+                <span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="n">result</span><span class="p">,</span>
+            <span class="p">})</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">run_agent</span><span class="p">(</span><span class="s2">&quot;List the files in the current directory, then read hello.txt.&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>(The <code>TOOL_RISK</code> dict already labels tools like <code>grep</code> and <code>edit_file</code> that this file
+doesn't wire in — that's harmless. Keys for tools you don't have are simply never
+looked up, and you won't need to touch the permission layer when you add them later.)</p>
+<h3 id="-run-it-now-1">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="05-permissions-and-safety.html#-run-it-now-1">¶</a></h3>
+<p>Run <code>python agent_v2.py</code> (or add <code>TOOL_RISK</code>, <code>check_permission</code>, and <code>ask_user</code> to your own <code>agent_loop.py</code> and replace your dispatch call with the four-line block above). Ask the agent to read a file — you should see no prompt. Then ask it to run a shell command: you should be asked <code>Allow bash? [y/n]</code>. Type <code>n</code> — confirm the model receives "Permission denied by the harness." and continues gracefully.</p>
+<blockquote>
+<p><strong>What you should see:</strong>
+- Read-only tools run silently.
+- <code>bash</code> pauses and waits for your input.
+- Typing <code>n</code> does not crash — the model gets a denial message and responds to it.</p>
+</blockquote>
+<hr>
+<h3 id="step-22--add-permission-modes-one-new-idea-a-mode-controls-whats-auto-allowed">Step 2.2 — Add permission modes (one new idea: a mode controls what's auto-allowed)<a aria-label="Permalink to this section" class="hanchor" href="05-permissions-and-safety.html#step-22--add-permission-modes-one-new-idea-a-mode-controls-whats-auto-allowed">¶</a></h3>
+<p>The gate above always asks about <code>caution</code>-level tools even if you are in the middle of a trusted editing session. <strong>Why now?</strong> You want to say "for this run, auto-approve file writes too" without changing your code — just pick a mode.</p>
+<p>A mode is just a string that controls which risk levels are auto-approved. Add a second parameter to <code>check_permission</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># For each mode, which risk levels pass without asking?</span>
+<span class="n">AUTO_OK</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;plan&quot;</span><span class="p">:</span>  <span class="p">[</span><span class="s2">&quot;safe&quot;</span><span class="p">],</span>                          <span class="c1"># read-only; never mutate</span>
+    <span class="s2">&quot;auto&quot;</span><span class="p">:</span>  <span class="p">[</span><span class="s2">&quot;safe&quot;</span><span class="p">,</span> <span class="s2">&quot;caution&quot;</span><span class="p">],</span>               <span class="c1"># approve file writes, ask before bash</span>
+    <span class="s2">&quot;yolo&quot;</span><span class="p">:</span>  <span class="p">[</span><span class="s2">&quot;safe&quot;</span><span class="p">,</span> <span class="s2">&quot;caution&quot;</span><span class="p">,</span> <span class="s2">&quot;dangerous&quot;</span><span class="p">],</span>  <span class="c1"># approve everything (careful!)</span>
+<span class="p">}</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">check_permission</span><span class="p">(</span><span class="n">tool_name</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return &#39;allow&#39;, &#39;deny&#39;, or &#39;ask&#39;.&quot;&quot;&quot;</span>
+    <span class="c1"># Hard-block destructive patterns regardless of mode.</span>
+    <span class="k">if</span> <span class="n">tool_name</span> <span class="o">==</span> <span class="s2">&quot;bash&quot;</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">bad</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;rm -rf&quot;</span><span class="p">,</span> <span class="s2">&quot;sudo &quot;</span><span class="p">,</span> <span class="s2">&quot;:(){&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">bad</span> <span class="ow">in</span> <span class="n">arg</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;deny&quot;</span>
+    <span class="c1"># Auto-approve if this tool&#39;s risk fits the mode.</span>
+    <span class="n">risk</span> <span class="o">=</span> <span class="n">TOOL_RISK</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tool_name</span><span class="p">,</span> <span class="s2">&quot;dangerous&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">risk</span> <span class="ow">in</span> <span class="n">AUTO_OK</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="p">[]):</span>
+        <span class="k">return</span> <span class="s2">&quot;allow&quot;</span>
+    <span class="c1"># In plan mode, mutations are a hard deny (not just &quot;ask&quot;).</span>
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;plan&quot;</span> <span class="ow">and</span> <span class="n">risk</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;caution&quot;</span><span class="p">,</span> <span class="s2">&quot;dangerous&quot;</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="s2">&quot;deny&quot;</span>
+    <span class="c1"># Otherwise ask.</span>
+    <span class="k">return</span> <span class="s2">&quot;ask&quot;</span>
+</code></pre></div>
+<p>Update the call site to pass <code>mode</code> — give <code>run_agent</code> a <code>mode</code> parameter:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_agent</span><span class="p">(</span><span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="o">...</span>
+</code></pre></div>
+<p>…and inside its tool-call loop, thread it through to the gate:</p>
+<div class="highlight"><pre><span></span><code><span class="n">decision</span> <span class="o">=</span> <span class="n">check_permission</span><span class="p">(</span><span class="n">tc</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="-run-it-now-2">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="05-permissions-and-safety.html#-run-it-now-2">¶</a></h3>
+<p>Start the agent twice: once with <code>run_agent(task, mode="plan")</code> and once with <code>mode="auto"</code>. In plan mode, ask the agent to edit a file — you should see "Permission denied" without being asked. In auto mode, the same edit goes through silently.</p>
+<hr>
+<h3 id="step-23--add-structured-rules-one-new-idea-a-list-of-rules-first-match-wins">Step 2.3 — Add structured rules (one new idea: a list of rules, first match wins)<a aria-label="Permalink to this section" class="hanchor" href="05-permissions-and-safety.html#step-23--add-structured-rules-one-new-idea-a-list-of-rules-first-match-wins">¶</a></h3>
+<p>The mode approach works well, but you want to say "always allow <code>git status</code> without asking, even though <code>bash</code> is dangerous." <strong>Why now?</strong> Hard-coded <code>if</code> checks for every special case will pile up. A small list of rules, evaluated top-to-bottom, scales much better.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># A rule is just a dict: {&quot;decision&quot;: &quot;allow&quot;/&quot;deny&quot;, &quot;tool&quot;: name, &quot;arg_contains&quot;: pattern}</span>
+<span class="n">DEFAULT_RULES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="c1"># Hard denials — checked before mode logic</span>
+    <span class="p">{</span><span class="s2">&quot;decision&quot;</span><span class="p">:</span> <span class="s2">&quot;deny&quot;</span><span class="p">,</span>  <span class="s2">&quot;tool&quot;</span><span class="p">:</span> <span class="s2">&quot;bash&quot;</span><span class="p">,</span> <span class="s2">&quot;arg_contains&quot;</span><span class="p">:</span> <span class="s2">&quot;rm -rf&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;decision&quot;</span><span class="p">:</span> <span class="s2">&quot;deny&quot;</span><span class="p">,</span>  <span class="s2">&quot;tool&quot;</span><span class="p">:</span> <span class="s2">&quot;bash&quot;</span><span class="p">,</span> <span class="s2">&quot;arg_contains&quot;</span><span class="p">:</span> <span class="s2">&quot;sudo &quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;decision&quot;</span><span class="p">:</span> <span class="s2">&quot;deny&quot;</span><span class="p">,</span>  <span class="s2">&quot;tool&quot;</span><span class="p">:</span> <span class="s2">&quot;bash&quot;</span><span class="p">,</span> <span class="s2">&quot;arg_contains&quot;</span><span class="p">:</span> <span class="s2">&quot;:(){&quot;</span><span class="p">},</span>
+    <span class="c1"># Explicit allows — safe git read commands</span>
+    <span class="p">{</span><span class="s2">&quot;decision&quot;</span><span class="p">:</span> <span class="s2">&quot;allow&quot;</span><span class="p">,</span> <span class="s2">&quot;tool&quot;</span><span class="p">:</span> <span class="s2">&quot;bash&quot;</span><span class="p">,</span> <span class="s2">&quot;arg_contains&quot;</span><span class="p">:</span> <span class="s2">&quot;git status&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;decision&quot;</span><span class="p">:</span> <span class="s2">&quot;allow&quot;</span><span class="p">,</span> <span class="s2">&quot;tool&quot;</span><span class="p">:</span> <span class="s2">&quot;bash&quot;</span><span class="p">,</span> <span class="s2">&quot;arg_contains&quot;</span><span class="p">:</span> <span class="s2">&quot;git log&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;decision&quot;</span><span class="p">:</span> <span class="s2">&quot;allow&quot;</span><span class="p">,</span> <span class="s2">&quot;tool&quot;</span><span class="p">:</span> <span class="s2">&quot;bash&quot;</span><span class="p">,</span> <span class="s2">&quot;arg_contains&quot;</span><span class="p">:</span> <span class="s2">&quot;git diff&quot;</span><span class="p">},</span>
+<span class="p">]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">apply_rules</span><span class="p">(</span><span class="n">tool_name</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">rules</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return &#39;allow&#39;, &#39;deny&#39;, or None (no rule matched).&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">rules</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">rule</span><span class="p">[</span><span class="s2">&quot;tool&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">tool_name</span> <span class="ow">and</span> <span class="n">rule</span><span class="p">[</span><span class="s2">&quot;arg_contains&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">arg</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">rule</span><span class="p">[</span><span class="s2">&quot;decision&quot;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="kc">None</span>  <span class="c1"># no rule matched — fall through to mode logic</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">check_permission</span><span class="p">(</span><span class="n">tool_name</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="n">rules</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">rules</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rules</span> <span class="o">=</span> <span class="n">DEFAULT_RULES</span>
+    <span class="c1"># 1. Rules first (hard deny/allow overrides mode)</span>
+    <span class="n">rule_decision</span> <span class="o">=</span> <span class="n">apply_rules</span><span class="p">(</span><span class="n">tool_name</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">rules</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">rule_decision</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">rule_decision</span>
+    <span class="c1"># 2. Mode auto-approval</span>
+    <span class="n">risk</span> <span class="o">=</span> <span class="n">TOOL_RISK</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tool_name</span><span class="p">,</span> <span class="s2">&quot;dangerous&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">risk</span> <span class="ow">in</span> <span class="n">AUTO_OK</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="p">[]):</span>
+        <span class="k">return</span> <span class="s2">&quot;allow&quot;</span>
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;plan&quot;</span> <span class="ow">and</span> <span class="n">risk</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;caution&quot;</span><span class="p">,</span> <span class="s2">&quot;dangerous&quot;</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="s2">&quot;deny&quot;</span>
+    <span class="c1"># 3. Ask</span>
+    <span class="k">return</span> <span class="s2">&quot;ask&quot;</span>
+</code></pre></div>
+<h3 id="-run-it-now-3">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="05-permissions-and-safety.html#-run-it-now-3">¶</a></h3>
+<p>Run the agent and ask it to <code>git status</code>. With the rule in place it should run without prompting even though <code>bash</code> is "dangerous." Then try <code>git push</code> — no rule matches, so it falls through to the mode logic and (in <code>auto</code> mode) asks you.</p>
+<hr>
+<blockquote>
+<h2 id="recap-what-youve-built-so-far">Recap: what you've built so far<a aria-label="Permalink to this section" class="hanchor" href="05-permissions-and-safety.html#recap-what-youve-built-so-far">¶</a></h2>
+<p>You now have a working, three-layer permission system using only functions, dicts, and lists:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th scope="col">Layer</th>
+<th scope="col">What it does</th>
+<th scope="col">Key data structure</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TOOL_RISK</td>
+<td>Labels each tool</td>
+<td>a dict</td>
+</tr>
+<tr>
+<td>AUTO_OK + mode</td>
+<td>Auto-approves by risk level</td>
+<td>a dict of lists</td>
+</tr>
+<tr>
+<td>DEFAULT_RULES</td>
+<td>Hard deny/allow by pattern</td>
+<td>a list of dicts</td>
+</tr>
+</tbody>
+</table></div>
+<p>Versions 3 and 4 below scale this up to the production-grade version — using <code>Enum</code>,
+<code>@dataclass</code>, and a <code>class</code>-based policy engine. Each new Python feature solves a
+concrete problem you'd hit if you kept the plain-dict version on a real project.</p>
+<p><strong>Beginner track:</strong> if <code>Enum</code>, <code>@dataclass</code>, and classes are still new to you, this is
+a perfectly legitimate stopping point — the functions-and-dicts gate above is a
+complete, working permission system, and it is exactly what Versions 3 and 4
+reorganize. Read on for the <em>ideas</em> (the table below maps each new piece of syntax to
+the problem it solves) and come back to the code when you are ready.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th scope="col">New thing below</th>
+<th scope="col">What problem it solves</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>class Mode(str, Enum)</code></td>
+<td>Autocomplete + typo detection: <code>Mode.PLAN</code> instead of the string <code>"plan"</code></td>
+</tr>
+<tr>
+<td><code>@dataclass class PolicyRule</code></td>
+<td>Named fields instead of <code>rule["arg_contains"]</code>; easier to add a <code>predicate</code> field</td>
+</tr>
+<tr>
+<td><code>class PermissionPolicy</code></td>
+<td>Bundles the rule list with its <code>evaluate()</code> logic; easy to swap policies</td>
+</tr>
+<tr>
+<td><code>tuple[Decision, str]</code> return value</td>
+<td>Carries a <em>reason</em> alongside the decision — the model and logs can read it</td>
+</tr>
+<tr>
+<td>Session memory (<code>set</code>)</td>
+<td>Remembers y/n/a/d answers across the loop without re-asking</td>
+</tr>
+<tr>
+<td><code>class HookRegistry</code></td>
+<td>Manages an ordered list of before/after functions without if-chains</td>
+</tr>
+</tbody>
+</table></div>
+</blockquote>
+</article>
+<footer class="page-footer">
+<nav class="continue" aria-label="Continue">
+<a class="continue-card" href="05-permissions-and-safety-4.html" rel="next">
+<span class="continue-kicker">Next · Lesson 4 of 9</span>
+<span class="continue-title">classes · part 1 of 3<span class="continue-time">~9 min</span><span class="continue-arrow" aria-hidden="true">→</span></span>
+</a>
+<p class="continue-aux">
+<a href="05-permissions-and-safety-2.html" rel="prev">← Lesson 2 · line-by-line</a>
+<a class="continue-fullpage" href="05-permissions-and-safety.html#version-2--functions-a-check_permission-you-can-call-and-test">View this lesson on the single page</a>
+</p>
+</nav>
+<p class="generated-note">Generated from <code>05-permissions-and-safety.md</code> — lesson 3 of 9 in the derived lesson view (boundaries may move when the markdown changes; the <a href="05-permissions-and-safety.html">single page</a> is the permanent address).</p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/05-permissions-and-safety.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
+</footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
+</main>
+</div>
+<script>
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards.
+     diagram-text mirrors are excluded — print hides them entirely (the SVG
+     figure already prints; opening the ASCII would print the diagram twice). */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not(.diagram-text):not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
+  });
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
+
+  /* Reading progress: the fixed 3px accent bar tracks scroll position.
+     Without JS the element simply stays at width 0 — invisible, harmless. */
+  var pbar = document.querySelector('.progress-bar');
+  if (pbar) {
+    var setProgress = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      pbar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    };
+    window.addEventListener('scroll', setProgress, { passive: true });
+    setProgress();
+  }
+
+  /* Deep links into collapsed sections: open every <details> ancestor of the
+     target, and the refsection that immediately follows a target heading.
+     Re-scroll only if something actually opened (the layout above the target
+     just changed), and instantly — the CSS smooth scroll would crawl across
+     tens of thousands of pixels on the long phase pages. */
+  function openForHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) { return; }
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    var opened = false;
+    var d = el.closest('details');
+    while (d) {
+      if (!d.hasAttribute('open')) { d.setAttribute('open', ''); opened = true; }
+      d = d.parentElement && d.parentElement.closest('details');
+    }
+    var sib = el.nextElementSibling;
+    if (sib && sib.matches('details.refsection') && !sib.hasAttribute('open')) {
+      sib.setAttribute('open', '');
+      opened = true;
+    }
+    if (!opened) { return; }
+    var jump = function () {
+      var y = el.getBoundingClientRect().top + window.scrollY - 16;
+      try { window.scrollTo({ top: y, behavior: 'instant' }); }
+      catch (e) { window.scrollTo(0, y); }
+    };
+    jump();
+    /* the browser's own fragment scroll was computed against the collapsed
+       layout and may still be animating (CSS smooth) — re-assert once, which
+       cancels it */
+    setTimeout(jump, 100);
+  }
+  window.addEventListener('hashchange', openForHash);
+  openForHash();
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
+</script>
+</body>
+</html>

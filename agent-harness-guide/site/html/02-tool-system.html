@@ -35,15 +35,15 @@
 </ul>
 <p class="sidebar-heading">Phases</p>
 <ul>
-<li><a href="00-foundations.html">Phase 0 — Foundations</a></li>
-<li><a href="01-bare-harness.html">Phase 1 — Bare Harness</a></li>
-<li class="current"><a href="02-tool-system.html" aria-current="page">Phase 2 — Tool System</a></li>
-<li><a href="03-conversation-and-streaming.html">Phase 3 — Conversation &amp; Streaming</a></li>
-<li><a href="04-real-tools.html">Phase 4 — Real Tools</a></li>
-<li><a href="05-permissions-and-safety.html">Phase 5 — Permissions &amp; Safety</a></li>
-<li><a href="06-context-management.html">Phase 6 — Context Management</a></li>
-<li><a href="07-subagents-orchestration.html">Phase 7 — Sub-agents</a></li>
-<li><a href="08-production-harness.html">Phase 8 — Production Harness</a></li>
+<li><a href="00-foundations-1.html">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness-1.html">Phase 1 — Bare Harness</a></li>
+<li class="current"><a href="02-tool-system-1.html" aria-current="true">Phase 2 — Tool System</a></li>
+<li><a href="03-conversation-and-streaming-1.html">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools-1.html">Phase 4 — Real Tools</a></li>
+<li><a href="05-permissions-and-safety-1.html">Phase 5 — Permissions &amp; Safety</a></li>
+<li><a href="06-context-management-1.html">Phase 6 — Context Management</a></li>
+<li><a href="07-subagents-orchestration-1.html">Phase 7 — Sub-agents</a></li>
+<li><a href="08-production-harness-1.html">Phase 8 — Production Harness</a></li>
 </ul>
 <p class="sidebar-heading">Appendix</p>
 <ul>
@@ -62,6 +62,7 @@
 <p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">2</span><span class="phase-kicker">Phase 2 of 8</span></p>
 <nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system.html" aria-current="page" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety.html" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management.html" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration.html" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness.html" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
 <nav class="ladder" aria-label="Version ladder"><a class="ladder-rung" href="#version-1--line-by-line-inline-ifelif-dispatch"><span class="ladder-medallion">V1</span> Line by Line</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="#version-2--functions-and-a-dict-registry"><span class="ladder-medallion">V2</span> Functions and a Dict…</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="#version-3--classes-tool-and-toolregistry"><span class="ladder-medallion">V3</span> Classes</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="#version-4--the-tool-decorator"><span class="ladder-medallion">V4</span> The @tool Decorator</a></nav>
+<p class="lesson-strip">This phase is also available as 8 lessons of ~11 min — <a href="02-tool-system-1.html">start Lesson 1 →</a> <span class="lesson-strip-note">(this single page is best for printing)</span></p>
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
@@ -161,7 +162,7 @@
 <article>
 <p class="md-breadcrumb"><a href="01-bare-harness.html">← Phase 1: A Bare Harness in ~80 Lines</a> · <a href="index.html">Guide index</a> · <a href="03-conversation-and-streaming.html">Phase 3: Conversation State &amp; Streaming →</a></p>
 <h1 id="phase-2--a-real-tool-system">Phase 2 — A Real Tool System</h1>
-<h2 id="where-we-left-off">Where We Left Off<a aria-label="Permalink to this section" class="hanchor" href="#where-we-left-off">¶</a></h2>
+<h2 id="where-we-left-off">Where We Left Off<a aria-label="Permalink to this section" class="hanchor" href="#where-we-left-off">¶</a><a class="lesson-link" href="02-tool-system-1.html" title="Read this section in lesson view (Lesson 1 of 8)">lesson 1</a></h2>
 <p>Phase 1 gave us a working agent loop in roughly 80 lines. The dispatch logic was a hand-written router with one branch per tool:</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">dispatch</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">arguments</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Route a tool call. Always returns a string; never raises.&quot;&quot;&quot;</span>
@@ -209,7 +210,7 @@ Read Versions 3 and 4 for the <em>ideas</em> and come back to the syntax when yo
 <blockquote>
 <p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/02-tool-system.ipynb" title="Opens the notebook on GitHub — or use its Open-in-Colab badge"><code>notebooks/02-tool-system.ipynb</code></a> executes this phase's checkpoints offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
 </blockquote>
-<h2 id="version-1--line-by-line-inline-ifelif-dispatch">Version 1 — Line by Line: Inline <code>if/elif</code> Dispatch<a aria-label="Permalink to this section" class="hanchor" href="#version-1--line-by-line-inline-ifelif-dispatch">¶</a></h2>
+<h2 id="version-1--line-by-line-inline-ifelif-dispatch">Version 1 — Line by Line: Inline <code>if/elif</code> Dispatch<a aria-label="Permalink to this section" class="hanchor" href="#version-1--line-by-line-inline-ifelif-dispatch">¶</a><a class="lesson-link" href="02-tool-system-2.html" title="Read this section in lesson view (Lesson 2 of 8)">lesson 2</a></h2>
 <p><strong>Why start here?</strong> Before we build any machinery, we should see the harness in its rawest possible form: every tool's schema written out, every tool's <em>logic</em> pasted directly into the dispatch branch, no functions of our own at all. This version works — and the moment you try to add a third tool, you will see exactly which pain each later version removes.</p>
 <h3 id="11-the-schema-dicts-and-the-tools-list">1.1 The schema dicts and the tools list<a aria-label="Permalink to this section" class="hanchor" href="#11-the-schema-dicts-and-the-tools-list">¶</a></h3>
 <p>A "tool", from the API's point of view, is just a dict describing a function the model may call. We write two of them by hand and collect them in a list. Note the <strong>flat</strong> format the Responses API requires: <code>type</code>, <code>name</code>, <code>description</code>, <code>parameters</code> all at the top level — no nested <code>"function"</code> wrapper.</p>
@@ -366,7 +367,7 @@ Final answer:
 <li><strong>Add an <code>elif</code> branch</strong> to the dispatch chain — forget this and the model calls a tool that silently falls into the <code>else</code> error branch.</li>
 </ol>
 <p>Three places, in different parts of the file, that must stay in sync by hand. And there are quieter problems: if <code>args["a"]</code> is missing or the tool logic raises, the whole script crashes — the model never gets to see an error and recover. Every version that follows is an answer to this paragraph.</p>
-<h2 id="version-2--functions-and-a-dict-registry">Version 2 — Functions and a Dict Registry<a aria-label="Permalink to this section" class="hanchor" href="#version-2--functions-and-a-dict-registry">¶</a></h2>
+<h2 id="version-2--functions-and-a-dict-registry">Version 2 — Functions and a Dict Registry<a aria-label="Permalink to this section" class="hanchor" href="#version-2--functions-and-a-dict-registry">¶</a><a class="lesson-link" href="02-tool-system-3.html" title="Read this section in lesson view (Lesson 3 of 8)">lesson 3</a></h2>
 <h3 id="what-changed-from-v1-to-v2">What changed from V1 to V2<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v1-to-v2">¶</a></h3>
 <ul>
 <li>Each tool's logic moves out of the <code>elif</code> branch into a <strong>named function</strong> (<code>add</code>, <code>word_count</code>).</li>
@@ -636,7 +637,7 @@ Final answer:
 multi-tool agent. The remaining versions show how to remove repetitive boilerplate, not how
 to make the agent <em>work</em> — it already works.</p>
 </blockquote>
-<h2 id="version-3--classes-tool-and-toolregistry">Version 3 — Classes: <code>Tool</code> and <code>ToolRegistry</code><a aria-label="Permalink to this section" class="hanchor" href="#version-3--classes-tool-and-toolregistry">¶</a></h2>
+<h2 id="version-3--classes-tool-and-toolregistry">Version 3 — Classes: <code>Tool</code> and <code>ToolRegistry</code><a aria-label="Permalink to this section" class="hanchor" href="#version-3--classes-tool-and-toolregistry">¶</a><a class="lesson-link" href="02-tool-system-4.html" title="Read this section in lesson view (Lesson 4 of 8)">lesson 4</a></h2>
 <h3 id="what-changed-from-v2-to-v3">What changed from V2 to V3<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v2-to-v3">¶</a></h3>
 <ul>
 <li>Each <em>function + schema dict</em> pair becomes a single <strong><code>Tool</code> object</strong> — the data and the behavior now live in one place.</li>
@@ -1046,7 +1047,7 @@ and override <code>run</code>" means: make a new blueprint based on <code>Tool</
 </code></pre></div>
 
 <p>You should see the same output as Versions 1 and 2. The tool <em>behavior</em> is identical — you have only reorganized who owns the registry. The same idea, organized.</p>
-<h2 id="version-4--the-tool-decorator">Version 4 — The <code>@tool</code> Decorator<a aria-label="Permalink to this section" class="hanchor" href="#version-4--the-tool-decorator">¶</a></h2>
+<h2 id="version-4--the-tool-decorator">Version 4 — The <code>@tool</code> Decorator<a aria-label="Permalink to this section" class="hanchor" href="#version-4--the-tool-decorator">¶</a><a class="lesson-link" href="02-tool-system-5.html" title="Read this section in lesson view (Lesson 5 of 8)">lesson 5</a></h2>
 <h3 id="what-changed-from-v3-to-v4">What changed from V3 to V4<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v3-to-v4">¶</a></h3>
 <ul>
 <li>The hand-written schema dicts <strong>disappear</strong>: <code>@tool</code> builds each one automatically from the function's <strong>type hints</strong> and <strong>docstring</strong>.</li>
@@ -1585,7 +1586,7 @@ defined (or use the complete <code>tools/base.py</code> listing at the end of th
 </code></pre></div>
 
 <p>Same output as Versions 1, 2, and 3 — confirm it for yourself. Then notice what <em>writing a new tool</em> costs now: a function with type hints and a docstring, plus one <code>registry.register(...)</code> line. No schema dict, no <code>elif</code> branch, no list to update. Alternatively, take your <code>agent_v2.py</code>, replace its two function definitions and schema dicts with the <code>@tool</code>-decorated versions (plus the machinery), and confirm the output is identical there too.</p>
-<h2 id="going-further-optional--parallel-tool-execution">Going Further (Optional) — Parallel Tool Execution<a aria-label="Permalink to this section" class="hanchor" href="#going-further-optional--parallel-tool-execution">¶</a></h2>
+<h2 id="going-further-optional--parallel-tool-execution">Going Further (Optional) — Parallel Tool Execution<a aria-label="Permalink to this section" class="hanchor" href="#going-further-optional--parallel-tool-execution">¶</a><a class="lesson-link" href="02-tool-system-6.html" title="Read this section in lesson view (Lesson 6 of 8)">lesson 6</a></h2>
 <p><strong>Why now?</strong> The <code>for</code> loop over tool calls in Versions 1–4 runs them one at a time. If the model asks for weather in Paris and weather in Tokyo simultaneously, you wait for Paris to finish before starting Tokyo. Threads fix this. This is a speed optimization only — it does not change the results.</p>
 <blockquote class="beginner">
 <p>🟢 <strong>Parallel tools are an optimization, not a requirement.</strong> The code below uses
@@ -1699,7 +1700,7 @@ dict in one line instead of with a loop.</p>
 <li>Tools are pure functions with no shared state.</li>
 </ul>
 <p>The safe default for unknown tools is sequential. Switch to parallel only when you understand each tool's side effects.</p>
-<h2 id="argument-validation-strict-mode-vs-manual-checks-optional">Argument Validation: Strict Mode vs. Manual Checks (optional)<a aria-label="Permalink to this section" class="hanchor" href="#argument-validation-strict-mode-vs-manual-checks-optional">¶</a></h2>
+<h2 id="argument-validation-strict-mode-vs-manual-checks-optional">Argument Validation: Strict Mode vs. Manual Checks (optional)<a aria-label="Permalink to this section" class="hanchor" href="#argument-validation-strict-mode-vs-manual-checks-optional">¶</a><a class="lesson-link" href="02-tool-system-6.html" title="Read this section in lesson view (Lesson 6 of 8)">lesson 6</a></h2>
 <p>The Responses API supports a <code>"strict": True</code> field on each tool definition. When strict mode is active, the API guarantees:</p>
 <ol>
 <li>The model will only send keys that are listed in <code>properties</code>.</li>
@@ -1739,7 +1740,7 @@ dict in one line instead of with a loop.</p>
 </code></pre></div>
 
 <p>The <code>@tool</code> decorator does not currently generate this form automatically; it outputs simple schemas that work with <code>strict=False</code>. For a production system, you would either extend the decorator to accept <code>strict=True</code> and emit null-typed optionals, or write schemas by hand for strict-mode tools.</p>
-<h2 id="structured-results-and-errors-optional">Structured Results and Errors (optional)<a aria-label="Permalink to this section" class="hanchor" href="#structured-results-and-errors-optional">¶</a></h2>
+<h2 id="structured-results-and-errors-optional">Structured Results and Errors (optional)<a aria-label="Permalink to this section" class="hanchor" href="#structured-results-and-errors-optional">¶</a><a class="lesson-link" href="02-tool-system-6.html" title="Read this section in lesson view (Lesson 6 of 8)">lesson 6</a></h2>
 <h3 id="the-string-contract">The String Contract<a aria-label="Permalink to this section" class="hanchor" href="#the-string-contract">¶</a></h3>
 <p>Every tool returns a string. This is not a limitation — it is a deliberate interface boundary. The model receives text; strings are the natural unit.</p>
 <p>For structured data, JSON-encode it:</p>
@@ -1775,7 +1776,7 @@ dict in one line instead of with a loop.</p>
 <div class="highlight nocopy"><pre><span></span><code>Error (ZeroDivisionError): division by zero
 </code></pre></div>
 <p>This string is the tool output. The model reads it, understands something went wrong, and can inform the user or try a different approach. The agent loop continues normally.</p>
-<h2 id="the-updated-agent-loop--the-production-shape">The Updated Agent Loop — the Production Shape<a aria-label="Permalink to this section" class="hanchor" href="#the-updated-agent-loop--the-production-shape">¶</a></h2>
+<h2 id="the-updated-agent-loop--the-production-shape">The Updated Agent Loop — the Production Shape<a aria-label="Permalink to this section" class="hanchor" href="#the-updated-agent-loop--the-production-shape">¶</a><a class="lesson-link" href="02-tool-system-6.html" title="Read this section in lesson view (Lesson 6 of 8)">lesson 6</a></h2>
 <p><em>The optional detour ends here — the core path resumes with this section.</em></p>
 <p>With the registry and parallel dispatch in place, the agent loop becomes completely decoupled from individual tools.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># agent.py</span>
@@ -1870,7 +1871,7 @@ dict in one line instead of with a loop.</p>
 <li>The loop terminates when no <code>function_call</code> items appear in <code>resp.output</code>.</li>
 <li><code>max_turns</code> is a hard guard against runaway loops. 10 is a reasonable default for most tasks; increase it for complex multi-step agents.</li>
 </ul>
-<h2 id="full-runnable-example--the-tools-package">Full Runnable Example — the <code>tools/</code> Package<a aria-label="Permalink to this section" class="hanchor" href="#full-runnable-example--the-tools-package">¶</a></h2>
+<h2 id="full-runnable-example--the-tools-package">Full Runnable Example — the <code>tools/</code> Package<a aria-label="Permalink to this section" class="hanchor" href="#full-runnable-example--the-tools-package">¶</a><a class="lesson-link" href="02-tool-system-7.html" title="Read this section in lesson view (Lesson 7 of 8)">lesson 7</a></h2>
 <p>Here is the complete file layout and a runnable script — the Version 4 harness split into modules, the way the consolidated package organizes it.</p>
 <h3 id="file-layout">File Layout<a aria-label="Permalink to this section" class="hanchor" href="#file-layout">¶</a></h3>
 <div class="highlight nocopy"><pre><span></span><code>project/
@@ -2343,7 +2344,7 @@ Final answer:
 The sentence &quot;The quick brown fox jumps over the lazy dog&quot; contains 9 words.
 </code></pre></div>
 <p>In turn 1 the model issued two <code>function_call</code> items simultaneously. Both ran in parallel via <code>ThreadPoolExecutor</code>. The results were appended with their respective <code>call_id</code> values. The model received both outputs in turn 2 and produced the final text response with no further tool calls.</p>
-<h2 id="why-we-built-it-in-versions-the-problems-with-ad-hoc-dispatch">Why We Built It in Versions: The Problems with Ad-Hoc Dispatch<a aria-label="Permalink to this section" class="hanchor" href="#why-we-built-it-in-versions-the-problems-with-ad-hoc-dispatch">¶</a></h2>
+<h2 id="why-we-built-it-in-versions-the-problems-with-ad-hoc-dispatch">Why We Built It in Versions: The Problems with Ad-Hoc Dispatch<a aria-label="Permalink to this section" class="hanchor" href="#why-we-built-it-in-versions-the-problems-with-ad-hoc-dispatch">¶</a><a class="lesson-link" href="02-tool-system-7.html" title="Read this section in lesson view (Lesson 7 of 8)">lesson 7</a></h2>
 <p>You now have a full tool system. This section names the five failure modes of the Version 1 / Phase 1 one-branch-per-tool approach — useful when you need to explain <em>why</em> the registry matters:</p>
 <p><strong>No single source of truth.</strong> The tool's schema (sent to the model) and the tool's implementation (called at runtime) are defined in separate places. They drift.</p>
 <p><strong>No validation.</strong> If the model sends <code>{"a": "hello", "b": 2}</code> for an <code>add</code> tool expecting integers, the error surfaces as a Python <code>TypeError</code> inside dispatch. You either crash the loop or you catch it with a bare <code>except</code> that swallows all errors equally.</p>
@@ -2359,7 +2360,7 @@ The sentence &quot;The quick brown fox jumps over the lazy dog&quot; contains 9 
 <li><strong>Structured errors</strong>: returning error information as strings so the model can reason about failures</li>
 </ul>
 <p>Track each requirement back through the ladder: registration arrived in V2, classes organized it in V3, schema generation arrived in V4, and validation and parallelism came as add-ons to the registry. Same harness all the way up.</p>
-<h2 id="pitfalls">Pitfalls<a aria-label="Permalink to this section" class="hanchor" href="#pitfalls">¶</a></h2>
+<h2 id="pitfalls">Pitfalls<a aria-label="Permalink to this section" class="hanchor" href="#pitfalls">¶</a><a class="lesson-link" href="02-tool-system-8.html" title="Read this section in lesson view (Lesson 8 of 8)">lesson 8</a></h2>
 <div class="table-wrap"><table>
 <thead>
 <tr>
@@ -2406,7 +2407,7 @@ The sentence &quot;The quick brown fox jumps over the lazy dog&quot; contains 9 
 </tr>
 </tbody>
 </table></div>
-<h2 id="key-takeaways">Key takeaways<a aria-label="Permalink to this section" class="hanchor" href="#key-takeaways">¶</a></h2>
+<h2 id="key-takeaways">Key takeaways<a aria-label="Permalink to this section" class="hanchor" href="#key-takeaways">¶</a><a class="lesson-link" href="02-tool-system-8.html" title="Read this section in lesson view (Lesson 8 of 8)">lesson 8</a></h2>
 <ul>
 <li>The same harness climbed a <strong>ladder of versions</strong>: inline <code>if/elif</code> (V1) → functions +
   dict registry (V2) → <code>Tool</code>/<code>ToolRegistry</code> classes (V3) → the <code>@tool</code> decorator (V4).
@@ -2421,7 +2422,7 @@ The sentence &quot;The quick brown fox jumps over the lazy dog&quot; contains 9 
 <li>Run <strong>independent</strong> tool calls in <strong>parallel</strong> (threads) for speed; fall back to
   <strong>sequential</strong> when tools have conflicting side effects.</li>
 </ul>
-<h2 id="check-yourself">Check yourself<a aria-label="Permalink to this section" class="hanchor" href="#check-yourself">¶</a></h2>
+<h2 id="check-yourself">Check yourself<a aria-label="Permalink to this section" class="hanchor" href="#check-yourself">¶</a><a class="lesson-link" href="02-tool-system-8.html" title="Read this section in lesson view (Lesson 8 of 8)">lesson 8</a></h2>
 <ol>
 <li>What can you change <em>without touching the agent loop</em> once you have a registry?</li>
 <li>Where does <code>@tool</code> get the schema's parameter names and types from?</li>
@@ -2440,7 +2441,7 @@ The sentence &quot;The quick brown fox jumps over the lazy dog&quot; contains 9 
    <code>call_id</code> still gets its required matching output so the next <code>create()</code> is valid.</li>
 </ol>
 </details>
-<h2 id="exercises">Exercises<a aria-label="Permalink to this section" class="hanchor" href="#exercises">¶</a></h2>
+<h2 id="exercises">Exercises<a aria-label="Permalink to this section" class="hanchor" href="#exercises">¶</a><a class="lesson-link" href="02-tool-system-8.html" title="Read this section in lesson view (Lesson 8 of 8)">lesson 8</a></h2>
 <p>See <a href="exercises.html"><code>EXERCISES.md</code> — Phase 2</a> for hands-on practice:</p>
 <ul>
 <li><strong>2.1 (warm-up):</strong> Register a new <code>calculator(expression: str)</code> tool through the registry (use <code>@tool</code>, or hand-write the schema per the beginner track). Call it from the agent without editing the loop.</li>

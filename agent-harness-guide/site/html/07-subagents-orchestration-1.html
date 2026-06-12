@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<!-- GENERATED from 07-subagents-orchestration.md — do not edit; run site/build_site.py -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="A single agent loop is surprisingly capable, but three hard limits surface quickly in real workloads.">
+<link rel="canonical" href="https://joshps23.github.io/ai-eng-2/07-subagents-orchestration.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://joshps23.github.io/ai-eng-2/07-subagents-orchestration-1.html">
+<meta property="og:site_name" content="Agent Harness Guide">
+<meta property="og:title" content="Phase 7 · Lesson 1 — Sub-Agents &amp; Dynamic… — Agent Harness Guide">
+<meta property="og:description" content="A single agent loop is surprisingly capable, but three hard limits surface quickly in real workloads.">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#FDFDFE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
+<title>Phase 7 · Lesson 1 — Sub-Agents &amp; Dynamic… — Agent Harness Guide</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body>
+<div class="progress-bar" aria-hidden="true"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="layout">
+<details class="sidebar-wrap" open>
+<summary class="sidebar-toggle">Guide navigation</summary>
+<nav class="sidebar" aria-label="Guide pages">
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
+<p class="sidebar-heading">Start here</p>
+<ul>
+<li><a href="index.html">Guide hub</a></li>
+<li><a href="learning-path.html">Learning Path</a></li>
+<li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
+<li><a href="faq.html">Setup &amp; FAQ</a></li>
+</ul>
+<p class="sidebar-heading">Phases</p>
+<ul>
+<li><a href="00-foundations-1.html">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness-1.html">Phase 1 — Bare Harness</a></li>
+<li><a href="02-tool-system-1.html">Phase 2 — Tool System</a></li>
+<li><a href="03-conversation-and-streaming-1.html">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools-1.html">Phase 4 — Real Tools</a></li>
+<li><a href="05-permissions-and-safety-1.html">Phase 5 — Permissions &amp; Safety</a></li>
+<li><a href="06-context-management-1.html">Phase 6 — Context Management</a></li>
+<li class="current"><a href="07-subagents-orchestration-1.html" aria-current="page">Phase 7 — Sub-agents</a></li>
+<li><a href="08-production-harness-1.html">Phase 8 — Production Harness</a></li>
+</ul>
+<p class="sidebar-heading">Appendix</p>
+<ul>
+<li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
+</ul>
+<p class="sidebar-heading">Practice</p>
+<ul>
+<li><a href="exercises.html">Exercises</a></li>
+<li><a href="glossary.html">Glossary</a></li>
+<li><a href="notebooks.html">Notebooks</a></li>
+</ul>
+</nav>
+</details>
+<main id="main">
+<header class="page-header">
+<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">7</span><span class="phase-kicker">Phase 7 · Lesson 1 of 11</span><span class="lesson-time">~11 min</span></p>
+<nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations-1.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness-1.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system-1.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming-1.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools-1.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety-1.html" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management-1.html" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration-1.html" aria-current="true" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness-1.html" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
+<nav class="lesson-rail" aria-label="Lessons in this phase"><a class="lesson-tick" href="07-subagents-orchestration-1.html" aria-current="page" title="Lesson 1: Sub-Agents &amp; Dynamic… (~11 min)" aria-label="Lesson 1: Sub-Agents &amp; Dynamic… (~11 min)">1</a><a class="lesson-tick" href="07-subagents-orchestration-2.html" title="Lesson 2: Line-by-Line (~12 min)" aria-label="Lesson 2: Line-by-Line (~12 min)">2</a><a class="lesson-tick" href="07-subagents-orchestration-3.html" title="Lesson 3: Functions (~12 min)" aria-label="Lesson 3: Functions (~12 min)">3</a><a class="lesson-tick" href="07-subagents-orchestration-4.html" title="Lesson 4: Classes · part 1 of 4 (~6 min)" aria-label="Lesson 4: Classes · part 1 of 4 (~6 min)">4</a><a class="lesson-tick" href="07-subagents-orchestration-5.html" title="Lesson 5: Classes · part 2 of 4 (~11 min)" aria-label="Lesson 5: Classes · part 2 of 4 (~11 min)">5</a><a class="lesson-tick" href="07-subagents-orchestration-6.html" title="Lesson 6: Classes · part 3 of 4 (~7 min)" aria-label="Lesson 6: Classes · part 3 of 4 (~7 min)">6</a><a class="lesson-tick" href="07-subagents-orchestration-7.html" title="Lesson 7: Classes · part 4 of 4 (~10 min)" aria-label="Lesson 7: Classes · part 4 of 4 (~10 min)">7</a><a class="lesson-tick" href="07-subagents-orchestration-8.html" title="Lesson 8: Threads (~13 min)" aria-label="Lesson 8: Threads (~13 min)">8</a><a class="lesson-tick" href="07-subagents-orchestration-9.html" title="Lesson 9: Dynamic Fan-Out (~7 min)" aria-label="Lesson 9: Dynamic Fan-Out (~7 min)">9</a><a class="lesson-tick" href="07-subagents-orchestration-10.html" title="Lesson 10: 6. Design Considerations (~9 min)" aria-label="Lesson 10: 6. Design Considerations (~9 min)">10</a><a class="lesson-tick" href="07-subagents-orchestration-11.html" title="Wrap-up: Pitfalls (~5 min)" aria-label="Wrap-up: Pitfalls (~5 min)">11</a></nav>
+<nav class="ladder" aria-label="Version ladder"><a class="ladder-rung" href="07-subagents-orchestration-2.html#version-1--line-by-line-the-same-loop-pasted-twice"><span class="ladder-medallion">V1</span> Line-by-Line</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="07-subagents-orchestration-3.html#version-2--functions-the-duplication-collapses"><span class="ladder-medallion">V2</span> Functions</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="07-subagents-orchestration-4.html#version-3--classes-the-same-harness-organized"><span class="ladder-medallion">V3</span> Classes</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="07-subagents-orchestration-8.html#version-4--threads-parallel-sub-agents-optional-speed-up"><span class="ladder-medallion">V4</span> Threads</a></nav>
+<details class="page-toc">
+<summary>On this page</summary>
+<ul>
+<li class="toc-h2"><a href="#1-why-one-agent-is-not-enough">1. Why One Agent Is Not Enough</a>
+<ul>
+<li class="toc-h3"><a href="#11-context-window-pressure">1.1 Context-window pressure</a></li>
+<li class="toc-h3"><a href="#12-wall-clock-parallelism">1.2 Wall-clock parallelism</a></li>
+<li class="toc-h3"><a href="#13-specialisation">1.3 Specialisation</a></li>
+<li class="toc-h3"><a href="#14-the-orchestrator-worker-pattern">1.4 The orchestrator-worker pattern</a></li>
+</ul>
+</li>
+<li class="toc-h2"><a href="#2-the-key-trick--and-the-plan-for-this-phase">2. The Key Trick — and the Plan for This Phase</a>
+</li>
+<li class="toc-h2"><a href="#-beginner-track-a-sub-agent-is-just-calling-your-agent-loop-again">🟢 Beginner track: a &quot;sub-agent&quot; is just calling your agent loop again</a>
+</li>
+</ul>
+</details>
+</header>
+<article>
+<p class="md-breadcrumb"><a href="06-context-management.html">← Phase 6: Context Management</a> · <a href="index.html">Guide index</a> · <a href="08-production-harness.html">Phase 8: The Production Harness →</a></p>
+<h1 id="phase-7--sub-agents--dynamic-parallel-orchestration">Phase 7 — Sub-Agents &amp; Dynamic Parallel Orchestration</h1>
+<blockquote>
+<p><strong>Series context:</strong> Phases 0–6 built a complete, production-grade single-agent harness: a working loop, a typed tool system with <code>@tool</code> and <code>ToolRegistry</code>, streaming, conversation management, permission hooks, and structured outputs. This phase is the headline feature: turning that single agent into an <strong>orchestrator</strong> that spawns worker agents at runtime, fans them out in parallel, and synthesises their results. Read the earlier phases first; this phase builds on every concept they introduced without repeating them.</p>
+</blockquote>
+<h2 id="1-why-one-agent-is-not-enough">1. Why One Agent Is Not Enough<a aria-label="Permalink to this section" class="hanchor" href="07-subagents-orchestration.html#1-why-one-agent-is-not-enough">¶</a></h2>
+<p>A single agent loop is surprisingly capable, but three hard limits surface quickly in real workloads.</p>
+<h3 id="11-context-window-pressure">1.1 Context-window pressure<a aria-label="Permalink to this section" class="hanchor" href="07-subagents-orchestration.html#11-context-window-pressure">¶</a></h3>
+<p>Every tool call and its output accumulates in <code>input_items</code>. A thorough web search, a large file read, or a detailed code analysis can produce thousands of tokens — most of which the agent never needs again after it has extracted the key fact. Those tokens sit in every subsequent API call, consuming quota, increasing latency, and eventually hitting the model's context limit.</p>
+<p>A sub-agent solves this cleanly: it does the noisy, expensive work in its <strong>own isolated transcript</strong>, produces a crisp summary, and the parent sees only that summary. The parent's context stays slim regardless of how much intermediate work happened.</p>
+<h3 id="12-wall-clock-parallelism">1.2 Wall-clock parallelism<a aria-label="Permalink to this section" class="hanchor" href="07-subagents-orchestration.html#12-wall-clock-parallelism">¶</a></h3>
+<p>Independent subtasks executed serially add their latencies together. If summarising three code modules each takes four seconds, a serial approach takes twelve seconds. Three parallel sub-agents each with their own OpenAI connection take four seconds — the irreducible minimum. The OpenAI API is stateless and horizontally scalable; parallel calls are not just possible, they are encouraged.</p>
+<h3 id="13-specialisation">1.3 Specialisation<a aria-label="Permalink to this section" class="hanchor" href="07-subagents-orchestration.html#13-specialisation">¶</a></h3>
+<p>Different subtasks benefit from different system prompts and different toolsets. A "researcher" agent should have web-search tools and a prompt that emphasises accuracy and citation. A "coder" agent needs file-system tools and a prompt that emphasises correctness and minimal diffs. A "reviewer" agent needs read-only access and a prompt that emphasises finding bugs. Packing all three roles into one agent with one prompt compromises all three.</p>
+<h3 id="14-the-orchestrator-worker-pattern">1.4 The orchestrator-worker pattern<a aria-label="Permalink to this section" class="hanchor" href="07-subagents-orchestration.html#14-the-orchestrator-worker-pattern">¶</a></h3>
+<p>The architecture this phase builds:</p>
+<figure class="diagram" role="group">
+<svg viewBox="0 0 640 420" role="img" aria-labelledby="fig-orch-title">
+<title id="fig-orch-title">Orchestrator-worker fan-out: the orchestrator plans the work and spawns workers via task(); each worker runs with its own transcript and its own tools; their results — summary, diff, findings — fan back in to the orchestrator, which synthesises the final answer.</title>
+<defs>
+<marker id="fig-orch-arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="d-arrow" d="M0 0 L10 5 L0 10 z"/></marker>
+<marker id="fig-orch-arrow-hot" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="d-arrow-hot" d="M0 0 L10 5 L0 10 z"/></marker>
+</defs>
+<path class="d-edge" d="M260 84 L126 125" marker-end="url(#fig-orch-arrow)"/>
+<line class="d-edge" x1="320" y1="84" x2="320" y2="125" marker-end="url(#fig-orch-arrow)"/>
+<path class="d-edge" d="M380 84 L514 125" marker-end="url(#fig-orch-arrow)"/>
+<path class="d-edge" d="M125 230 L249 325" marker-end="url(#fig-orch-arrow)"/>
+<line class="d-edge" x1="320" y1="230" x2="320" y2="325" marker-end="url(#fig-orch-arrow)"/>
+<path class="d-edge" d="M515 230 L391 325" marker-end="url(#fig-orch-arrow)"/>
+<rect class="d-box d-accent" x="190" y="20" width="260" height="64"/>
+<rect class="d-box" x="40" y="130" width="170" height="100"/>
+<rect class="d-box" x="235" y="130" width="170" height="100"/>
+<rect class="d-box" x="430" y="130" width="170" height="100"/>
+<rect class="d-box d-accent" x="190" y="330" width="260" height="60"/>
+<text class="d-label" x="320" y="48" text-anchor="middle">ORCHESTRATOR</text>
+<text class="d-mono" x="320" y="66" text-anchor="middle">plans the work, spawns workers</text>
+<text class="d-mono" x="194" y="102" text-anchor="end">task()</text>
+<text class="d-mono" x="328" y="108" text-anchor="start">task()</text>
+<text class="d-mono" x="446" y="102" text-anchor="start">task()</text>
+<text class="d-label" x="125" y="154" text-anchor="middle">Worker A</text>
+<rect class="d-chip d-chip-accent" x="69" y="164" width="112" height="18"/>
+<text class="d-chip-text d-chip-text-accent" x="125" y="177" text-anchor="middle">role=researcher</text>
+<text class="d-mono" x="125" y="202" text-anchor="middle">own transcript</text>
+<text class="d-mono" x="125" y="218" text-anchor="middle">own tools</text>
+<text class="d-label" x="320" y="154" text-anchor="middle">Worker B</text>
+<rect class="d-chip d-chip-green" x="280" y="164" width="80" height="18"/>
+<text class="d-chip-text d-chip-text-green" x="320" y="177" text-anchor="middle">role=coder</text>
+<text class="d-mono" x="320" y="202" text-anchor="middle">own transcript</text>
+<text class="d-mono" x="320" y="218" text-anchor="middle">own tools</text>
+<text class="d-label" x="515" y="154" text-anchor="middle">Worker C</text>
+<rect class="d-chip d-chip-warn" x="465" y="164" width="100" height="18"/>
+<text class="d-chip-text d-chip-text-warn" x="515" y="177" text-anchor="middle">role=reviewer</text>
+<text class="d-mono" x="515" y="202" text-anchor="middle">own transcript</text>
+<text class="d-mono" x="515" y="218" text-anchor="middle">own tools</text>
+<text class="d-mono" x="177" y="274" text-anchor="end">summary</text>
+<text class="d-mono" x="328" y="278" text-anchor="start">diff</text>
+<text class="d-mono" x="463" y="274" text-anchor="start">findings</text>
+<text class="d-label" x="320" y="354" text-anchor="middle">ORCHESTRATOR synthesises</text>
+<text class="d-label" x="320" y="372" text-anchor="middle">the final answer</text>
+</svg>
+<details class="diagram-text"><summary>Text version of this diagram</summary>
+<div class="highlight nocopy"><pre><span></span><code>                     ┌─────────────────────────────────────┐
+                     │           ORCHESTRATOR               │
+                     │  (decides what work needs doing,     │
+                     │   how many workers, what each does)  │
+                     └────────────────┬────────────────────┘
+                                      │
+              ┌───────────────────────┼───────────────────────┐
+              │ task()                │ task()                │ task()
+              ▼                       ▼                       ▼
+   ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐
+   │  WORKER A        │   │  WORKER B        │   │  WORKER C        │
+   │  role=researcher │   │  role=coder      │   │  role=reviewer   │
+   │  own transcript  │   │  own transcript  │   │  own transcript  │
+   │  own tools       │   │  own tools       │   │  own tools       │
+   └────────┬────────┘   └────────┬────────┘   └────────┬────────┘
+            │ summary             │ diff                 │ findings
+            └───────────────────►─┴─◄──────────────────┘
+                                  │
+                     ┌────────────▼────────────┐
+                     │  ORCHESTRATOR synthesises│
+                     │  final answer            │
+                     └─────────────────────────┘
+</code></pre></div>
+</details>
+</figure>
+<p>The critical insight is that the orchestrator <strong>decides at runtime</strong> how many workers to spawn and what each does. This is a <em>dynamic</em> workflow, not a hardcoded pipeline. The model looks at the task, reasons about how to decompose it, and emits the appropriate <code>task</code> tool calls. If the task only warrants one worker, one is spawned. If it warrants seven, seven run in parallel.</p>
+<h2 id="2-the-key-trick--and-the-plan-for-this-phase">2. The Key Trick — and the Plan for This Phase<a aria-label="Permalink to this section" class="hanchor" href="07-subagents-orchestration.html#2-the-key-trick--and-the-plan-for-this-phase">¶</a></h2>
+<blockquote>
+<p><strong>Why now?</strong> Before any classes or config, you need to see the core idea working. Everything else in this phase is just that one idea, better organized.</p>
+</blockquote>
+<p>This phase presents <strong>one harness, four times</strong>, at increasing levels of abstraction.
+Every version is a <strong>complete program you can paste into a file and run</strong>, and every
+version does the same thing: an orchestrator agent delegates work to a sub-agent through
+a <code>task</code> tool. Only the <em>organization</em> of the code changes:</p>
+<ul>
+<li><strong>Version 1 — line-by-line.</strong> No <code>def</code>, no classes. The agent loop — and, inside its
+  <code>task</code> dispatch branch, <strong>a second copy of the exact same loop pasted inline</strong>. The
+  duplication is deliberate: you should <em>feel</em> "this is the same code twice."</li>
+<li><strong>Version 2 — functions.</strong> The pasted copy collapses into a plain function, and then
+  both loops collapse into one <code>run_agent</code> function used by orchestrator and worker alike.</li>
+<li><strong>Version 3 — classes.</strong> The loop becomes an <code>Agent</code> object, roles become presets, and
+  spawning becomes a <code>task</code> tool that constructs an <code>Agent</code> inside a tool — the shape of
+  the real package (<code>code/agent_harness/subagents.py</code>). Same idea, organized.</li>
+<li><strong>Version 4 — threads.</strong> Several sub-agents run <em>at the same time</em> via a thread pool —
+  the shape of <code>code/agent_harness/tools/parallel.py</code>. Same harness, one new mechanism.</li>
+</ul>
+<p>Between versions you'll find a short <strong>"What changed"</strong> list, so you can see each rung as
+a reorganization of the previous one, never a brand-new program.</p>
+<p><strong>Contents:</strong></p>
+<blockquote>
+<p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/07-subagents-orchestration.ipynb" title="Opens the notebook on GitHub — or use its Open-in-Colab badge"><code>notebooks/07-subagents-orchestration.ipynb</code></a> executes this phase's runnable core offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
+</blockquote>
+<ul>
+<li><a href="07-subagents-orchestration.html#version-1--line-by-line-the-same-loop-pasted-twice">Version 1 — line-by-line: the same loop, pasted twice</a></li>
+<li><a href="07-subagents-orchestration.html#version-2--functions-the-duplication-collapses">Version 2 — functions: the duplication collapses</a></li>
+<li><a href="07-subagents-orchestration.html#version-3--classes-the-same-harness-organized">Version 3 — classes: the same harness, organized</a></li>
+<li><a href="07-subagents-orchestration.html#version-4--threads-parallel-sub-agents-optional-speed-up">Version 4 — threads: parallel sub-agents</a></li>
+<li><a href="07-subagents-orchestration.html#5-a-complete-worked-example--dynamic-fan-out">§5 — a complete worked example: dynamic fan-out</a></li>
+<li><a href="07-subagents-orchestration.html#6-design-considerations">§6 — design considerations</a></li>
+<li><a href="07-subagents-orchestration.html#7-full-code--subagentspy">§7 — full code: <code>subagents.py</code></a></li>
+<li><a href="07-subagents-orchestration.html#8-async-alternative">§8 — async alternative</a></li>
+<li><a href="07-subagents-orchestration.html#pitfalls">Pitfalls</a></li>
+</ul>
+<blockquote class="beginner">
+<h2 id="-beginner-track-a-sub-agent-is-just-calling-your-agent-loop-again">🟢 Beginner track: a "sub-agent" is just calling your agent loop again<a aria-label="Permalink to this section" class="hanchor" href="07-subagents-orchestration.html#-beginner-track-a-sub-agent-is-just-calling-your-agent-loop-again">¶</a></h2>
+<p>This phase uses an <code>Agent</code> <strong>class</strong>, but the whole idea works with the
+<strong>agent-loop function</strong> you already wrote in Phases 1–2 plus a couple of dicts.
+Here's the entire concept:</p>
+<blockquote>
+<p>A <strong>sub-agent</strong> is what you get when one of your tools, instead of reading a file,
+<strong>runs the agent loop again</strong> with a different prompt and its own fresh
+conversation. The result it returns becomes the tool's output. That's it.</p>
+</blockquote>
+<p><strong>An "Agent" is just the loop + its own conversation list.</strong> Bundle them in a dict:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_agent</span><span class="p">(</span><span class="n">instructions</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">tools_dict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Your Phase 1-2 loop, as a plain function. Returns the final text.&quot;&quot;&quot;</span>
+    <span class="n">conversation</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">task</span><span class="p">}]</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">responses</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">MODEL</span><span class="p">,</span> <span class="n">instructions</span><span class="o">=</span><span class="n">instructions</span><span class="p">,</span>
+            <span class="nb">input</span><span class="o">=</span><span class="n">conversation</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span><span class="n">tools_for_api</span><span class="p">(</span><span class="n">tools_dict</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">conversation</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
+        <span class="n">calls</span> <span class="o">=</span> <span class="p">[</span><span class="n">it</span> <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="n">resp</span><span class="o">.</span><span class="n">output</span> <span class="k">if</span> <span class="n">it</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;function_call&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">calls</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">resp</span><span class="o">.</span><span class="n">output_text</span>          <span class="c1"># done — hand back the answer</span>
+        <span class="k">for</span> <span class="n">fc</span> <span class="ow">in</span> <span class="n">calls</span><span class="p">:</span>                     <span class="c1"># run tools (sequential is fine)</span>
+            <span class="n">conversation</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function_call_output&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;call_id&quot;</span><span class="p">:</span> <span class="n">fc</span><span class="o">.</span><span class="n">call_id</span><span class="p">,</span>
+                <span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="n">dispatch</span><span class="p">(</span><span class="n">tools_dict</span><span class="p">,</span> <span class="n">fc</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">fc</span><span class="o">.</span><span class="n">arguments</span><span class="p">),</span>
+            <span class="p">})</span>
+</code></pre></div>
+<p><strong>Roles ("presets") are just a dict</strong> of role name → its instructions and tool list:</p>
+<div class="highlight"><pre><span></span><code><span class="n">PRESETS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;researcher&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;instructions&quot;</span><span class="p">:</span> <span class="s2">&quot;Research and summarize. Return only the summary.&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;tools&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;read_file&quot;</span><span class="p">,</span> <span class="s2">&quot;list_directory&quot;</span><span class="p">]},</span>
+    <span class="s2">&quot;reviewer&quot;</span><span class="p">:</span>   <span class="p">{</span><span class="s2">&quot;instructions&quot;</span><span class="p">:</span> <span class="s2">&quot;Find bugs. Return a list of findings.&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;tools&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;read_file&quot;</span><span class="p">]},</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><strong>The <code>task</code> tool is a function that runs a sub-agent:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">task</span><span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="n">prompt</span><span class="p">):</span>
+    <span class="n">preset</span> <span class="o">=</span> <span class="n">PRESETS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="n">PRESETS</span><span class="p">[</span><span class="s2">&quot;researcher&quot;</span><span class="p">])</span>
+    <span class="c1"># Hand the worker only the tools its role allows (filter the big tools dict)</span>
+    <span class="n">worker_tools</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">ALL_TOOLS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">preset</span><span class="p">[</span><span class="s2">&quot;tools&quot;</span><span class="p">]}</span>
+    <span class="k">return</span> <span class="n">run_agent</span><span class="p">(</span><span class="n">preset</span><span class="p">[</span><span class="s2">&quot;instructions&quot;</span><span class="p">],</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">worker_tools</span><span class="p">)</span>  <span class="c1"># &lt;-- loop again</span>
+</code></pre></div>
+<p>Register <code>task</code> like any other tool. Now when the model calls <code>task("reviewer",
+"check auth.py")</code>, your harness runs a <em>second</em> agent loop with the reviewer's prompt
+and tools, and feeds its answer back as the tool result. The "orchestrator" is just an
+agent whose only tool is <code>task</code>.</p>
+<p><strong>Running several workers at once is the same optional speed-up as before.</strong> A plain
+<code>for</code> loop over the <code>task</code> calls gives identical results; the <code>ThreadPoolExecutor</code>
+code just runs them at the same time to save wall-clock time. Start sequential.</p>
+<p>Syntax heads-ups for reading the original:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th scope="col">In the original</th>
+<th scope="col">What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>class Agent:</code> with <code>self._conversation</code></td>
+<td>the loop + its conversation list, bundled. Read <code>agent.run(task)</code> as <code>run_agent(instructions, task, tools)</code>.</td>
+</tr>
+<tr>
+<td><code>@dataclass class AgentPreset</code></td>
+<td>a fixed-field dict (the <code>PRESETS</code> dict above).</td>
+</tr>
+<tr>
+<td><code>@property def total_tokens</code></td>
+<td>a method you read like a field: <code>usage.total_tokens</code>. Here it just returns <code>input + output</code>.</td>
+</tr>
+<tr>
+<td><code>def make_task_tool(...)</code> returning a <code>class TaskTool</code></td>
+<td>a <strong>closure/factory</strong> — a function that builds the <code>task</code> tool with the registry "baked in." The plain <code>task(role, prompt)</code> function above does the same job.</td>
+</tr>
+<tr>
+<td>the <code>asyncio</code> section (§8)</td>
+<td>an <em>alternative</em> to threads. Skip it; threads (and plain loops) cover everything.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Read the rest of the phase for the ideas (isolated context, depth limits, disjoint
+file scopes). Build it with the functions above.</p>
+</blockquote>
+</article>
+<section class="lesson-plan" aria-label="Lesson plan">
+<p class="plan-kicker">Lesson plan <span class="plan-total">11 lessons · ~103 min</span></p>
+<ol class="plan-list">
+<li class="plan-here" aria-current="page"><span class="plan-row"><span class="plan-num" aria-hidden="true">1</span><span class="plan-title">Sub-Agents &amp; Dynamic…</span><span class="plan-meta">~11 min</span></span></li>
+<li><a class="plan-row" href="07-subagents-orchestration-2.html"><span class="plan-num" aria-hidden="true">2</span><span class="plan-title">Line-by-Line</span><span class="plan-meta">~12 min · 2 <span aria-hidden="true">▶</span><span class="visually-hidden"> checkpoints</span></span></a></li>
+<li><a class="plan-row" href="07-subagents-orchestration-3.html"><span class="plan-num" aria-hidden="true">3</span><span class="plan-title">Functions</span><span class="plan-meta">~12 min · 2 <span aria-hidden="true">▶</span><span class="visually-hidden"> checkpoints</span></span></a></li>
+<li><a class="plan-row" href="07-subagents-orchestration-4.html"><span class="plan-num" aria-hidden="true">4</span><span class="plan-title">Classes · part 1 of 4</span><span class="plan-meta">~6 min · 1 <span aria-hidden="true">▶</span><span class="visually-hidden"> checkpoint</span></span></a></li>
+<li><a class="plan-row" href="07-subagents-orchestration-5.html"><span class="plan-num" aria-hidden="true">5</span><span class="plan-title">Classes · part 2 of 4</span><span class="plan-meta">~11 min · 1 <span aria-hidden="true">▶</span><span class="visually-hidden"> checkpoint</span></span></a></li>
+<li><a class="plan-row" href="07-subagents-orchestration-6.html"><span class="plan-num" aria-hidden="true">6</span><span class="plan-title">Classes · part 3 of 4</span><span class="plan-meta">~7 min · 1 <span aria-hidden="true">▶</span><span class="visually-hidden"> checkpoint</span></span></a></li>
+<li><a class="plan-row" href="07-subagents-orchestration-7.html"><span class="plan-num" aria-hidden="true">7</span><span class="plan-title">Classes · part 4 of 4</span><span class="plan-meta">~10 min · 1 <span aria-hidden="true">▶</span><span class="visually-hidden"> checkpoint</span></span></a></li>
+<li><a class="plan-row" href="07-subagents-orchestration-8.html"><span class="plan-num" aria-hidden="true">8</span><span class="plan-title">Threads</span><span class="plan-meta">~13 min · 1 <span aria-hidden="true">▶</span><span class="visually-hidden"> checkpoint</span></span></a></li>
+<li><a class="plan-row" href="07-subagents-orchestration-9.html"><span class="plan-num" aria-hidden="true">9</span><span class="plan-title">Dynamic Fan-Out</span><span class="plan-meta">~7 min</span></a></li>
+<li><a class="plan-row" href="07-subagents-orchestration-10.html"><span class="plan-num" aria-hidden="true">10</span><span class="plan-title">6. Design Considerations</span><span class="plan-meta">~9 min</span></a></li>
+<li><a class="plan-row" href="07-subagents-orchestration-11.html"><span class="plan-num" aria-hidden="true">11</span><span class="plan-title">Pitfalls <span class="plan-badge">Wrap-up</span></span><span class="plan-meta">~5 min</span></a></li>
+</ol>
+<p class="plan-single">Prefer one scroll? <a href="07-subagents-orchestration.html">Read this phase as a single page</a>.</p>
+</section>
+<footer class="page-footer">
+<nav class="continue" aria-label="Continue">
+<a class="continue-card" href="07-subagents-orchestration-2.html" rel="next">
+<span class="continue-kicker">Next · Lesson 2 of 11</span>
+<span class="continue-title">Line-by-Line<span class="continue-time">~12 min</span><span class="continue-arrow" aria-hidden="true">→</span></span>
+</a>
+<p class="continue-aux">
+<a href="06-context-management-8.html" rel="prev">← Phase 6 · Wrap-up</a>
+<a class="continue-fullpage" href="07-subagents-orchestration.html#phase-7--sub-agents--dynamic-parallel-orchestration">View this lesson on the single page</a>
+</p>
+</nav>
+<p class="generated-note">Generated from <code>07-subagents-orchestration.md</code> — lesson 1 of 11 in the derived lesson view (boundaries may move when the markdown changes; the <a href="07-subagents-orchestration.html">single page</a> is the permanent address).</p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/07-subagents-orchestration.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
+</footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
+</main>
+</div>
+<script>
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards.
+     diagram-text mirrors are excluded — print hides them entirely (the SVG
+     figure already prints; opening the ASCII would print the diagram twice). */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not(.diagram-text):not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
+  });
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
+
+  /* Reading progress: the fixed 3px accent bar tracks scroll position.
+     Without JS the element simply stays at width 0 — invisible, harmless. */
+  var pbar = document.querySelector('.progress-bar');
+  if (pbar) {
+    var setProgress = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      pbar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    };
+    window.addEventListener('scroll', setProgress, { passive: true });
+    setProgress();
+  }
+
+  /* Deep links into collapsed sections: open every <details> ancestor of the
+     target, and the refsection that immediately follows a target heading.
+     Re-scroll only if something actually opened (the layout above the target
+     just changed), and instantly — the CSS smooth scroll would crawl across
+     tens of thousands of pixels on the long phase pages. */
+  function openForHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) { return; }
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    var opened = false;
+    var d = el.closest('details');
+    while (d) {
+      if (!d.hasAttribute('open')) { d.setAttribute('open', ''); opened = true; }
+      d = d.parentElement && d.parentElement.closest('details');
+    }
+    var sib = el.nextElementSibling;
+    if (sib && sib.matches('details.refsection') && !sib.hasAttribute('open')) {
+      sib.setAttribute('open', '');
+      opened = true;
+    }
+    if (!opened) { return; }
+    var jump = function () {
+      var y = el.getBoundingClientRect().top + window.scrollY - 16;
+      try { window.scrollTo({ top: y, behavior: 'instant' }); }
+      catch (e) { window.scrollTo(0, y); }
+    };
+    jump();
+    /* the browser's own fragment scroll was computed against the collapsed
+       layout and may still be animating (CSS smooth) — re-assert once, which
+       cancels it */
+    setTimeout(jump, 100);
+  }
+  window.addEventListener('hashchange', openForHash);
+  openForHash();
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
+</script>
+</body>
+</html>

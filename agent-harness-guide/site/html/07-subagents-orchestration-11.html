@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<!-- GENERATED from 07-subagents-orchestration.md — do not edit; run site/build_site.py -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="wzxhzdk:40">
+<link rel="canonical" href="https://joshps23.github.io/ai-eng-2/07-subagents-orchestration.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://joshps23.github.io/ai-eng-2/07-subagents-orchestration-11.html">
+<meta property="og:site_name" content="Agent Harness Guide">
+<meta property="og:title" content="Phase 7 · Wrap-up — Pitfalls — Agent Harness Guide">
+<meta property="og:description" content="wzxhzdk:40">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#FDFDFE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
+<title>Phase 7 · Wrap-up — Pitfalls — Agent Harness Guide</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body>
+<div class="progress-bar" aria-hidden="true"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="layout">
+<details class="sidebar-wrap" open>
+<summary class="sidebar-toggle">Guide navigation</summary>
+<nav class="sidebar" aria-label="Guide pages">
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
+<p class="sidebar-heading">Start here</p>
+<ul>
+<li><a href="index.html">Guide hub</a></li>
+<li><a href="learning-path.html">Learning Path</a></li>
+<li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
+<li><a href="faq.html">Setup &amp; FAQ</a></li>
+</ul>
+<p class="sidebar-heading">Phases</p>
+<ul>
+<li><a href="00-foundations-1.html">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness-1.html">Phase 1 — Bare Harness</a></li>
+<li><a href="02-tool-system-1.html">Phase 2 — Tool System</a></li>
+<li><a href="03-conversation-and-streaming-1.html">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools-1.html">Phase 4 — Real Tools</a></li>
+<li><a href="05-permissions-and-safety-1.html">Phase 5 — Permissions &amp; Safety</a></li>
+<li><a href="06-context-management-1.html">Phase 6 — Context Management</a></li>
+<li class="current"><a href="07-subagents-orchestration-1.html" aria-current="true">Phase 7 — Sub-agents</a></li>
+<li><a href="08-production-harness-1.html">Phase 8 — Production Harness</a></li>
+</ul>
+<p class="sidebar-heading">Appendix</p>
+<ul>
+<li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
+</ul>
+<p class="sidebar-heading">Practice</p>
+<ul>
+<li><a href="exercises.html">Exercises</a></li>
+<li><a href="glossary.html">Glossary</a></li>
+<li><a href="notebooks.html">Notebooks</a></li>
+</ul>
+</nav>
+</details>
+<main id="main">
+<header class="page-header">
+<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">7</span><span class="phase-kicker">Phase 7 · Wrap-up</span><span class="lesson-time">~5 min</span></p>
+<nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations-1.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness-1.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system-1.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming-1.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools-1.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety-1.html" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management-1.html" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration-1.html" aria-current="true" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness-1.html" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
+<nav class="lesson-rail" aria-label="Lessons in this phase"><a class="lesson-tick" href="07-subagents-orchestration-1.html" title="Lesson 1: Sub-Agents &amp; Dynamic… (~11 min)" aria-label="Lesson 1: Sub-Agents &amp; Dynamic… (~11 min)">1</a><a class="lesson-tick" href="07-subagents-orchestration-2.html" title="Lesson 2: Line-by-Line (~12 min)" aria-label="Lesson 2: Line-by-Line (~12 min)">2</a><a class="lesson-tick" href="07-subagents-orchestration-3.html" title="Lesson 3: Functions (~12 min)" aria-label="Lesson 3: Functions (~12 min)">3</a><a class="lesson-tick" href="07-subagents-orchestration-4.html" title="Lesson 4: Classes · part 1 of 4 (~6 min)" aria-label="Lesson 4: Classes · part 1 of 4 (~6 min)">4</a><a class="lesson-tick" href="07-subagents-orchestration-5.html" title="Lesson 5: Classes · part 2 of 4 (~11 min)" aria-label="Lesson 5: Classes · part 2 of 4 (~11 min)">5</a><a class="lesson-tick" href="07-subagents-orchestration-6.html" title="Lesson 6: Classes · part 3 of 4 (~7 min)" aria-label="Lesson 6: Classes · part 3 of 4 (~7 min)">6</a><a class="lesson-tick" href="07-subagents-orchestration-7.html" title="Lesson 7: Classes · part 4 of 4 (~10 min)" aria-label="Lesson 7: Classes · part 4 of 4 (~10 min)">7</a><a class="lesson-tick" href="07-subagents-orchestration-8.html" title="Lesson 8: Threads (~13 min)" aria-label="Lesson 8: Threads (~13 min)">8</a><a class="lesson-tick" href="07-subagents-orchestration-9.html" title="Lesson 9: Dynamic Fan-Out (~7 min)" aria-label="Lesson 9: Dynamic Fan-Out (~7 min)">9</a><a class="lesson-tick" href="07-subagents-orchestration-10.html" title="Lesson 10: 6. Design Considerations (~9 min)" aria-label="Lesson 10: 6. Design Considerations (~9 min)">10</a><a class="lesson-tick" href="07-subagents-orchestration-11.html" aria-current="page" title="Wrap-up: Pitfalls (~5 min)" aria-label="Wrap-up: Pitfalls (~5 min)">11</a></nav>
+<nav class="ladder" aria-label="Version ladder"><a class="ladder-rung" href="07-subagents-orchestration-2.html#version-1--line-by-line-the-same-loop-pasted-twice"><span class="ladder-medallion">V1</span> Line-by-Line</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="07-subagents-orchestration-3.html#version-2--functions-the-duplication-collapses"><span class="ladder-medallion">V2</span> Functions</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="07-subagents-orchestration-4.html#version-3--classes-the-same-harness-organized"><span class="ladder-medallion">V3</span> Classes</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="07-subagents-orchestration-8.html#version-4--threads-parallel-sub-agents-optional-speed-up"><span class="ladder-medallion">V4</span> Threads</a></nav>
+<details class="page-toc">
+<summary>On this page</summary>
+<ul>
+<li class="toc-h2"><a href="#pitfalls">Pitfalls</a>
+</li>
+<li class="toc-h2"><a href="#key-takeaways">Key takeaways</a>
+</li>
+<li class="toc-h2"><a href="#check-yourself">Check yourself</a>
+</li>
+<li class="toc-h2"><a href="#exercises">Exercises</a>
+</li>
+</ul>
+</details>
+</header>
+<article>
+<h2 id="pitfalls">Pitfalls<a aria-label="Permalink to this section" class="hanchor" href="07-subagents-orchestration.html#pitfalls">¶</a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p><p><strong>Fork-bomb recursion.</strong> The single most dangerous failure mode. If a sub-agent's role includes the <code>task</code> tool and its prompt encourages decomposition, each generation spawns multiple children. At depth 4 with a fan-out of 3, you have 3⁴ = 81 concurrent agents, each making multiple API calls. <strong>Always cap depth and max-concurrent workers in harness code, not just in the prompt.</strong></p>
+</div>
+<!-- bq-split -->
+<blockquote>
+<p><strong>Parallel writes clobbering files.</strong> Two <code>coder</code> agents both writing to <code>core/auth.py</code> will race. Last write wins; the loser's changes disappear silently. Assign disjoint file scopes in the orchestrator prompt, or use git worktrees for each parallel coder.</p>
+</blockquote>
+<!-- bq-split -->
+<blockquote>
+<p><strong>Swallowing sub-agent errors.</strong> The <code>dispatch_subagent</code> function returns error strings rather than raising. This is correct — it lets siblings continue — but the orchestrator must notice the error string in the result and react appropriately. Include explicit error-handling instruction in the orchestrator's system prompt: "If a worker returns <code>[error]</code>, note it in the final report and do not fabricate the missing data."</p>
+</blockquote>
+<!-- bq-split -->
+<blockquote>
+<p><strong>Unbounded cost.</strong> Each agent call is independently billed. A three-level tree with average fan-out 3 and 1,000 input tokens per node costs 3 + 9 + 27 = 39 API calls and potentially hundreds of thousands of tokens. Set a hard budget in the harness and abort once it is exceeded, or use a cheaper model for worker agents (<code>gpt-4o-mini</code> for simple tasks).</p>
+</blockquote>
+<!-- bq-split -->
+<blockquote>
+<p><strong>Parent context bloat from large worker output.</strong> If workers return 5,000-token essays, the orchestrator's context fills up despite the isolation. Instruct workers in their system prompt to return summaries, not raw data. Enforce this with the structured output schema (§6.5): a <code>summary</code> field capped at N words prevents accidental verbosity.</p>
+</blockquote>
+<!-- bq-split -->
+<blockquote>
+<p><strong>Transcript reuse between tasks.</strong> If you call <code>agent.run(task)</code> twice on the same <code>Agent</code> instance, the second call sees the first task's conversation. Call <code>agent.reset()</code> between tasks, or instantiate a fresh <code>Agent</code> for each independent use — which is what <code>dispatch_subagent</code> does.</p>
+</blockquote>
+<h2 id="key-takeaways">Key takeaways<a aria-label="Permalink to this section" class="hanchor" href="07-subagents-orchestration.html#key-takeaways">¶</a></h2>
+<ul>
+<li><strong>One agent isn't enough</strong> for large jobs; the fix is to let the agent <strong>delegate</strong> to
+  focused sub-agents.</li>
+<li><strong>The key trick:</strong> a sub-agent is just <strong>your <code>run_agent</code> loop called again</strong> from
+  inside a <code>task</code> <em>tool</em> — so spawning a sub-agent is itself something the main agent can
+  <em>choose</em> to do, with its own short conversation and limited toolset.</li>
+<li>Independent sub-agents can run <strong>in parallel</strong> (threads) for fan-out; <code>asyncio</code> is an
+  alternative shown at the end.</li>
+<li>Give each sub-agent a <strong>narrow brief and limited tools</strong>, then combine their results —
+  this keeps each context small and the blast radius contained.</li>
+</ul>
+<h2 id="check-yourself">Check yourself<a aria-label="Permalink to this section" class="hanchor" href="07-subagents-orchestration.html#check-yourself">¶</a></h2>
+<ol>
+<li>In one sentence, what <em>is</em> a sub-agent in this design?</li>
+<li>How does the <em>main</em> agent decide to delegate work to a sub-agent?</li>
+<li>When does running sub-agents in parallel actually help?</li>
+<li>Why hand each sub-agent a focused brief and a restricted set of tools?</li>
+</ol>
+<details>
+<summary>Answers</summary>
+<ol>
+<li>The <strong>same agent loop invoked again</strong> from within a tool, with its own conversation
+   and tools.</li>
+<li>Sub-agent spawning is exposed <strong>as a tool</strong> (<code>task</code>), so the model calls it like any
+   other tool when it judges delegation is useful.</li>
+<li>When the subtasks are <strong>independent</strong> (e.g. searching several areas at once) — fan-out
+   overlaps their latency instead of serialising it.</li>
+<li>Focus improves quality, a small toolset limits what can go wrong, and a short brief
+   keeps each sub-agent's <strong>context small</strong> (cheaper, clearer reasoning).</li>
+</ol>
+</details>
+<h2 id="exercises">Exercises<a aria-label="Permalink to this section" class="hanchor" href="07-subagents-orchestration.html#exercises">¶</a></h2>
+<p>See <a href="exercises.html#phase-7--sub-agents--orchestration"><code>EXERCISES.md</code> — Phase 7</a> for
+hands-on practice:</p>
+<ul>
+<li><strong>7.1 (warm-up):</strong> Add a <code>task</code> tool that spawns a sub-agent (your <code>run_agent</code> loop,
+  called again) to handle a focused search, and have the main agent call it. Version 2's
+  <code>v2_subagent.py</code> is the natural starting point.</li>
+<li><strong>7.2 (stretch):</strong> Fan out <strong>two</strong> sub-agents in parallel on independent subtasks and
+  combine their results in the main agent's answer. Measure the wall-clock saving vs
+  running them in series.</li>
+</ul>
+<hr>
+<p><strong>Next:</strong> <a href="08-production-harness.html">Phase 8 — The production harness</a>, where the
+ladders from every phase — this one included — are assembled into the single tested
+package: retries, observability, configuration, and a real CLI around the loop you have
+been building since Phase 1.</p>
+</article>
+<footer class="page-footer">
+<nav class="continue" aria-label="Continue">
+<a class="continue-card" href="08-production-harness-1.html" rel="next">
+<span class="continue-kicker">Next · Phase 8 · Lesson 1 of 10</span>
+<span class="continue-title">The Production Harness<span class="continue-time">~11 min</span><span class="continue-arrow" aria-hidden="true">→</span></span>
+</a>
+<p class="continue-aux">
+<a href="07-subagents-orchestration-10.html" rel="prev">← Lesson 10 · 6. Design Considerations</a>
+<a class="continue-fullpage" href="07-subagents-orchestration.html#pitfalls">View this lesson on the single page</a>
+</p>
+</nav>
+<p class="generated-note">Generated from <code>07-subagents-orchestration.md</code> — lesson 11 of 11 in the derived lesson view (boundaries may move when the markdown changes; the <a href="07-subagents-orchestration.html">single page</a> is the permanent address).</p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/07-subagents-orchestration.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
+</footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
+</main>
+</div>
+<script>
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards.
+     diagram-text mirrors are excluded — print hides them entirely (the SVG
+     figure already prints; opening the ASCII would print the diagram twice). */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not(.diagram-text):not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
+  });
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
+
+  /* Reading progress: the fixed 3px accent bar tracks scroll position.
+     Without JS the element simply stays at width 0 — invisible, harmless. */
+  var pbar = document.querySelector('.progress-bar');
+  if (pbar) {
+    var setProgress = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      pbar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    };
+    window.addEventListener('scroll', setProgress, { passive: true });
+    setProgress();
+  }
+
+  /* Deep links into collapsed sections: open every <details> ancestor of the
+     target, and the refsection that immediately follows a target heading.
+     Re-scroll only if something actually opened (the layout above the target
+     just changed), and instantly — the CSS smooth scroll would crawl across
+     tens of thousands of pixels on the long phase pages. */
+  function openForHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) { return; }
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    var opened = false;
+    var d = el.closest('details');
+    while (d) {
+      if (!d.hasAttribute('open')) { d.setAttribute('open', ''); opened = true; }
+      d = d.parentElement && d.parentElement.closest('details');
+    }
+    var sib = el.nextElementSibling;
+    if (sib && sib.matches('details.refsection') && !sib.hasAttribute('open')) {
+      sib.setAttribute('open', '');
+      opened = true;
+    }
+    if (!opened) { return; }
+    var jump = function () {
+      var y = el.getBoundingClientRect().top + window.scrollY - 16;
+      try { window.scrollTo({ top: y, behavior: 'instant' }); }
+      catch (e) { window.scrollTo(0, y); }
+    };
+    jump();
+    /* the browser's own fragment scroll was computed against the collapsed
+       layout and may still be animating (CSS smooth) — re-assert once, which
+       cancels it */
+    setTimeout(jump, 100);
+  }
+  window.addEventListener('hashchange', openForHash);
+  openForHash();
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
+</script>
+</body>
+</html>

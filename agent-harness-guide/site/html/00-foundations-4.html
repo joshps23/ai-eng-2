@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<!-- GENERATED from 00-foundations.md — do not edit; run site/build_site.py -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="To keep eight phases coherent, we fix these conventions now.">
+<link rel="canonical" href="https://joshps23.github.io/ai-eng-2/00-foundations.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://joshps23.github.io/ai-eng-2/00-foundations-4.html">
+<meta property="og:site_name" content="Agent Harness Guide">
+<meta property="og:title" content="Phase 0 · Lesson 4 — 0.7 Project conventions… — Agent Harness Guide">
+<meta property="og:description" content="To keep eight phases coherent, we fix these conventions now.">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#FDFDFE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
+<title>Phase 0 · Lesson 4 — 0.7 Project conventions… — Agent Harness Guide</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body>
+<div class="progress-bar" aria-hidden="true"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="layout">
+<details class="sidebar-wrap" open>
+<summary class="sidebar-toggle">Guide navigation</summary>
+<nav class="sidebar" aria-label="Guide pages">
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
+<p class="sidebar-heading">Start here</p>
+<ul>
+<li><a href="index.html">Guide hub</a></li>
+<li><a href="learning-path.html">Learning Path</a></li>
+<li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
+<li><a href="faq.html">Setup &amp; FAQ</a></li>
+</ul>
+<p class="sidebar-heading">Phases</p>
+<ul>
+<li class="current"><a href="00-foundations-1.html" aria-current="true">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness-1.html">Phase 1 — Bare Harness</a></li>
+<li><a href="02-tool-system-1.html">Phase 2 — Tool System</a></li>
+<li><a href="03-conversation-and-streaming-1.html">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools-1.html">Phase 4 — Real Tools</a></li>
+<li><a href="05-permissions-and-safety-1.html">Phase 5 — Permissions &amp; Safety</a></li>
+<li><a href="06-context-management-1.html">Phase 6 — Context Management</a></li>
+<li><a href="07-subagents-orchestration-1.html">Phase 7 — Sub-agents</a></li>
+<li><a href="08-production-harness-1.html">Phase 8 — Production Harness</a></li>
+</ul>
+<p class="sidebar-heading">Appendix</p>
+<ul>
+<li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
+</ul>
+<p class="sidebar-heading">Practice</p>
+<ul>
+<li><a href="exercises.html">Exercises</a></li>
+<li><a href="glossary.html">Glossary</a></li>
+<li><a href="notebooks.html">Notebooks</a></li>
+</ul>
+</nav>
+</details>
+<main id="main">
+<header class="page-header">
+<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">0</span><span class="phase-kicker">Phase 0 · Lesson 4 of 5</span><span class="lesson-time">~8 min</span><span class="lesson-cp">1 <span aria-hidden="true">▶</span> checkpoint</span></p>
+<nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations-1.html" aria-current="true" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness-1.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system-1.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming-1.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools-1.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety-1.html" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management-1.html" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration-1.html" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness-1.html" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
+<nav class="lesson-rail" aria-label="Lessons in this phase"><a class="lesson-tick" href="00-foundations-1.html" title="Lesson 1: Foundations (~6 min)" aria-label="Lesson 1: Foundations (~6 min)">1</a><a class="lesson-tick" href="00-foundations-2.html" title="Lesson 2: the whole handshake, line… (~25 min)" aria-label="Lesson 2: the whole handshake, line… (~25 min)">2</a><a class="lesson-tick" href="00-foundations-3.html" title="Lesson 3: the same handshake… (~16 min)" aria-label="Lesson 3: the same handshake… (~16 min)">3</a><a class="lesson-tick" href="00-foundations-4.html" aria-current="page" title="Lesson 4: 0.7 Project conventions… (~8 min)" aria-label="Lesson 4: 0.7 Project conventions… (~8 min)">4</a><a class="lesson-tick" href="00-foundations-5.html" title="Wrap-up: Key takeaways (~3 min)" aria-label="Wrap-up: Key takeaways (~3 min)">5</a></nav>
+<nav class="ladder" aria-label="Version ladder"><a class="ladder-rung" href="00-foundations-2.html#03-version-1--the-whole-handshake-line-by-line"><span class="ladder-medallion">V1</span> the whole handshake, line…</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="00-foundations-3.html#04-version-2--the-same-handshake-organized-into-functions"><span class="ladder-medallion">V2</span> the same handshake…</a></nav>
+<details class="page-toc">
+<summary>On this page</summary>
+<ul>
+<li class="toc-h2"><a href="#07-project-conventions-used-by-every-phase">0.7 Project conventions (used by every phase)</a>
+<ul>
+<li class="toc-h3"><a href="#071-repository-layout">0.7.1 Repository layout</a></li>
+<li class="toc-h3"><a href="#072-the-vocabulary-we-use-consistently">0.7.2 The vocabulary we use consistently</a></li>
+<li class="toc-h3"><a href="#073-data-shapes-we-standardize-on">0.7.3 Data shapes we standardize on</a></li>
+<li class="toc-h3"><a href="#074-error-handling-stance">0.7.4 Error-handling stance</a></li>
+<li class="toc-h3"><a href="#075-async-vs-sync">0.7.5 Async vs sync</a></li>
+</ul>
+</li>
+<li class="toc-h2"><a href="#08-sanity-check-script">0.8 Sanity-check script</a>
+</li>
+</ul>
+</details>
+</header>
+<article>
+<h2 id="07-project-conventions-used-by-every-phase">0.7 Project conventions (used by every phase)<a aria-label="Permalink to this section" class="hanchor" href="00-foundations.html#07-project-conventions-used-by-every-phase">¶</a></h2>
+<p>To keep eight phases coherent, we fix these conventions now.</p>
+<h3 id="071-repository-layout">0.7.1 Repository layout<a aria-label="Permalink to this section" class="hanchor" href="00-foundations.html#071-repository-layout">¶</a></h3>
+<p>By the end of the guide the consolidated package lives in <code>code/</code> and looks like:</p>
+<div class="highlight nocopy"><pre><span></span><code>agent_harness/
+├── __init__.py
+├── config.py          # MODEL, defaults, env
+├── llm.py             # thin wrapper around client.responses with retries
+├── conversation.py    # the transcript (Phase 3)
+├── tools/
+│   ├── __init__.py    # re-exports for convenient imports
+│   ├── base.py        # Tool abstraction + @tool decorator
+│   ├── registry.py    # the registry &amp; safe dispatch
+│   ├── parallel.py    # threaded (parallel) tool dispatch
+│   ├── files.py       # read/write/edit/glob/grep
+│   └── shell.py       # bash
+├── permissions.py     # approval gates &amp; policy
+├── hooks.py           # pre/post tool hooks
+├── context.py         # token budgeting &amp; compaction
+├── agent.py           # the core loop (the &quot;harness&quot;)
+├── subagents.py       # spawning parallel agents
+├── testing.py         # FakeClient — offline tests, no API key
+└── cli.py             # the REPL / entrypoint
+</code></pre></div>
+<p>Each phase introduces the file(s) it needs; later phases extend them. You can build
+the whole thing incrementally in one folder and watch it grow.</p>
+<h3 id="072-the-vocabulary-we-use-consistently">0.7.2 The vocabulary we use consistently<a aria-label="Permalink to this section" class="hanchor" href="00-foundations.html#072-the-vocabulary-we-use-consistently">¶</a></h3>
+<ul>
+<li><strong>item</strong> — one element of <code>input</code>/<code>output</code> (a message, function_call, reasoning…).</li>
+<li><strong>turn</strong> — one round trip to the model (<code>responses.create</code> → its <code>output</code>).</li>
+<li><strong>step / loop iteration</strong> — one pass through the agent loop (may be many turns).</li>
+<li><strong>tool</strong> — a Python callable exposed to the model with a JSON schema.</li>
+<li><strong>tool call</strong> — a <code>function_call</code> item from the model.</li>
+<li><strong>tool result</strong> — the <code>function_call_output</code> we send back.</li>
+<li><strong>transcript / history</strong> — our owned <code>input_items</code> list, the full conversation.</li>
+<li><strong>harness / agent</strong> — the loop object that drives all of the above.</li>
+</ul>
+<h3 id="073-data-shapes-we-standardize-on">0.7.3 Data shapes we standardize on<a aria-label="Permalink to this section" class="hanchor" href="00-foundations.html#073-data-shapes-we-standardize-on">¶</a></h3>
+<p>A <strong>tool result</strong> that the harness produces internally is always:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+    <span class="s2">&quot;call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;echoed call_id&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string — JSON-encoded if structured&gt;&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>A <strong>tool definition</strong> the harness registers is always a Python object exposing:
+<code>name</code>, <code>description</code>, <code>parameters</code> (JSON Schema dict), and a <code>run(**kwargs)</code> method.
+We formalize this <code>Tool</code> abstraction in Phase 2.</p>
+<h3 id="074-error-handling-stance">0.7.4 Error-handling stance<a aria-label="Permalink to this section" class="hanchor" href="00-foundations.html#074-error-handling-stance">¶</a></h3>
+<p>Tools <strong>never raise into the loop</strong>. A tool that fails returns its error <em>as a
+string result</em> so the model can read it and recover (retry, try another path, or
+report). A raised exception kills the agent; a returned error string makes the agent
+self-correct. This single rule is responsible for a huge fraction of an agent's
+apparent "intelligence."</p>
+<h3 id="075-async-vs-sync">0.7.5 Async vs sync<a aria-label="Permalink to this section" class="hanchor" href="00-foundations.html#075-async-vs-sync">¶</a></h3>
+<p>Phases 1–5 use the <strong>synchronous</strong> client for clarity. Phase 7 (sub-agents) and
+Phase 8 (production) introduce concurrency for parallel tool calls and parallel
+agents — we use <code>concurrent.futures.ThreadPoolExecutor</code> for tool/agent parallelism
+(the OpenAI SDK also has a fully <code>async</code> client, <code>AsyncOpenAI</code>, which we note as the
+alternative). Threads are simplest because our tools are I/O bound (network, disk,
+subprocess).</p>
+<blockquote class="beginner">
+<p>🟢 <strong>"Concurrency / threads" = doing slow things at the same time.</strong> Normally your
+code runs one line after another: if you call three tools, the second waits for the
+first to finish. "Threads" let all three run <em>at once</em>, which is faster when each
+one is mostly waiting (for the network, the disk, a command). Until Phase 7 every
+example runs the simple one-after-another way, and when threads appear, this version
+shows the sequential version first so you can see they produce the same result.</p>
+</blockquote>
+<h2 id="08-sanity-check-script">0.8 Sanity-check script<a aria-label="Permalink to this section" class="hanchor" href="00-foundations.html#08-sanity-check-script">¶</a></h2>
+<p>Before moving to Phase 1, confirm your environment works end to end. This script is
+a variant of <code>version1_handshake.py</code> (§0.3.6) that swaps the weather stub for an
+integer <code>add</code> tool — it exercises the exact handshake you just learned, with a tool
+whose output is completely deterministic so you can easily verify correctness. It's
+written in the Version 1 straight-line style on purpose; reorganizing it into the
+Version 2 function shape (and adding a <code>multiply</code> tool) is the Phase 0 exercise in
+<a href="exercises.html#phase-0--foundations"><code>EXERCISES.md</code></a>.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># check_setup.py</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">openai</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenAI</span>
+
+<span class="n">MODEL</span> <span class="o">=</span> <span class="s2">&quot;gpt-4o&quot;</span>
+<span class="n">client</span> <span class="o">=</span> <span class="n">OpenAI</span><span class="p">()</span>
+
+<span class="n">tools</span> <span class="o">=</span> <span class="p">[{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;add&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Add two integers and return the sum.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span><span class="p">},</span>
+            <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span><span class="p">},</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;additionalProperties&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">}]</span>
+
+<span class="n">input_items</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;What is 21 + 21? Use the add tool.&quot;</span><span class="p">}]</span>
+
+<span class="c1"># Turn 1: the model should ask to call `add`</span>
+<span class="n">resp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">responses</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">MODEL</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="n">input_items</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span><span class="n">tools</span><span class="p">)</span>
+<span class="n">input_items</span> <span class="o">+=</span> <span class="n">resp</span><span class="o">.</span><span class="n">output</span>
+
+<span class="c1"># Execute any tool calls</span>
+<span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">resp</span><span class="o">.</span><span class="n">output</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;function_call&quot;</span><span class="p">:</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">arguments</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">]</span>
+        <span class="n">input_items</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function_call_output&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;call_id&quot;</span><span class="p">:</span> <span class="n">item</span><span class="o">.</span><span class="n">call_id</span><span class="p">,</span>
+            <span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="p">),</span>
+        <span class="p">})</span>
+
+<span class="c1"># Turn 2: feed the result back; the model should answer in words</span>
+<span class="n">resp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">responses</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">MODEL</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="n">input_items</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span><span class="n">tools</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">output_text</span><span class="p">)</span>   <span class="c1"># -&gt; something like &quot;21 + 21 = 42&quot;</span>
+</code></pre></div>
+<h3 id="-run-it-now-6">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="00-foundations.html#-run-it-now-6">¶</a></h3>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>check_setup.py
+</code></pre></div>
+<p>If that prints a sentence containing "42", your key, model access, and understanding of the
+handshake are all good. <strong>You now have everything you need to build the loop.</strong></p>
+</article>
+<footer class="page-footer">
+<nav class="continue" aria-label="Continue">
+<a class="continue-card" href="00-foundations-5.html" rel="next">
+<span class="continue-kicker">Next · Wrap-up · Lesson 5 of 5</span>
+<span class="continue-title">Key takeaways<span class="continue-time">~3 min</span><span class="continue-arrow" aria-hidden="true">→</span></span>
+</a>
+<p class="continue-aux">
+<a href="00-foundations-3.html" rel="prev">← Lesson 3 · the same handshake…</a>
+<a class="continue-fullpage" href="00-foundations.html#07-project-conventions-used-by-every-phase">View this lesson on the single page</a>
+</p>
+</nav>
+<p class="generated-note">Generated from <code>00-foundations.md</code> — lesson 4 of 5 in the derived lesson view (boundaries may move when the markdown changes; the <a href="00-foundations.html">single page</a> is the permanent address).</p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/00-foundations.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
+</footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
+</main>
+</div>
+<script>
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards.
+     diagram-text mirrors are excluded — print hides them entirely (the SVG
+     figure already prints; opening the ASCII would print the diagram twice). */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not(.diagram-text):not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
+  });
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
+
+  /* Reading progress: the fixed 3px accent bar tracks scroll position.
+     Without JS the element simply stays at width 0 — invisible, harmless. */
+  var pbar = document.querySelector('.progress-bar');
+  if (pbar) {
+    var setProgress = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      pbar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    };
+    window.addEventListener('scroll', setProgress, { passive: true });
+    setProgress();
+  }
+
+  /* Deep links into collapsed sections: open every <details> ancestor of the
+     target, and the refsection that immediately follows a target heading.
+     Re-scroll only if something actually opened (the layout above the target
+     just changed), and instantly — the CSS smooth scroll would crawl across
+     tens of thousands of pixels on the long phase pages. */
+  function openForHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) { return; }
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    var opened = false;
+    var d = el.closest('details');
+    while (d) {
+      if (!d.hasAttribute('open')) { d.setAttribute('open', ''); opened = true; }
+      d = d.parentElement && d.parentElement.closest('details');
+    }
+    var sib = el.nextElementSibling;
+    if (sib && sib.matches('details.refsection') && !sib.hasAttribute('open')) {
+      sib.setAttribute('open', '');
+      opened = true;
+    }
+    if (!opened) { return; }
+    var jump = function () {
+      var y = el.getBoundingClientRect().top + window.scrollY - 16;
+      try { window.scrollTo({ top: y, behavior: 'instant' }); }
+      catch (e) { window.scrollTo(0, y); }
+    };
+    jump();
+    /* the browser's own fragment scroll was computed against the collapsed
+       layout and may still be animating (CSS smooth) — re-assert once, which
+       cancels it */
+    setTimeout(jump, 100);
+  }
+  window.addEventListener('hashchange', openForHash);
+  openForHash();
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
+</script>
+</body>
+</html>

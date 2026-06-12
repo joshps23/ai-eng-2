@@ -35,15 +35,15 @@
 </ul>
 <p class="sidebar-heading">Phases</p>
 <ul>
-<li><a href="00-foundations.html">Phase 0 — Foundations</a></li>
-<li><a href="01-bare-harness.html">Phase 1 — Bare Harness</a></li>
-<li><a href="02-tool-system.html">Phase 2 — Tool System</a></li>
-<li class="current"><a href="03-conversation-and-streaming.html" aria-current="page">Phase 3 — Conversation &amp; Streaming</a></li>
-<li><a href="04-real-tools.html">Phase 4 — Real Tools</a></li>
-<li><a href="05-permissions-and-safety.html">Phase 5 — Permissions &amp; Safety</a></li>
-<li><a href="06-context-management.html">Phase 6 — Context Management</a></li>
-<li><a href="07-subagents-orchestration.html">Phase 7 — Sub-agents</a></li>
-<li><a href="08-production-harness.html">Phase 8 — Production Harness</a></li>
+<li><a href="00-foundations-1.html">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness-1.html">Phase 1 — Bare Harness</a></li>
+<li><a href="02-tool-system-1.html">Phase 2 — Tool System</a></li>
+<li class="current"><a href="03-conversation-and-streaming-1.html" aria-current="true">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools-1.html">Phase 4 — Real Tools</a></li>
+<li><a href="05-permissions-and-safety-1.html">Phase 5 — Permissions &amp; Safety</a></li>
+<li><a href="06-context-management-1.html">Phase 6 — Context Management</a></li>
+<li><a href="07-subagents-orchestration-1.html">Phase 7 — Sub-agents</a></li>
+<li><a href="08-production-harness-1.html">Phase 8 — Production Harness</a></li>
 </ul>
 <p class="sidebar-heading">Appendix</p>
 <ul>
@@ -62,6 +62,7 @@
 <p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">3</span><span class="phase-kicker">Phase 3 of 8</span></p>
 <nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming.html" aria-current="page" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety.html" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management.html" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration.html" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness.html" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
 <nav class="ladder" aria-label="Version ladder"><a class="ladder-rung" href="#version-1--line-by-line-the-transcript-is-just-a-list"><span class="ladder-medallion">V1</span> Line-by-Line</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="#version-2--functions-name-the-moves"><span class="ladder-medallion">V2</span> Functions</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="#version-3--classes-the-conversation-object"><span class="ladder-medallion">V3</span> Classes</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="#version-4--streaming-the-same-harness-live-optional"><span class="ladder-medallion">V4</span> Streaming</a></nav>
+<p class="lesson-strip">This phase is also available as 8 lessons of ~10 min — <a href="03-conversation-and-streaming-1.html">start Lesson 1 →</a> <span class="lesson-strip-note">(this single page is best for printing)</span></p>
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
@@ -222,7 +223,7 @@ you specifically want a live-typing UI.</p>
 <blockquote>
 <p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/03-conversation-and-streaming.ipynb" title="Opens the notebook on GitHub — or use its Open-in-Colab badge"><code>notebooks/03-conversation-and-streaming.ipynb</code></a> executes this phase's checkpoints offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
 </blockquote>
-<h2 id="two-orthogonal-concerns">Two Orthogonal Concerns<a aria-label="Permalink to this section" class="hanchor" href="#two-orthogonal-concerns">¶</a></h2>
+<h2 id="two-orthogonal-concerns">Two Orthogonal Concerns<a aria-label="Permalink to this section" class="hanchor" href="#two-orthogonal-concerns">¶</a><a class="lesson-link" href="03-conversation-and-streaming-1.html" title="Read this section in lesson view (Lesson 1 of 8)">lesson 1</a></h2>
 <p><strong>Transcript management</strong> determines what you send in <code>input</code> on each call.  You have two
 options:</p>
 <ol>
@@ -233,7 +234,7 @@ options:</p>
 </ol>
 <p><strong>Streaming</strong> is independent of which state strategy you pick.  You can stream with either
 approach.</p>
-<h2 id="version-1--line-by-line-the-transcript-is-just-a-list">Version 1 — Line-by-Line: the Transcript Is Just a List<a aria-label="Permalink to this section" class="hanchor" href="#version-1--line-by-line-the-transcript-is-just-a-list">¶</a></h2>
+<h2 id="version-1--line-by-line-the-transcript-is-just-a-list">Version 1 — Line-by-Line: the Transcript Is Just a List<a aria-label="Permalink to this section" class="hanchor" href="#version-1--line-by-line-the-transcript-is-just-a-list">¶</a><a class="lesson-link" href="03-conversation-and-streaming-2.html" title="Read this section in lesson view (Lesson 2 of 8)">lesson 2</a></h2>
 <p>The first rung is the whole idea of this phase with <strong>no <code>def</code> and no classes</strong> — just
 statements, a list, and (in Step 1.2) a <code>while</code> loop. If you understand Version 1 you
 already understand the whole phase; every later version is this code, reorganized.</p>
@@ -360,7 +361,7 @@ Goodbye — the transcript held 4 items.
 <p>As an experiment, move <code>input_items = []</code> to the top of the loop body (so the list is
 recreated every turn) and run it again — the model instantly "forgets" your name. Memory
 lives in that one line's placement.</p>
-<h2 id="version-2--functions-name-the-moves">Version 2 — Functions: Name the Moves<a aria-label="Permalink to this section" class="hanchor" href="#version-2--functions-name-the-moves">¶</a></h2>
+<h2 id="version-2--functions-name-the-moves">Version 2 — Functions: Name the Moves<a aria-label="Permalink to this section" class="hanchor" href="#version-2--functions-name-the-moves">¶</a><a class="lesson-link" href="03-conversation-and-streaming-3.html" title="Read this section in lesson view (Lesson 3 of 8)">lesson 3</a></h2>
 <h3 id="what-changed-from-v1-to-v2">What changed from V1 to V2<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v1-to-v2">¶</a></h3>
 <ul>
 <li><strong>Nothing about behavior.</strong> Version 2 is the exact same chat — same API calls, same
@@ -584,7 +585,7 @@ session exists the chat <strong>resumes</strong> it on startup.</p>
 <code>What is my name?</code>. It remembers — across a full process restart — because the transcript
 was sitting in <code>/tmp/chat_v2_session.json</code> the whole time. (Delete that file to start
 fresh.) Compare the <code>while</code> loop body to <code>chat_v1.py</code>: the same three moves, now named.</p>
-<h2 id="interlude--transcript-management-deep-dive">Interlude — Transcript Management Deep-Dive<a aria-label="Permalink to this section" class="hanchor" href="#interlude--transcript-management-deep-dive">¶</a></h2>
+<h2 id="interlude--transcript-management-deep-dive">Interlude — Transcript Management Deep-Dive<a aria-label="Permalink to this section" class="hanchor" href="#interlude--transcript-management-deep-dive">¶</a><a class="lesson-link" href="03-conversation-and-streaming-3.html" title="Read this section in lesson view (Lesson 3 of 8)">lesson 3</a></h2>
 <p>Before climbing to Version 3, a short detour into the design decisions behind what you
 just built. No new code to run here — this is the "why" behind owning the list.</p>
 <h3 id="own-vs-delegate--which-should-you-choose">Own vs. Delegate — Which Should You Choose?<a aria-label="Permalink to this section" class="hanchor" href="#own-vs-delegate--which-should-you-choose">¶</a></h3>
@@ -669,7 +670,7 @@ produced by the API:</p>
 
 <p>This is intentionally minimal.  The API silently ignores unknown fields in input items, so
 including extra fields from <code>model_dump()</code> is harmless.</p>
-<h2 id="version-3--classes-the-conversation-object">Version 3 — Classes: the <code>Conversation</code> Object<a aria-label="Permalink to this section" class="hanchor" href="#version-3--classes-the-conversation-object">¶</a></h2>
+<h2 id="version-3--classes-the-conversation-object">Version 3 — Classes: the <code>Conversation</code> Object<a aria-label="Permalink to this section" class="hanchor" href="#version-3--classes-the-conversation-object">¶</a><a class="lesson-link" href="03-conversation-and-streaming-4.html" title="Read this section in lesson view (Lesson 4 of 8)">lesson 4</a></h2>
 <h3 id="what-changed-from-v2-to-v3">What changed from V2 to V3<a aria-label="Permalink to this section" class="hanchor" href="#what-changed-from-v2-to-v3">¶</a></h3>
 <ul>
 <li><strong>Nothing about behavior.</strong> Version 3 is the same chat-with-memory harness — same API
@@ -1158,7 +1159,7 @@ loop plus a tool, nothing else:</p>
 4-item transcript).  Open <code>/tmp/phase3-chat-v3.json</code> — you can read the entire tool
 handshake (<code>function_call</code> → <code>function_call_output</code>, matched by <code>call_id</code>) in plain JSON.
 This file is the Version 3 harness in full; Version 4 changes exactly one thing about it.</p>
-<h2 id="version-4--streaming-the-same-harness-live-optional">Version 4 — Streaming: the Same Harness, Live (optional)<a aria-label="Permalink to this section" class="hanchor" href="#version-4--streaming-the-same-harness-live-optional">¶</a></h2>
+<h2 id="version-4--streaming-the-same-harness-live-optional">Version 4 — Streaming: the Same Harness, Live (optional)<a aria-label="Permalink to this section" class="hanchor" href="#version-4--streaming-the-same-harness-live-optional">¶</a><a class="lesson-link" href="03-conversation-and-streaming-5.html" title="Read this section in lesson view (Lesson 5 of 8)">lesson 5</a></h2>
 <blockquote>
 <p><strong>This entire version is optional</strong> — the beginner box at the top of this phase
 already sanctioned skipping the whole streaming half. If streaming is not a priority
@@ -2019,7 +2020,7 @@ actually appear), each API call also emits a <code>reasoning</code> item before 
 so the same session saves <strong>8</strong> items: a <code>reasoning</code> item slots in before the two
 <code>function_call</code> items (between items 1 and 2), and another before the final <code>message</code>
 (between items 5 and 6).</p>
-<h2 id="pitfalls">Pitfalls<a aria-label="Permalink to this section" class="hanchor" href="#pitfalls">¶</a></h2>
+<h2 id="pitfalls">Pitfalls<a aria-label="Permalink to this section" class="hanchor" href="#pitfalls">¶</a><a class="lesson-link" href="03-conversation-and-streaming-8.html" title="Read this section in lesson view (Lesson 8 of 8)">lesson 8</a></h2>
 <blockquote>
 <p><strong>Pitfall 1 — Losing the final structured response</strong></p>
 <p>If you break out of the stream loop early, or never handle the <code>response.completed</code>
@@ -2074,7 +2075,7 @@ closes the stream.  If your loop only handles text and function-call events, the
 is silently swallowed.  Always handle <code>response.error</code> — at minimum print it to stderr
 and break, or raise an exception.</p>
 </blockquote>
-<h2 id="key-takeaways">Key takeaways<a aria-label="Permalink to this section" class="hanchor" href="#key-takeaways">¶</a></h2>
+<h2 id="key-takeaways">Key takeaways<a aria-label="Permalink to this section" class="hanchor" href="#key-takeaways">¶</a><a class="lesson-link" href="03-conversation-and-streaming-8.html" title="Read this section in lesson view (Lesson 8 of 8)">lesson 8</a></h2>
 <ul>
 <li>This phase separates <strong>two orthogonal concerns</strong>: <em>owning the transcript</em> (state) and
   <em>streaming</em> (presentation). Each works without the other.</li>
@@ -2130,7 +2131,7 @@ and break, or raise an exception.</p>
 </tr>
 </tbody>
 </table></div>
-<h2 id="check-yourself">Check yourself<a aria-label="Permalink to this section" class="hanchor" href="#check-yourself">¶</a></h2>
+<h2 id="check-yourself">Check yourself<a aria-label="Permalink to this section" class="hanchor" href="#check-yourself">¶</a><a class="lesson-link" href="03-conversation-and-streaming-8.html" title="Read this section in lesson view (Lesson 8 of 8)">lesson 8</a></h2>
 <ol>
 <li>What are the two orthogonal concerns this phase pulls apart?</li>
 <li>In what order must you append the model's items and the tool results each turn, and why?</li>
@@ -2149,7 +2150,7 @@ and break, or raise an exception.</p>
    It's a UX feature.</li>
 </ol>
 </details>
-<h2 id="exercises">Exercises<a aria-label="Permalink to this section" class="hanchor" href="#exercises">¶</a></h2>
+<h2 id="exercises">Exercises<a aria-label="Permalink to this section" class="hanchor" href="#exercises">¶</a><a class="lesson-link" href="03-conversation-and-streaming-8.html" title="Read this section in lesson view (Lesson 8 of 8)">lesson 8</a></h2>
 <p><strong>Practice:</strong> see <a href="exercises.html#phase-3--conversation--streaming"><code>EXERCISES.md</code> — Phase 3</a>
 for hands-on exercises (session persistence, replay, and streaming renderers) before
 moving on.</p>

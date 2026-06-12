@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<!-- GENERATED from 07-subagents-orchestration.md — do not edit; run site/build_site.py -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="The elegance of this architecture is that from the orchestrator&#x27;s perspective, spawning a sub-agent is just another tool call. The model emits a function_cal…">
+<link rel="canonical" href="https://joshps23.github.io/ai-eng-2/07-subagents-orchestration.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://joshps23.github.io/ai-eng-2/07-subagents-orchestration-7.html">
+<meta property="og:site_name" content="Agent Harness Guide">
+<meta property="og:title" content="Phase 7 · Lesson 7 — Classes · part 4 of 4 — Agent Harness Guide">
+<meta property="og:description" content="The elegance of this architecture is that from the orchestrator&#x27;s perspective, spawning a sub-agent is just another tool call. The model emits a function_cal…">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#FDFDFE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
+<title>Phase 7 · Lesson 7 — Classes · part 4 of 4 — Agent Harness Guide</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body>
+<div class="progress-bar" aria-hidden="true"></div>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="layout">
+<details class="sidebar-wrap" open>
+<summary class="sidebar-toggle">Guide navigation</summary>
+<nav class="sidebar" aria-label="Guide pages">
+<p class="site-mark">agent-harness<span class="mark-slash">/</span></p>
+<p class="sidebar-heading">Start here</p>
+<ul>
+<li><a href="index.html">Guide hub</a></li>
+<li><a href="learning-path.html">Learning Path</a></li>
+<li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
+<li><a href="faq.html">Setup &amp; FAQ</a></li>
+</ul>
+<p class="sidebar-heading">Phases</p>
+<ul>
+<li><a href="00-foundations-1.html">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness-1.html">Phase 1 — Bare Harness</a></li>
+<li><a href="02-tool-system-1.html">Phase 2 — Tool System</a></li>
+<li><a href="03-conversation-and-streaming-1.html">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools-1.html">Phase 4 — Real Tools</a></li>
+<li><a href="05-permissions-and-safety-1.html">Phase 5 — Permissions &amp; Safety</a></li>
+<li><a href="06-context-management-1.html">Phase 6 — Context Management</a></li>
+<li class="current"><a href="07-subagents-orchestration-1.html" aria-current="true">Phase 7 — Sub-agents</a></li>
+<li><a href="08-production-harness-1.html">Phase 8 — Production Harness</a></li>
+</ul>
+<p class="sidebar-heading">Appendix</p>
+<ul>
+<li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
+</ul>
+<p class="sidebar-heading">Practice</p>
+<ul>
+<li><a href="exercises.html">Exercises</a></li>
+<li><a href="glossary.html">Glossary</a></li>
+<li><a href="notebooks.html">Notebooks</a></li>
+</ul>
+</nav>
+</details>
+<main id="main">
+<header class="page-header">
+<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">7</span><span class="phase-kicker">Phase 7 · Lesson 7 of 11</span><span class="lesson-time">~10 min</span><span class="lesson-cp">1 <span aria-hidden="true">▶</span> checkpoint</span></p>
+<nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations-1.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness-1.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system-1.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming-1.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools-1.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety-1.html" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management-1.html" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration-1.html" aria-current="true" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness-1.html" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
+<nav class="lesson-rail" aria-label="Lessons in this phase"><a class="lesson-tick" href="07-subagents-orchestration-1.html" title="Lesson 1: Sub-Agents &amp; Dynamic… (~11 min)" aria-label="Lesson 1: Sub-Agents &amp; Dynamic… (~11 min)">1</a><a class="lesson-tick" href="07-subagents-orchestration-2.html" title="Lesson 2: Line-by-Line (~12 min)" aria-label="Lesson 2: Line-by-Line (~12 min)">2</a><a class="lesson-tick" href="07-subagents-orchestration-3.html" title="Lesson 3: Functions (~12 min)" aria-label="Lesson 3: Functions (~12 min)">3</a><a class="lesson-tick" href="07-subagents-orchestration-4.html" title="Lesson 4: Classes · part 1 of 4 (~6 min)" aria-label="Lesson 4: Classes · part 1 of 4 (~6 min)">4</a><a class="lesson-tick" href="07-subagents-orchestration-5.html" title="Lesson 5: Classes · part 2 of 4 (~11 min)" aria-label="Lesson 5: Classes · part 2 of 4 (~11 min)">5</a><a class="lesson-tick" href="07-subagents-orchestration-6.html" title="Lesson 6: Classes · part 3 of 4 (~7 min)" aria-label="Lesson 6: Classes · part 3 of 4 (~7 min)">6</a><a class="lesson-tick" href="07-subagents-orchestration-7.html" aria-current="page" title="Lesson 7: Classes · part 4 of 4 (~10 min)" aria-label="Lesson 7: Classes · part 4 of 4 (~10 min)">7</a><a class="lesson-tick" href="07-subagents-orchestration-8.html" title="Lesson 8: Threads (~13 min)" aria-label="Lesson 8: Threads (~13 min)">8</a><a class="lesson-tick" href="07-subagents-orchestration-9.html" title="Lesson 9: Dynamic Fan-Out (~7 min)" aria-label="Lesson 9: Dynamic Fan-Out (~7 min)">9</a><a class="lesson-tick" href="07-subagents-orchestration-10.html" title="Lesson 10: 6. Design Considerations (~9 min)" aria-label="Lesson 10: 6. Design Considerations (~9 min)">10</a><a class="lesson-tick" href="07-subagents-orchestration-11.html" title="Wrap-up: Pitfalls (~5 min)" aria-label="Wrap-up: Pitfalls (~5 min)">11</a></nav>
+<nav class="ladder" aria-label="Version ladder"><a class="ladder-rung" href="07-subagents-orchestration-2.html#version-1--line-by-line-the-same-loop-pasted-twice"><span class="ladder-medallion">V1</span> Line-by-Line</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="07-subagents-orchestration-3.html#version-2--functions-the-duplication-collapses"><span class="ladder-medallion">V2</span> Functions</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="07-subagents-orchestration-4.html#version-3--classes-the-same-harness-organized"><span class="ladder-medallion">V3</span> Classes</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="07-subagents-orchestration-8.html#version-4--threads-parallel-sub-agents-optional-speed-up"><span class="ladder-medallion">V4</span> Threads</a></nav>
+</header>
+<article>
+<h3 id="step-33--sub-agents-as-a-tool-wiring-it-to-the-orchestrator">Step 3.3 — Sub-Agents as a Tool: Wiring It to the Orchestrator<a aria-label="Permalink to this section" class="hanchor" href="07-subagents-orchestration.html#step-33--sub-agents-as-a-tool-wiring-it-to-the-orchestrator">¶</a></h3>
+<blockquote>
+<p><strong>Why now?</strong> So far <code>task_fn</code> is a plain Python function. To let the orchestrator <em>model</em> decide when to delegate, you need to expose it as a tool the model can call — exactly the same way you exposed <code>read_file</code> in Phase 2.</p>
+</blockquote>
+<p>The elegance of this architecture is that from the orchestrator's perspective, spawning a sub-agent is just another tool call. The model emits a <code>function_call</code> item with <code>name="task"</code>, the harness intercepts it, instantiates and runs a worker <code>Agent</code>, and returns its final text as the <code>function_call_output</code>. The model never knows it talked to another model; it just sees a tool result.</p>
+<p>This means the orchestrator needs no special awareness of sub-agents in its loop. The existing Phase 2 dispatch machinery handles everything — including parallelism.</p>
+<h4 id="the-dispatch_subagent-function">The <code>dispatch_subagent</code> function</h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># subagents.py (continued)</span>
+
+<span class="n">MAX_SUBAGENT_DEPTH</span> <span class="o">=</span> <span class="n">Agent</span><span class="o">.</span><span class="n">MAX_DEPTH</span>  <span class="c1"># 4 — inherited from Agent class</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">dispatch_subagent</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">role</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">parent_registry</span><span class="p">:</span> <span class="n">ToolRegistry</span><span class="p">,</span>
+    <span class="n">client</span><span class="p">:</span> <span class="n">OpenAI</span><span class="p">,</span>
+    <span class="n">depth</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">extra_instructions</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Instantiate a fresh sub-agent for *role*, run it on *task*, return its</span>
+<span class="sd">    final text.  Raises ``RuntimeError`` if depth exceeds the hard cap.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    role:</span>
+<span class="sd">        Key into ``AGENT_PRESETS``.  Falls back to &quot;generic&quot; if unknown.</span>
+<span class="sd">    task:</span>
+<span class="sd">        The prompt sent to the sub-agent as its initial user message.</span>
+<span class="sd">    parent_registry:</span>
+<span class="sd">        The orchestrator&#39;s full tool registry.  The sub-agent receives a</span>
+<span class="sd">        *filtered* view containing only the tools permitted for this role.</span>
+<span class="sd">    client:</span>
+<span class="sd">        Shared ``OpenAI`` client (HTTP connection pool is reused).</span>
+<span class="sd">    depth:</span>
+<span class="sd">        Current nesting depth — passed through so the sub-agent enforces</span>
+<span class="sd">        the cap on any of *its* tool calls.</span>
+<span class="sd">    extra_instructions:</span>
+<span class="sd">        Optional text appended to the preset&#39;s system prompt.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">depth</span> <span class="o">&gt;=</span> <span class="n">MAX_SUBAGENT_DEPTH</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;[error] Sub-agent depth limit (</span><span class="si">{</span><span class="n">MAX_SUBAGENT_DEPTH</span><span class="si">}</span><span class="s2">) reached. &quot;</span>
+            <span class="s2">&quot;Task not executed.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">preset</span> <span class="o">=</span> <span class="n">AGENT_PRESETS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="n">AGENT_PRESETS</span><span class="p">[</span><span class="s2">&quot;generic&quot;</span><span class="p">])</span>
+
+    <span class="c1"># Build a restricted registry containing only allowed tools</span>
+    <span class="n">sub_registry</span> <span class="o">=</span> <span class="n">ToolRegistry</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">tool_name</span> <span class="ow">in</span> <span class="n">preset</span><span class="o">.</span><span class="n">allowed_tools</span><span class="p">:</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">parent_registry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tool_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">t</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sub_registry</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+    <span class="n">instructions</span> <span class="o">=</span> <span class="n">preset</span><span class="o">.</span><span class="n">instructions</span>
+    <span class="k">if</span> <span class="n">extra_instructions</span><span class="p">:</span>
+        <span class="n">instructions</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">instructions</span><span class="si">}</span><span class="se">\n\n</span><span class="si">{</span><span class="n">extra_instructions</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">role</span><span class="si">}</span><span class="s2">-depth</span><span class="si">{</span><span class="n">depth</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">instructions</span><span class="o">=</span><span class="n">instructions</span><span class="p">,</span>
+        <span class="n">registry</span><span class="o">=</span><span class="n">sub_registry</span><span class="p">,</span>
+        <span class="n">model</span><span class="o">=</span><span class="n">preset</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+        <span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span>
+        <span class="n">depth</span><span class="o">=</span><span class="n">depth</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>  <span class="c1"># noqa: BLE001</span>
+        <span class="c1"># Sub-agent errors become error strings, not exceptions.</span>
+        <span class="c1"># The orchestrator can decide what to do.</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;[error] Sub-agent &#39;</span><span class="si">{</span><span class="n">role</span><span class="si">}</span><span class="s2">&#39; failed: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
+</code></pre></div>
+<p>Three things are worth emphasising here.</p>
+<p><strong>Restricted registry.</strong> The sub-agent receives a <em>filtered</em> view of the parent's tools. A <code>reviewer</code> agent literally cannot call <code>write_file</code> even if the parent registry has one — the tool does not exist from its perspective. This is the simplest possible permissions model; Phase 5's hook system can layer additional checks on top.</p>
+<p><strong>Isolated transcript.</strong> The <code>Agent</code> object is created fresh, with an empty <code>_conversation</code>. No transcript leaks between parent and child.</p>
+<p><strong>Errors as strings.</strong> The <code>except</code> block returns a descriptive string rather than re-raising. This is the same contract Phase 2 established for tools: errors are information the model can reason about, not exceptions that kill the loop.</p>
+<h4 id="the-task-tool">The <code>task</code> tool</h4>
+<p>Now expose <code>dispatch_subagent</code> as a tool the orchestrator can call.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># subagents.py (continued)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">make_task_tool</span><span class="p">(</span>
+    <span class="n">parent_registry</span><span class="p">:</span> <span class="n">ToolRegistry</span><span class="p">,</span>
+    <span class="n">client</span><span class="p">:</span> <span class="n">OpenAI</span><span class="p">,</span>
+    <span class="n">parent_depth</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;TaskTool&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Factory that captures the parent context in the closure.</span>
+<span class="sd">    Returns a ``Tool`` instance ready for registration.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">class</span><span class="w"> </span><span class="nc">TaskTool</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;task&quot;</span>
+        <span class="n">description</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;Spawn a sub-agent to complete an independent task. &quot;</span>
+            <span class="s2">&quot;Use this to parallelise work: call &#39;task&#39; multiple times in one &quot;</span>
+            <span class="s2">&quot;response to run workers concurrently. Each worker has its own &quot;</span>
+            <span class="s2">&quot;isolated context. &quot;</span>
+            <span class="s2">&quot;Available roles: researcher, coder, reviewer, analyst, generic.&quot;</span>
+        <span class="p">)</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;enum&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">AGENT_PRESETS</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+                    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="p">(</span>
+                        <span class="s2">&quot;The sub-agent persona to instantiate. Determines &quot;</span>
+                        <span class="s2">&quot;which tools and system prompt the worker receives.&quot;</span>
+                    <span class="p">),</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="p">(</span>
+                        <span class="s2">&quot;One-sentence summary of what this worker should do. &quot;</span>
+                        <span class="s2">&quot;Used in progress logging.&quot;</span>
+                    <span class="p">),</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="p">(</span>
+                        <span class="s2">&quot;The full task prompt sent to the sub-agent. Be specific: &quot;</span>
+                        <span class="s2">&quot;include all context the worker needs; it cannot read the &quot;</span>
+                        <span class="s2">&quot;parent&#39;s conversation.&quot;</span>
+                    <span class="p">),</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;role&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="s2">&quot;prompt&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;additionalProperties&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">role</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">description</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    [task] spawning </span><span class="si">{</span><span class="n">role</span><span class="si">!r}</span><span class="s2">: </span><span class="si">{</span><span class="n">description</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">dispatch_subagent</span><span class="p">(</span>
+                <span class="n">role</span><span class="o">=</span><span class="n">role</span><span class="p">,</span>
+                <span class="n">task</span><span class="o">=</span><span class="n">prompt</span><span class="p">,</span>
+                <span class="n">parent_registry</span><span class="o">=</span><span class="n">parent_registry</span><span class="p">,</span>
+                <span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span>
+                <span class="n">depth</span><span class="o">=</span><span class="n">parent_depth</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">TaskTool</span><span class="p">()</span>
+</code></pre></div>
+<p>Register this tool in the orchestrator's registry and the model gains the ability to spawn workers. The schema's <code>enum</code> for <code>role</code> tells the model exactly which values are valid, which reduces hallucination significantly.</p>
+<h3 id="-run-it-now-6">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="07-subagents-orchestration.html#-run-it-now-6">¶</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># v3_task_tool.py  — orchestrator with a real task tool.</span>
+<span class="c1"># Needs: agent.py (Step 3.1), the Phase 2 tools/ package (with the Step 3.0</span>
+<span class="c1"># bridge), and subagents.py as built so far (AGENT_PRESETS from Step 3.2,</span>
+<span class="c1"># dispatch_subagent + make_task_tool from this step).</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">openai</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenAI</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">agent</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">tool</span><span class="p">,</span> <span class="n">ToolRegistry</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">subagents</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_task_tool</span><span class="p">,</span> <span class="n">AGENT_PRESETS</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">OpenAI</span><span class="p">()</span>
+
+
+<span class="c1"># The tools sub-agents may draw from — @tool builds each schema (Phase 2).</span>
+<span class="nd">@tool</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">read_file</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read a file and return its contents.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path: Path of the file to read.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;[error] </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
+
+
+<span class="nd">@tool</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">list_directory</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;List the contents of a directory.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path: Directory path to list.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">path</span><span class="p">)))</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;[error] </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
+
+
+<span class="c1"># Full tool registry that sub-agents may draw from</span>
+<span class="n">full_registry</span> <span class="o">=</span> <span class="n">ToolRegistry</span><span class="p">()</span>
+<span class="n">full_registry</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">read_file</span><span class="p">)</span>
+<span class="n">full_registry</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">list_directory</span><span class="p">)</span>
+
+<span class="c1"># Orchestrator only has the task tool — it delegates everything</span>
+<span class="n">orchestrator_registry</span> <span class="o">=</span> <span class="n">ToolRegistry</span><span class="p">()</span>
+<span class="n">orchestrator_registry</span><span class="o">.</span><span class="n">register</span><span class="p">(</span>
+    <span class="n">make_task_tool</span><span class="p">(</span><span class="n">full_registry</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">parent_depth</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="n">orchestrator</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;orchestrator&quot;</span><span class="p">,</span>
+    <span class="n">instructions</span><span class="o">=</span><span class="p">(</span>
+        <span class="s2">&quot;You are a senior engineer. Break complex tasks into subtasks and &quot;</span>
+        <span class="s2">&quot;delegate each one to a specialist sub-agent using the &#39;task&#39; tool. &quot;</span>
+        <span class="s2">&quot;After receiving results, synthesise a final answer.&quot;</span>
+    <span class="p">),</span>
+    <span class="n">registry</span><span class="o">=</span><span class="n">orchestrator_registry</span><span class="p">,</span>
+    <span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">orchestrator</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;Review auth.py and list any security concerns.&quot;</span><span class="p">))</span>
+</code></pre></div>
+<p>The orchestrator will call <code>task("reviewer", ..., "Check auth.py ...")</code>. Your harness intercepts that, runs a reviewer sub-agent with only <code>read_file</code> and <code>list_directory</code>, and returns the text. The model then synthesises the final report.</p>
+</article>
+<footer class="page-footer">
+<nav class="continue" aria-label="Continue">
+<a class="continue-card" href="07-subagents-orchestration-8.html" rel="next">
+<span class="continue-kicker">Next · Lesson 8 of 11</span>
+<span class="continue-title">Threads<span class="continue-time">~13 min</span><span class="continue-arrow" aria-hidden="true">→</span></span>
+</a>
+<p class="continue-aux">
+<a href="07-subagents-orchestration-6.html" rel="prev">← Lesson 6 · Classes · part 3 of 4</a>
+<a class="continue-fullpage" href="07-subagents-orchestration.html#step-33--sub-agents-as-a-tool-wiring-it-to-the-orchestrator">View this lesson on the single page</a>
+</p>
+</nav>
+<p class="generated-note">Generated from <code>07-subagents-orchestration.md</code> — lesson 7 of 11 in the derived lesson view (boundaries may move when the markdown changes; the <a href="07-subagents-orchestration.html">single page</a> is the permanent address).</p>
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/07-subagents-orchestration.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
+</footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
+</main>
+</div>
+<script>
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there.  The toggle <summary> is
+     hidden at desktop widths, so re-open the sidebar whenever the viewport
+     crosses back above the breakpoint (rotation, window resize). */
+  var sb = document.querySelector('.sidebar-wrap');
+  var narrow = matchMedia('(max-width: 800px)');
+  if (sb && narrow.matches) { sb.removeAttribute('open'); }
+  if (sb && narrow.addEventListener) {
+    narrow.addEventListener('change', function (e) {
+      if (!e.matches) { sb.setAttribute('open', ''); }
+    });
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards.
+     diagram-text mirrors are excluded — print hides them entirely (the SVG
+     figure already prints; opening the ASCII would print the diagram twice). */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not(.diagram-text):not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
+  });
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
+
+  /* Reading progress: the fixed 3px accent bar tracks scroll position.
+     Without JS the element simply stays at width 0 — invisible, harmless. */
+  var pbar = document.querySelector('.progress-bar');
+  if (pbar) {
+    var setProgress = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      pbar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    };
+    window.addEventListener('scroll', setProgress, { passive: true });
+    setProgress();
+  }
+
+  /* Deep links into collapsed sections: open every <details> ancestor of the
+     target, and the refsection that immediately follows a target heading.
+     Re-scroll only if something actually opened (the layout above the target
+     just changed), and instantly — the CSS smooth scroll would crawl across
+     tens of thousands of pixels on the long phase pages. */
+  function openForHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) { return; }
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    var opened = false;
+    var d = el.closest('details');
+    while (d) {
+      if (!d.hasAttribute('open')) { d.setAttribute('open', ''); opened = true; }
+      d = d.parentElement && d.parentElement.closest('details');
+    }
+    var sib = el.nextElementSibling;
+    if (sib && sib.matches('details.refsection') && !sib.hasAttribute('open')) {
+      sib.setAttribute('open', '');
+      opened = true;
+    }
+    if (!opened) { return; }
+    var jump = function () {
+      var y = el.getBoundingClientRect().top + window.scrollY - 16;
+      try { window.scrollTo({ top: y, behavior: 'instant' }); }
+      catch (e) { window.scrollTo(0, y); }
+    };
+    jump();
+    /* the browser's own fragment scroll was computed against the collapsed
+       layout and may still be animating (CSS smooth) — re-assert once, which
+       cancels it */
+    setTimeout(jump, 100);
+  }
+  window.addEventListener('hashchange', openForHash);
+  openForHash();
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
+</script>
+</body>
+</html>
