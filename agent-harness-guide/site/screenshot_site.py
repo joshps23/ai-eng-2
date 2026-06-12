@@ -45,6 +45,21 @@ SHOTS = [
     ("glossary-dark", "glossary.html", (1440, 900), "dark", False, []),
     ("phase01-print", "01-bare-harness.html", (1240, 1600), "light", False,
      [("media-print", None), ("open-details", None), ("scroll", "div.highlight")]),
+    # phase wayfinding chrome: medallion + 0-8 rail + version-ladder map
+    ("phase00-chrome-light", "00-foundations.html", (1440, 900), "light", False, []),
+    ("phase00-chrome-dark", "00-foundations.html", (1440, 900), "dark", False, []),
+    # build-time SVG figure (Figure 1, the agent loop), both schemes
+    ("figure1-light", "00-foundations.html", (1440, 900), "light", False,
+     [("scroll", "figure.diagram")]),
+    ("figure1-dark", "00-foundations.html", (1440, 900), "dark", False,
+     [("scroll", "figure.diagram")]),
+    # a collapsed "Reference copy" card in Phase 4 ...
+    ("phase04-refsection-closed-light", "04-real-tools.html", (1440, 900), "light", False,
+     [("scroll", "details.refsection")]),
+    # ... and the same region landed-on via a deep link (auto-expanded)
+    ("phase04-refsection-deeplink-light",
+     "04-real-tools.html#bash-production-form--shell-command-execution",
+     (1440, 900), "light", False, [("wait", 800)]),
 ]
 
 
@@ -99,6 +114,8 @@ def main() -> None:
                     page.evaluate(
                         "document.querySelectorAll('article details')"
                         ".forEach(d => d.setAttribute('open', ''))")
+                elif kind == "wait":
+                    page.wait_for_timeout(sel)
                 elif kind == "scroll":
                     page.evaluate(
                         "sel => document.querySelector(sel)"

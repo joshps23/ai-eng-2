@@ -17,6 +17,7 @@ from __future__ import annotations
 import html as html_mod
 import posixpath
 import re
+import sys
 import xml.etree.ElementTree as etree
 from pathlib import Path
 
@@ -28,6 +29,8 @@ from pygments import highlight
 from pygments.formatters import HtmlFormatter
 from pygments.lexers import get_lexer_by_name
 from pygments.util import ClassNotFound
+
+import figures
 
 SITE_DIR = Path(__file__).resolve().parent
 GUIDE_DIR = SITE_DIR.parent
@@ -84,6 +87,11 @@ SOURCE_TO_PAGE = {src: out for out, src, _, _ in PAGES}
 ALERT_TYPES = {"NOTE": "Note", "TIP": "Tip", "IMPORTANT": "Important",
                "WARNING": "Warning", "CAUTION": "Caution"}
 ALERT_RE = re.compile(r"^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*", re.S)
+
+# Fingerprints from figures.FIGURES that matched a fence during this build.
+# main()'s drift gate fails the build if any figure never matched — the
+# markdown diagram changed, so the SVG must be redrawn or re-fingerprinted.
+FIGURE_HITS: set[str] = set()
 
 
 # ---------------------------------------------------------------------------
@@ -233,7 +241,22 @@ class GuidePreprocessor(Preprocessor):
             j += 1
         if not closed:
             return None, i  # malformed; let the normal fence path handle it
-        html = highlight_block("\n".join(code), "text", "highlight nocopy")
+        text = "\n".join(code)
+        html = highlight_block(text, "text", "highlight nocopy")
+        fig = figures.FIGURES.get(figures.fingerprint(text))
+        if fig is not None:
+            FIGURE_HITS.add(figures.fingerprint(text))
+            # The fence is one of the guide's ASCII diagrams: render the
+            # designed SVG, and keep the original ASCII as the copyable,
+            # md-faithful mirror in a collapsed details.
+            html = (
+                '<figure class="diagram" role="group">\n'
+                + fig.svg
+                + '\n<details class="diagram-text">'
+                + "<summary>Text version of this diagram</summary>\n"
+                + html
+                + "\n</details>\n</figure>"
+            )
         return [self.md.htmlStash.store(html)], j
 
     def _nested_fence(self, lines: list[str], i: int,
@@ -295,6 +318,21 @@ class GuideTreeprocessor(Treeprocessor):
                 el.set("id", deduper.slug(text))
                 if tag == "h1" and self.ctx.h1 is None:
                     self.ctx.h1 = text
+                if tag == "h2":
+                    # version-ladder rungs for the header map: the first h2
+                    # mentioning each "Version N", with a short label (text
+                    # after the first em dash, cut at any ":").
+                    vm = re.search(r"\bVersion (\d)\b", text)
+                    if vm and all(r[0] != int(vm.group(1))
+                                  for r in self.ctx.ladder):
+                        label = (text.split("—", 1)[1] if "—" in text
+                                 else text)
+                        label = label.split(":", 1)[0].strip()
+                        if len(label) > 28:
+                            label = (label[:28].rsplit(" ", 1)[0]
+                                     .rstrip(" ,;:—-") + "…")
+                        self.ctx.ladder.append(
+                            (int(vm.group(1)), label, el.get("id")))
                 if tag in ("h2", "h3"):
                     # "▶ Run it now" checkpoints repeat near-identically and
                     # drown the page outline — keep their ids (GitHub anchor
@@ -342,7 +380,59 @@ class GuideTreeprocessor(Treeprocessor):
                     # a link-only paragraph is a markdown breadcrumb: useless
                     # in print, and quieter on screen
                     el.set("class", (el.get("class", "") + " md-breadcrumb").strip())
+        self._collapse_refsections(root)
         self._wrap_tables(root)
+
+    HEADING_LEVELS = {"h1": 1, "h2": 2, "h3": 3, "h4": 4, "h5": 5, "h6": 6}
+
+    def _collapse_refsections(self, root: etree.Element) -> None:
+        """Collapse each banner-marked "Reference copy" section into a closed
+        <details class="refsection">.  The unit of collapse is the banner's
+        owning heading section: the nearest h2–h4 preceding the
+        blockquote.refcopy, through to the next heading of the same-or-higher
+        level.  The heading itself stays OUTSIDE the details, so its
+        GitHub-parity id, ¶-anchor, and TOC entry are untouched."""
+        for bq in list(root.findall("blockquote")):
+            if bq.get("class") != "refcopy":
+                continue
+            children = list(root)
+            if bq not in children:
+                continue  # already moved into an earlier refsection
+            bq_idx = children.index(bq)
+            head_idx = level = None
+            for i in range(bq_idx - 1, -1, -1):
+                lv = self.HEADING_LEVELS.get(children[i].tag)
+                if lv in (2, 3, 4):
+                    head_idx, level = i, lv
+                    break
+            if head_idx is None:
+                continue
+            end = len(children)
+            for i in range(head_idx + 1, len(children)):
+                lv = self.HEADING_LEVELS.get(children[i].tag)
+                if lv is not None and lv <= level:
+                    end = i
+                    break
+            # a trailing <hr> is the source's `---` divider before the next
+            # section — leave it outside so HR_BEFORE_H2 still strikes it
+            while end > head_idx + 1 and children[end - 1].tag == "hr":
+                end -= 1
+            moved = children[head_idx + 1:end]
+            if not moved:
+                continue
+            details = etree.Element("details")
+            details.set("class", "refsection")
+            summary = etree.SubElement(details, "summary")
+            summary.text = "Show the reference copy "
+            hint = etree.SubElement(summary, "span")
+            hint.set("class", "refsection-hint")
+            hint.text = "consolidated re-read — skim or skip"
+            details.tail = moved[-1].tail
+            moved[-1].tail = None
+            for el in moved:
+                root.remove(el)
+                details.append(el)
+            root.insert(head_idx + 1, details)
 
     def _wrap_tables(self, root: etree.Element) -> None:
         """`display: block` on <table> strips table semantics for assistive
@@ -424,6 +514,7 @@ class PageContext:
         self.h1: str | None = None
         self.first_para: str | None = None
         self.toc: list[tuple[int, str, str]] = []
+        self.ladder: list[tuple[int, str, str]] = []  # (version, label, slug)
         self.repo_links = 0                   # links that leave the site
 
 
@@ -484,11 +575,13 @@ PAGE_JS = """\
     });
   }
 
-  /* Print: open every <details> (answers, TOC) and revert afterwards. */
+  /* Print: open every <details> (answers, TOC) and revert afterwards.
+     diagram-text mirrors are excluded — print hides them entirely (the SVG
+     figure already prints; opening the ASCII would print the diagram twice). */
   var openedForPrint = [];
   window.addEventListener('beforeprint', function () {
     openedForPrint = [];
-    document.querySelectorAll('details:not([open])').forEach(function (d) {
+    document.querySelectorAll('details:not(.diagram-text):not([open])').forEach(function (d) {
       d.setAttribute('open', '');
       openedForPrint.push(d);
     });
@@ -509,6 +602,54 @@ PAGE_JS = """\
     window.addEventListener('scroll', toggleBtt, { passive: true });
     toggleBtt();
   }
+
+  /* Reading progress: the fixed 3px accent bar tracks scroll position.
+     Without JS the element simply stays at width 0 — invisible, harmless. */
+  var pbar = document.querySelector('.progress-bar');
+  if (pbar) {
+    var setProgress = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      pbar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    };
+    window.addEventListener('scroll', setProgress, { passive: true });
+    setProgress();
+  }
+
+  /* Deep links into collapsed sections: open every <details> ancestor of the
+     target, and the refsection that immediately follows a target heading.
+     Re-scroll only if something actually opened (the layout above the target
+     just changed), and instantly — the CSS smooth scroll would crawl across
+     tens of thousands of pixels on the long phase pages. */
+  function openForHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) { return; }
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    var opened = false;
+    var d = el.closest('details');
+    while (d) {
+      if (!d.hasAttribute('open')) { d.setAttribute('open', ''); opened = true; }
+      d = d.parentElement && d.parentElement.closest('details');
+    }
+    var sib = el.nextElementSibling;
+    if (sib && sib.matches('details.refsection') && !sib.hasAttribute('open')) {
+      sib.setAttribute('open', '');
+      opened = true;
+    }
+    if (!opened) { return; }
+    var jump = function () {
+      var y = el.getBoundingClientRect().top + window.scrollY - 16;
+      try { window.scrollTo({ top: y, behavior: 'instant' }); }
+      catch (e) { window.scrollTo(0, y); }
+    };
+    jump();
+    /* the browser's own fragment scroll was computed against the collapsed
+       layout and may still be animating (CSS smooth) — re-assert once, which
+       cancels it */
+    setTimeout(jump, 100);
+  }
+  window.addEventListener('hashchange', openForHash);
+  openForHash();
 
   /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
      execCommand -> select the block and ask for Ctrl-C.  If no mechanism
@@ -591,6 +732,49 @@ def build_sidebar(current: str) -> str:
         parts.append(
             f'<p class="sidebar-heading">{esc(section)}</p>\n<ul>\n'
             + "\n".join(items) + "\n</ul>")
+    return "\n".join(parts)
+
+
+# the nine phase pages, in phase-number order (their PAGES order)
+PHASE_PAGES = [(out, label) for out, _src, label, sec in PAGES
+               if sec == "Phases"]
+
+
+def build_phase_header(out_name: str,
+                       ladder: list[tuple[int, str, str]]) -> str:
+    """Wayfinding chrome for Phases pages only: a phase-number medallion
+    eyebrow, the 0–8 phase rail (a map of the whole guide), and the page's
+    own V1→V4 ladder map.  All generated from PAGES / the page's headings —
+    no per-page configuration."""
+    outs = [o for o, _ in PHASE_PAGES]
+    if out_name not in outs:
+        return ""
+    n = outs.index(out_name)
+    parts = [
+        '<p class="phase-eyebrow"><span class="phase-medallion" '
+        f'aria-hidden="true">{n}</span>'
+        f'<span class="phase-kicker">Phase {n} of {len(outs) - 1}</span></p>'
+    ]
+    dots = []
+    for i, (out, label) in enumerate(PHASE_PAGES):
+        if i:
+            dots.append('<span class="rail-link" aria-hidden="true"></span>')
+        cur = ' aria-current="page"' if out == out_name else ""
+        dots.append(f'<a class="rail-dot" href="{out}"{cur} '
+                    f'title="{esc(label)}" aria-label="{esc(label)}">{i}</a>')
+    parts.append('<nav class="phase-rail" aria-label="All phases">'
+                 + "".join(dots) + "</nav>")
+    if len(ladder) >= 2:
+        rungs = []
+        for k, (v, label, slug) in enumerate(ladder):
+            if k:
+                rungs.append('<span class="ladder-sep" aria-hidden="true">'
+                             "→</span>")
+            rungs.append(f'<a class="ladder-rung" href="#{slug}">'
+                         f'<span class="ladder-medallion">V{v}</span> '
+                         f"{esc(label)}</a>")
+        parts.append('<nav class="ladder" aria-label="Version ladder">'
+                     + "".join(rungs) + "</nav>")
     return "\n".join(parts)
 
 
@@ -704,6 +888,9 @@ def build_page(out_name: str, src_rel: str, body: str, ctx: PageContext,
         body = index_hero(body)
     body_class = ' class="page-index"' if is_index else ""
     og_type = "website" if is_index else "article"
+    header = "\n".join(part for part in
+                       (build_phase_header(out_name, ctx.ladder),
+                        build_toc(ctx.toc)) if part)
 
     return f"""<!DOCTYPE html>
 <!-- GENERATED from {src_rel} — do not edit; run site/build_site.py -->
@@ -726,6 +913,7 @@ def build_page(out_name: str, src_rel: str, body: str, ctx: PageContext,
 <link rel="icon" href="{FAVICON}">
 </head>
 <body{body_class}>
+<div class="progress-bar" aria-hidden="true"></div>
 <a class="skip-link" href="#main">Skip to content</a>
 <div class="layout">
 <details class="sidebar-wrap" open>
@@ -737,7 +925,7 @@ def build_page(out_name: str, src_rel: str, body: str, ctx: PageContext,
 </details>
 <main id="main">
 <header class="page-header">
-{build_toc(ctx.toc)}
+{header}
 </header>
 <article>
 {body}
@@ -1055,6 +1243,96 @@ a.repo-file::after { content: " ↗"; font-size: 0.85em; }
 /* JS adds/removes this near the top of the page; with JS disabled the
    class is never applied and the control stays visible. */
 .back-to-top.btt-hidden { visibility: hidden; opacity: 0; pointer-events: none; }
+/* ---- reading-progress bar (JS sets the width; 0 = invisible without JS) ---- */
+.progress-bar {
+  position: fixed; top: 0; left: 0; height: 3px; width: 0;
+  background: var(--accent); z-index: 9; pointer-events: none;
+}
+/* ---- collapsed "Reference copy" sections ---- */
+details.refsection {
+  background: color-mix(in srgb, var(--muted) 6%, var(--bg));
+}
+details.refsection > summary { color: var(--fg); }
+details.refsection > summary::before { content: "🔖 "; }
+details.refsection[open] > summary { margin-bottom: 1rem; }
+.refsection-hint {
+  font-family: var(--font-mono); font-size: 0.75rem; font-weight: 400;
+  color: var(--muted); margin-left: 0.5em;
+}
+/* ---- build-time SVG diagrams (figures.py) ---- */
+figure.diagram { margin: 1.5rem 0; padding: 0; }
+.diagram svg { display: block; width: 100%; max-width: 100%; height: auto; }
+.d-box   { fill: var(--code-bg); stroke: var(--border-strong); stroke-width: 1.25; rx: 8; }
+.d-pill  { rx: 18; }
+.d-accent{ stroke: var(--accent); fill: color-mix(in srgb, var(--accent) 7%, var(--bg)); }
+.d-good  { stroke: var(--green);  fill: color-mix(in srgb, var(--green) 7%, var(--bg)); }
+.d-edge  { stroke: var(--border-strong); fill: none; stroke-width: 1.5; }
+.d-edge-hot { stroke: var(--accent); fill: none; stroke-width: 2; }  /* the loop-back */
+.d-label { fill: var(--fg); font: 600 13px var(--font-sans); }
+.d-mono  { fill: var(--muted); font: 11px var(--font-mono); }  /* ≥6.1:1 on bg */
+.d-mono-label { fill: var(--fg); font: 600 12px var(--font-mono); }
+.d-arrow { fill: var(--border-strong); }
+.d-arrow-hot { fill: var(--accent); }
+.d-chip { stroke-width: 1; rx: 9; }
+.d-chip-accent { stroke: var(--accent); fill: color-mix(in srgb, var(--accent) 10%, var(--bg)); }
+.d-chip-green  { stroke: var(--green);  fill: color-mix(in srgb, var(--green) 9%, var(--bg)); }
+.d-chip-warn   { stroke: var(--warn-border); fill: color-mix(in srgb, var(--warn) 9%, var(--bg)); }
+.d-chip-text { font: 10.5px var(--font-mono); }
+.d-chip-text-accent { fill: var(--accent-deep); }
+.d-chip-text-green  { fill: var(--green); }
+.d-chip-text-warn   { fill: var(--warn); }
+details.diagram-text { margin: 0.75rem 0 0; font-size: 0.875rem; }
+details.diagram-text > summary {
+  color: var(--muted); font-weight: 600; font-size: 0.8125rem;
+}
+/* ---- phase wayfinding chrome (Phases pages only) ---- */
+.phase-eyebrow {
+  display: flex; align-items: center; gap: 0.75rem; margin: 0.25rem 0 1rem;
+}
+.phase-medallion {
+  flex: none; width: 44px; height: 44px; border-radius: 10px;
+  background: var(--accent); color: #fff;             /* 6.29:1 */
+  display: flex; align-items: center; justify-content: center;
+  font: 800 1.25rem var(--font-mono);
+}
+.phase-kicker {
+  font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--accent-deep);
+}
+.phase-rail { display: flex; align-items: center; margin: 0 0 1rem; }
+.rail-dot {
+  flex: none; width: 26px; height: 26px; border-radius: 50%;
+  border: 1px solid var(--border-strong); background: var(--bg);
+  color: var(--muted);                                /* 6.10:1 */
+  display: flex; align-items: center; justify-content: center;
+  font: 600 0.75rem var(--font-mono); text-decoration: none;
+  transition: border-color 120ms ease-out, color 120ms ease-out;
+}
+.rail-dot:hover { border-color: var(--accent); color: var(--accent-deep); }
+.rail-dot[aria-current="page"] {
+  background: var(--accent); border-color: var(--accent);
+  color: #fff;                                        /* 6.29:1 */
+}
+.rail-link { flex: none; width: 14px; height: 1px; background: var(--border); }
+.ladder {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: 0.375rem 0.5rem; margin: 0 0 1rem;
+}
+.ladder-rung {
+  display: inline-flex; align-items: center; gap: 0.4em;
+  border: 1px solid var(--border-strong); border-radius: 999px;
+  padding: 0.2em 0.8em 0.2em 0.3em; text-decoration: none;
+  color: var(--fg); font-size: 0.8125rem; font-weight: 600;
+  transition: border-color 120ms ease-out, color 120ms ease-out;
+}
+.ladder-rung:hover { border-color: var(--accent); color: var(--accent-deep); }
+.ladder-medallion {
+  font: 700 0.6875rem var(--font-mono);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent-deep); border-radius: 999px; padding: 0.15em 0.5em;
+}
+.ladder-sep { color: var(--muted); }
 /* ---- index landing page (body.page-index only) ---- */
 .hero { padding: 1.5rem 0 0.5rem; }
 .hero .hero-eyebrow {
@@ -1086,6 +1364,8 @@ a.repo-file::after { content: " ↗"; font-size: 0.85em; }
   /* dark text on the accent fill: 7.47:1 on #8C9BFF */
   .skip-link { color: var(--bg); }
   .btn-primary { color: var(--bg); }
+  .phase-medallion { color: var(--bg); }                   /* 7.47:1 */
+  .rail-dot[aria-current="page"] { color: var(--bg); }     /* 7.47:1 */
   .btn-primary:hover { background: #A5B0FF; }  /* dark text on it: 9.28:1 */
   .hero blockquote { color: var(--muted); }    /* 7.34:1 */
   blockquote.beginner { background: color-mix(in srgb, var(--green) 9%, var(--bg)); }
@@ -1095,8 +1375,8 @@ a.repo-file::after { content: " ↗"; font-size: 0.85em; }
 }
 @media print {
   .sidebar-wrap, .skip-link, .copy-btn, .page-header, .page-toc, .prevnext,
-  .back-to-top, .hanchor, .hero-cta, .source-link,
-  .md-breadcrumb { display: none !important; }
+  .back-to-top, .hanchor, .hero-cta, .source-link, .progress-bar,
+  .diagram-text, .md-breadcrumb { display: none !important; }
   /* use the sheet: drop the screen column, center the text at a book-like
      measure instead of hugging the left half of the page */
   .layout { max-width: none; }
@@ -1225,11 +1505,23 @@ def convert_page(src_rel: str) -> tuple[str, PageContext]:
 
 def main() -> None:
     HTML_DIR.mkdir(parents=True, exist_ok=True)
+    FIGURE_HITS.clear()
     for idx, (out_name, src_rel, _label, _sec) in enumerate(PAGES):
         body, ctx = convert_page(src_rel)
         page = build_page(out_name, src_rel, body, ctx, idx)
         (HTML_DIR / out_name).write_text(page, encoding="utf-8")
         print(f"wrote html/{out_name}  <- {src_rel}")
+    # Drift gate: every figure in figures.FIGURES must have matched a fence.
+    # An unmatched key means the markdown diagram changed (or moved) — fail
+    # loudly so the SVG is redrawn or re-fingerprinted, never silently stale.
+    unmatched = sorted(set(figures.FIGURES) - FIGURE_HITS)
+    if unmatched:
+        for key in unmatched:
+            print(f"ERROR: figure {key[:12]}… "
+                  f"({figures.FIGURES[key].title}) matched no text fence — "
+                  "the markdown diagram changed; redraw the SVG in "
+                  "site/figures.py or re-fingerprint it.", file=sys.stderr)
+        raise SystemExit(1)
     (HTML_DIR / "style.css").write_text(build_css(), encoding="utf-8")
     print("wrote html/style.css")
 

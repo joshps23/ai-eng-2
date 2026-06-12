@@ -19,6 +19,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 </head>
 <body>
+<div class="progress-bar" aria-hidden="true"></div>
 <a class="skip-link" href="#main">Skip to content</a>
 <div class="layout">
 <details class="sidebar-wrap" open>
@@ -58,6 +59,9 @@
 </details>
 <main id="main">
 <header class="page-header">
+<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">2</span><span class="phase-kicker">Phase 2 of 8</span></p>
+<nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system.html" aria-current="page" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety.html" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management.html" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration.html" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness.html" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
+<nav class="ladder" aria-label="Version ladder"><a class="ladder-rung" href="#version-1--line-by-line-inline-ifelif-dispatch"><span class="ladder-medallion">V1</span> Line by Line</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="#version-2--functions-and-a-dict-registry"><span class="ladder-medallion">V2</span> Functions and a Dict…</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="#version-3--classes-tool-and-toolregistry"><span class="ladder-medallion">V3</span> Classes</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="#version-4--the-tool-decorator"><span class="ladder-medallion">V4</span> The @tool Decorator</a></nav>
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
@@ -1878,7 +1882,7 @@ dict in one line instead of with a loop.</p>
     └── parallel.py
 </code></pre></div>
 <h3 id="toolsbasepy--complete"><code>tools/base.py</code> — Complete<a aria-label="Permalink to this section" class="hanchor" href="#toolsbasepy--complete">¶</a></h3>
-<blockquote class="refcopy">
+<details class="refsection"><summary>Show the reference copy <span class="refsection-hint">consolidated re-read — skim or skip</span></summary><blockquote class="refcopy">
 <p><strong>Reference copy.</strong> Assembled from Version 4 (§4.5–4.6) unchanged, except the
 docstring parsing is factored into a <code>_parse_google_docstring</code> helper. Nothing new to
 type here — skim or skip. The maintained version lives in
@@ -1991,9 +1995,9 @@ type here — skim or skip. The maintained version lives in
     <span class="n">desc</span>   <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">FunctionTool</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">fn</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="n">desc</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="n">schema</span><span class="p">,</span> <span class="n">fn</span><span class="o">=</span><span class="n">fn</span><span class="p">)</span>
 </code></pre></div>
-
+</details>
 <h3 id="toolsregistrypy--complete"><code>tools/registry.py</code> — Complete<a aria-label="Permalink to this section" class="hanchor" href="#toolsregistrypy--complete">¶</a></h3>
-<blockquote class="refcopy">
+<details class="refsection"><summary>Show the reference copy <span class="refsection-hint">consolidated re-read — skim or skip</span></summary><blockquote class="refcopy">
 <p><strong>Reference copy.</strong> Assembled from Version 3 (§3.2) unchanged, except the validation
 helper is compacted and <code>register()</code> returns <code>self</code> for chaining. Nothing new to type
 here — skim or skip. The maintained version lives in
@@ -2078,9 +2082,9 @@ here — skim or skip. The maintained version lives in
                 <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39; expected </span><span class="si">{</span><span class="n">jtype</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="k">return</span> <span class="kc">None</span>
 </code></pre></div>
-
+</details>
 <h3 id="toolsparallelpy--complete"><code>tools/parallel.py</code> — Complete<a aria-label="Permalink to this section" class="hanchor" href="#toolsparallelpy--complete">¶</a></h3>
-<blockquote class="refcopy">
+<details class="refsection"><summary>Show the reference copy <span class="refsection-hint">consolidated re-read — skim or skip</span></summary><blockquote class="refcopy">
 <p><strong>Reference copy.</strong> Assembled from the "Going Further" section above unchanged
 (minus comments). Nothing new to type here — skim or skip. The maintained version
 lives in <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/code/agent_harness/tools/parallel.py" title="Opens this repository file on GitHub"><code>code/agent_harness/tools/parallel.py</code></a>.</p>
@@ -2130,7 +2134,7 @@ lives in <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/ma
         <span class="k">for</span> <span class="n">fc</span> <span class="ow">in</span> <span class="n">function_calls</span>
     <span class="p">]</span>
 </code></pre></div>
-
+</details>
 <h3 id="tools__init__py"><code>tools/__init__.py</code><a aria-label="Permalink to this section" class="hanchor" href="#tools__init__py">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="c1"># tools/__init__.py</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tool</span><span class="p">,</span> <span class="n">FunctionTool</span><span class="p">,</span> <span class="n">tool</span>
@@ -2182,7 +2186,7 @@ Error: unknown tool &#39;nope&#39;.
 <p>The same three behaviors as the Version 2 dispatch check (§2.4) — proof the package
 reorganization changed nothing about what the tool system <em>does</em>.</p>
 <h3 id="agentpy--complete-with-example-tools"><code>agent.py</code> — Complete with Example Tools<a aria-label="Permalink to this section" class="hanchor" href="#agentpy--complete-with-example-tools">¶</a></h3>
-<blockquote class="refcopy">
+<details class="refsection"><summary>Show the reference copy <span class="refsection-hint">consolidated re-read — skim or skip</span></summary><blockquote class="refcopy">
 <p><strong>Reference copy.</strong> Assembled from "The Updated Agent Loop" above plus three
 <code>@tool</code> example tools — unchanged logic. Nothing new to type here — skim or skip.
 The maintained version lives in
@@ -2329,7 +2333,7 @@ The maintained version lives in
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Final answer:&quot;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">answer</span><span class="p">)</span>
 </code></pre></div>
-
+</details>
 <h3 id="example-transcript">Example Transcript<a aria-label="Permalink to this section" class="hanchor" href="#example-transcript">¶</a></h3>
 <div class="highlight nocopy"><pre><span></span><code>[turn 1] tools called: [&#39;add&#39;, &#39;word_count&#39;] | tokens: 312in 45out 357total
 
@@ -2471,11 +2475,13 @@ The sentence &quot;The quick brown fox jumps over the lazy dog&quot; contains 9 
     });
   }
 
-  /* Print: open every <details> (answers, TOC) and revert afterwards. */
+  /* Print: open every <details> (answers, TOC) and revert afterwards.
+     diagram-text mirrors are excluded — print hides them entirely (the SVG
+     figure already prints; opening the ASCII would print the diagram twice). */
   var openedForPrint = [];
   window.addEventListener('beforeprint', function () {
     openedForPrint = [];
-    document.querySelectorAll('details:not([open])').forEach(function (d) {
+    document.querySelectorAll('details:not(.diagram-text):not([open])').forEach(function (d) {
       d.setAttribute('open', '');
       openedForPrint.push(d);
     });
@@ -2496,6 +2502,54 @@ The sentence &quot;The quick brown fox jumps over the lazy dog&quot; contains 9 
     window.addEventListener('scroll', toggleBtt, { passive: true });
     toggleBtt();
   }
+
+  /* Reading progress: the fixed 3px accent bar tracks scroll position.
+     Without JS the element simply stays at width 0 — invisible, harmless. */
+  var pbar = document.querySelector('.progress-bar');
+  if (pbar) {
+    var setProgress = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      pbar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    };
+    window.addEventListener('scroll', setProgress, { passive: true });
+    setProgress();
+  }
+
+  /* Deep links into collapsed sections: open every <details> ancestor of the
+     target, and the refsection that immediately follows a target heading.
+     Re-scroll only if something actually opened (the layout above the target
+     just changed), and instantly — the CSS smooth scroll would crawl across
+     tens of thousands of pixels on the long phase pages. */
+  function openForHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) { return; }
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    var opened = false;
+    var d = el.closest('details');
+    while (d) {
+      if (!d.hasAttribute('open')) { d.setAttribute('open', ''); opened = true; }
+      d = d.parentElement && d.parentElement.closest('details');
+    }
+    var sib = el.nextElementSibling;
+    if (sib && sib.matches('details.refsection') && !sib.hasAttribute('open')) {
+      sib.setAttribute('open', '');
+      opened = true;
+    }
+    if (!opened) { return; }
+    var jump = function () {
+      var y = el.getBoundingClientRect().top + window.scrollY - 16;
+      try { window.scrollTo({ top: y, behavior: 'instant' }); }
+      catch (e) { window.scrollTo(0, y); }
+    };
+    jump();
+    /* the browser's own fragment scroll was computed against the collapsed
+       layout and may still be animating (CSS smooth) — re-assert once, which
+       cancels it */
+    setTimeout(jump, 100);
+  }
+  window.addEventListener('hashchange', openForHash);
+  openForHash();
 
   /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
      execCommand -> select the block and ask for Ctrl-C.  If no mechanism

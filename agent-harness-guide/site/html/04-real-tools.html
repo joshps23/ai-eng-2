@@ -19,6 +19,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 </head>
 <body>
+<div class="progress-bar" aria-hidden="true"></div>
 <a class="skip-link" href="#main">Skip to content</a>
 <div class="layout">
 <details class="sidebar-wrap" open>
@@ -58,6 +59,9 @@
 </details>
 <main id="main">
 <header class="page-header">
+<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">4</span><span class="phase-kicker">Phase 4 of 8</span></p>
+<nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools.html" aria-current="page" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety.html" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management.html" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration.html" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness.html" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
+<nav class="ladder" aria-label="Version ladder"><a class="ladder-rung" href="#version-1--line-by-line-the-agent-touches-your-disk-no-def-no-classes"><span class="ladder-medallion">V1</span> line-by-line</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="#version-2--functions-the-toolset-grows-one-tool-at-a-time"><span class="ladder-medallion">V2</span> functions</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="#version-3--the-organized-toolset-the-same-idea-organized"><span class="ladder-medallion">V3</span> the organized toolset</a></nav>
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
@@ -1520,7 +1524,7 @@ comparison would let a sibling directory like <code>/ws-evil</code> slip through
 <code>/ws</code>. Our <code>resolved.relative_to(WORKSPACE_ROOT)</code> + <code>except ValueError</code> form is the
 pre-3.9-friendly spelling of the same test.</p>
 <h2 id="version-3-reference--the-production-tools">Version 3 reference — the production tools<a aria-label="Permalink to this section" class="hanchor" href="#version-3-reference--the-production-tools">¶</a></h2>
-<blockquote class="refcopy">
+<details class="refsection"><summary>Show the reference copy <span class="refsection-hint">consolidated re-read — skim or skip</span></summary><blockquote class="refcopy">
 <p><strong>Reference copy.</strong> These are the same seven functions you built in Steps 2.0–2.6,
 now using <code>@tool</code>, <code>_safe_path</code>, and <code>_truncate</code>. The logic is identical; only the
 decorators, shared helpers, and some production polish (line-numbered paging in
@@ -2069,9 +2073,9 @@ permission prompt. The built-in <code>grep</code> tool is:</p>
         <span class="n">n</span> <span class="o">/=</span> <span class="mi">1024</span>
     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">n</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> TB&quot;</span>
 </code></pre></div>
-
+</details>
 <h2 id="version-3-reference--registering-everything-make_default_registry">Version 3 reference — registering everything: <code>make_default_registry</code><a aria-label="Permalink to this section" class="hanchor" href="#version-3-reference--registering-everything-make_default_registry">¶</a></h2>
-<blockquote class="refcopy">
+<details class="refsection"><summary>Show the reference copy <span class="refsection-hint">consolidated re-read — skim or skip</span></summary><blockquote class="refcopy">
 <p><strong>Reference copy.</strong> This is Step 3.2's <code>make_default_registry</code>, unchanged — shown
 again in its place at the bottom of the assembled module.</p>
 </blockquote>
@@ -2119,7 +2123,7 @@ ERROR: File not found: nope.txt
 </code></pre></div>
 <p>The script itself and a walkthrough of the expected output sit right under the
 reference listing — no API key, no model call, just proof that the registry and all
-seven tools are wired.</p>
+seven tools are wired.</p></details>
 <h2 id="toolset-reference-table">Toolset reference table<a aria-label="Permalink to this section" class="hanchor" href="#toolset-reference-table">¶</a></h2>
 <div class="table-wrap"><table>
 <thead>
@@ -2413,7 +2417,7 @@ they crowd out current reasoning, sliding-window approaches, and the <code>max_o
 budget. <code>_truncate</code> is the per-call first line of defence; Phase 6 is the session-level
 second line. Both are necessary.</p>
 <h2 id="version-3-reference--the-complete-coding_toolspy">Version 3 reference — the complete <code>coding_tools.py</code><a aria-label="Permalink to this section" class="hanchor" href="#version-3-reference--the-complete-coding_toolspy">¶</a></h2>
-<blockquote class="refcopy">
+<details class="refsection"><summary>Show the reference copy <span class="refsection-hint">consolidated re-read — skim or skip</span></summary><blockquote class="refcopy">
 <p><strong>Reference copy.</strong> Assembled unchanged, in dependency order, from the production
 forms above (which are themselves Steps 2.0–2.6 plus the <code>@tool</code> upgrade). Nothing
 new to type here beyond pasting it whole — skim or skip. The maintained version lives
@@ -2859,7 +2863,7 @@ this module's tools return <code>"ERROR: ..."</code> — design principle (d) fr
 this phase — while
 Phase 2's registry says <code>"Error: ..."</code> for <em>its</em> failures: unknown tool, bad JSON,
 an exception escaping a tool. The model reads either just fine; Phase 5 acknowledges
-and reconciles the mismatch.)</p>
+and reconciles the mismatch.)</p></details>
 <h2 id="what-comes-next">What comes next<a aria-label="Permalink to this section" class="hanchor" href="#what-comes-next">¶</a></h2>
 <p>This phase gave the agent hands: it can now read any file in its workspace, make
 surgical edits, run shell commands, and search the codebase efficiently. But with great
@@ -2993,11 +2997,13 @@ whichever feels more comfortable).</p>
     });
   }
 
-  /* Print: open every <details> (answers, TOC) and revert afterwards. */
+  /* Print: open every <details> (answers, TOC) and revert afterwards.
+     diagram-text mirrors are excluded — print hides them entirely (the SVG
+     figure already prints; opening the ASCII would print the diagram twice). */
   var openedForPrint = [];
   window.addEventListener('beforeprint', function () {
     openedForPrint = [];
-    document.querySelectorAll('details:not([open])').forEach(function (d) {
+    document.querySelectorAll('details:not(.diagram-text):not([open])').forEach(function (d) {
       d.setAttribute('open', '');
       openedForPrint.push(d);
     });
@@ -3018,6 +3024,54 @@ whichever feels more comfortable).</p>
     window.addEventListener('scroll', toggleBtt, { passive: true });
     toggleBtt();
   }
+
+  /* Reading progress: the fixed 3px accent bar tracks scroll position.
+     Without JS the element simply stays at width 0 — invisible, harmless. */
+  var pbar = document.querySelector('.progress-bar');
+  if (pbar) {
+    var setProgress = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      pbar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    };
+    window.addEventListener('scroll', setProgress, { passive: true });
+    setProgress();
+  }
+
+  /* Deep links into collapsed sections: open every <details> ancestor of the
+     target, and the refsection that immediately follows a target heading.
+     Re-scroll only if something actually opened (the layout above the target
+     just changed), and instantly — the CSS smooth scroll would crawl across
+     tens of thousands of pixels on the long phase pages. */
+  function openForHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) { return; }
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    var opened = false;
+    var d = el.closest('details');
+    while (d) {
+      if (!d.hasAttribute('open')) { d.setAttribute('open', ''); opened = true; }
+      d = d.parentElement && d.parentElement.closest('details');
+    }
+    var sib = el.nextElementSibling;
+    if (sib && sib.matches('details.refsection') && !sib.hasAttribute('open')) {
+      sib.setAttribute('open', '');
+      opened = true;
+    }
+    if (!opened) { return; }
+    var jump = function () {
+      var y = el.getBoundingClientRect().top + window.scrollY - 16;
+      try { window.scrollTo({ top: y, behavior: 'instant' }); }
+      catch (e) { window.scrollTo(0, y); }
+    };
+    jump();
+    /* the browser's own fragment scroll was computed against the collapsed
+       layout and may still be animating (CSS smooth) — re-assert once, which
+       cancels it */
+    setTimeout(jump, 100);
+  }
+  window.addEventListener('hashchange', openForHash);
+  openForHash();
 
   /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
      execCommand -> select the block and ask for Ctrl-C.  If no mechanism
