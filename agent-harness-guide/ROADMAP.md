@@ -55,12 +55,17 @@ Status: ☐ todo · ◐ in progress · ☑ done
 | 9 | **Visual diagrams**: replace/augment ASCII with clearer flow diagrams where it helps a beginner | 4 | ☐ |
 | 10 | **"What you'll have built" capstone** + a checklist mapping each phase's output to a feature of a real harness | 5 | ☐ |
 | 11 | **Notebook resource**: executed jupytext companion notebooks for phases 0–3 + 6, offline CI gate, kernel/setup docs | 1, 3, 4 | ☑ |
-| 12 | **Companion notebooks for phases 4/5/7/8** (hybrid slices per the expert v1-scope verdict: scripted-asker permission gate, tmpdir tools, sub-agent core, Phase-8 demo trio) | 3 | ☐ |
+| 12 | **Companion notebooks for phases 4/5/7/8** (hybrid slices per the expert v1-scope verdict: scripted-asker permission gate, tmpdir tools, sub-agent core, Phase-8 demo trio) | 3 | ☑ |
 
 ## Iteration log
 
 Newest first. One line per shipped iteration.
 
+- **2026-06-12** — Cycle 8: shipped Item 12 — companion notebooks for phases 4/5/7/8
+  (tmpdir-confined tools, scripted-asker permission gate with deny-beats-session-memory
+  asserted, recursive task tool with per-agent FakeClients + depth guard + threaded
+  timing, and Phase 8's demo trio incl. the 56-test suite run from a cell). Every phase
+  0–8 now has a notebook; all ten execute headlessly keyless, pairs in sync.
 - **2026-06-11** — Cycle 7 (user-seeded, Colab): notebooks now self-bootstrap on Google
   Colab (GH_TOKEN secret for the private repo, no-op locally/CI), with badges, README
   Colab section, and FAQ entry; bootstrap success/failure paths simulated end-to-end.
