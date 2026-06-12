@@ -170,7 +170,7 @@ short <strong>"What changed"</strong> list, so each rung reads as a reorganizati
 program. But first, name what we're defending against.</p>
 <p><strong>Contents:</strong></p>
 <blockquote>
-<p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/05-permissions-and-safety.ipynb" title="Opens the notebook on GitHub (requires repo access) — or use its Open-in-Colab badge"><code>notebooks/05-permissions-and-safety.ipynb</code></a> executes this phase's runnable core offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
+<p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/05-permissions-and-safety.ipynb" title="Opens the notebook on GitHub — or use its Open-in-Colab badge"><code>notebooks/05-permissions-and-safety.ipynb</code></a> executes this phase's runnable core offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
 </blockquote>
 <ul>
 <li><a href="#threat-model">Threat model</a></li>
@@ -2054,7 +2054,7 @@ consolidated into the multi-file layout the rest of the guide uses. Here is the 
 <p><strong>Reference copy.</strong> Assembled unchanged from Steps 3.2–3.4 — the five-mode table, the
 predicate rules and <code>default_policy()</code>, and the approval gate with session memory.
 Nothing new to type here — skim or skip. The maintained version lives in
-<a class="repo-file" href="../../code/agent_harness/permissions.py" title="Opens a file in the repository checkout — not part of this site">code/agent_harness/permissions.py</a>.</p>
+<a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/code/agent_harness/permissions.py" title="Opens this repository file on GitHub">code/agent_harness/permissions.py</a>.</p>
 </blockquote>
 <div class="highlight"><pre><span></span><code><span class="c1"># permissions.py</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -2267,7 +2267,7 @@ Nothing new to type here — skim or skip. The maintained version lives in
 <p><strong>Reference copy.</strong> Assembled unchanged from Steps 4.2–4.4 plus the
 <code>injection_detector</code> from the prompt-injection interlude; the only code you have not
 seen yet is the small <code>default_hooks()</code> factory at the bottom. The maintained version
-lives in <a class="repo-file" href="../../code/agent_harness/hooks.py" title="Opens a file in the repository checkout — not part of this site">code/agent_harness/hooks.py</a>.</p>
+lives in <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/code/agent_harness/hooks.py" title="Opens this repository file on GitHub">code/agent_harness/hooks.py</a>.</p>
 </blockquote>
 <div class="highlight"><pre><span></span><code><span class="c1"># hooks.py</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -2463,7 +2463,7 @@ lives in <a class="repo-file" href="../../code/agent_harness/hooks.py" title="Op
 is new is <code>safe_dispatch()</code> (the funnel from the flow diagram above) and the wiring
 that threads <code>policy</code>, <code>mode</code>, and <code>hooks</code> through <code>run_agent()</code>. The consolidated
 package merges this file into
-<a class="repo-file" href="../../code/agent_harness/agent.py" title="Opens a file in the repository checkout — not part of this site">code/agent_harness/agent.py</a>.</p>
+<a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/code/agent_harness/agent.py" title="Opens this repository file on GitHub">code/agent_harness/agent.py</a>.</p>
 </blockquote>
 <div class="highlight"><pre><span></span><code><span class="c1"># agent_loop.py</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -2778,7 +2778,7 @@ and graceful handling of very long sessions.</p>
 <a class="prev" href="04-real-tools.html" rel="prev">← Phase 4 — Real Tools</a>
 <a class="next" href="06-context-management.html" rel="next">Phase 6 — Context Management →</a>
 </nav>
-<p class="generated-note">Generated from <code>05-permissions-and-safety.md</code> — the markdown is the source of truth. Links marked ↗ open repository files and need a full checkout (or GitHub).</p>
+<p class="generated-note">Generated from <code>05-permissions-and-safety.md</code> — the markdown is the source of truth. Links marked ↗ open files of this project on GitHub.</p>
 </footer>
 <a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
 </main>

@@ -33,6 +33,7 @@ SITE_DIR = Path(__file__).resolve().parent
 GUIDE_DIR = SITE_DIR.parent
 HTML_DIR = SITE_DIR / "html"
 GITHUB_BLOB = "https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/"
+GITHUB_TREE = "https://github.com/joshps23/ai-eng-2/tree/main/agent-harness-guide/"
 
 # ---------------------------------------------------------------------------
 # Page mapping (deterministic).  source path is relative to GUIDE_DIR.
@@ -299,20 +300,18 @@ class GuideTreeprocessor(Treeprocessor):
                 if href:
                     new = rewrite_href(href, self.ctx.source_dir)
                     el.set("href", new)
-                    if new.startswith("../"):
-                        # points out of site/html/ into the repo checkout
+                    if (new.startswith((GITHUB_BLOB, GITHUB_TREE))
+                            and href != new):
+                        # a repo file/dir, not a converted page: mark it
                         cls = (el.get("class", "") + " repo-file").strip()
                         el.set("class", cls)
-                        el.set("title", "Opens a file in the repository "
-                                        "checkout — not part of this site")
-                        self.ctx.repo_links += 1
-                    elif (new.startswith(GITHUB_BLOB)
-                            and new.partition("#")[0].endswith(".ipynb")):
-                        cls = (el.get("class", "") + " repo-file").strip()
-                        el.set("class", cls)
-                        el.set("title", "Opens the notebook on GitHub "
-                                        "(requires repo access) — or use its "
-                                        "Open-in-Colab badge")
+                        if new.partition("#")[0].endswith(".ipynb"):
+                            el.set("title", "Opens the notebook on GitHub "
+                                            "— or use its "
+                                            "Open-in-Colab badge")
+                        else:
+                            el.set("title",
+                                   "Opens this repository file on GitHub")
                         self.ctx.repo_links += 1
             elif tag == "p" and self.ctx.first_para is None:
                 text = "".join(el.itertext()).strip()
@@ -440,13 +439,12 @@ def rewrite_href(href: str, source_dir: str) -> str:
         resolved += "/"
     if resolved in SOURCE_TO_PAGE:
         return SOURCE_TO_PAGE[resolved] + sep + frag
-    if resolved.endswith(".ipynb"):
-        # raw .ipynb is unreadable JSON in a checkout — send it to GitHub's
-        # rendered view instead (same base URL as the source links)
-        return GITHUB_BLOB + resolved + sep + frag
-    # not converted: point back into the repo checkout (html/ is 2 deep)
-    return posixpath.normpath(posixpath.join("../..", resolved)) + (
-        "/" if resolved.endswith("/") else "") + sep + frag
+    # Everything else lives in the repository, not on this site.  The site is
+    # deployed standalone (GitHub Pages), so repo-relative paths would 404 —
+    # send files to GitHub's rendered view (blob) and directories to tree.
+    if resolved.endswith("/"):
+        return GITHUB_TREE + resolved.rstrip("/") + sep + frag
+    return GITHUB_BLOB + resolved + sep + frag
 
 
 # ---------------------------------------------------------------------------
@@ -650,8 +648,8 @@ def build_page(out_name: str, src_rel: str, body: str, ctx: PageContext,
         n_out, _, n_label, _ = PAGES[idx + 1]
         next_link = f'<a class="next" href="{n_out}" rel="next">{esc(n_label)} →</a>'
 
-    repo_note = (" Links marked ↗ open repository files and need a full"
-                 " checkout (or GitHub)." if ctx.repo_links else "")
+    repo_note = (" Links marked ↗ open files of this project on GitHub."
+                 if ctx.repo_links else "")
 
     return f"""<!DOCTYPE html>
 <!-- GENERATED from {src_rel} — do not edit; run site/build_site.py -->

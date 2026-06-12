@@ -1,0 +1,47 @@
+name: Deploy guide site to GitHub Pages
+
+# Publishes the generated HTML mirror (agent-harness-guide/site/html/) at
+# https://joshps23.github.io/ai-eng-2/ whenever it changes on main.
+# The site is generated from the markdown by site/build_site.py; the `site`
+# job in ci.yml guarantees the committed HTML matches a fresh regeneration.
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "agent-harness-guide/site/html/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: deploy site/html to Pages
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure Pages (creates the site on first run)
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Upload the generated site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: agent-harness-guide/site/html
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
