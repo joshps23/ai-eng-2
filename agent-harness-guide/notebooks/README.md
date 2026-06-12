@@ -30,6 +30,43 @@ isn't that venv — switch to **Python (agent-harness)** the same way (this is t
 notebook analog of the `python -m pytest` vs bare `pytest` gotcha; see the
 [FAQ](../FAQ.md)).
 
+## Running on Google Colab
+
+No local setup needed — each notebook carries an **"Open in Colab" badge** in its first
+cell; click it, or in Colab use *File → Open notebook → GitHub*, tick **"Include private
+repos"**, and authorize GitHub access. The notebooks' **first code cell bootstraps
+itself**: if `agent_harness` isn't importable and it detects Colab, it clones this repo
+and `pip install`s the package automatically. On a local kernel that cell is a strict
+no-op when the package is already installed.
+
+**Private-repo token (one-time).** Because this repo is private, the clone needs a
+token:
+
+1. GitHub → **Settings → Developer settings → Fine-grained personal access tokens →
+   Generate new token**; restrict it to **only this repository** with
+   **Contents: Read-only** permission (nothing else).
+2. In Colab, open the **key icon in the left sidebar** (Secrets), add a secret named
+   **`GH_TOKEN`** with the token as its value, and toggle **notebook access ON**.
+3. Re-run the first cell. It uses the token for the clone only and immediately resets
+   the git remote so the token is not left on disk.
+
+**Real-API mode (optional).** Add your key as a Colab secret too, then load it and flip
+the switch in the parameters cell:
+
+```python
+from google.colab import userdata
+import os
+os.environ["OPENAI_API_KEY"] = userdata.get("OPENAI_API_KEY")
+```
+
+and set `USE_REAL_API = True`. Everything still works keylessly without this.
+
+**Caveats.** Colab sessions are ephemeral: the clone + install reruns in each new
+session (about 10 seconds — that's expected, not a bug). And don't commit notebooks
+you've modified *in Colab* back to the repo without running
+[`./refresh.sh`](./refresh.sh) locally first — Colab strips notebook metadata, which
+breaks the jupytext sync check in CI.
+
 ## No API key needed (the `USE_REAL_API` switch)
 
 Every notebook runs **fully offline by default**: a tagged parameter cell near the top

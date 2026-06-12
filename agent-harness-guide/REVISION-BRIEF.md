@@ -107,14 +107,14 @@ Score each phase 1–5 on each axis; the loop revises the lowest-scoring phase n
 5. **Run-it cadence** — are there frequent “▶ Run it now” checkpoints?
 6. **Continuity** — does it still flow, with beginner boxes/recaps/exercises intact?
 
-## Loop control (max 10 iterations)
+## Loop control (max 20 iterations)
 
-The evaluator-reviser loop runs **at most 10 times**, then stops on its own.
+The evaluator-reviser loop runs **at most 20 times**, then stops on its own.
 
-- Iterations used: **9 / 10** *(reset 2026-06-10 for the version-ladder pass; iterations 4–9 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8)*
+- Iterations used: **10 / 20** *(cap raised 10 → 20 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
 - Per iteration: score all phases on the rubric, pick the weakest, revise it one notch
   more incremental, increment the counter here, log it below, commit, push. Stop when the
-  counter hits 10 **or** every phase scores ≥4 on every axis.
+  counter hits 20 **or** every phase scores ≥4 on every axis.
 
 ### Known issues for the loop to address (seed list)
 
@@ -133,6 +133,19 @@ The evaluator-reviser loop runs **at most 10 times**, then stops on its own.
 
 ## Revision log (newest first)
 
+- **2026-06-11 — Iteration 10: Colab seamlessness (cycle 7, user-seeded).** A real
+  Colab user hit `ModuleNotFoundError: No module named 'agent_harness'` on the first
+  cell — Colab fetches a single .ipynb, never the repo. Requirement: a seamless Colab
+  experience with no missing-package errors. Shipped: a self-bootstrapping first cell
+  in all six notebooks (strict no-op locally/CI; on Colab it clones via the GH_TOKEN
+  Colab secret — private repo — with anonymous fallback, scrubs the token from the
+  git remote, pip-installs into the running kernel, and exits with guidance instead
+  of a traceback when the secret is missing), Open-in-Colab badges, a
+  Running-on-Google-Colab README section, a FAQ entry, and the no-op rule in
+  CLAUDE.md. Verified: all six still execute headlessly offline; the bootstrap's
+  success AND failure paths were simulated end-to-end in a bare venv against a local
+  clone; pairs in sync; 56 tests green. (This entry originally closed the loop at the
+  10-iteration cap; the cap was later raised to 20, reopening the loop.)
 - **2026-06-11 — Iteration 9: beginner-persona pass through the notebooks (cycle 6).**
   Two fresh "Sam" readers verified the new notebook resource end to end on /tmp
   copies: discovery from the front door works three ways; the documented setup

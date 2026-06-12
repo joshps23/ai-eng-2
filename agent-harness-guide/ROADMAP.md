@@ -15,7 +15,7 @@
 > (V1 line-by-line with no functions → V2 functions → V3 classes → V4 decorators/threads
 > where the phase teaches them), each framed as "the same harness, reorganized." The spec
 > lives in **[`REVISION-BRIEF.md`](./REVISION-BRIEF.md)** (per-phase ladder table +
-> rubric) and is driven by a capped evaluator loop (≤10 iterations). Backlog items 9
+> rubric) and is driven by a capped evaluator loop (≤20 iterations). Backlog items 9
 > and 10 below remain deferred until this pass is done.
 
 ## The rubric — what "best beginner resource" means
@@ -61,6 +61,10 @@ Status: ☐ todo · ◐ in progress · ☑ done
 
 Newest first. One line per shipped iteration.
 
+- **2026-06-11** — Cycle 7 (user-seeded, Colab): notebooks now self-bootstrap on Google
+  Colab (GH_TOKEN secret for the private repo, no-op locally/CI), with badges, README
+  Colab section, and FAQ entry; bootstrap success/failure paths simulated end-to-end.
+  (The loop's cap was subsequently raised 10 → 20, so the loop remains open.)
 - **2026-06-11** — Persona dev loop, cycle 6 (beginner through the notebooks): two
   readers verified all six notebooks keyless — zero blockers, outputs reproduced
   cell-for-cell; their ~10 fixes (Exercise 1.1 tools-list trap, USE_REAL_API gating

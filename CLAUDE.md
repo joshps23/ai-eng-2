@@ -93,6 +93,9 @@ Companion runnables for phases 0–3 and 6 (+ `setup-check`). Rules (the drift f
   `FakeClient` and consume it **in the same cell** (turns pop off a list; re-running re-scripts).
 - Every notebook must execute headlessly top-to-bottom with **no API key** — CI enforces this via
   the `notebooks` job in `.github/workflows/ci.yml` (jupytext-sync check + `jupyter execute`).
+- The first code cell **self-bootstraps on Google Colab** (clone + pip install, guarded by
+  `"google.colab" in sys.modules`) and **MUST remain a strict no-op when `agent_harness` is already
+  importable** — local kernels and CI take the plain-`import` path.
 - When a notebook and a phase snippet differ, that is the deliberate divergence: **the package is
   correct** (see `notebooks/README.md`).
 
