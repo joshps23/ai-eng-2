@@ -107,16 +107,22 @@ Score each phase 1–5 on each axis; the loop revises the lowest-scoring phase n
 5. **Run-it cadence** — are there frequent “▶ Run it now” checkpoints?
 6. **Continuity** — does it still flow, with beginner boxes/recaps/exercises intact?
 
-## Loop control (max 20 iterations)
+## Loop control (max 50 iterations)
 
-The evaluator-reviser loop runs **at most 20 times**, then stops on its own.
+The evaluator-reviser loop runs **at most 50 times**, then stops on its own.
 
-- Iterations used: **19 / 20** *(cap raised 10 → 20 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
+- Iterations used: **19 / 50** *(cap raised 10 → 20, then 20 → 50 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
 - Per iteration: score all phases on the rubric, pick the weakest, revise it one notch
   more incremental, increment the counter here, log it below, commit, push. Stop when the
-  counter hits 20 **or** every phase scores ≥4 on every axis.
+  counter hits 50 **or** every phase scores ≥4 on every axis.
 
 ### Known issues for the loop to address (seed list)
+
+- **(User-seeded, 2026-06-12, for the next cycle.)** Each HTML page is too lengthy
+  with little visuals. The phase pages render at up to ~73,000px tall with long
+  uninterrupted code/reference stretches and almost no graphical elements beyond
+  the ASCII diagrams. Address within the standing constraints (markdown is source
+  of truth; site is generated; GitHub-parity anchors preserved).
 
 - Phase 3's beginner-track code lives inside a `>` blockquote: renders fine on GitHub,
   but copying from the *raw* file grabs `> ` prefixes. Decide whether to restructure

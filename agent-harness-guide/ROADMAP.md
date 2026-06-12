@@ -15,7 +15,7 @@
 > (V1 line-by-line with no functions → V2 functions → V3 classes → V4 decorators/threads
 > where the phase teaches them), each framed as "the same harness, reorganized." The spec
 > lives in **[`REVISION-BRIEF.md`](./REVISION-BRIEF.md)** (per-phase ladder table +
-> rubric) and is driven by a capped evaluator loop (≤20 iterations). Backlog items 9
+> rubric) and is driven by a capped evaluator loop (≤50 iterations). Backlog items 9
 > and 10 below remain deferred until this pass is done.
 
 ## The rubric — what "best beginner resource" means
