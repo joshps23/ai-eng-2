@@ -7,21 +7,22 @@
 <meta name="description" content="Read this once before Phase 0. This page is for you if you&#x27;re comfortable with exactly five things: functions, lists, dictionaries, operators (+ - * / == and…">
 <title>Python Concepts Cheat-Sheet — Agent Harness Guide</title>
 <link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:,">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
 <div class="layout">
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
-<nav class="sidebar" aria-label="Guide navigation">
-<h2>Start here</h2>
+<nav class="sidebar">
+<p class="sidebar-heading">Start here</p>
 <ul>
 <li><a href="index.html">Guide hub</a></li>
 <li><a href="learning-path.html">Learning Path</a></li>
 <li class="current"><a href="beginner-notes.html" aria-current="page">Python Cheat-Sheet</a></li>
 <li><a href="faq.html">Setup &amp; FAQ</a></li>
 </ul>
-<h2>Phases</h2>
+<p class="sidebar-heading">Phases</p>
 <ul>
 <li><a href="00-foundations.html">Phase 0 — Foundations</a></li>
 <li><a href="01-bare-harness.html">Phase 1 — Bare Harness</a></li>
@@ -33,11 +34,11 @@
 <li><a href="07-subagents-orchestration.html">Phase 7 — Sub-agents</a></li>
 <li><a href="08-production-harness.html">Phase 8 — Production Harness</a></li>
 </ul>
-<h2>Appendix</h2>
+<p class="sidebar-heading">Appendix</p>
 <ul>
 <li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
 </ul>
-<h2>Practice</h2>
+<p class="sidebar-heading">Practice</p>
 <ul>
 <li><a href="exercises.html">Exercises</a></li>
 <li><a href="glossary.html">Glossary</a></li>
@@ -51,7 +52,8 @@
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
-<li class="toc-h2"><a href="#concepts-beyond-your-five">Concepts beyond your five</a></li>
+<li class="toc-h2"><a href="#concepts-beyond-your-five">Concepts beyond your five</a>
+</li>
 </ul>
 </details>
 </header>
@@ -66,13 +68,13 @@ first time it shows up, in a 🟢 box — and summarized here in one or two sent
 each. Where the guide could use an advanced tool just for convenience, it also
 shows a plain-functions way to get the same result.</p>
 </blockquote>
-<h2 id="concepts-beyond-your-five">Concepts beyond your five</h2>
+<h2 id="concepts-beyond-your-five">Concepts beyond your five<a aria-hidden="true" class="hanchor" href="#concepts-beyond-your-five" tabindex="-1">¶</a></h2>
 <p>Read these once. Each scaffolding box in the guide links back here.</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
-<th>Thing you'll see</th>
-<th>What it really is, in terms you know</th>
+<th scope="col">Thing you'll see</th>
+<th scope="col">What it really is, in terms you know</th>
 </tr>
 </thead>
 <tbody>
@@ -129,7 +131,7 @@ shows a plain-functions way to get the same result.</p>
 <td>A string with <code>{...}</code> holes that get filled in with values. <code>f"{a} + {b}"</code> is the same as <code>str(a) + " + " + str(b)</code>.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr>
 <p>That's the whole list. When a phase uses one of these, an inline 🟢 box re-explains it
 right where it appears — and the <strong><a href="glossary.html">Glossary</a></strong> defines every other term
@@ -143,25 +145,93 @@ in the guide. Ready? Head to <strong><a href="00-foundations.html">Phase 0</a></
 </nav>
 <p class="generated-note">Generated from <code>BEGINNER-NOTES.md</code> — the markdown is the source of truth.</p>
 </footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
 </main>
 </div>
 <script>
-document.querySelectorAll('div.highlight').forEach(function (block) {
-  var btn = document.createElement('button');
-  btn.className = 'copy-btn';
-  btn.type = 'button';
-  btn.textContent = 'Copy';
-  btn.addEventListener('click', function () {
-    var code = block.querySelector('pre').innerText;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(code).then(function () {
-        btn.textContent = 'Copied!';
-        setTimeout(function () { btn.textContent = 'Copy'; }, 1500);
-      }).catch(function () {});  /* graceful no-op on file:// denial */
-    }
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there. */
+  if (matchMedia('(max-width: 800px)').matches) {
+    var sb = document.querySelector('.sidebar-wrap');
+    if (sb) { sb.removeAttribute('open'); }
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards. */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
   });
-  block.insertBefore(btn, block.firstChild);
-});
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
 </script>
 </body>
 </html>

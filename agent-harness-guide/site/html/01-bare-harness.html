@@ -7,21 +7,22 @@
 <meta name="description" content="Series context: Phase 0 established the agent-loop theory and the full API contract (how responses.create works, the structure of resp.output, the tool-call…">
 <title>Phase 1 — A Bare Harness in ~80 Lines — Agent Harness Guide</title>
 <link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:,">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
 <div class="layout">
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
-<nav class="sidebar" aria-label="Guide navigation">
-<h2>Start here</h2>
+<nav class="sidebar">
+<p class="sidebar-heading">Start here</p>
 <ul>
 <li><a href="index.html">Guide hub</a></li>
 <li><a href="learning-path.html">Learning Path</a></li>
 <li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
 <li><a href="faq.html">Setup &amp; FAQ</a></li>
 </ul>
-<h2>Phases</h2>
+<p class="sidebar-heading">Phases</p>
 <ul>
 <li><a href="00-foundations.html">Phase 0 — Foundations</a></li>
 <li class="current"><a href="01-bare-harness.html" aria-current="page">Phase 1 — Bare Harness</a></li>
@@ -33,11 +34,11 @@
 <li><a href="07-subagents-orchestration.html">Phase 7 — Sub-agents</a></li>
 <li><a href="08-production-harness.html">Phase 8 — Production Harness</a></li>
 </ul>
-<h2>Appendix</h2>
+<p class="sidebar-heading">Appendix</p>
 <ul>
 <li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
 </ul>
-<h2>Practice</h2>
+<p class="sidebar-heading">Practice</p>
 <ul>
 <li><a href="exercises.html">Exercises</a></li>
 <li><a href="glossary.html">Glossary</a></li>
@@ -51,29 +52,46 @@
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
-<li class="toc-h2"><a href="#1-what-were-building">1. What We&#x27;re Building</a></li>
-<li class="toc-h2"><a href="#2-the-loop-conceptually">2. The Loop, Conceptually</a></li>
-<li class="toc-h2"><a href="#3-version-1--line-by-line-no-functions-no-classes">3. Version 1 — Line-by-Line: No Functions, No Classes</a></li>
-<li class="toc-h3"><a href="#-run-it-now">▶ Run it now</a></li>
-<li class="toc-h2"><a href="#4-version-2--functions-the-same-harness-named-in-pieces">4. Version 2 — Functions: The Same Harness, Named in Pieces</a></li>
+<li class="toc-h2"><a href="#1-what-were-building">1. What We&#x27;re Building</a>
+</li>
+<li class="toc-h2"><a href="#2-the-loop-conceptually">2. The Loop, Conceptually</a>
+</li>
+<li class="toc-h2"><a href="#3-version-1--line-by-line-no-functions-no-classes">3. Version 1 — Line-by-Line: No Functions, No Classes</a>
+<ul>
+<li class="toc-h3"><a href="#-run-it-now">▶ Run it now — 3. Version 1 — Line-by-Line: No Functions, No Classes</a></li>
+</ul>
+</li>
+<li class="toc-h2"><a href="#4-version-2--functions-the-same-harness-named-in-pieces">4. Version 2 — Functions: The Same Harness, Named in Pieces</a>
+<ul>
 <li class="toc-h3"><a href="#what-changed-from-v1-to-v2">What changed from V1 to V2</a></li>
 <li class="toc-h3"><a href="#step-1--give-the-tool-logic-a-name">Step 1 — Give the tool logic a name</a></li>
-<li class="toc-h3"><a href="#-run-it-now-1">▶ Run it now</a></li>
+<li class="toc-h3"><a href="#-run-it-now-1">▶ Run it now — 4. Version 2 — Functions: The Same Harness, Named in Pieces</a></li>
 <li class="toc-h3"><a href="#step-2--extract-a-dispatch-helper">Step 2 — Extract a dispatch helper</a></li>
-<li class="toc-h3"><a href="#-run-it-now-2">▶ Run it now</a></li>
+<li class="toc-h3"><a href="#-run-it-now-2">▶ Run it now — 4. Version 2 — Functions: The Same Harness, Named in Pieces</a></li>
 <li class="toc-h3"><a href="#step-3--wrap-the-loop-in-a-function-and-add-a-repl">Step 3 — Wrap the loop in a function and add a REPL</a></li>
-<li class="toc-h3"><a href="#-run-it-now-3">▶ Run it now</a></li>
+<li class="toc-h3"><a href="#-run-it-now-3">▶ Run it now — 4. Version 2 — Functions: The Same Harness, Named in Pieces</a></li>
 <li class="toc-h3"><a href="#step-4--add-a-max_iterations-cap">Step 4 — Add a MAX_ITERATIONS cap</a></li>
-<li class="toc-h3"><a href="#-run-it-now-4">▶ Run it now</a></li>
-<li class="toc-h2"><a href="#5-the-complete-file-version-2-polished">5. The Complete File (Version 2, Polished)</a></li>
-<li class="toc-h2"><a href="#6-version-3--classes-a-minimal-agent-preview">6. Version 3 — Classes: A Minimal Agent (Preview)</a></li>
+<li class="toc-h3"><a href="#-run-it-now-4">▶ Run it now — 4. Version 2 — Functions: The Same Harness, Named in Pieces</a></li>
+</ul>
+</li>
+<li class="toc-h2"><a href="#5-the-complete-file-version-2-polished">5. The Complete File (Version 2, Polished)</a>
+</li>
+<li class="toc-h2"><a href="#6-version-3--classes-a-minimal-agent-preview">6. Version 3 — Classes: A Minimal Agent (Preview)</a>
+<ul>
 <li class="toc-h3"><a href="#what-changed-from-v2-to-v3">What changed from V2 to V3</a></li>
-<li class="toc-h3"><a href="#-run-it-now-5">▶ Run it now</a></li>
-<li class="toc-h2"><a href="#7-example-session">7. Example Session</a></li>
-<li class="toc-h2"><a href="#pitfalls">Pitfalls</a></li>
-<li class="toc-h2"><a href="#key-takeaways">Key takeaways</a></li>
-<li class="toc-h2"><a href="#check-yourself">Check yourself</a></li>
-<li class="toc-h2"><a href="#exercises">Exercises</a></li>
+<li class="toc-h3"><a href="#-run-it-now-5">▶ Run it now — 6. Version 3 — Classes: A Minimal Agent (Preview)</a></li>
+</ul>
+</li>
+<li class="toc-h2"><a href="#7-example-session">7. Example Session</a>
+</li>
+<li class="toc-h2"><a href="#pitfalls">Pitfalls</a>
+</li>
+<li class="toc-h2"><a href="#key-takeaways">Key takeaways</a>
+</li>
+<li class="toc-h2"><a href="#check-yourself">Check yourself</a>
+</li>
+<li class="toc-h2"><a href="#exercises">Exercises</a>
+</li>
 </ul>
 </details>
 </header>
@@ -84,7 +102,7 @@
 <p><strong>Series context:</strong> Phase 0 established the agent-loop theory and the full API contract (how <code>responses.create</code> works, the structure of <code>resp.output</code>, the tool-call handshake, and the <code>function_call_output</code> pattern). This phase puts that contract into practice with the smallest possible working implementation. Read Phase 0 first; this phase references it but does not repeat it.</p>
 </blockquote>
 <hr>
-<h2 id="1-what-were-building">1. What We're Building</h2>
+<h2 id="1-what-were-building">1. What We're Building<a aria-hidden="true" class="hanchor" href="#1-what-were-building" tabindex="-1">¶</a></h2>
 <p>By the end of this phase you will have a single Python file — <code>bare_harness.py</code> — that:</p>
 <ul>
 <li>Accepts free-form user messages in a REPL.</li>
@@ -111,17 +129,17 @@
 <li><a href="#pitfalls">Pitfalls</a></li>
 </ul>
 <blockquote>
-<p><strong>Prefer running this phase as a notebook?</strong> <a href="../../notebooks/01-bare-harness.ipynb"><code>notebooks/01-bare-harness.ipynb</code></a> executes this phase's checkpoints offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
+<p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="../../notebooks/01-bare-harness.ipynb" title="Opens a file in the repository checkout — not part of this site"><code>notebooks/01-bare-harness.ipynb</code></a> executes this phase's checkpoints offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
 </blockquote>
 <hr>
-<h2 id="2-the-loop-conceptually">2. The Loop, Conceptually</h2>
+<h2 id="2-the-loop-conceptually">2. The Loop, Conceptually<a aria-hidden="true" class="hanchor" href="#2-the-loop-conceptually" tabindex="-1">¶</a></h2>
 <p>Every agent iteration is the same three-step cycle:</p>
 <ol>
 <li><strong>Ask</strong> — send the current transcript to the model.</li>
 <li><strong>Inspect</strong> — if the response contains tool calls, execute them and append the results; go to step 1.</li>
 <li><strong>Answer</strong> — if the response contains no tool calls, emit the text and stop.</li>
 </ol>
-<div class="highlight"><pre><span></span><code>┌─────────────────────────────────────────────────────┐
+<div class="highlight nocopy"><pre><span></span><code>┌─────────────────────────────────────────────────────┐
 │  input_items (grows each iteration)                  │
 │                                                       │
 │  [user msg] ──► responses.create()                   │
@@ -140,10 +158,9 @@
 │                            └──► responses.create()   │
 └─────────────────────────────────────────────────────┘
 </code></pre></div>
-
 <p>The transcript is <strong>append-only</strong>: nothing is ever removed, and the model's own output items travel back in unchanged as part of the next call's <code>input</code>.</p>
 <hr>
-<h2 id="3-version-1--line-by-line-no-functions-no-classes">3. Version 1 — Line-by-Line: No Functions, No Classes</h2>
+<h2 id="3-version-1--line-by-line-no-functions-no-classes">3. Version 1 — Line-by-Line: No Functions, No Classes<a aria-hidden="true" class="hanchor" href="#3-version-1--line-by-line-no-functions-no-classes" tabindex="-1">¶</a></h2>
 <p><strong>Why start here?</strong> Before any helpers, classes, or abstractions, you need to see the loop working with your own eyes — and to be sure there is no magic hiding inside a function you haven't read yet. So Version 1 has <strong>zero <code>def</code> statements</strong>. The tool's logic (computing the current time) sits <em>directly inside</em> the dispatch branch, right where the tool's name matches. Every line executes top to bottom; the only control flow is one <code>while True</code> and a couple of <code>if</code>s.</p>
 <p>Create a new file called <code>bare_harness.py</code> and paste this in — the whole thing:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span><span class="o">,</span><span class="w"> </span><span class="nn">json</span><span class="o">,</span><span class="w"> </span><span class="nn">zoneinfo</span>
@@ -207,17 +224,16 @@
 <blockquote class="beginner">
 <p>🟢 <strong>Two small bits of new syntax in Version 1.</strong> (1) <code>args.get("timezone", "")</code> reads the <code>"timezone"</code> key out of the dict, falling back to <code>""</code> if the model omitted it — that's why an empty string means UTC. (2) <code>[item for item in resp.output if item.type == "function_call"]</code> is a <strong>list comprehension</strong> — a compact way to filter a list. It's identical to writing a <code>for</code> loop with an <code>if</code> inside that calls <code>.append()</code>. See <a href="beginner-notes.html"><code>BEGINNER-NOTES.md</code></a> for the full list.</p>
 </blockquote>
-<h3 id="-run-it-now">▶ Run it now</h3>
+<h3 id="-run-it-now">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now" tabindex="-1">¶</a></h3>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>openai
 <span class="nb">export</span><span class="w"> </span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span>sk-...
 python<span class="w"> </span>bare_harness.py
 </code></pre></div>
 
 <p>You should see something like:</p>
-<div class="highlight"><pre><span></span><code>  [tool] get_current_time({&quot;timezone&quot;: &quot;Asia/Tokyo&quot;}) → 2026-06-06T22:47:13+09:00
+<div class="highlight nocopy"><pre><span></span><code>  [tool] get_current_time({&quot;timezone&quot;: &quot;Asia/Tokyo&quot;}) → 2026-06-06T22:47:13+09:00
 Assistant: The current time in Tokyo is 10:47 PM on Saturday, June 6, 2026 (JST).
 </code></pre></div>
-
 <p>The <code>[tool]</code> line is printed by your harness — it's not part of the model's response. You can watch the call/result cycle directly.</p>
 <blockquote class="beginner">
 <p>🟢 <strong>No API key?</strong> This script (like every ▶ checkpoint in this phase) calls the real
@@ -230,7 +246,7 @@ in <code>code/agent_harness/testing.py</code>.</p>
 </blockquote>
 <p>That's the whole loop. There is genuinely nothing else: ask the model, run any tools it asked for, append the results, ask again. Everything that follows in this phase is the <em>same</em> program, reorganized to be more robust and more pleasant to grow.</p>
 <hr>
-<h2 id="4-version-2--functions-the-same-harness-named-in-pieces">4. Version 2 — Functions: The Same Harness, Named in Pieces</h2>
+<h2 id="4-version-2--functions-the-same-harness-named-in-pieces">4. Version 2 — Functions: The Same Harness, Named in Pieces<a aria-hidden="true" class="hanchor" href="#4-version-2--functions-the-same-harness-named-in-pieces" tabindex="-1">¶</a></h2>
 <p><strong>Why reorganize?</strong> Version 1 works, but it has three growing pains:</p>
 <ul>
 <li>The tool's logic is buried inside the loop — adding a second tool means stuffing more code into an already-busy <code>for</code> body.</li>
@@ -238,7 +254,7 @@ in <code>code/agent_harness/testing.py</code>.</p>
 <li>The question is hardcoded; you have to edit the file to ask something else.</li>
 </ul>
 <p>Version 2 fixes all three by giving the harness's parts <strong>names</strong>: a tool function, a <code>dispatch</code> function, a <code>run_agent</code> function, and a <code>main</code> REPL. We'll extract them one at a time, running after each step.</p>
-<h3 id="what-changed-from-v1-to-v2">What changed from V1 to V2</h3>
+<h3 id="what-changed-from-v1-to-v2">What changed from V1 to V2<a aria-hidden="true" class="hanchor" href="#what-changed-from-v1-to-v2" tabindex="-1">¶</a></h3>
 <ul>
 <li>The inline time computation becomes a named function, <code>get_current_time(timezone="")</code>.</li>
 <li>The <code>if tc.name == ...</code> block becomes a <code>dispatch(name, arguments)</code> function wrapped in <code>try</code>/<code>except</code>, so tool errors become strings instead of crashes.</li>
@@ -246,7 +262,7 @@ in <code>code/agent_harness/testing.py</code>.</p>
 <li><code>while True</code> becomes <code>for iteration in range(MAX_ITERATIONS)</code> — a safety cap against infinite loops.</li>
 <li>The loop body itself is <strong>unchanged</strong>: same <code>responses.create</code> call, same <code>input_items += resp.output</code>, same <code>function_call_output</code> handshake.</li>
 </ul>
-<h3 id="step-1--give-the-tool-logic-a-name">Step 1 — Give the tool logic a name</h3>
+<h3 id="step-1--give-the-tool-logic-a-name">Step 1 — Give the tool logic a name<a aria-hidden="true" class="hanchor" href="#step-1--give-the-tool-logic-a-name" tabindex="-1">¶</a></h3>
 <p><strong>Why now?</strong> The time-computing code currently lives inside the dispatch branch. Pulling it out into a function does two things: the loop body gets shorter, and the tool becomes <em>callable on its own</em> — you can test it without the model in the picture.</p>
 <p>Add this function near the top of the file (after the imports), and shrink the dispatch branch to a single call:</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_current_time</span><span class="p">(</span><span class="n">timezone</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
@@ -271,9 +287,9 @@ in <code>code/agent_harness/testing.py</code>.</p>
 <blockquote class="beginner">
 <p>🟢 <strong>The <code>**args</code> in <code>get_current_time(**args)</code></strong> "spreads" a dict into named arguments, so <code>get_current_time(**{"timezone": "Asia/Tokyo"})</code> is exactly the same as <code>get_current_time(timezone="Asia/Tokyo")</code>. This is why the model's JSON arguments can drive a normal Python function directly. See <a href="beginner-notes.html"><code>BEGINNER-NOTES.md</code></a> for more.</p>
 </blockquote>
-<h3 id="-run-it-now-1">▶ Run it now</h3>
+<h3 id="-run-it-now-1">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-1" tabindex="-1">¶</a></h3>
 <p>The output is identical to Version 1. Bonus check: open a Python shell, paste the three-line function in, and call <code>get_current_time("Europe/London")</code> directly. The tool now exists independently of the agent. (Paste rather than <code>import bare_harness</code>: importing the file also executes its module-level <code>client = OpenAI()</code> line, which needs your API key set — see the note in §5.)</p>
-<h3 id="step-2--extract-a-dispatch-helper">Step 2 — Extract a <code>dispatch</code> helper</h3>
+<h3 id="step-2--extract-a-dispatch-helper">Step 2 — Extract a <code>dispatch</code> helper<a aria-hidden="true" class="hanchor" href="#step-2--extract-a-dispatch-helper" tabindex="-1">¶</a></h3>
 <p><strong>Why now?</strong> The inline <code>if tc.name == ...</code> works fine for one tool, but crashes the whole program if <code>json.loads</code> fails or the tool raises an exception. Wrapping that block in a function with <code>try</code>/<code>except</code> means errors become string messages the model can read and self-correct — the loop keeps running.</p>
 <blockquote class="beginner">
 <p>🟢 <strong><code>try:</code> / <code>except:</code> in one minute.</strong> <code>try:</code> means "attempt the code below."
@@ -310,12 +326,12 @@ back to the model, which can then fix its mistake — much better than crashing.
         <span class="p">})</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-2">▶ Run it now</h3>
+<h3 id="-run-it-now-2">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-2" tabindex="-1">¶</a></h3>
 <p>The output is identical, but now try passing a bad timezone name (e.g., <code>"Not/ATimezone"</code>). Instead of crashing, you'll see an <code>ERROR:</code> string returned and the model will politely tell the user it couldn't look that up.</p>
 <blockquote>
 <p><strong>Why catch everything?</strong> A tool raising an unhandled exception would kill the loop and produce no answer. Returning the error string gives the model a chance to retry with corrected arguments or explain the problem to the user.</p>
 </blockquote>
-<h3 id="step-3--wrap-the-loop-in-a-function-and-add-a-repl">Step 3 — Wrap the loop in a function and add a REPL</h3>
+<h3 id="step-3--wrap-the-loop-in-a-function-and-add-a-repl">Step 3 — Wrap the loop in a function and add a REPL<a aria-hidden="true" class="hanchor" href="#step-3--wrap-the-loop-in-a-function-and-add-a-repl" tabindex="-1">¶</a></h3>
 <p><strong>Why now?</strong> Right now the question is hardcoded. To handle any user input you need: (a) a function that runs one conversation to completion, and (b) an outer <code>while True</code> that reads from the terminal. These are two separate ideas, so we add them together in one small step.</p>
 <p>Replace the hardcoded <code>input_items = [...]</code> and the bare <code>while True</code> loop with this:</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_agent</span><span class="p">(</span><span class="n">user_message</span><span class="p">):</span>
@@ -357,7 +373,7 @@ back to the model, which can then fix its mistake — much better than crashing.
 <span class="n">main</span><span class="p">()</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-3">▶ Run it now</h3>
+<h3 id="-run-it-now-3">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-3" tabindex="-1">¶</a></h3>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>bare_harness.py
 </code></pre></div>
 
@@ -368,7 +384,7 @@ when this file is executed directly (e.g. <code>python bare_harness.py</code>), 
 imported by another file." We'll add it in the final tidy-up below. For now,
 calling <code>main()</code> directly at the bottom of the file works fine.</p>
 </blockquote>
-<h3 id="step-4--add-a-max_iterations-cap">Step 4 — Add a <code>MAX_ITERATIONS</code> cap</h3>
+<h3 id="step-4--add-a-max_iterations-cap">Step 4 — Add a <code>MAX_ITERATIONS</code> cap<a aria-hidden="true" class="hanchor" href="#step-4--add-a-max_iterations-cap" tabindex="-1">¶</a></h3>
 <p><strong>Why now?</strong> Without a cap, a tool that always returns an error will make the model keep calling it — looping forever and billing you until you kill the process. A simple <code>for</code> loop instead of <code>while True</code> fixes this in one line.</p>
 <p>Change the <code>while True:</code> inside <code>run_agent</code> to:</p>
 <div class="highlight"><pre><span></span><code><span class="n">MAX_ITERATIONS</span> <span class="o">=</span> <span class="mi">25</span>
@@ -402,12 +418,12 @@ calling <code>main()</code> directly at the bottom of the file works fine.</p>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[Agent stopped: reached </span><span class="si">{</span><span class="n">MAX_ITERATIONS</span><span class="si">}</span><span class="s2">-iteration safety cap]&quot;</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-4">▶ Run it now</h3>
+<h3 id="-run-it-now-4">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-4" tabindex="-1">¶</a></h3>
 <p>Normal use is unchanged. The cap only fires if the model gets stuck in a loop.</p>
 <p><strong>Why <code>MAX_ITERATIONS</code>?</strong>
 Without a cap, a model stuck in a reasoning loop or a buggy tool that always returns errors could spin indefinitely, burning API quota and dollars. 25 is a conservative default for single-turn tasks; multi-step workflows may need more. Log a clear message when the cap fires so you can detect and debug runaway loops.</p>
 <hr>
-<h2 id="5-the-complete-file-version-2-polished">5. The Complete File (Version 2, Polished)</h2>
+<h2 id="5-the-complete-file-version-2-polished">5. The Complete File (Version 2, Polished)<a aria-hidden="true" class="hanchor" href="#5-the-complete-file-version-2-polished" tabindex="-1">¶</a></h2>
 <p>At this point you already have a working harness. The file below is the <strong>same thing, tidied up</strong>: imports grouped at the top, a <code>SYSTEM_PROMPT</code> added, <code>KeyboardInterrupt</code> handled gracefully, and <code>if __name__ == "__main__":</code> added so that importing the file doesn't start the REPL. (One honest caveat: <code>client = OpenAI()</code> still runs at module level, so importing this file <em>does</em> still require <code>OPENAI_API_KEY</code> to be set — <code>OpenAI()</code> raises <code>openai.OpenAIError: Missing credentials</code> without it. Version 3 below avoids this by building the client inside <code>main()</code>; the same trick works here if you ever need a key-free import.) Nothing here is conceptually new. This is the polished end-state of Version 2 — keep it as your reference copy.</p>
 <blockquote class="beginner">
 <p>🟢 <strong>First sighting of type hints.</strong> The polished file annotates functions like
@@ -581,9 +597,9 @@ Without a cap, a model stuck in a reasoning loop or a buggy tool that always ret
 <p><strong>Why <code>tc.call_id</code> and not <code>tc.id</code>?</strong>
 <code>function_call</code> items have two identifiers: <code>id</code> (the item's own identity in the response output list) and <code>call_id</code> (the correlation key the API uses to match a <code>function_call_output</code> to its originating call). The handshake requires <code>call_id</code>.</p>
 <hr>
-<h2 id="6-version-3--classes-a-minimal-agent-preview">6. Version 3 — Classes: A Minimal <code>Agent</code> (Preview)</h2>
+<h2 id="6-version-3--classes-a-minimal-agent-preview">6. Version 3 — Classes: A Minimal <code>Agent</code> (Preview)<a aria-hidden="true" class="hanchor" href="#6-version-3--classes-a-minimal-agent-preview" tabindex="-1">¶</a></h2>
 <p><strong>Why now?</strong> Look at Version 2's moving parts: the <code>client</code>, the tool schemas, and the transcript all float around as globals and locals, and <code>run_agent</code> has to know about all of them. That's fine for one agent in one file. But the moment you want <em>two</em> agents (Phase 7 builds sub-agents!), or want to keep a transcript alive between turns, you need a way to bundle <strong>state</strong> together. That's exactly what a class is for — and nothing more. Version 3 is <strong>the same harness, organized</strong>: same loop, same dispatch, same handshake, with the state grouped into one small <code>Agent</code> object.</p>
-<h3 id="what-changed-from-v2-to-v3">What changed from V2 to V3</h3>
+<h3 id="what-changed-from-v2-to-v3">What changed from V2 to V3<a aria-hidden="true" class="hanchor" href="#what-changed-from-v2-to-v3" tabindex="-1">¶</a></h3>
 <ul>
 <li>The three pieces of state — <code>client</code>, the tool schemas, and <code>input_items</code> — move into <code>self.client</code>, <code>self.tools</code>, and <code>self.input_items</code> on an <code>Agent</code> object, created once in <code>__init__</code>.</li>
 <li><code>dispatch</code> and the loop become <strong>methods</strong> (<code>agent.dispatch(...)</code>, <code>agent.run(...)</code>) — same bodies, now reading state from <code>self</code> instead of globals.</li>
@@ -705,15 +721,15 @@ instead of a global <code>input_items</code>. That's the whole trick: nothing in
     <span class="n">main</span><span class="p">()</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-5">▶ Run it now</h3>
+<h3 id="-run-it-now-5">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-5" tabindex="-1">¶</a></h3>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>bare_harness_v3.py
 </code></pre></div>
 
 <p>Ask <code>What time is it in Tokyo?</code>, then follow up with <code>And in London?</code> — and notice something new: the model understands <code>"And in London?"</code> because the transcript persisted on <code>agent.input_items</code> between turns. Version 2 forgot everything after each answer; Version 3 remembers, purely because of where the state lives. (Phase 3 is all about this.)</p>
-<p>This <code>Agent</code> shape — a constructor that takes a client and tools, plus a <code>run</code> method around the same loop — is exactly the skeleton the final package uses in <a href="../../code/agent_harness/agent.py"><code>code/agent_harness/agent.py</code></a>. The production version adds a <code>Conversation</code> object, a <code>ToolRegistry</code>, permissions, and hooks, but when you read it later you'll recognize this same ~40-line core. No decorators, no threads, no inheritance — just the same idea, organized.</p>
+<p>This <code>Agent</code> shape — a constructor that takes a client and tools, plus a <code>run</code> method around the same loop — is exactly the skeleton the final package uses in <a class="repo-file" href="../../code/agent_harness/agent.py" title="Opens a file in the repository checkout — not part of this site"><code>code/agent_harness/agent.py</code></a>. The production version adds a <code>Conversation</code> object, a <code>ToolRegistry</code>, permissions, and hooks, but when you read it later you'll recognize this same ~40-line core. No decorators, no threads, no inheritance — just the same idea, organized.</p>
 <hr>
-<h2 id="7-example-session">7. Example Session</h2>
-<div class="highlight"><pre><span></span><code>Agent ready. Type your message (Ctrl-C or empty line to quit).
+<h2 id="7-example-session">7. Example Session<a aria-hidden="true" class="hanchor" href="#7-example-session" tabindex="-1">¶</a></h2>
+<div class="highlight nocopy"><pre><span></span><code>Agent ready. Type your message (Ctrl-C or empty line to quit).
 
 You: What time is it in Tokyo right now?
   [tool] get_current_time({&quot;timezone&quot;: &quot;Asia/Tokyo&quot;}) → 2026-06-06T22:47:13+09:00
@@ -728,16 +744,15 @@ Assistant: 2 + 2 = 4.
 You:
 Bye.
 </code></pre></div>
-
 <p>The second question does not call <code>get_current_time</code> at all — the model answers directly from its own knowledge. Notice that <code>tool_calls</code> was empty, so the loop broke immediately after the first <code>responses.create</code> call.</p>
 <hr>
-<h2 id="pitfalls">Pitfalls</h2>
-<table>
+<h2 id="pitfalls">Pitfalls<a aria-hidden="true" class="hanchor" href="#pitfalls" tabindex="-1">¶</a></h2>
+<div class="table-wrap"><table>
 <thead>
 <tr>
-<th>Pitfall</th>
-<th>What happens</th>
-<th>How to avoid</th>
+<th scope="col">Pitfall</th>
+<th scope="col">What happens</th>
+<th scope="col">How to avoid</th>
 </tr>
 </thead>
 <tbody>
@@ -782,9 +797,9 @@ Bye.
 <td>Run <code>python --version</code>. If you see &lt; 3.9, install <code>backports.zoneinfo</code> and import from there, or upgrade Python.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr>
-<h2 id="key-takeaways">Key takeaways</h2>
+<h2 id="key-takeaways">Key takeaways<a aria-hidden="true" class="hanchor" href="#key-takeaways" tabindex="-1">¶</a></h2>
 <ul>
 <li>The agent loop is <strong>three lines of logic</strong>: call <code>responses.create</code>, check for tool calls, execute them and append results — then repeat. Everything else is convenience.</li>
 <li>The transcript is <strong>append-only</strong>: always carry <code>resp.output</code> forward before appending tool outputs. The order matters; the API enforces it.</li>
@@ -793,7 +808,7 @@ Bye.
 <li>A <strong><code>MAX_ITERATIONS</code> cap</strong> is not optional for production code. Always include one.</li>
 <li>All three versions in this phase are <strong>the same harness</strong>. V1 → V2 names the pieces and adds robustness; V2 → V3 groups the state into an <code>Agent</code> object. The loop itself never changed — and the <code>Agent</code> class is the shape the final package builds on.</li>
 </ul>
-<h2 id="check-yourself">Check yourself</h2>
+<h2 id="check-yourself">Check yourself<a aria-hidden="true" class="hanchor" href="#check-yourself" tabindex="-1">¶</a></h2>
 <p>Before moving on, can you answer these?</p>
 <ol>
 <li>What two things must you append to <code>input_items</code> each iteration, and which must come first?</li>
@@ -813,8 +828,8 @@ Bye.
 </ol>
 </details>
 <hr>
-<h2 id="exercises">Exercises</h2>
-<p>See <a href="exercises.html"><code>EXERCISES.md</code> — Phase 1</a> for hands-on practice:</p>
+<h2 id="exercises">Exercises<a aria-hidden="true" class="hanchor" href="#exercises" tabindex="-1">¶</a></h2>
+<p>See <a href="exercises.html#phase-1--a-bare-harness"><code>EXERCISES.md</code> — Phase 1</a> for hands-on practice:</p>
 <ul>
 <li><strong>1.1 (warm-up):</strong> Add a second tool (e.g. <code>get_weather(city)</code> returning a fixed string). Ask a question that should use it, and one that shouldn't. Did the model choose correctly?</li>
 <li><strong>1.2 (stretch):</strong> Make a tool that <em>always</em> returns an error string. Watch the loop retry — then confirm your <code>MAX_ITERATIONS</code> cap stops it.</li>
@@ -827,27 +842,95 @@ Bye.
 <a class="prev" href="00-foundations.html" rel="prev">← Phase 0 — Foundations</a>
 <a class="next" href="02-tool-system.html" rel="next">Phase 2 — Tool System →</a>
 </nav>
-<p class="generated-note">Generated from <code>01-bare-harness.md</code> — the markdown is the source of truth.</p>
+<p class="generated-note">Generated from <code>01-bare-harness.md</code> — the markdown is the source of truth. Links marked ↗ open repository files and need a full checkout (or GitHub).</p>
 </footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
 </main>
 </div>
 <script>
-document.querySelectorAll('div.highlight').forEach(function (block) {
-  var btn = document.createElement('button');
-  btn.className = 'copy-btn';
-  btn.type = 'button';
-  btn.textContent = 'Copy';
-  btn.addEventListener('click', function () {
-    var code = block.querySelector('pre').innerText;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(code).then(function () {
-        btn.textContent = 'Copied!';
-        setTimeout(function () { btn.textContent = 'Copy'; }, 1500);
-      }).catch(function () {});  /* graceful no-op on file:// denial */
-    }
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there. */
+  if (matchMedia('(max-width: 800px)').matches) {
+    var sb = document.querySelector('.sidebar-wrap');
+    if (sb) { sb.removeAttribute('open'); }
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards. */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
   });
-  block.insertBefore(btn, block.firstChild);
-});
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
 </script>
 </body>
 </html>

@@ -7,21 +7,22 @@
 <meta name="description" content="The phases teach by reading; this page makes you build. Each phase below has a warm-up (cements the core idea) and a stretch (pushes a little further). Try e…">
 <title>Exercises — Learn by Doing — Agent Harness Guide</title>
 <link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:,">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
 <div class="layout">
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
-<nav class="sidebar" aria-label="Guide navigation">
-<h2>Start here</h2>
+<nav class="sidebar">
+<p class="sidebar-heading">Start here</p>
 <ul>
 <li><a href="index.html">Guide hub</a></li>
 <li><a href="learning-path.html">Learning Path</a></li>
 <li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
 <li><a href="faq.html">Setup &amp; FAQ</a></li>
 </ul>
-<h2>Phases</h2>
+<p class="sidebar-heading">Phases</p>
 <ul>
 <li><a href="00-foundations.html">Phase 0 — Foundations</a></li>
 <li><a href="01-bare-harness.html">Phase 1 — Bare Harness</a></li>
@@ -33,11 +34,11 @@
 <li><a href="07-subagents-orchestration.html">Phase 7 — Sub-agents</a></li>
 <li><a href="08-production-harness.html">Phase 8 — Production Harness</a></li>
 </ul>
-<h2>Appendix</h2>
+<p class="sidebar-heading">Appendix</p>
 <ul>
 <li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
 </ul>
-<h2>Practice</h2>
+<p class="sidebar-heading">Practice</p>
 <ul>
 <li class="current"><a href="exercises.html" aria-current="page">Exercises</a></li>
 <li><a href="glossary.html">Glossary</a></li>
@@ -51,16 +52,26 @@
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
-<li class="toc-h2"><a href="#phase-0--foundations">Phase 0 — Foundations</a></li>
-<li class="toc-h2"><a href="#phase-1--a-bare-harness">Phase 1 — A bare harness</a></li>
-<li class="toc-h2"><a href="#phase-2--the-tool-system">Phase 2 — The tool system</a></li>
-<li class="toc-h2"><a href="#phase-3--conversation--streaming">Phase 3 — Conversation &amp; streaming</a></li>
-<li class="toc-h2"><a href="#phase-4--real-tools">Phase 4 — Real tools</a></li>
-<li class="toc-h2"><a href="#phase-5--permissions--safety">Phase 5 — Permissions &amp; safety</a></li>
-<li class="toc-h2"><a href="#phase-6--context-management">Phase 6 — Context management</a></li>
-<li class="toc-h2"><a href="#phase-7--sub-agents--orchestration">Phase 7 — Sub-agents &amp; orchestration</a></li>
-<li class="toc-h2"><a href="#phase-8--the-production-harness">Phase 8 — The production harness</a></li>
-<li class="toc-h2"><a href="#capstone">Capstone</a></li>
+<li class="toc-h2"><a href="#phase-0--foundations">Phase 0 — Foundations</a>
+</li>
+<li class="toc-h2"><a href="#phase-1--a-bare-harness">Phase 1 — A bare harness</a>
+</li>
+<li class="toc-h2"><a href="#phase-2--the-tool-system">Phase 2 — The tool system</a>
+</li>
+<li class="toc-h2"><a href="#phase-3--conversation--streaming">Phase 3 — Conversation &amp; streaming</a>
+</li>
+<li class="toc-h2"><a href="#phase-4--real-tools">Phase 4 — Real tools</a>
+</li>
+<li class="toc-h2"><a href="#phase-5--permissions--safety">Phase 5 — Permissions &amp; safety</a>
+</li>
+<li class="toc-h2"><a href="#phase-6--context-management">Phase 6 — Context management</a>
+</li>
+<li class="toc-h2"><a href="#phase-7--sub-agents--orchestration">Phase 7 — Sub-agents &amp; orchestration</a>
+</li>
+<li class="toc-h2"><a href="#phase-8--the-production-harness">Phase 8 — The production harness</a>
+</li>
+<li class="toc-h2"><a href="#capstone">Capstone</a>
+</li>
 </ul>
 </details>
 </header>
@@ -75,12 +86,12 @@ canonical setup with troubleshooting is in the <a href="faq.html#setup--installa
 <div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>agent-harness-guide/code
 python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>.venv/bin/activate<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span>
 </code></pre></div>
-The canonical implementation in <a href="../../code/"><code>code/agent_harness/</code></a> is your answer key —
+The canonical implementation in <a class="repo-file" href="../../code/" title="Opens a file in the repository checkout — not part of this site"><code>code/agent_harness/</code></a> is your answer key —
 if you get stuck, find the same idea there. New terms? See the
 <a href="glossary.html">Glossary</a>. Lost? See the <a href="learning-path.html">Learning Path</a>.</p>
 </blockquote>
 <hr>
-<h2 id="phase-0--foundations">Phase 0 — Foundations</h2>
+<h2 id="phase-0--foundations">Phase 0 — Foundations<a aria-hidden="true" class="hanchor" href="#phase-0--foundations" tabindex="-1">¶</a></h2>
 <p><strong>0.1 (warm-up)</strong> Run the sanity-check script at the end of
 <a href="00-foundations.html"><code>00-foundations.md</code></a>. Then add a <strong>second</strong> tool — <code>multiply(a, b)</code>
 — alongside the adder, and ask the model a question that needs it. Confirm the handshake
@@ -94,7 +105,7 @@ contains a <code>function_call</code> item; a direct answer is a single <code>me
 decides — your job is only to inspect <code>response.output</code>.</p>
 </details>
 <hr>
-<h2 id="phase-1--a-bare-harness">Phase 1 — A bare harness</h2>
+<h2 id="phase-1--a-bare-harness">Phase 1 — A bare harness<a aria-hidden="true" class="hanchor" href="#phase-1--a-bare-harness" tabindex="-1">¶</a></h2>
 <p><strong>1.1 (warm-up)</strong> Add a second tool to your bare harness (e.g. <code>get_weather(city)</code>
 returning a fixed string). Ask a question that should use it, and one that shouldn't.
 Did the model choose correctly?</p>
@@ -105,10 +116,10 @@ briefly to feel why it matters (then put it back!).</p>
 <summary>Hint</summary>
 <p>The loop stops when <code>response.output</code> has no <code>function_call</code> items. A tool that always
 errors keeps the model trying, so the <strong>cap</strong> is the only thing that ends it. See
-"Common Pitfalls" at the end of Phase 1.</p>
+"Pitfalls" at the end of Phase 1.</p>
 </details>
 <hr>
-<h2 id="phase-2--the-tool-system">Phase 2 — The tool system</h2>
+<h2 id="phase-2--the-tool-system">Phase 2 — The tool system<a aria-hidden="true" class="hanchor" href="#phase-2--the-tool-system" tabindex="-1">¶</a></h2>
 <p><strong>2.1 (warm-up)</strong> Register a new <code>calculator(expression: str)</code> tool through the registry
 (use <code>@tool</code>, or hand-write the schema per the beginner track). Call it from the agent
 without editing the loop.</p>
@@ -122,7 +133,7 @@ parallel ≈ <code>max(durations)</code>, sequential ≈ <code>sum(durations)</c
 have <strong>conflicting side effects</strong> (e.g. two writes to the same file). See <code>tools/parallel.py</code>.</p>
 </details>
 <hr>
-<h2 id="phase-3--conversation--streaming">Phase 3 — Conversation &amp; streaming</h2>
+<h2 id="phase-3--conversation--streaming">Phase 3 — Conversation &amp; streaming<a aria-hidden="true" class="hanchor" href="#phase-3--conversation--streaming" tabindex="-1">¶</a></h2>
 <p><strong>3.1 (warm-up)</strong> Have a short multi-turn chat, save the conversation to a JSON file, exit,
 reload it in a fresh run, and continue. Confirm the model "remembers" the earlier turns.</p>
 <p><strong>3.2 (stretch)</strong> Run the same prompt with streaming on and off. Confirm the final answer
@@ -134,7 +145,7 @@ changes presentation only; the final <code>Response</code> comes from the <code>
 The model's output is the same either way.</p>
 </details>
 <hr>
-<h2 id="phase-4--real-tools">Phase 4 — Real tools</h2>
+<h2 id="phase-4--real-tools">Phase 4 — Real tools<a aria-hidden="true" class="hanchor" href="#phase-4--real-tools" tabindex="-1">¶</a></h2>
 <p><strong>4.1 (warm-up)</strong> Point the agent at an empty scratch directory and ask it to create and
 then edit a small file. Verify the change with <code>git diff</code> (or by reading the file).</p>
 <p><strong>4.2 (stretch)</strong> Feed <code>read_file</code> a large file. Add/confirm output truncation and observe
@@ -146,7 +157,7 @@ the transcript stay small. What happens to the model's answer quality without tr
 "Output-Size Discipline" in Phase 4. Return an <strong>error string</strong>, never raise, on a bad path.</p>
 </details>
 <hr>
-<h2 id="phase-5--permissions--safety">Phase 5 — Permissions &amp; safety</h2>
+<h2 id="phase-5--permissions--safety">Phase 5 — Permissions &amp; safety<a aria-hidden="true" class="hanchor" href="#phase-5--permissions--safety" tabindex="-1">¶</a></h2>
 <p><strong>5.1 (warm-up)</strong> Put <code>edit_file</code> (or <code>bash</code>) behind the approval gate. Trigger it, then
 <strong>deny</strong> the request, and confirm the tool did <strong>not</strong> run and the model adapted.</p>
 <p><strong>5.2 (stretch)</strong> Write a pre-tool hook that logs every tool name + args before it runs.
@@ -158,7 +169,7 @@ functions the harness calls before/after each tool — see the hook system in Ph
 (<code>hooks.py</code>). The loop never needs to know your hook exists.</p>
 </details>
 <hr>
-<h2 id="phase-6--context-management">Phase 6 — Context management</h2>
+<h2 id="phase-6--context-management">Phase 6 — Context management<a aria-hidden="true" class="hanchor" href="#phase-6--context-management" tabindex="-1">¶</a></h2>
 <p><strong>6.1 (warm-up)</strong> Set an artificially tiny token budget and run a long chat. Watch old turns
 get pruned/compacted. Confirm the system prompt and recent turns survive.</p>
 <p><strong>6.2 (stretch)</strong> If <code>tiktoken</code> is installed, count a sample transcript both ways
@@ -170,7 +181,7 @@ get pruned/compacted. Confirm the system prompt and recent turns survive.</p>
 not for billing. See "Counting Tokens" in Phase 6.</p>
 </details>
 <hr>
-<h2 id="phase-7--sub-agents--orchestration">Phase 7 — Sub-agents &amp; orchestration</h2>
+<h2 id="phase-7--sub-agents--orchestration">Phase 7 — Sub-agents &amp; orchestration<a aria-hidden="true" class="hanchor" href="#phase-7--sub-agents--orchestration" tabindex="-1">¶</a></h2>
 <p><strong>7.1 (warm-up)</strong> Add a <code>task</code> tool that spawns a sub-agent (your <code>run_agent</code> loop, called
 again) to handle a focused search, and have the main agent call it.</p>
 <p><strong>7.2 (stretch)</strong> Fan out <strong>two</strong> sub-agents in parallel on independent subtasks and combine
@@ -182,7 +193,7 @@ narrow brief and few tools. Parallelism helps only when the subtasks are <strong
 See <code>subagents.py</code>.</p>
 </details>
 <hr>
-<h2 id="phase-8--the-production-harness">Phase 8 — The production harness</h2>
+<h2 id="phase-8--the-production-harness">Phase 8 — The production harness<a aria-hidden="true" class="hanchor" href="#phase-8--the-production-harness" tabindex="-1">¶</a></h2>
 <p><strong>8.1 (warm-up)</strong> Wrap the API call in retry-with-exponential-backoff. Use the <code>FakeClient</code>
 to fail the first attempt and succeed on the second; confirm your loop recovers.</p>
 <p><strong>8.2 (stretch)</strong> Add a structured log line for every tool call (name, duration, ok/error),
@@ -194,7 +205,7 @@ then run with <code>--model &lt;something&gt;</code> and read your logs to recon
 observability section of Phase 8 — logs are how you see <em>inside</em> a run.</p>
 </details>
 <hr>
-<h2 id="capstone">Capstone</h2>
+<h2 id="capstone">Capstone<a aria-hidden="true" class="hanchor" href="#capstone" tabindex="-1">¶</a></h2>
 <p>Combine everything: point your Phase-8 harness at a small real repository and give it a
 genuine task ("add a docstring to every function in <code>foo.py</code> and run the tests"). Watch the
 loop read, edit, run <code>bash</code>, hit the permission gate, and stay within its context budget.
@@ -208,27 +219,95 @@ If it does that end-to-end, you've built — and understood — a coding agent f
 <a class="prev" href="09-library-reference.html" rel="prev">← Appendix — Library Reference</a>
 <a class="next" href="glossary.html" rel="next">Glossary →</a>
 </nav>
-<p class="generated-note">Generated from <code>EXERCISES.md</code> — the markdown is the source of truth.</p>
+<p class="generated-note">Generated from <code>EXERCISES.md</code> — the markdown is the source of truth. Links marked ↗ open repository files and need a full checkout (or GitHub).</p>
 </footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
 </main>
 </div>
 <script>
-document.querySelectorAll('div.highlight').forEach(function (block) {
-  var btn = document.createElement('button');
-  btn.className = 'copy-btn';
-  btn.type = 'button';
-  btn.textContent = 'Copy';
-  btn.addEventListener('click', function () {
-    var code = block.querySelector('pre').innerText;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(code).then(function () {
-        btn.textContent = 'Copied!';
-        setTimeout(function () { btn.textContent = 'Copy'; }, 1500);
-      }).catch(function () {});  /* graceful no-op on file:// denial */
-    }
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there. */
+  if (matchMedia('(max-width: 800px)').matches) {
+    var sb = document.querySelector('.sidebar-wrap');
+    if (sb) { sb.removeAttribute('open'); }
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards. */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
   });
-  block.insertBefore(btn, block.firstChild);
-});
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
 </script>
 </body>
 </html>

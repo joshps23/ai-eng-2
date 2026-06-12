@@ -7,21 +7,22 @@
 <meta name="description" content="Stuck on a setup error, a confusing traceback, or &quot;why did the agent do nothing&quot;? Find your symptom below. For term definitions see the Glossary; for the rec…">
 <title>Beginner FAQ &amp; Troubleshooting — Agent Harness Guide</title>
 <link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:,">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
 <div class="layout">
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
-<nav class="sidebar" aria-label="Guide navigation">
-<h2>Start here</h2>
+<nav class="sidebar">
+<p class="sidebar-heading">Start here</p>
 <ul>
 <li><a href="index.html">Guide hub</a></li>
 <li><a href="learning-path.html">Learning Path</a></li>
 <li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
 <li class="current"><a href="faq.html" aria-current="page">Setup &amp; FAQ</a></li>
 </ul>
-<h2>Phases</h2>
+<p class="sidebar-heading">Phases</p>
 <ul>
 <li><a href="00-foundations.html">Phase 0 — Foundations</a></li>
 <li><a href="01-bare-harness.html">Phase 1 — Bare Harness</a></li>
@@ -33,11 +34,11 @@
 <li><a href="07-subagents-orchestration.html">Phase 7 — Sub-agents</a></li>
 <li><a href="08-production-harness.html">Phase 8 — Production Harness</a></li>
 </ul>
-<h2>Appendix</h2>
+<p class="sidebar-heading">Appendix</p>
 <ul>
 <li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
 </ul>
-<h2>Practice</h2>
+<p class="sidebar-heading">Practice</p>
 <ul>
 <li><a href="exercises.html">Exercises</a></li>
 <li><a href="glossary.html">Glossary</a></li>
@@ -51,11 +52,16 @@
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
-<li class="toc-h2"><a href="#setup--installation">Setup &amp; installation</a></li>
-<li class="toc-h2"><a href="#api-keys-models--cost">API keys, models &amp; cost</a></li>
-<li class="toc-h2"><a href="#running-the-agent">Running the agent</a></li>
-<li class="toc-h2"><a href="#reading-tracebacks-a-20-second-skill">Reading tracebacks (a 20-second skill)</a></li>
-<li class="toc-h2"><a href="#platform-notes">Platform notes</a></li>
+<li class="toc-h2"><a href="#setup--installation">Setup &amp; installation</a>
+</li>
+<li class="toc-h2"><a href="#api-keys-models--cost">API keys, models &amp; cost</a>
+</li>
+<li class="toc-h2"><a href="#running-the-agent">Running the agent</a>
+</li>
+<li class="toc-h2"><a href="#reading-tracebacks-a-20-second-skill">Reading tracebacks (a 20-second skill)</a>
+</li>
+<li class="toc-h2"><a href="#platform-notes">Platform notes</a>
+</li>
 </ul>
 </details>
 </header>
@@ -68,7 +74,7 @@ Find your symptom below. For term definitions see the
 <strong><a href="learning-path.html">Learning Path</a></strong>.</p>
 </blockquote>
 <hr>
-<h2 id="setup--installation">Setup &amp; installation</h2>
+<h2 id="setup--installation">Setup &amp; installation<a aria-hidden="true" class="hanchor" href="#setup--installation" tabindex="-1">¶</a></h2>
 <p>This is the canonical setup recipe — other pages link here instead of repeating it.
 From the <strong>repo root</strong>:</p>
 <div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>agent-harness-guide/code
@@ -81,11 +87,13 @@ python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> <
 misbehaves, find your symptom below.</p>
 <p><strong>Q: <code>ModuleNotFoundError: No module named 'agent_harness'</code> when I run the tests.</strong>
 Almost always an interpreter mismatch: a globally-installed <code>pytest</code> belongs to a
-different Python than the one you <code>pip install</code>ed into. Two fixes, use both:
-1. Work inside a virtual environment: <code>python -m venv .venv &amp;&amp; source .venv/bin/activate</code>
-   (Windows: <code>.venv\Scripts\activate</code>), then <code>pip install -e ".[dev]"</code>.
-2. Run tests as <strong><code>python -m pytest</code></strong> (from <code>agent-harness-guide/code</code>), never bare
-   <code>pytest</code>. The <code>python -m</code> form guarantees the same interpreter you installed into.</p>
+different Python than the one you <code>pip install</code>ed into. Two fixes, use both:</p>
+<ol>
+<li>Work inside a virtual environment: <code>python -m venv .venv &amp;&amp; source .venv/bin/activate</code>
+   (Windows: <code>.venv\Scripts\activate</code>), then <code>pip install -e ".[dev]"</code>.</li>
+<li>Run tests as <strong><code>python -m pytest</code></strong> (from <code>agent-harness-guide/code</code>), never bare
+   <code>pytest</code>. The <code>python -m</code> form guarantees the same interpreter you installed into.</li>
+</ol>
 <p><strong>Q: <code>pip install -e ".[dev]"</code> fails or can't reach the network.</strong>
 You need network access once to download <code>openai</code> and <code>pytest</code>. Behind a proxy, set
 <code>HTTP_PROXY</code>/<code>HTTPS_PROXY</code>. If you already have the deps, <code>pip install -e . --no-deps</code>
@@ -118,12 +126,14 @@ for the <code>USE_REAL_API</code> switch and conventions.</p>
 The kernel running your notebook isn't the venv you <code>pip install</code>ed into. This is the
 notebook analog of the <code>python -m pytest</code> vs bare <code>pytest</code> rule above: a system-wide
 Jupyter launches a system-wide Python, where <code>agent_harness</code> was never installed — even
-though imports work fine in your terminal. Two fixes, use both:
-1. Register the venv as a kernel (with the venv active, from <code>agent-harness-guide/code</code>):
-   <code>python -m ipykernel install --user --name agent-harness --display-name "Python (agent-harness)"</code>.
-2. In the notebook, pick <strong>Kernel → Change Kernel → Python (agent-harness)</strong>, then
+though imports work fine in your terminal. Two fixes, use both:</p>
+<ol>
+<li>Register the venv as a kernel (with the venv active, from <code>agent-harness-guide/code</code>):
+   <code>python -m ipykernel install --user --name agent-harness --display-name "Python (agent-harness)"</code>.</li>
+<li>In the notebook, pick <strong>Kernel → Change Kernel → Python (agent-harness)</strong>, then
    re-run. The notebooks' first cell prints <code>sys.executable</code> so you can confirm it
-   points into your <code>.venv</code>.</p>
+   points into your <code>.venv</code>.</li>
+</ol>
 <p><strong>Q: Can I run the notebooks on Google Colab?</strong>
 <strong>Yes.</strong> Each notebook has an <strong>"Open in Colab" badge</strong> at the top, and its first code
 cell bootstraps itself on Colab: it clones the repo and <code>pip install</code>s <code>agent_harness</code>
@@ -141,7 +151,7 @@ they stop at <code>openai.OpenAIError: Missing credentials</code> (see below). T
 the "No API key?" box in Phase 0 gives the keyless alternatives: verify each
 checkpoint against its printed expected output, and run the offline test suite.</p>
 <hr>
-<h2 id="api-keys-models--cost">API keys, models &amp; cost</h2>
+<h2 id="api-keys-models--cost">API keys, models &amp; cost<a aria-hidden="true" class="hanchor" href="#api-keys-models--cost" tabindex="-1">¶</a></h2>
 <p><strong>Q: How does the harness find my API key?</strong>
 It calls <code>OpenAI()</code> with no arguments, which reads the <strong><code>OPENAI_API_KEY</code></strong>
 environment variable. Set it before running:</p>
@@ -178,7 +188,7 @@ Use a smaller model (<code>--model gpt-4o-mini</code>), keep <code>--max-iterati
 the agent at a tiny scratch directory so tool output stays short. Tokens ≈ cost — the
 shorter the transcript, the cheaper the run.</p>
 <hr>
-<h2 id="running-the-agent">Running the agent</h2>
+<h2 id="running-the-agent">Running the agent<a aria-hidden="true" class="hanchor" href="#running-the-agent" tabindex="-1">¶</a></h2>
 <p><strong>Q: The agent answered in plain text but never used a tool I expected.</strong>
 The model <em>chooses</em> whether to call a tool. If it didn't, usually (a) the tool's
 <code>description</code>/schema doesn't make its purpose obvious, (b) the task didn't actually
@@ -201,7 +211,7 @@ and reloaded — that's the transcript-as-state idea from Phase 3.</p>
 That's the permission layer (Phase 5). Run with a stricter <code>--mode</code> so risky tools
 require approval, and keep the agent's <code>--workspace</code> pointed at a sandbox directory.</p>
 <hr>
-<h2 id="reading-tracebacks-a-20-second-skill">Reading tracebacks (a 20-second skill)</h2>
+<h2 id="reading-tracebacks-a-20-second-skill">Reading tracebacks (a 20-second skill)<a aria-hidden="true" class="hanchor" href="#reading-tracebacks-a-20-second-skill" tabindex="-1">¶</a></h2>
 <p>Python prints the <strong>call stack oldest-first</strong>, so the <em>last</em> line is what actually
 went wrong — read a traceback <strong>bottom-up</strong>:
 - <code>ModuleNotFoundError</code> → something isn't installed in <em>this</em> interpreter (see setup).
@@ -211,7 +221,7 @@ went wrong — read a traceback <strong>bottom-up</strong>:
 - <code>openai.*Error</code> → the API rejected the request; the message says why (auth, model,
   rate limit).</p>
 <hr>
-<h2 id="platform-notes">Platform notes</h2>
+<h2 id="platform-notes">Platform notes<a aria-hidden="true" class="hanchor" href="#platform-notes" tabindex="-1">¶</a></h2>
 <ul>
 <li><strong>Windows:</strong> activate the venv with <code>.venv\Scripts\activate</code>; set env vars with
   <code>$env:OPENAI_API_KEY="..."</code> (PowerShell). The <code>bash</code> tool (Phase 4) assumes a
@@ -230,25 +240,93 @@ went wrong — read a traceback <strong>bottom-up</strong>:
 </nav>
 <p class="generated-note">Generated from <code>FAQ.md</code> — the markdown is the source of truth.</p>
 </footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
 </main>
 </div>
 <script>
-document.querySelectorAll('div.highlight').forEach(function (block) {
-  var btn = document.createElement('button');
-  btn.className = 'copy-btn';
-  btn.type = 'button';
-  btn.textContent = 'Copy';
-  btn.addEventListener('click', function () {
-    var code = block.querySelector('pre').innerText;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(code).then(function () {
-        btn.textContent = 'Copied!';
-        setTimeout(function () { btn.textContent = 'Copy'; }, 1500);
-      }).catch(function () {});  /* graceful no-op on file:// denial */
-    }
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there. */
+  if (matchMedia('(max-width: 800px)').matches) {
+    var sb = document.querySelector('.sidebar-wrap');
+    if (sb) { sb.removeAttribute('open'); }
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards. */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
   });
-  block.insertBefore(btn, block.firstChild);
-});
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
 </script>
 </body>
 </html>

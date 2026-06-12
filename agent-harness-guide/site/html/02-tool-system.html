@@ -7,21 +7,22 @@
 <meta name="description" content="Phase 1 gave us a working agent loop in roughly 80 lines. The dispatch logic was a hand-written router with one branch per tool:">
 <title>Phase 2 — A Real Tool System — Agent Harness Guide</title>
 <link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:,">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
 <div class="layout">
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
-<nav class="sidebar" aria-label="Guide navigation">
-<h2>Start here</h2>
+<nav class="sidebar">
+<p class="sidebar-heading">Start here</p>
 <ul>
 <li><a href="index.html">Guide hub</a></li>
 <li><a href="learning-path.html">Learning Path</a></li>
 <li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
 <li><a href="faq.html">Setup &amp; FAQ</a></li>
 </ul>
-<h2>Phases</h2>
+<p class="sidebar-heading">Phases</p>
 <ul>
 <li><a href="00-foundations.html">Phase 0 — Foundations</a></li>
 <li><a href="01-bare-harness.html">Phase 1 — Bare Harness</a></li>
@@ -33,11 +34,11 @@
 <li><a href="07-subagents-orchestration.html">Phase 7 — Sub-agents</a></li>
 <li><a href="08-production-harness.html">Phase 8 — Production Harness</a></li>
 </ul>
-<h2>Appendix</h2>
+<p class="sidebar-heading">Appendix</p>
 <ul>
 <li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
 </ul>
-<h2>Practice</h2>
+<p class="sidebar-heading">Practice</p>
 <ul>
 <li><a href="exercises.html">Exercises</a></li>
 <li><a href="glossary.html">Glossary</a></li>
@@ -51,34 +52,47 @@
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
-<li class="toc-h2"><a href="#where-we-left-off">Where We Left Off</a></li>
+<li class="toc-h2"><a href="#where-we-left-off">Where We Left Off</a>
+<ul>
 <li class="toc-h3"><a href="#-beginner-track">🟢 Beginner track</a></li>
-<li class="toc-h2"><a href="#version-1--line-by-line-inline-ifelif-dispatch">Version 1 — Line by Line: Inline if/elif Dispatch</a></li>
+</ul>
+</li>
+<li class="toc-h2"><a href="#version-1--line-by-line-inline-ifelif-dispatch">Version 1 — Line by Line: Inline if/elif Dispatch</a>
+<ul>
 <li class="toc-h3"><a href="#11-the-schema-dicts-and-the-tools-list">1.1 The schema dicts and the tools list</a></li>
-<li class="toc-h3"><a href="#-check-it-now-no-api-key-needed">▶ Check it now (no API key needed)</a></li>
+<li class="toc-h3"><a href="#-check-it-now-no-api-key-needed">▶ Check it now (no API key needed) — Version 1 — Line by Line: Inline if/elif Dispatch</a></li>
 <li class="toc-h3"><a href="#12-the-loop-with-the-tool-logic-inlined">1.2 The loop, with the tool logic inlined</a></li>
 <li class="toc-h3"><a href="#the-full-file-agent_v1py">The full file: agent_v1.py</a></li>
-<li class="toc-h3"><a href="#-run-it-now">▶ Run it now</a></li>
+<li class="toc-h3"><a href="#-run-it-now">▶ Run it now — Version 1 — Line by Line: Inline if/elif Dispatch</a></li>
 <li class="toc-h3"><a href="#the-pain-point-every-new-tool-means-edits-in-three-places">The pain point: every new tool means edits in three places</a></li>
-<li class="toc-h2"><a href="#version-2--functions-and-a-dict-registry">Version 2 — Functions and a Dict Registry</a></li>
+</ul>
+</li>
+<li class="toc-h2"><a href="#version-2--functions-and-a-dict-registry">Version 2 — Functions and a Dict Registry</a>
+<ul>
 <li class="toc-h3"><a href="#what-changed-from-v1-to-v2">What changed from V1 to V2</a></li>
 <li class="toc-h3"><a href="#21-write-the-functions-and-their-schema-dicts">2.1 Write the functions and their schema dicts</a></li>
 <li class="toc-h3"><a href="#22-register-them-in-a-plain-dict">2.2 Register them in a plain dict</a></li>
 <li class="toc-h3"><a href="#23-build-the-list-the-api-needs">2.3 Build the list the API needs</a></li>
 <li class="toc-h3"><a href="#24-dispatch-look-up-a-tool-and-call-it">2.4 Dispatch: look up a tool and call it</a></li>
-<li class="toc-h3"><a href="#-check-it-now-no-api-key-needed-1">▶ Check it now (no API key needed)</a></li>
+<li class="toc-h3"><a href="#-check-it-now-no-api-key-needed-1">▶ Check it now (no API key needed) — Version 2 — Functions and a Dict Registry</a></li>
 <li class="toc-h3"><a href="#25-handle-multiple-tool-calls--a-plain-for-loop">2.5 Handle multiple tool calls — a plain for loop</a></li>
 <li class="toc-h3"><a href="#26-the-full-agent-loop-using-only-functions-and-dicts">2.6 The full agent loop using only functions and dicts</a></li>
-<li class="toc-h3"><a href="#-run-it-now-1">▶ Run it now</a></li>
-<li class="toc-h2"><a href="#version-3--classes-tool-and-toolregistry">Version 3 — Classes: Tool and ToolRegistry</a></li>
+<li class="toc-h3"><a href="#-run-it-now-1">▶ Run it now — Version 2 — Functions and a Dict Registry</a></li>
+</ul>
+</li>
+<li class="toc-h2"><a href="#version-3--classes-tool-and-toolregistry">Version 3 — Classes: Tool and ToolRegistry</a>
+<ul>
 <li class="toc-h3"><a href="#what-changed-from-v2-to-v3">What changed from V2 to V3</a></li>
 <li class="toc-h3"><a href="#the-mapping-classdecorator-version--version-2-plain-function-version">The mapping: class/decorator version ↔ Version 2 plain-function version</a></li>
 <li class="toc-h3"><a href="#31-the-tool-base-class">3.1 The Tool base class</a></li>
-<li class="toc-h3"><a href="#-check-it-now-no-api-key-needed-2">▶ Check it now (no API key needed)</a></li>
+<li class="toc-h3"><a href="#-check-it-now-no-api-key-needed-2">▶ Check it now (no API key needed) — Version 3 — Classes: Tool and ToolRegistry</a></li>
 <li class="toc-h3"><a href="#32-the-toolregistry-class">3.2 The ToolRegistry class</a></li>
 <li class="toc-h3"><a href="#33-the-full-file-agent_v3py">3.3 The full file: agent_v3.py</a></li>
-<li class="toc-h3"><a href="#-run-it-now-2">▶ Run it now</a></li>
-<li class="toc-h2"><a href="#version-4--the-tool-decorator">Version 4 — The @tool Decorator</a></li>
+<li class="toc-h3"><a href="#-run-it-now-2">▶ Run it now — Version 3 — Classes: Tool and ToolRegistry</a></li>
+</ul>
+</li>
+<li class="toc-h2"><a href="#version-4--the-tool-decorator">Version 4 — The @tool Decorator</a>
+<ul>
 <li class="toc-h3"><a href="#what-changed-from-v3-to-v4">What changed from V3 to V4</a></li>
 <li class="toc-h3"><a href="#41-decorators-in-60-seconds">4.1 Decorators in 60 seconds</a></li>
 <li class="toc-h3"><a href="#42-write-a-function-with-type-hints-and-a-docstring">4.2 Write a function with type hints and a docstring</a></li>
@@ -90,39 +104,59 @@
 <li class="toc-h3"><a href="#python-to-json-schema-type-mapping">Python-to-JSON Schema Type Mapping</a></li>
 <li class="toc-h3"><a href="#47-using-tool-objects-with-the-version-2-dict-registry">4.7 Using @tool objects with the Version 2 dict registry</a></li>
 <li class="toc-h3"><a href="#the-full-file-agent_v4py">The full file: agent_v4.py</a></li>
-<li class="toc-h3"><a href="#-run-it-now-3">▶ Run it now</a></li>
-<li class="toc-h2"><a href="#going-further-optional--parallel-tool-execution">Going Further (Optional) — Parallel Tool Execution</a></li>
+<li class="toc-h3"><a href="#-run-it-now-3">▶ Run it now — Version 4 — The @tool Decorator</a></li>
+</ul>
+</li>
+<li class="toc-h2"><a href="#going-further-optional--parallel-tool-execution">Going Further (Optional) — Parallel Tool Execution</a>
+<ul>
 <li class="toc-h3"><a href="#why-the-phase-1-serial-loop-is-slow-here">Why the Phase 1 serial loop is slow here</a></li>
 <li class="toc-h3"><a href="#parallel-dispatch">Parallel Dispatch</a></li>
 <li class="toc-h3"><a href="#sequential-fallback">Sequential Fallback</a></li>
 <li class="toc-h3"><a href="#when-parallel-is-unsafe">When Parallel is Unsafe</a></li>
-<li class="toc-h2"><a href="#argument-validation-strict-mode-vs-manual-checks-optional">Argument Validation: Strict Mode vs. Manual Checks (optional)</a></li>
+</ul>
+</li>
+<li class="toc-h2"><a href="#argument-validation-strict-mode-vs-manual-checks-optional">Argument Validation: Strict Mode vs. Manual Checks (optional)</a>
+<ul>
 <li class="toc-h3"><a href="#strict-compatible-schema-example">Strict-Compatible Schema Example</a></li>
-<li class="toc-h2"><a href="#structured-results-and-errors-optional">Structured Results and Errors (optional)</a></li>
+</ul>
+</li>
+<li class="toc-h2"><a href="#structured-results-and-errors-optional">Structured Results and Errors (optional)</a>
+<ul>
 <li class="toc-h3"><a href="#the-string-contract">The String Contract</a></li>
 <li class="toc-h3"><a href="#error-strings">Error Strings</a></li>
-<li class="toc-h2"><a href="#the-updated-agent-loop--the-production-shape">The Updated Agent Loop — the Production Shape</a></li>
-<li class="toc-h2"><a href="#full-runnable-example--the-tools-package">Full Runnable Example — the tools/ Package</a></li>
+</ul>
+</li>
+<li class="toc-h2"><a href="#the-updated-agent-loop--the-production-shape">The Updated Agent Loop — the Production Shape</a>
+</li>
+<li class="toc-h2"><a href="#full-runnable-example--the-tools-package">Full Runnable Example — the tools/ Package</a>
+<ul>
 <li class="toc-h3"><a href="#file-layout">File Layout</a></li>
 <li class="toc-h3"><a href="#toolsbasepy--complete">tools/base.py — Complete</a></li>
 <li class="toc-h3"><a href="#toolsregistrypy--complete">tools/registry.py — Complete</a></li>
 <li class="toc-h3"><a href="#toolsparallelpy--complete">tools/parallel.py — Complete</a></li>
 <li class="toc-h3"><a href="#tools__init__py">tools/__init__.py</a></li>
-<li class="toc-h3"><a href="#-check-it-now-no-api-key-needed-3">▶ Check it now (no API key needed)</a></li>
+<li class="toc-h3"><a href="#-check-it-now-no-api-key-needed-3">▶ Check it now (no API key needed) — Full Runnable Example — the tools/ Package</a></li>
 <li class="toc-h3"><a href="#agentpy--complete-with-example-tools">agent.py — Complete with Example Tools</a></li>
 <li class="toc-h3"><a href="#example-transcript">Example Transcript</a></li>
-<li class="toc-h2"><a href="#why-we-built-it-in-versions-the-problems-with-ad-hoc-dispatch">Why We Built It in Versions: The Problems with Ad-Hoc Dispatch</a></li>
-<li class="toc-h2"><a href="#pitfalls">Pitfalls</a></li>
-<li class="toc-h2"><a href="#key-takeaways">Key takeaways</a></li>
-<li class="toc-h2"><a href="#check-yourself">Check yourself</a></li>
-<li class="toc-h2"><a href="#exercises">Exercises</a></li>
+</ul>
+</li>
+<li class="toc-h2"><a href="#why-we-built-it-in-versions-the-problems-with-ad-hoc-dispatch">Why We Built It in Versions: The Problems with Ad-Hoc Dispatch</a>
+</li>
+<li class="toc-h2"><a href="#pitfalls">Pitfalls</a>
+</li>
+<li class="toc-h2"><a href="#key-takeaways">Key takeaways</a>
+</li>
+<li class="toc-h2"><a href="#check-yourself">Check yourself</a>
+</li>
+<li class="toc-h2"><a href="#exercises">Exercises</a>
+</li>
 </ul>
 </details>
 </header>
 <article>
 <p><a href="01-bare-harness.html">← Phase 1: A Bare Harness in ~80 Lines</a> · <a href="index.html">Guide index</a> · <a href="03-conversation-and-streaming.html">Phase 3: Conversation State &amp; Streaming →</a></p>
 <h1 id="phase-2--a-real-tool-system">Phase 2 — A Real Tool System</h1>
-<h2 id="where-we-left-off">Where We Left Off</h2>
+<h2 id="where-we-left-off">Where We Left Off<a aria-hidden="true" class="hanchor" href="#where-we-left-off" tabindex="-1">¶</a></h2>
 <p>Phase 1 gave us a working agent loop in roughly 80 lines. The dispatch logic was a hand-written router with one branch per tool:</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">dispatch</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">arguments</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Route a tool call. Always returns a string; never raises.&quot;&quot;&quot;</span>
@@ -148,7 +182,7 @@
 <li><strong>Going further (optional)</strong> — parallel tool execution with threads.</li>
 </ul>
 <p>You can stop at any version; each one is a complete, working tool system that produces the same answers. Each later version changes <em>how the code is organized</em>, never <em>what the agent does</em>.</p>
-<h3 id="-beginner-track">🟢 Beginner track</h3>
+<h3 id="-beginner-track">🟢 Beginner track<a aria-hidden="true" class="hanchor" href="#-beginner-track" tabindex="-1">¶</a></h3>
 <blockquote class="beginner">
 <p>🟢 <strong>Beginner track.</strong> If classes and decorators are still new to you, Versions 1 and 2
 are a perfectly legitimate stopping point — hand-written schema dicts plus a dict
@@ -168,12 +202,12 @@ Read Versions 3 and 4 for the <em>ideas</em> and come back to the syntax when yo
 <li><a href="#pitfalls">Pitfalls</a></li>
 </ul>
 <blockquote>
-<p><strong>Prefer running this phase as a notebook?</strong> <a href="../../notebooks/02-tool-system.ipynb"><code>notebooks/02-tool-system.ipynb</code></a> executes this phase's checkpoints offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
+<p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="../../notebooks/02-tool-system.ipynb" title="Opens a file in the repository checkout — not part of this site"><code>notebooks/02-tool-system.ipynb</code></a> executes this phase's checkpoints offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
 </blockquote>
 <hr>
-<h2 id="version-1--line-by-line-inline-ifelif-dispatch">Version 1 — Line by Line: Inline <code>if/elif</code> Dispatch</h2>
+<h2 id="version-1--line-by-line-inline-ifelif-dispatch">Version 1 — Line by Line: Inline <code>if/elif</code> Dispatch<a aria-hidden="true" class="hanchor" href="#version-1--line-by-line-inline-ifelif-dispatch" tabindex="-1">¶</a></h2>
 <p><strong>Why start here?</strong> Before we build any machinery, we should see the harness in its rawest possible form: every tool's schema written out, every tool's <em>logic</em> pasted directly into the dispatch branch, no functions of our own at all. This version works — and the moment you try to add a third tool, you will see exactly which pain each later version removes.</p>
-<h3 id="11-the-schema-dicts-and-the-tools-list">1.1 The schema dicts and the tools list</h3>
+<h3 id="11-the-schema-dicts-and-the-tools-list">1.1 The schema dicts and the tools list<a aria-hidden="true" class="hanchor" href="#11-the-schema-dicts-and-the-tools-list" tabindex="-1">¶</a></h3>
 <p>A "tool", from the API's point of view, is just a dict describing a function the model may call. We write two of them by hand and collect them in a list. Note the <strong>flat</strong> format the Responses API requires: <code>type</code>, <code>name</code>, <code>description</code>, <code>parameters</code> all at the top level — no nested <code>"function"</code> wrapper.</p>
 <div class="highlight"><pre><span></span><code><span class="n">add_schema</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function&quot;</span><span class="p">,</span>
@@ -207,11 +241,11 @@ Read Versions 3 and 4 for the <em>ideas</em> and come back to the syntax when yo
 <span class="n">TOOLS</span> <span class="o">=</span> <span class="p">[</span><span class="n">add_schema</span><span class="p">,</span> <span class="n">word_count_schema</span><span class="p">]</span>
 </code></pre></div>
 
-<h3 id="-check-it-now-no-api-key-needed">▶ Check it now (no API key needed)</h3>
+<h3 id="-check-it-now-no-api-key-needed">▶ Check it now (no API key needed)<a aria-hidden="true" class="hanchor" href="#-check-it-now-no-api-key-needed" tabindex="-1">¶</a></h3>
 <p>Paste just this much into a file, add <code>import json</code> and <code>print(json.dumps(TOOLS, indent=2))</code> at the bottom, and run it. What prints is <em>exactly</em> what the model will see — there is no magic between your dict and the API.</p>
-<h3 id="12-the-loop-with-the-tool-logic-inlined">1.2 The loop, with the tool logic inlined</h3>
+<h3 id="12-the-loop-with-the-tool-logic-inlined">1.2 The loop, with the tool logic inlined<a aria-hidden="true" class="hanchor" href="#12-the-loop-with-the-tool-logic-inlined" tabindex="-1">¶</a></h3>
 <p>Now the agent loop from Phase 1, but with the tool <em>implementations</em> written directly inside the dispatch branches — <code>str(args["a"] + args["b"])</code> lives right there in the <code>if</code>. No <code>def</code> anywhere.</p>
-<h3 id="the-full-file-agent_v1py">The full file: <code>agent_v1.py</code></h3>
+<h3 id="the-full-file-agent_v1py">The full file: <code>agent_v1.py</code><a aria-hidden="true" class="hanchor" href="#the-full-file-agent_v1py" tabindex="-1">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="c1"># agent_v1.py — complete. No def, no classes: statements top to bottom.</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
@@ -309,19 +343,18 @@ Read Versions 3 and 4 for the <em>ideas</em> and come back to the syntax when yo
 <span class="nb">print</span><span class="p">(</span><span class="n">final_answer</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="-run-it-now">▶ Run it now</h3>
+<h3 id="-run-it-now">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now" tabindex="-1">¶</a></h3>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>agent_v1.py
 </code></pre></div>
 
 <p>You should see something like:</p>
-<div class="highlight"><pre><span></span><code>[turn 1] tools called: [&#39;add&#39;, &#39;word_count&#39;]
+<div class="highlight nocopy"><pre><span></span><code>[turn 1] tools called: [&#39;add&#39;, &#39;word_count&#39;]
 
 Final answer:
 1234 + 5678 = 6912. The sentence has 9 words.
 </code></pre></div>
-
 <p>A complete multi-tool agent — no <code>def</code>, no classes, no decorators.</p>
-<h3 id="the-pain-point-every-new-tool-means-edits-in-three-places">The pain point: every new tool means edits in three places</h3>
+<h3 id="the-pain-point-every-new-tool-means-edits-in-three-places">The pain point: every new tool means edits in three places<a aria-hidden="true" class="hanchor" href="#the-pain-point-every-new-tool-means-edits-in-three-places" tabindex="-1">¶</a></h3>
 <p>Now imagine adding a third tool, <code>get_time</code>. You must:</p>
 <ol>
 <li><strong>Write a new schema dict</strong> (<code>get_time_schema = {...}</code>) — and get every key right.</li>
@@ -330,8 +363,8 @@ Final answer:
 </ol>
 <p>Three places, in different parts of the file, that must stay in sync by hand. And there are quieter problems: if <code>args["a"]</code> is missing or the tool logic raises, the whole script crashes — the model never gets to see an error and recover. Every version that follows is an answer to this paragraph.</p>
 <hr>
-<h2 id="version-2--functions-and-a-dict-registry">Version 2 — Functions and a Dict Registry</h2>
-<h3 id="what-changed-from-v1-to-v2">What changed from V1 to V2</h3>
+<h2 id="version-2--functions-and-a-dict-registry">Version 2 — Functions and a Dict Registry<a aria-hidden="true" class="hanchor" href="#version-2--functions-and-a-dict-registry" tabindex="-1">¶</a></h2>
+<h3 id="what-changed-from-v1-to-v2">What changed from V1 to V2<a aria-hidden="true" class="hanchor" href="#what-changed-from-v1-to-v2" tabindex="-1">¶</a></h3>
 <ul>
 <li>Each tool's logic moves out of the <code>elif</code> branch into a <strong>named function</strong> (<code>add</code>, <code>word_count</code>).</li>
 <li>The <code>if/elif</code> chain becomes a <strong>dict lookup</strong>: <code>TOOLS[name]</code> finds both the function and its schema in one place.</li>
@@ -341,7 +374,7 @@ Final answer:
 </ul>
 <p>Same harness, same two tools, same answers — reorganized.</p>
 <p>The whole idea in one sentence: a "tool" is just <em>a function plus a dict that describes it</em>, and a "registry" is just <em>a dict that maps a tool's name to those two things</em>.</p>
-<h3 id="21-write-the-functions-and-their-schema-dicts">2.1 Write the functions and their schema dicts</h3>
+<h3 id="21-write-the-functions-and-their-schema-dicts">2.1 Write the functions and their schema dicts<a aria-hidden="true" class="hanchor" href="#21-write-the-functions-and-their-schema-dicts" tabindex="-1">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 
 <span class="c1"># ── Tool 1 ────────────────────────────────────────────────────────────</span>
@@ -386,7 +419,7 @@ Final answer:
 <span class="p">}</span>
 </code></pre></div>
 
-<h3 id="22-register-them-in-a-plain-dict">2.2 Register them in a plain dict</h3>
+<h3 id="22-register-them-in-a-plain-dict">2.2 Register them in a plain dict<a aria-hidden="true" class="hanchor" href="#22-register-them-in-a-plain-dict" tabindex="-1">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="c1"># The registry maps a tool name -&gt; {&quot;fn&quot;: the function, &quot;schema&quot;: the dict}.</span>
 <span class="n">TOOLS</span> <span class="o">=</span> <span class="p">{}</span>
 
@@ -398,7 +431,7 @@ Final answer:
 <span class="n">register</span><span class="p">(</span><span class="s2">&quot;word_count&quot;</span><span class="p">,</span> <span class="n">word_count</span><span class="p">,</span> <span class="n">word_count_schema</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="23-build-the-list-the-api-needs">2.3 Build the list the API needs</h3>
+<h3 id="23-build-the-list-the-api-needs">2.3 Build the list the API needs<a aria-hidden="true" class="hanchor" href="#23-build-the-list-the-api-needs" tabindex="-1">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">tools_for_api</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the list passed to client.responses.create(tools=...).&quot;&quot;&quot;</span>
     <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
@@ -407,7 +440,7 @@ Final answer:
     <span class="k">return</span> <span class="n">result</span>
 </code></pre></div>
 
-<h3 id="24-dispatch-look-up-a-tool-and-call-it">2.4 Dispatch: look up a tool and call it</h3>
+<h3 id="24-dispatch-look-up-a-tool-and-call-it">2.4 Dispatch: look up a tool and call it<a aria-hidden="true" class="hanchor" href="#24-dispatch-look-up-a-tool-and-call-it" tabindex="-1">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">dispatch</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">arguments_str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Look up a tool, run it, and ALWAYS return a string (never crash).&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">TOOLS</span><span class="p">:</span>
@@ -426,7 +459,7 @@ Final answer:
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Error (</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
 </code></pre></div>
 
-<h3 id="-check-it-now-no-api-key-needed-1">▶ Check it now (no API key needed)</h3>
+<h3 id="-check-it-now-no-api-key-needed-1">▶ Check it now (no API key needed)<a aria-hidden="true" class="hanchor" href="#-check-it-now-no-api-key-needed-1" tabindex="-1">¶</a></h3>
 <p>With everything above in one file, no API key is needed to test dispatch itself. Add and run:</p>
 <div class="highlight"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="n">dispatch</span><span class="p">(</span><span class="s2">&quot;add&quot;</span><span class="p">,</span> <span class="s1">&#39;{&quot;a&quot;: 2, &quot;b&quot;: 3}&#39;</span><span class="p">))</span>      <span class="c1"># 5</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">dispatch</span><span class="p">(</span><span class="s2">&quot;add&quot;</span><span class="p">,</span> <span class="s1">&#39;{&quot;a&quot;: 2}&#39;</span><span class="p">))</span>              <span class="c1"># Error (TypeError): ...</span>
@@ -434,7 +467,7 @@ Final answer:
 </code></pre></div>
 
 <p>Notice the last two: the bad calls produce <em>readable error strings</em>, not crashes. In Version 1 they would have killed the script.</p>
-<h3 id="25-handle-multiple-tool-calls--a-plain-for-loop">2.5 Handle multiple tool calls — a plain <code>for</code> loop</h3>
+<h3 id="25-handle-multiple-tool-calls--a-plain-for-loop">2.5 Handle multiple tool calls — a plain <code>for</code> loop<a aria-hidden="true" class="hanchor" href="#25-handle-multiple-tool-calls--a-plain-for-loop" tabindex="-1">¶</a></h3>
 <p>The Responses API can return several <code>function_call</code> items in one response. A <code>for</code> loop handles them all:</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_tool_calls</span><span class="p">(</span><span class="n">function_calls</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;function_calls is the list of function_call items from resp.output.&quot;&quot;&quot;</span>
@@ -449,7 +482,7 @@ Final answer:
     <span class="k">return</span> <span class="n">outputs</span>
 </code></pre></div>
 
-<h3 id="26-the-full-agent-loop-using-only-functions-and-dicts">2.6 The full agent loop using only functions and dicts</h3>
+<h3 id="26-the-full-agent-loop-using-only-functions-and-dicts">2.6 The full agent loop using only functions and dicts<a aria-hidden="true" class="hanchor" href="#26-the-full-agent-loop-using-only-functions-and-dicts" tabindex="-1">¶</a></h3>
 <p>Put it all together in a single file <code>agent_v2.py</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># agent_v2.py  — complete, no classes, no decorators, no threads</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
@@ -584,17 +617,16 @@ Final answer:
     <span class="nb">print</span><span class="p">(</span><span class="n">answer</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-1">▶ Run it now</h3>
+<h3 id="-run-it-now-1">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-1" tabindex="-1">¶</a></h3>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>agent_v2.py
 </code></pre></div>
 
 <p>You should see one or two turn lines followed by:</p>
-<div class="highlight"><pre><span></span><code>[turn 1] tools called: [&#39;add&#39;, &#39;word_count&#39;]
+<div class="highlight nocopy"><pre><span></span><code>[turn 1] tools called: [&#39;add&#39;, &#39;word_count&#39;]
 
 Final answer:
 1234 + 5678 = 6912. The sentence has 9 words.
 </code></pre></div>
-
 <p>The same output as Version 1 — that is the point. That is the complete tool system — no classes, no decorators, no threads. Everything from here is a convenience upgrade. Adding a tool now means: write a function, write its schema, call <code>register(...)</code> once. The dispatch code never changes again.</p>
 <blockquote>
 <p><strong>Checkpoint.</strong> If the script ran and gave sensible answers, you have a fully working
@@ -602,8 +634,8 @@ multi-tool agent. The remaining versions show how to remove repetitive boilerpla
 to make the agent <em>work</em> — it already works.</p>
 </blockquote>
 <hr>
-<h2 id="version-3--classes-tool-and-toolregistry">Version 3 — Classes: <code>Tool</code> and <code>ToolRegistry</code></h2>
-<h3 id="what-changed-from-v2-to-v3">What changed from V2 to V3</h3>
+<h2 id="version-3--classes-tool-and-toolregistry">Version 3 — Classes: <code>Tool</code> and <code>ToolRegistry</code><a aria-hidden="true" class="hanchor" href="#version-3--classes-tool-and-toolregistry" tabindex="-1">¶</a></h2>
+<h3 id="what-changed-from-v2-to-v3">What changed from V2 to V3<a aria-hidden="true" class="hanchor" href="#what-changed-from-v2-to-v3" tabindex="-1">¶</a></h3>
 <ul>
 <li>Each <em>function + schema dict</em> pair becomes a single <strong><code>Tool</code> object</strong> — the data and the behavior now live in one place.</li>
 <li>The module-level <code>TOOLS</code> dict and its three loose helpers (<code>register</code>, <code>tools_for_api</code>, <code>dispatch</code>) become one <strong><code>ToolRegistry</code> object</strong> with methods <code>register()</code>, <code>to_openai_schema()</code>, and <code>dispatch()</code>.</li>
@@ -622,12 +654,12 @@ and override <code>run</code>" means: make a new blueprint based on <code>Tool</
 <code>run</code>. The Version 2 beginner track replaces this whole class with <em>a function plus a
 <code>schema</code> dict</em> — same information, no new syntax.</p>
 </blockquote>
-<h3 id="the-mapping-classdecorator-version--version-2-plain-function-version">The mapping: class/decorator version ↔ Version 2 plain-function version</h3>
-<table>
+<h3 id="the-mapping-classdecorator-version--version-2-plain-function-version">The mapping: class/decorator version ↔ Version 2 plain-function version<a aria-hidden="true" class="hanchor" href="#the-mapping-classdecorator-version--version-2-plain-function-version" tabindex="-1">¶</a></h3>
+<div class="table-wrap"><table>
 <thead>
 <tr>
-<th>Class/decorator version (V3/V4)</th>
-<th>Version 2 plain-function version</th>
+<th scope="col">Class/decorator version (V3/V4)</th>
+<th scope="col">Version 2 plain-function version</th>
 </tr>
 </thead>
 <tbody>
@@ -656,8 +688,8 @@ and override <code>run</code>" means: make a new blueprint based on <code>Tool</
 <td><code>run_tool_calls()</code> (a <code>for</code> loop)</td>
 </tr>
 </tbody>
-</table>
-<h3 id="31-the-tool-base-class">3.1 The <code>Tool</code> base class</h3>
+</table></div>
+<h3 id="31-the-tool-base-class">3.1 The <code>Tool</code> base class<a aria-hidden="true" class="hanchor" href="#31-the-tool-base-class" tabindex="-1">¶</a></h3>
 <p>Start with a clear interface. Every tool is an object with a name, a description, a JSON Schema for its parameters, and a <code>run</code> method that accepts keyword arguments and returns a string.</p>
 <p><strong>The explicit approach: subclass <code>Tool</code> and override <code>run</code>.</strong></p>
 <div class="highlight"><pre><span></span><code><span class="c1"># tools/base.py</span>
@@ -696,10 +728,10 @@ and override <code>run</code>" means: make a new blueprint based on <code>Tool</
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="-check-it-now-no-api-key-needed-2">▶ Check it now (no API key needed)</h3>
+<h3 id="-check-it-now-no-api-key-needed-2">▶ Check it now (no API key needed)<a aria-hidden="true" class="hanchor" href="#-check-it-now-no-api-key-needed-2" tabindex="-1">¶</a></h3>
 <p>In a Python REPL with the class pasted in, run <code>AddTool().run(a=2, b=3)</code> — you should get <code>"5"</code>. The object also carries its own schema: <code>AddTool().parameters</code> is the dict you used to keep in a separate variable.</p>
 <p>This works but it is verbose. For every tool you must write the JSON Schema by hand, which means the schema and the Python signature can drift again. That is why the <code>@tool</code> decorator (Version 4) is more practical for most tools.</p>
-<h3 id="32-the-toolregistry-class">3.2 The <code>ToolRegistry</code> class</h3>
+<h3 id="32-the-toolregistry-class">3.2 The <code>ToolRegistry</code> class<a aria-hidden="true" class="hanchor" href="#32-the-toolregistry-class" tabindex="-1">¶</a></h3>
 <p>The registry is the single object that knows about all tools. It owns three responsibilities: registering tools, exporting the API schema, and dispatching calls. It is the same idea as the Version 2 <code>TOOLS</code> dict plus <code>register()</code>, <code>tools_for_api()</code>, and <code>dispatch()</code> — bundled into one object.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># tools/registry.py</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -869,7 +901,7 @@ and override <code>run</code>" means: make a new blueprint based on <code>Tool</
 </code></pre></div>
 
 <p>(That is the full production-shaped module, the form that ends up in the package. For the single-file version below we use a compact registry with the same three methods.)</p>
-<h3 id="33-the-full-file-agent_v3py">3.3 The full file: <code>agent_v3.py</code></h3>
+<h3 id="33-the-full-file-agent_v3py">3.3 The full file: <code>agent_v3.py</code><a aria-hidden="true" class="hanchor" href="#33-the-full-file-agent_v3py" tabindex="-1">¶</a></h3>
 <p>The same harness as <code>agent_v2.py</code>, in one pasteable file. Compare them side by side: the loop is character-for-character the same except that it asks <code>registry</code> instead of calling loose functions.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># agent_v3.py — same harness; tools are objects, the registry is a class</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
@@ -1007,14 +1039,14 @@ and override <code>run</code>" means: make a new blueprint based on <code>Tool</
     <span class="nb">print</span><span class="p">(</span><span class="n">answer</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-2">▶ Run it now</h3>
+<h3 id="-run-it-now-2">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-2" tabindex="-1">¶</a></h3>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>agent_v3.py
 </code></pre></div>
 
 <p>You should see the same output as Versions 1 and 2. The tool <em>behavior</em> is identical — you have only reorganized who owns the registry. The same idea, organized.</p>
 <hr>
-<h2 id="version-4--the-tool-decorator">Version 4 — The <code>@tool</code> Decorator</h2>
-<h3 id="what-changed-from-v3-to-v4">What changed from V3 to V4</h3>
+<h2 id="version-4--the-tool-decorator">Version 4 — The <code>@tool</code> Decorator<a aria-hidden="true" class="hanchor" href="#version-4--the-tool-decorator" tabindex="-1">¶</a></h2>
+<h3 id="what-changed-from-v3-to-v4">What changed from V3 to V4<a aria-hidden="true" class="hanchor" href="#what-changed-from-v3-to-v4" tabindex="-1">¶</a></h3>
 <ul>
 <li>The hand-written schema dicts <strong>disappear</strong>: <code>@tool</code> builds each one automatically from the function's <strong>type hints</strong> and <strong>docstring</strong>.</li>
 <li>A new <code>Tool</code> subclass, <strong><code>FunctionTool</code></strong>, wraps a plain function — so a decorated function <em>is</em> an ordinary <code>Tool</code> object that the V3 registry already accepts, unchanged.</li>
@@ -1022,7 +1054,7 @@ and override <code>run</code>" means: make a new blueprint based on <code>Tool</
 <li>Nothing else changes: the registry, dispatch, and the agent loop are untouched.</li>
 </ul>
 <p><strong>Why now?</strong> Writing schema dicts by hand is tedious and error-prone. If you rename a parameter in the function but forget to update the dict, the model gets a stale description. The <code>@tool</code> decorator reads the function's type hints and docstring and builds the dict for you — it's just automating the dict you already know how to write.</p>
-<h3 id="41-decorators-in-60-seconds">4.1 Decorators in 60 seconds</h3>
+<h3 id="41-decorators-in-60-seconds">4.1 Decorators in 60 seconds<a aria-hidden="true" class="hanchor" href="#41-decorators-in-60-seconds" tabindex="-1">¶</a></h3>
 <p>A decorator is <strong>just a function that takes a function</strong>. There is no other magic. Watch:</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">shout</span><span class="p">(</span><span class="n">fn</span><span class="p">):</span>                        <span class="c1"># takes a function...</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -1049,7 +1081,7 @@ it:</strong> the Version 1–3 code above writes the same schema dict directly, 
 moving parts and shows you exactly what the model receives. You can read this section
 for interest and skip straight to using hand-written schema dicts.</p>
 </blockquote>
-<h3 id="42-write-a-function-with-type-hints-and-a-docstring">4.2 Write a function with type hints and a docstring</h3>
+<h3 id="42-write-a-function-with-type-hints-and-a-docstring">4.2 Write a function with type hints and a docstring<a aria-hidden="true" class="hanchor" href="#42-write-a-function-with-type-hints-and-a-docstring" tabindex="-1">¶</a></h3>
 <blockquote>
 <p><strong>Read, don't run (yet).</strong> The <code>tool</code> decorator used in §4.2–4.4 doesn't exist
 yet — we build it ourselves in §4.5–4.6 below. Pasting this block on its own gives
@@ -1069,7 +1101,7 @@ defined (or use the complete <code>tools/base.py</code> listing at the end of th
 </code></pre></div>
 
 <p>No schema dict. The decorator inspects the hints (<code>float</code>) and the docstring (<code>Args:</code> block) and produces the same dict you would write by hand.</p>
-<h3 id="43-verify-what-the-decorator-produced">4.3 Verify what the decorator produced</h3>
+<h3 id="43-verify-what-the-decorator-produced">4.3 Verify what the decorator produced<a aria-hidden="true" class="hanchor" href="#43-verify-what-the-decorator-produced" tabindex="-1">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">add</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
 </code></pre></div>
@@ -1087,9 +1119,9 @@ defined (or use the complete <code>tools/base.py</code> listing at the end of th
 </code></pre></div>
 
 <p>Identical to the hand-written dict from Versions 1–3. <code>add.name</code> is <code>"add"</code>, <code>add.description</code> is <code>"Add two numbers and return the result."</code>. Nothing was written by hand.</p>
-<h3 id="44-the-decorated-object-still-has-parameters-name-description">4.4 The decorated object still has <code>.parameters</code>, <code>.name</code>, <code>.description</code></h3>
+<h3 id="44-the-decorated-object-still-has-parameters-name-description">4.4 The decorated object still has <code>.parameters</code>, <code>.name</code>, <code>.description</code><a aria-hidden="true" class="hanchor" href="#44-the-decorated-object-still-has-parameters-name-description" tabindex="-1">¶</a></h3>
 <p>After <code>@tool</code>, <code>add</code> is no longer a plain function — it is a <code>FunctionTool</code> object with those three attributes, plus a <code>.run(**kwargs)</code> method. You can still call <code>add.run(a=2, b=3)</code> and get <code>"5"</code>.</p>
-<h3 id="45-functiontool--wrapping-a-decorated-function">4.5 <code>FunctionTool</code> — wrapping a decorated function</h3>
+<h3 id="45-functiontool--wrapping-a-decorated-function">4.5 <code>FunctionTool</code> — wrapping a decorated function<a aria-hidden="true" class="hanchor" href="#45-functiontool--wrapping-a-decorated-function" tabindex="-1">¶</a></h3>
 <p>The <code>@tool</code> decorator produces a <code>FunctionTool</code>, which is a <code>Tool</code> subclass that delegates <code>run</code> to the original function:</p>
 <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FunctionTool</span><span class="p">(</span><span class="n">Tool</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A Tool wrapping a plain callable, produced by the @tool decorator.&quot;&quot;&quot;</span>
@@ -1115,7 +1147,7 @@ defined (or use the complete <code>tools/base.py</code> listing at the end of th
 </code></pre></div>
 
 <p>Because <code>FunctionTool</code> <em>is a</em> <code>Tool</code>, the Version 3 registry accepts it with no changes: <code>registry.register(add)</code> — done.</p>
-<h3 id="46-the-tool-decorators-internals">4.6 The <code>@tool</code> decorator's internals</h3>
+<h3 id="46-the-tool-decorators-internals">4.6 The <code>@tool</code> decorator's internals<a aria-hidden="true" class="hanchor" href="#46-the-tool-decorators-internals" tabindex="-1">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="c1"># Maps Python types to JSON Schema type strings</span>
 <span class="n">_PY_TO_JSON</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">type</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
     <span class="nb">str</span><span class="p">:</span>   <span class="s2">&quot;string&quot;</span><span class="p">,</span>
@@ -1225,7 +1257,7 @@ defined (or use the complete <code>tools/base.py</code> listing at the end of th
     <span class="p">)</span>
 </code></pre></div>
 
-<h3 id="seeing-the-generated-schema-for-a-more-complex-function">Seeing the Generated Schema for a More Complex Function</h3>
+<h3 id="seeing-the-generated-schema-for-a-more-complex-function">Seeing the Generated Schema for a More Complex Function<a aria-hidden="true" class="hanchor" href="#seeing-the-generated-schema-for-a-more-complex-function" tabindex="-1">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="nd">@tool</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">word_count</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">strip_punctuation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Count the number of words in a string.</span>
@@ -1245,7 +1277,7 @@ defined (or use the complete <code>tools/base.py</code> listing at the end of th
 </code></pre></div>
 
 <p>Output:</p>
-<div class="highlight"><pre><span></span><code>{
+<div class="highlight nocopy"><pre><span></span><code>{
   &quot;type&quot;: &quot;object&quot;,
   &quot;properties&quot;: {
     &quot;text&quot;: {
@@ -1263,15 +1295,14 @@ defined (or use the complete <code>tools/base.py</code> listing at the end of th
   &quot;additionalProperties&quot;: false
 }
 </code></pre></div>
-
 <p><code>text</code> is required because it has no default. <code>strip_punctuation</code> is optional because it defaults to <code>False</code>. The descriptions came from the docstring. Nothing was written by hand.</p>
-<h3 id="python-to-json-schema-type-mapping">Python-to-JSON Schema Type Mapping</h3>
-<table>
+<h3 id="python-to-json-schema-type-mapping">Python-to-JSON Schema Type Mapping<a aria-hidden="true" class="hanchor" href="#python-to-json-schema-type-mapping" tabindex="-1">¶</a></h3>
+<div class="table-wrap"><table>
 <thead>
 <tr>
-<th>Python type</th>
-<th>JSON Schema <code>"type"</code></th>
-<th>Notes</th>
+<th scope="col">Python type</th>
+<th scope="col">JSON Schema <code>"type"</code></th>
+<th scope="col">Notes</th>
 </tr>
 </thead>
 <tbody>
@@ -1311,7 +1342,7 @@ defined (or use the complete <code>tools/base.py</code> listing at the end of th
 <td>Conservative fallback</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <blockquote>
 <p><strong>Warning — <code>bool</code> before <code>int</code>.</strong> In Python, <code>bool</code> is a subclass of <code>int</code>. If your lookup table iterates in the wrong order you will map <code>bool</code> parameters to <code>"integer"</code>. The <code>_PY_TO_JSON</code> dict above is ordered correctly in Python 3.7+ because dict preserves insertion order, and <code>bool</code> appears before <code>int</code> in the literal. If you ever switch to <code>isinstance</code> checks, test <code>bool</code> first.</p>
 </blockquote>
@@ -1320,14 +1351,14 @@ defined (or use the complete <code>tools/base.py</code> listing at the end of th
 <blockquote>
 <p><strong>Warning — mutable defaults.</strong> If a function parameter has a mutable default like <code>def fn(items: list = [])</code>, <code>_build_schema</code> will still mark it optional correctly. But at call time, Python's mutable default trap still applies. Tools should use <code>None</code> as the default and construct the mutable object inside the function body. The decorator does not fix this for you.</p>
 </blockquote>
-<h3 id="47-using-tool-objects-with-the-version-2-dict-registry">4.7 Using <code>@tool</code> objects with the Version 2 dict registry</h3>
+<h3 id="47-using-tool-objects-with-the-version-2-dict-registry">4.7 Using <code>@tool</code> objects with the Version 2 dict registry<a aria-hidden="true" class="hanchor" href="#47-using-tool-objects-with-the-version-2-dict-registry" tabindex="-1">¶</a></h3>
 <p>The decorator does not <em>require</em> the class-based registry. A <code>FunctionTool</code> produced by <code>@tool</code> has <code>.name</code>, <code>.parameters</code>, and <code>.run()</code>, so you can even slot it into the Version 2 <code>TOOLS</code> dict:</p>
 <div class="highlight"><pre><span></span><code><span class="n">TOOLS</span><span class="p">[</span><span class="s2">&quot;add&quot;</span><span class="p">]</span>        <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;fn&quot;</span><span class="p">:</span> <span class="n">add</span><span class="o">.</span><span class="n">run</span><span class="p">,</span>        <span class="s2">&quot;schema&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">add</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">add</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>        <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="n">add</span><span class="o">.</span><span class="n">parameters</span><span class="p">}}</span>
 <span class="n">TOOLS</span><span class="p">[</span><span class="s2">&quot;word_count&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;fn&quot;</span><span class="p">:</span> <span class="n">word_count</span><span class="o">.</span><span class="n">run</span><span class="p">,</span> <span class="s2">&quot;schema&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">word_count</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">word_count</span><span class="o">.</span><span class="n">description</span><span class="p">,</span> <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="n">word_count</span><span class="o">.</span><span class="n">parameters</span><span class="p">}}</span>
 </code></pre></div>
 
 <p>That works, but it is getting wordy — which is exactly what the Version 3 <code>ToolRegistry</code> removes: it accepts <code>Tool</code> objects directly, so registration is just <code>registry.register(add)</code>.</p>
-<h3 id="the-full-file-agent_v4py">The full file: <code>agent_v4.py</code></h3>
+<h3 id="the-full-file-agent_v4py">The full file: <code>agent_v4.py</code><a aria-hidden="true" class="hanchor" href="#the-full-file-agent_v4py" tabindex="-1">¶</a></h3>
 <p>The whole ladder in one pasteable file: the V3 classes, the new decorator, and the unchanged loop. It is longer than <code>agent_v3.py</code> only because the decorator machinery lives inside it — once it moves into a <code>tools/</code> package (next section), the agent file shrinks dramatically.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># agent_v4.py — same harness; @tool builds the schemas for us</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
@@ -1548,13 +1579,13 @@ defined (or use the complete <code>tools/base.py</code> listing at the end of th
     <span class="nb">print</span><span class="p">(</span><span class="n">answer</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="-run-it-now-3">▶ Run it now</h3>
+<h3 id="-run-it-now-3">▶ Run it now<a aria-hidden="true" class="hanchor" href="#-run-it-now-3" tabindex="-1">¶</a></h3>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>agent_v4.py
 </code></pre></div>
 
 <p>Same output as Versions 1, 2, and 3 — confirm it for yourself. Then notice what <em>writing a new tool</em> costs now: a function with type hints and a docstring, plus one <code>registry.register(...)</code> line. No schema dict, no <code>elif</code> branch, no list to update. Alternatively, take your <code>agent_v2.py</code>, replace its two function definitions and schema dicts with the <code>@tool</code>-decorated versions (plus the machinery), and confirm the output is identical there too.</p>
 <hr>
-<h2 id="going-further-optional--parallel-tool-execution">Going Further (Optional) — Parallel Tool Execution</h2>
+<h2 id="going-further-optional--parallel-tool-execution">Going Further (Optional) — Parallel Tool Execution<a aria-hidden="true" class="hanchor" href="#going-further-optional--parallel-tool-execution" tabindex="-1">¶</a></h2>
 <p><strong>Why now?</strong> The <code>for</code> loop over tool calls in Versions 1–4 runs them one at a time. If the model asks for weather in Paris and weather in Tokyo simultaneously, you wait for Paris to finish before starting Tokyo. Threads fix this. This is a speed optimization only — it does not change the results.</p>
 <blockquote class="beginner">
 <p>🟢 <strong>Parallel tools are an optimization, not a requirement.</strong> The code below uses
@@ -1567,7 +1598,7 @@ bit of new syntax below — <code>{... for fc in function_calls}</code> — is a
 comprehension</strong>, the dict cousin of the list comprehension from Phase 1; it builds a
 dict in one line instead of with a loop.</p>
 </blockquote>
-<h3 id="why-the-phase-1-serial-loop-is-slow-here">Why the Phase 1 serial loop is slow here</h3>
+<h3 id="why-the-phase-1-serial-loop-is-slow-here">Why the Phase 1 serial loop is slow here<a aria-hidden="true" class="hanchor" href="#why-the-phase-1-serial-loop-is-slow-here" tabindex="-1">¶</a></h3>
 <p>The Responses API can return multiple <code>function_call</code> items in a single response. This happens when the model determines that several tools can be called simultaneously — for example, looking up two different pieces of information.</p>
 <p>A single response <code>resp.output</code> might contain:</p>
 <div class="highlight"><pre><span></span><code><span class="p">[</span>
@@ -1577,7 +1608,7 @@ dict in one line instead of with a loop.</p>
 </code></pre></div>
 
 <p>Both calls need results before the model can proceed. Running them serially wastes time. Since most tools are I/O-bound (network calls, file reads, subprocess runs), they release the GIL and <code>ThreadPoolExecutor</code> gives true concurrency.</p>
-<h3 id="parallel-dispatch">Parallel Dispatch</h3>
+<h3 id="parallel-dispatch">Parallel Dispatch<a aria-hidden="true" class="hanchor" href="#parallel-dispatch" tabindex="-1">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="c1"># tools/parallel.py</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -1636,7 +1667,7 @@ dict in one line instead of with a loop.</p>
     <span class="k">return</span> <span class="n">results</span>
 </code></pre></div>
 
-<h3 id="sequential-fallback">Sequential Fallback</h3>
+<h3 id="sequential-fallback">Sequential Fallback<a aria-hidden="true" class="hanchor" href="#sequential-fallback" tabindex="-1">¶</a></h3>
 <p>Sometimes you cannot parallelize: if tool A writes to a database and tool B reads from the same table, running them concurrently is a race condition. Provide a sequential version for those cases:</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">dispatch_sequential</span><span class="p">(</span>
     <span class="n">registry</span><span class="p">:</span> <span class="s2">&quot;ToolRegistry&quot;</span><span class="p">,</span>
@@ -1654,7 +1685,7 @@ dict in one line instead of with a loop.</p>
     <span class="k">return</span> <span class="n">results</span>
 </code></pre></div>
 
-<h3 id="when-parallel-is-unsafe">When Parallel is Unsafe</h3>
+<h3 id="when-parallel-is-unsafe">When Parallel is Unsafe<a aria-hidden="true" class="hanchor" href="#when-parallel-is-unsafe" tabindex="-1">¶</a></h3>
 <p>Use <code>dispatch_sequential</code> when:</p>
 <ul>
 <li>Tools share mutable state (in-memory caches, open file handles, database transactions) and the calls are not independent.</li>
@@ -1669,7 +1700,7 @@ dict in one line instead of with a loop.</p>
 </ul>
 <p>The safe default for unknown tools is sequential. Switch to parallel only when you understand each tool's side effects.</p>
 <hr>
-<h2 id="argument-validation-strict-mode-vs-manual-checks-optional">Argument Validation: Strict Mode vs. Manual Checks (optional)</h2>
+<h2 id="argument-validation-strict-mode-vs-manual-checks-optional">Argument Validation: Strict Mode vs. Manual Checks (optional)<a aria-hidden="true" class="hanchor" href="#argument-validation-strict-mode-vs-manual-checks-optional" tabindex="-1">¶</a></h2>
 <p>The Responses API supports a <code>"strict": True</code> field on each tool definition. When strict mode is active, the API guarantees:</p>
 <ol>
 <li>The model will only send keys that are listed in <code>properties</code>.</li>
@@ -1684,7 +1715,7 @@ dict in one line instead of with a loop.</p>
 <li>It documents exactly what strict mode is enforcing, so you understand the contract.</li>
 </ul>
 <p><strong>For production: use <code>strict=True</code> and make all parameters required (using null for truly optional ones).</strong> The API error messages when the model violates the schema are clearer than your own validation, and the enforcement happens before the response arrives so there is zero overhead in your loop.</p>
-<h3 id="strict-compatible-schema-example">Strict-Compatible Schema Example</h3>
+<h3 id="strict-compatible-schema-example">Strict-Compatible Schema Example<a aria-hidden="true" class="hanchor" href="#strict-compatible-schema-example" tabindex="-1">¶</a></h3>
 <p>A tool with one required param and one "optional" param, strict-mode compatible:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Instead of:</span>
 <span class="c1">#   &quot;strip_punctuation&quot;: {&quot;type&quot;: &quot;boolean&quot;}  (and not in required)</span>
@@ -1710,8 +1741,8 @@ dict in one line instead of with a loop.</p>
 
 <p>The <code>@tool</code> decorator does not currently generate this form automatically; it outputs simple schemas that work with <code>strict=False</code>. For a production system, you would either extend the decorator to accept <code>strict=True</code> and emit null-typed optionals, or write schemas by hand for strict-mode tools.</p>
 <hr>
-<h2 id="structured-results-and-errors-optional">Structured Results and Errors (optional)</h2>
-<h3 id="the-string-contract">The String Contract</h3>
+<h2 id="structured-results-and-errors-optional">Structured Results and Errors (optional)<a aria-hidden="true" class="hanchor" href="#structured-results-and-errors-optional" tabindex="-1">¶</a></h2>
+<h3 id="the-string-contract">The String Contract<a aria-hidden="true" class="hanchor" href="#the-string-contract" tabindex="-1">¶</a></h3>
 <p>Every tool returns a string. This is not a limitation — it is a deliberate interface boundary. The model receives text; strings are the natural unit.</p>
 <p>For structured data, JSON-encode it:</p>
 <div class="highlight"><pre><span></span><code><span class="nd">@tool</span>
@@ -1727,7 +1758,7 @@ dict in one line instead of with a loop.</p>
 </code></pre></div>
 
 <p>The model will see <code>{"id": 42, "name": "Ada Lovelace", "role": "engineer"}</code> and can reason about the fields naturally. Do not return a Python <code>repr</code> or a pretty-printed table — JSON is the most reliably parseable format for the model.</p>
-<h3 id="error-strings">Error Strings</h3>
+<h3 id="error-strings">Error Strings<a aria-hidden="true" class="hanchor" href="#error-strings" tabindex="-1">¶</a></h3>
 <p>When a tool fails, return an error string. Never raise. The <code>dispatch</code> method in <code>ToolRegistry</code> already wraps <code>tool.run()</code> in a try/except, but tools themselves must not raise either:</p>
 <div class="highlight"><pre><span></span><code><span class="nd">@tool</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">safe_divide</span><span class="p">(</span><span class="n">numerator</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">denominator</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -1743,12 +1774,11 @@ dict in one line instead of with a loop.</p>
 </code></pre></div>
 
 <p>The <code>_format_exception</code> helper in <code>ToolRegistry</code> produces:</p>
-<div class="highlight"><pre><span></span><code>Error (ZeroDivisionError): division by zero
+<div class="highlight nocopy"><pre><span></span><code>Error (ZeroDivisionError): division by zero
 </code></pre></div>
-
 <p>This string is the tool output. The model reads it, understands something went wrong, and can inform the user or try a different approach. The agent loop continues normally.</p>
 <hr>
-<h2 id="the-updated-agent-loop--the-production-shape">The Updated Agent Loop — the Production Shape</h2>
+<h2 id="the-updated-agent-loop--the-production-shape">The Updated Agent Loop — the Production Shape<a aria-hidden="true" class="hanchor" href="#the-updated-agent-loop--the-production-shape" tabindex="-1">¶</a></h2>
 <p><em>The optional detour ends here — the core path resumes with this section.</em></p>
 <p>With the registry and parallel dispatch in place, the agent loop becomes completely decoupled from individual tools.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># agent.py</span>
@@ -1844,10 +1874,10 @@ dict in one line instead of with a loop.</p>
 <li><code>max_turns</code> is a hard guard against runaway loops. 10 is a reasonable default for most tasks; increase it for complex multi-step agents.</li>
 </ul>
 <hr>
-<h2 id="full-runnable-example--the-tools-package">Full Runnable Example — the <code>tools/</code> Package</h2>
+<h2 id="full-runnable-example--the-tools-package">Full Runnable Example — the <code>tools/</code> Package<a aria-hidden="true" class="hanchor" href="#full-runnable-example--the-tools-package" tabindex="-1">¶</a></h2>
 <p>Here is the complete file layout and a runnable script — the Version 4 harness split into modules, the way the consolidated package organizes it.</p>
-<h3 id="file-layout">File Layout</h3>
-<div class="highlight"><pre><span></span><code>project/
+<h3 id="file-layout">File Layout<a aria-hidden="true" class="hanchor" href="#file-layout" tabindex="-1">¶</a></h3>
+<div class="highlight nocopy"><pre><span></span><code>project/
 ├── agent.py
 └── tools/
     ├── __init__.py
@@ -1855,13 +1885,12 @@ dict in one line instead of with a loop.</p>
     ├── registry.py
     └── parallel.py
 </code></pre></div>
-
-<h3 id="toolsbasepy--complete"><code>tools/base.py</code> — Complete</h3>
-<blockquote>
+<h3 id="toolsbasepy--complete"><code>tools/base.py</code> — Complete<a aria-hidden="true" class="hanchor" href="#toolsbasepy--complete" tabindex="-1">¶</a></h3>
+<blockquote class="refcopy">
 <p><strong>Reference copy.</strong> Assembled from Version 4 (§4.5–4.6) unchanged, except the
 docstring parsing is factored into a <code>_parse_google_docstring</code> helper. Nothing new to
 type here — skim or skip. The maintained version lives in
-<a href="../../code/agent_harness/tools/base.py"><code>code/agent_harness/tools/base.py</code></a>.</p>
+<a class="repo-file" href="../../code/agent_harness/tools/base.py" title="Opens a file in the repository checkout — not part of this site"><code>code/agent_harness/tools/base.py</code></a>.</p>
 </blockquote>
 <div class="highlight"><pre><span></span><code><span class="c1"># tools/base.py</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -1971,12 +2000,12 @@ type here — skim or skip. The maintained version lives in
     <span class="k">return</span> <span class="n">FunctionTool</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">fn</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="n">desc</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="n">schema</span><span class="p">,</span> <span class="n">fn</span><span class="o">=</span><span class="n">fn</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="toolsregistrypy--complete"><code>tools/registry.py</code> — Complete</h3>
-<blockquote>
+<h3 id="toolsregistrypy--complete"><code>tools/registry.py</code> — Complete<a aria-hidden="true" class="hanchor" href="#toolsregistrypy--complete" tabindex="-1">¶</a></h3>
+<blockquote class="refcopy">
 <p><strong>Reference copy.</strong> Assembled from Version 3 (§3.2) unchanged, except the validation
 helper is compacted and <code>register()</code> returns <code>self</code> for chaining. Nothing new to type
 here — skim or skip. The maintained version lives in
-<a href="../../code/agent_harness/tools/registry.py"><code>code/agent_harness/tools/registry.py</code></a>.</p>
+<a class="repo-file" href="../../code/agent_harness/tools/registry.py" title="Opens a file in the repository checkout — not part of this site"><code>code/agent_harness/tools/registry.py</code></a>.</p>
 </blockquote>
 <div class="highlight"><pre><span></span><code><span class="c1"># tools/registry.py</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -2058,11 +2087,11 @@ here — skim or skip. The maintained version lives in
     <span class="k">return</span> <span class="kc">None</span>
 </code></pre></div>
 
-<h3 id="toolsparallelpy--complete"><code>tools/parallel.py</code> — Complete</h3>
-<blockquote>
+<h3 id="toolsparallelpy--complete"><code>tools/parallel.py</code> — Complete<a aria-hidden="true" class="hanchor" href="#toolsparallelpy--complete" tabindex="-1">¶</a></h3>
+<blockquote class="refcopy">
 <p><strong>Reference copy.</strong> Assembled from the "Going Further" section above unchanged
 (minus comments). Nothing new to type here — skim or skip. The maintained version
-lives in <a href="../../code/agent_harness/tools/parallel.py"><code>code/agent_harness/tools/parallel.py</code></a>.</p>
+lives in <a class="repo-file" href="../../code/agent_harness/tools/parallel.py" title="Opens a file in the repository checkout — not part of this site"><code>code/agent_harness/tools/parallel.py</code></a>.</p>
 </blockquote>
 <div class="highlight"><pre><span></span><code><span class="c1"># tools/parallel.py</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -2110,7 +2139,7 @@ lives in <a href="../../code/agent_harness/tools/parallel.py"><code>code/agent_h
     <span class="p">]</span>
 </code></pre></div>
 
-<h3 id="tools__init__py"><code>tools/__init__.py</code></h3>
+<h3 id="tools__init__py"><code>tools/__init__.py</code><a aria-hidden="true" class="hanchor" href="#tools__init__py" tabindex="-1">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="c1"># tools/__init__.py</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tool</span><span class="p">,</span> <span class="n">FunctionTool</span><span class="p">,</span> <span class="n">tool</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.registry</span><span class="w"> </span><span class="kn">import</span> <span class="n">ToolRegistry</span>
@@ -2126,7 +2155,7 @@ lives in <a href="../../code/agent_harness/tools/parallel.py"><code>code/agent_h
 <span class="p">]</span>
 </code></pre></div>
 
-<h3 id="-check-it-now-no-api-key-needed-3">▶ Check it now (no API key needed)</h3>
+<h3 id="-check-it-now-no-api-key-needed-3">▶ Check it now (no API key needed)<a aria-hidden="true" class="hanchor" href="#-check-it-now-no-api-key-needed-3" tabindex="-1">¶</a></h3>
 <p>The whole <code>tools/</code> package can be exercised offline — dispatch never touches the
 network. From the <code>project/</code> directory, save this as <code>check_tools.py</code> and run it:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># check_tools.py — exercises the tools/ package; no API key, no network.</span>
@@ -2154,19 +2183,18 @@ network. From the <code>project/</code> directory, save this as <code>check_tool
 </code></pre></div>
 
 <p>You should see:</p>
-<div class="highlight"><pre><span></span><code>5
+<div class="highlight nocopy"><pre><span></span><code>5
 Error: missing required argument &#39;b&#39;
 Error: unknown tool &#39;nope&#39;.
 </code></pre></div>
-
 <p>The same three behaviors as the Version 2 dispatch check (§2.4) — proof the package
 reorganization changed nothing about what the tool system <em>does</em>.</p>
-<h3 id="agentpy--complete-with-example-tools"><code>agent.py</code> — Complete with Example Tools</h3>
-<blockquote>
+<h3 id="agentpy--complete-with-example-tools"><code>agent.py</code> — Complete with Example Tools<a aria-hidden="true" class="hanchor" href="#agentpy--complete-with-example-tools" tabindex="-1">¶</a></h3>
+<blockquote class="refcopy">
 <p><strong>Reference copy.</strong> Assembled from "The Updated Agent Loop" above plus three
 <code>@tool</code> example tools — unchanged logic. Nothing new to type here — skim or skip.
 The maintained version lives in
-<a href="../../code/agent_harness/agent.py"><code>code/agent_harness/agent.py</code></a>.</p>
+<a class="repo-file" href="../../code/agent_harness/agent.py" title="Opens a file in the repository checkout — not part of this site"><code>code/agent_harness/agent.py</code></a>.</p>
 </blockquote>
 <div class="highlight"><pre><span></span><code><span class="c1"># agent.py</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -2310,18 +2338,17 @@ The maintained version lives in
     <span class="nb">print</span><span class="p">(</span><span class="n">answer</span><span class="p">)</span>
 </code></pre></div>
 
-<h3 id="example-transcript">Example Transcript</h3>
-<div class="highlight"><pre><span></span><code>[turn 1] tools called: [&#39;add&#39;, &#39;word_count&#39;] | tokens: 312in 45out 357total
+<h3 id="example-transcript">Example Transcript<a aria-hidden="true" class="hanchor" href="#example-transcript" tabindex="-1">¶</a></h3>
+<div class="highlight nocopy"><pre><span></span><code>[turn 1] tools called: [&#39;add&#39;, &#39;word_count&#39;] | tokens: 312in 45out 357total
 
 Final answer:
 1234 + 5678 = 6912.
 
 The sentence &quot;The quick brown fox jumps over the lazy dog&quot; contains 9 words.
 </code></pre></div>
-
 <p>In turn 1 the model issued two <code>function_call</code> items simultaneously. Both ran in parallel via <code>ThreadPoolExecutor</code>. The results were appended with their respective <code>call_id</code> values. The model received both outputs in turn 2 and produced the final text response with no further tool calls.</p>
 <hr>
-<h2 id="why-we-built-it-in-versions-the-problems-with-ad-hoc-dispatch">Why We Built It in Versions: The Problems with Ad-Hoc Dispatch</h2>
+<h2 id="why-we-built-it-in-versions-the-problems-with-ad-hoc-dispatch">Why We Built It in Versions: The Problems with Ad-Hoc Dispatch<a aria-hidden="true" class="hanchor" href="#why-we-built-it-in-versions-the-problems-with-ad-hoc-dispatch" tabindex="-1">¶</a></h2>
 <p>You now have a full tool system. This section names the five failure modes of the Version 1 / Phase 1 one-branch-per-tool approach — useful when you need to explain <em>why</em> the registry matters:</p>
 <p><strong>No single source of truth.</strong> The tool's schema (sent to the model) and the tool's implementation (called at runtime) are defined in separate places. They drift.</p>
 <p><strong>No validation.</strong> If the model sends <code>{"a": "hello", "b": 2}</code> for an <code>add</code> tool expecting integers, the error surfaces as a Python <code>TypeError</code> inside dispatch. You either crash the loop or you catch it with a bare <code>except</code> that swallows all errors equally.</p>
@@ -2338,13 +2365,13 @@ The sentence &quot;The quick brown fox jumps over the lazy dog&quot; contains 9 
 </ul>
 <p>Track each requirement back through the ladder: registration arrived in V2, classes organized it in V3, schema generation arrived in V4, and validation and parallelism came as add-ons to the registry. Same harness all the way up.</p>
 <hr>
-<h2 id="pitfalls">Pitfalls</h2>
-<table>
+<h2 id="pitfalls">Pitfalls<a aria-hidden="true" class="hanchor" href="#pitfalls" tabindex="-1">¶</a></h2>
+<div class="table-wrap"><table>
 <thead>
 <tr>
-<th>Pitfall</th>
-<th>What happens</th>
-<th>How to avoid</th>
+<th scope="col">Pitfall</th>
+<th scope="col">What happens</th>
+<th scope="col">How to avoid</th>
 </tr>
 </thead>
 <tbody>
@@ -2384,9 +2411,9 @@ The sentence &quot;The quick brown fox jumps over the lazy dog&quot; contains 9 
 <td>Truncate, summarize, or paginate tool output. A good rule: keep any single tool output under 2000 characters.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr>
-<h2 id="key-takeaways">Key takeaways</h2>
+<h2 id="key-takeaways">Key takeaways<a aria-hidden="true" class="hanchor" href="#key-takeaways" tabindex="-1">¶</a></h2>
 <ul>
 <li>The same harness climbed a <strong>ladder of versions</strong>: inline <code>if/elif</code> (V1) → functions +
   dict registry (V2) → <code>Tool</code>/<code>ToolRegistry</code> classes (V3) → the <code>@tool</code> decorator (V4).
@@ -2401,7 +2428,7 @@ The sentence &quot;The quick brown fox jumps over the lazy dog&quot; contains 9 
 <li>Run <strong>independent</strong> tool calls in <strong>parallel</strong> (threads) for speed; fall back to
   <strong>sequential</strong> when tools have conflicting side effects.</li>
 </ul>
-<h2 id="check-yourself">Check yourself</h2>
+<h2 id="check-yourself">Check yourself<a aria-hidden="true" class="hanchor" href="#check-yourself" tabindex="-1">¶</a></h2>
 <ol>
 <li>What can you change <em>without touching the agent loop</em> once you have a registry?</li>
 <li>Where does <code>@tool</code> get the schema's parameter names and types from?</li>
@@ -2421,7 +2448,7 @@ The sentence &quot;The quick brown fox jumps over the lazy dog&quot; contains 9 
 </ol>
 </details>
 <hr>
-<h2 id="exercises">Exercises</h2>
+<h2 id="exercises">Exercises<a aria-hidden="true" class="hanchor" href="#exercises" tabindex="-1">¶</a></h2>
 <p>See <a href="exercises.html"><code>EXERCISES.md</code> — Phase 2</a> for hands-on practice:</p>
 <ul>
 <li><strong>2.1 (warm-up):</strong> Register a new <code>calculator(expression: str)</code> tool through the registry (use <code>@tool</code>, or hand-write the schema per the beginner track). Call it from the agent without editing the loop.</li>
@@ -2435,27 +2462,95 @@ The sentence &quot;The quick brown fox jumps over the lazy dog&quot; contains 9 
 <a class="prev" href="01-bare-harness.html" rel="prev">← Phase 1 — Bare Harness</a>
 <a class="next" href="03-conversation-and-streaming.html" rel="next">Phase 3 — Conversation &amp; Streaming →</a>
 </nav>
-<p class="generated-note">Generated from <code>02-tool-system.md</code> — the markdown is the source of truth.</p>
+<p class="generated-note">Generated from <code>02-tool-system.md</code> — the markdown is the source of truth. Links marked ↗ open repository files and need a full checkout (or GitHub).</p>
 </footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
 </main>
 </div>
 <script>
-document.querySelectorAll('div.highlight').forEach(function (block) {
-  var btn = document.createElement('button');
-  btn.className = 'copy-btn';
-  btn.type = 'button';
-  btn.textContent = 'Copy';
-  btn.addEventListener('click', function () {
-    var code = block.querySelector('pre').innerText;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(code).then(function () {
-        btn.textContent = 'Copied!';
-        setTimeout(function () { btn.textContent = 'Copy'; }, 1500);
-      }).catch(function () {});  /* graceful no-op on file:// denial */
-    }
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there. */
+  if (matchMedia('(max-width: 800px)').matches) {
+    var sb = document.querySelector('.sidebar-wrap');
+    if (sb) { sb.removeAttribute('open'); }
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards. */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
   });
-  block.insertBefore(btn, block.firstChild);
-});
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
 </script>
 </body>
 </html>

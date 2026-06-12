@@ -7,21 +7,22 @@
 <meta name="description" content="These notebooks are the experiential leg of the resource: they run the ideas the phase markdown explains. They exercise the tested agent_harness package (the…">
 <title>Notebooks — companion runnables for the guide — Agent Harness Guide</title>
 <link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:,">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
 <div class="layout">
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
-<nav class="sidebar" aria-label="Guide navigation">
-<h2>Start here</h2>
+<nav class="sidebar">
+<p class="sidebar-heading">Start here</p>
 <ul>
 <li><a href="index.html">Guide hub</a></li>
 <li><a href="learning-path.html">Learning Path</a></li>
 <li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
 <li><a href="faq.html">Setup &amp; FAQ</a></li>
 </ul>
-<h2>Phases</h2>
+<p class="sidebar-heading">Phases</p>
 <ul>
 <li><a href="00-foundations.html">Phase 0 — Foundations</a></li>
 <li><a href="01-bare-harness.html">Phase 1 — Bare Harness</a></li>
@@ -33,11 +34,11 @@
 <li><a href="07-subagents-orchestration.html">Phase 7 — Sub-agents</a></li>
 <li><a href="08-production-harness.html">Phase 8 — Production Harness</a></li>
 </ul>
-<h2>Appendix</h2>
+<p class="sidebar-heading">Appendix</p>
 <ul>
 <li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
 </ul>
-<h2>Practice</h2>
+<p class="sidebar-heading">Practice</p>
 <ul>
 <li><a href="exercises.html">Exercises</a></li>
 <li><a href="glossary.html">Glossary</a></li>
@@ -51,12 +52,18 @@
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
-<li class="toc-h2"><a href="#setup">Setup</a></li>
-<li class="toc-h2"><a href="#running-on-google-colab">Running on Google Colab</a></li>
-<li class="toc-h2"><a href="#no-api-key-needed-the-use_real_api-switch">No API key needed (the USE_REAL_API switch)</a></li>
-<li class="toc-h2"><a href="#series-conventions">Series conventions</a></li>
-<li class="toc-h2"><a href="#editing-rule-contributors">Editing rule (contributors)</a></li>
-<li class="toc-h2"><a href="#the-notebooks">The notebooks</a></li>
+<li class="toc-h2"><a href="#setup">Setup</a>
+</li>
+<li class="toc-h2"><a href="#running-on-google-colab">Running on Google Colab</a>
+</li>
+<li class="toc-h2"><a href="#no-api-key-needed-the-use_real_api-switch">No API key needed (the USE_REAL_API switch)</a>
+</li>
+<li class="toc-h2"><a href="#series-conventions">Series conventions</a>
+</li>
+<li class="toc-h2"><a href="#editing-rule-contributors">Editing rule (contributors)</a>
+</li>
+<li class="toc-h2"><a href="#the-notebooks">The notebooks</a>
+</li>
 </ul>
 </details>
 </header>
@@ -67,11 +74,11 @@ phase markdown explains. They exercise the <strong>tested <code>agent_harness</c
 one the test suite covers) rather than re-pasting the phases' growing code ladders.</p>
 <blockquote>
 <p><strong>The contract.</strong> These notebooks are companion runnables of the tested package in
-<a href="../../code/"><code>../code/</code></a>. When a notebook and a phase snippet differ, that is the same
-deliberate divergence described in <a href="../../code/README.md"><code>code/README.md</code></a> — the phases
+<a class="repo-file" href="../../code/" title="Opens a file in the repository checkout — not part of this site"><code>../code/</code></a>. When a notebook and a phase snippet differ, that is the same
+deliberate divergence described in <a class="repo-file" href="../../code/README.md" title="Opens a file in the repository checkout — not part of this site"><code>code/README.md</code></a> — the phases
 show ideas <em>as they grow</em>, and <strong>the package is correct</strong>.</p>
 </blockquote>
-<h2 id="setup">Setup</h2>
+<h2 id="setup">Setup<a aria-hidden="true" class="hanchor" href="#setup" tabindex="-1">¶</a></h2>
 <p>One block, from the repo root (mirrors the <a href="faq.html#setup--installation">FAQ's canonical setup</a>):</p>
 <div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>agent-harness-guide/code
 python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>.venv/bin/activate<span class="w">   </span><span class="c1"># Windows: .venv\Scripts\activate</span>
@@ -88,7 +95,7 @@ notebook hits <code>ModuleNotFoundError: No module named 'agent_harness'</code>,
 isn't that venv — switch to <strong>Python (agent-harness)</strong> the same way (this is the
 notebook analog of the <code>python -m pytest</code> vs bare <code>pytest</code> gotcha; see the
 <a href="faq.html">FAQ</a>).</p>
-<h2 id="running-on-google-colab">Running on Google Colab</h2>
+<h2 id="running-on-google-colab">Running on Google Colab<a aria-hidden="true" class="hanchor" href="#running-on-google-colab" tabindex="-1">¶</a></h2>
 <p>No local setup needed — each notebook carries an <strong>"Open in Colab" badge</strong> in its first
 cell; click it, or in Colab use <em>File → Open notebook → GitHub</em>, tick <strong>"Include private
 repos"</strong>, and authorize GitHub access. The notebooks' <strong>first code cell bootstraps
@@ -117,9 +124,9 @@ the switch in the parameters cell:</p>
 <p><strong>Caveats.</strong> Colab sessions are ephemeral: the clone + install reruns in each new
 session (about 10 seconds — that's expected, not a bug). And don't commit notebooks
 you've modified <em>in Colab</em> back to the repo without running
-<a href="../../notebooks/refresh.sh"><code>./refresh.sh</code></a> locally first — Colab strips notebook metadata, which
+<a class="repo-file" href="../../notebooks/refresh.sh" title="Opens a file in the repository checkout — not part of this site"><code>./refresh.sh</code></a> locally first — Colab strips notebook metadata, which
 breaks the jupytext sync check in CI.</p>
-<h2 id="no-api-key-needed-the-use_real_api-switch">No API key needed (the <code>USE_REAL_API</code> switch)</h2>
+<h2 id="no-api-key-needed-the-use_real_api-switch">No API key needed (the <code>USE_REAL_API</code> switch)<a aria-hidden="true" class="hanchor" href="#no-api-key-needed-the-use_real_api-switch" tabindex="-1">¶</a></h2>
 <p>Every notebook runs <strong>fully offline by default</strong>: a tagged parameter cell near the top
 sets <code>USE_REAL_API = False</code>, and a <code>make_client(...)</code> helper hands the agent a
 <code>FakeClient</code> (from <code>agent_harness.testing</code>) scripted with exact Responses-API replies.
@@ -129,7 +136,7 @@ what you reproduce keylessly is exactly what's rendered.</p>
 <code>USE_REAL_API = True</code> in that one cell, and re-run. Everything downstream is identical
 on both paths — the duality lives in that single cell, which is itself a curriculum
 point (client injection).</p>
-<h2 id="series-conventions">Series conventions</h2>
+<h2 id="series-conventions">Series conventions<a aria-hidden="true" class="hanchor" href="#series-conventions" tabindex="-1">¶</a></h2>
 <p>The notebooks refer back to these by name (e.g. Phase 3's notebook cites "rule C1"):</p>
 <ul>
 <li><strong>Run top-to-bottom.</strong> When in doubt (or after experimenting): <strong>Kernel → Restart &amp;
@@ -148,74 +155,74 @@ point (client injection).</p>
   refreshers live in <a href="beginner-notes.html">BEGINNER-NOTES.md</a>.</li>
 <li>Each notebook ends in an assertion cell printing <code>All checks passed</code>.</li>
 </ul>
-<h2 id="editing-rule-contributors">Editing rule (contributors)</h2>
+<h2 id="editing-rule-contributors">Editing rule (contributors)<a aria-hidden="true" class="hanchor" href="#editing-rule-contributors" tabindex="-1">¶</a></h2>
 <p>Each notebook is a <strong>jupytext pair</strong>: a <code>py:percent</code> <code>.py</code> file (the review surface —
 diffs like code) and the <code>.ipynb</code> (carries committed outputs for GitHub rendering).
 <strong>Edit the <code>.py</code>, then run <code>jupytext --sync &lt;file&gt;.py</code></strong> — never hand-edit the <code>.ipynb</code>.
 To re-sync and re-execute everything (refreshing committed outputs), run
-<a href="../../notebooks/refresh.sh"><code>./refresh.sh</code></a>.</p>
-<h2 id="the-notebooks">The notebooks</h2>
-<table>
+<a class="repo-file" href="../../notebooks/refresh.sh" title="Opens a file in the repository checkout — not part of this site"><code>./refresh.sh</code></a>.</p>
+<h2 id="the-notebooks">The notebooks<a aria-hidden="true" class="hanchor" href="#the-notebooks" tabindex="-1">¶</a></h2>
+<div class="table-wrap"><table>
 <thead>
 <tr>
-<th>Notebook</th>
-<th>What it runs</th>
-<th>Phase</th>
+<th scope="col">Notebook</th>
+<th scope="col">What it runs</th>
+<th scope="col">Phase</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><a href="../../notebooks/setup-check.ipynb"><code>setup-check.ipynb</code></a></td>
+<td><a class="repo-file" href="../../notebooks/setup-check.ipynb" title="Opens a file in the repository checkout — not part of this site"><code>setup-check.ipynb</code></a></td>
 <td>~5 cells: verify your kernel, imports, and one offline FakeClient round trip — you're ready.</td>
 <td><a href="00-foundations.html">Phase 0 setup</a> / <a href="faq.html#setup--installation">FAQ</a></td>
 </tr>
 <tr>
-<td><a href="../../notebooks/00-foundations.ipynb"><code>00-foundations.ipynb</code></a></td>
+<td><a class="repo-file" href="../../notebooks/00-foundations.ipynb" title="Opens a file in the repository checkout — not part of this site"><code>00-foundations.ipynb</code></a></td>
 <td>The Responses-API handshake ladder, step by step, ending with the V1→V2 refactor.</td>
 <td><a href="00-foundations.html"><code>00-foundations.md</code></a></td>
 </tr>
 <tr>
-<td><a href="../../notebooks/01-bare-harness.ipynb"><code>01-bare-harness.ipynb</code></a></td>
+<td><a class="repo-file" href="../../notebooks/01-bare-harness.ipynb" title="Opens a file in the repository checkout — not part of this site"><code>01-bare-harness.ipynb</code></a></td>
 <td>The bare agent loop: tool-call round trips, the <code>Agent</code> remembering across cells, the iteration cap.</td>
 <td><a href="01-bare-harness.html"><code>01-bare-harness.md</code></a></td>
 </tr>
 <tr>
-<td><a href="../../notebooks/02-tool-system.ipynb"><code>02-tool-system.ipynb</code></a></td>
+<td><a class="repo-file" href="../../notebooks/02-tool-system.ipynb" title="Opens a file in the repository checkout — not part of this site"><code>02-tool-system.ipynb</code></a></td>
 <td>Schema dicts → dict registry → <code>Tool</code>/<code>ToolRegistry</code> → <code>@tool</code>, with dispatch probes you can poke.</td>
 <td><a href="02-tool-system.html"><code>02-tool-system.md</code></a></td>
 </tr>
 <tr>
-<td><a href="../../notebooks/03-conversation-and-streaming.ipynb"><code>03-conversation-and-streaming.ipynb</code></a></td>
+<td><a class="repo-file" href="../../notebooks/03-conversation-and-streaming.ipynb" title="Opens a file in the repository checkout — not part of this site"><code>03-conversation-and-streaming.ipynb</code></a></td>
 <td>The transcript as memory: two-turn recall, the forgetting A/B, save/load, the <code>Conversation</code> class.</td>
 <td><a href="03-conversation-and-streaming.html"><code>03-conversation-and-streaming.md</code></a></td>
 </tr>
 <tr>
-<td><a href="../../notebooks/04-real-tools.ipynb"><code>04-real-tools.ipynb</code></a></td>
+<td><a class="repo-file" href="../../notebooks/04-real-tools.ipynb" title="Opens a file in the repository checkout — not part of this site"><code>04-real-tools.ipynb</code></a></td>
 <td>Workspace-confined file tools in a throwaway tmpdir: <code>_safe_path</code> stopping <code>../../etc/passwd</code>, a FakeClient-driven read, the production tools from the package.</td>
 <td><a href="04-real-tools.html"><code>04-real-tools.md</code></a></td>
 </tr>
 <tr>
-<td><a href="../../notebooks/05-permissions-and-safety.ipynb"><code>05-permissions-and-safety.ipynb</code></a></td>
+<td><a class="repo-file" href="../../notebooks/05-permissions-and-safety.ipynb" title="Opens a file in the repository checkout — not part of this site"><code>05-permissions-and-safety.ipynb</code></a></td>
 <td>The permission gate offline: risk tiers × modes, a scripted asker standing in for <code>input()</code>, deny-beats-session-memory, a sandboxed subprocess.</td>
 <td><a href="05-permissions-and-safety.html"><code>05-permissions-and-safety.md</code></a></td>
 </tr>
 <tr>
-<td><a href="../../notebooks/06-context-management.ipynb"><code>06-context-management.ipynb</code></a></td>
+<td><a class="repo-file" href="../../notebooks/06-context-management.ipynb" title="Opens a file in the repository checkout — not part of this site"><code>06-context-management.ipynb</code></a></td>
 <td>Feel the window fill up: <code>count_tokens</code>, <code>prune_to_budget</code> (no orphaned call pairs), <code>compact</code>.</td>
 <td><a href="06-context-management.html"><code>06-context-management.md</code></a></td>
 </tr>
 <tr>
-<td><a href="../../notebooks/07-subagents-orchestration.ipynb"><code>07-subagents-orchestration.ipynb</code></a></td>
+<td><a class="repo-file" href="../../notebooks/07-subagents-orchestration.ipynb" title="Opens a file in the repository checkout — not part of this site"><code>07-subagents-orchestration.ipynb</code></a></td>
 <td>A sub-agent is the loop called again: the recursive <code>task</code> tool (one FakeClient per agent), the depth guard, sequential vs threaded timing.</td>
 <td><a href="07-subagents-orchestration.html"><code>07-subagents-orchestration.md</code></a></td>
 </tr>
 <tr>
-<td><a href="../../notebooks/08-production-harness.ipynb"><code>08-production-harness.ipynb</code></a></td>
+<td><a class="repo-file" href="../../notebooks/08-production-harness.ipynb" title="Opens a file in the repository checkout — not part of this site"><code>08-production-harness.ipynb</code></a></td>
 <td>The demo trio: retry-with-backoff, the JSONL tracer + cost accounting, and the real package's 56-test suite run from a cell.</td>
 <td><a href="08-production-harness.html"><code>08-production-harness.md</code></a></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The companion notebooks cover each phase's <em>runnable core</em>. The parts that genuinely
 belong in a terminal — real <code>input()</code> permission prompts, the interactive CLI/REPL,
 multi-file package assembly — stay in the phases; each notebook says where it stops
@@ -226,27 +233,95 @@ and hands you back to the markdown.</p>
 <a class="prev" href="glossary.html" rel="prev">← Glossary</a>
 
 </nav>
-<p class="generated-note">Generated from <code>notebooks/README.md</code> — the markdown is the source of truth.</p>
+<p class="generated-note">Generated from <code>notebooks/README.md</code> — the markdown is the source of truth. Links marked ↗ open repository files and need a full checkout (or GitHub).</p>
 </footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
 </main>
 </div>
 <script>
-document.querySelectorAll('div.highlight').forEach(function (block) {
-  var btn = document.createElement('button');
-  btn.className = 'copy-btn';
-  btn.type = 'button';
-  btn.textContent = 'Copy';
-  btn.addEventListener('click', function () {
-    var code = block.querySelector('pre').innerText;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(code).then(function () {
-        btn.textContent = 'Copied!';
-        setTimeout(function () { btn.textContent = 'Copy'; }, 1500);
-      }).catch(function () {});  /* graceful no-op on file:// denial */
-    }
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there. */
+  if (matchMedia('(max-width: 800px)').matches) {
+    var sb = document.querySelector('.sidebar-wrap');
+    if (sb) { sb.removeAttribute('open'); }
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards. */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
   });
-  block.insertBefore(btn, block.firstChild);
-});
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
 </script>
 </body>
 </html>

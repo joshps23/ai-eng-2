@@ -7,21 +7,22 @@
 <meta name="description" content="An exhaustive, phase-by-phase guide to building an agentic coding harness — the kind of program that powers tools like Claude Code and Cursor — from scratch,…">
 <title>Building a Full-Fledged Agent Harness with the OpenAI Responses API — in Pure Python — Agent Harness Guide</title>
 <link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:,">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
 <div class="layout">
 <details class="sidebar-wrap" open>
 <summary class="sidebar-toggle">Guide navigation</summary>
-<nav class="sidebar" aria-label="Guide navigation">
-<h2>Start here</h2>
+<nav class="sidebar">
+<p class="sidebar-heading">Start here</p>
 <ul>
 <li class="current"><a href="index.html" aria-current="page">Guide hub</a></li>
 <li><a href="learning-path.html">Learning Path</a></li>
 <li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
 <li><a href="faq.html">Setup &amp; FAQ</a></li>
 </ul>
-<h2>Phases</h2>
+<p class="sidebar-heading">Phases</p>
 <ul>
 <li><a href="00-foundations.html">Phase 0 — Foundations</a></li>
 <li><a href="01-bare-harness.html">Phase 1 — Bare Harness</a></li>
@@ -33,11 +34,11 @@
 <li><a href="07-subagents-orchestration.html">Phase 7 — Sub-agents</a></li>
 <li><a href="08-production-harness.html">Phase 8 — Production Harness</a></li>
 </ul>
-<h2>Appendix</h2>
+<p class="sidebar-heading">Appendix</p>
 <ul>
 <li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
 </ul>
-<h2>Practice</h2>
+<p class="sidebar-heading">Practice</p>
 <ul>
 <li><a href="exercises.html">Exercises</a></li>
 <li><a href="glossary.html">Glossary</a></li>
@@ -51,15 +52,25 @@
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
-<li class="toc-h2"><a href="#who-this-is-for">Who this is for</a></li>
-<li class="toc-h2"><a href="#how-the-guide-is-structured">How the guide is structured</a></li>
+<li class="toc-h2"><a href="#who-this-is-for">Who this is for</a>
+</li>
+<li class="toc-h2"><a href="#how-the-guide-is-structured">How the guide is structured</a>
+<ul>
 <li class="toc-h3"><a href="#prefer-to-run-it-as-notebooks">Prefer to run it as notebooks?</a></li>
-<li class="toc-h2"><a href="#support-docs-and-what-each-is-for">Support docs and what each is for</a></li>
-<li class="toc-h2"><a href="#the-canonical-runnable-code">The canonical, runnable code</a></li>
-<li class="toc-h2"><a href="#the-one-idea-behind-everything">The one idea behind everything</a></li>
-<li class="toc-h2"><a href="#prerequisites">Prerequisites</a></li>
-<li class="toc-h2"><a href="#a-note-on-models">A note on models</a></li>
-<li class="toc-h2"><a href="#license--intent">License &amp; intent</a></li>
+</ul>
+</li>
+<li class="toc-h2"><a href="#support-docs-and-what-each-is-for">Support docs and what each is for</a>
+</li>
+<li class="toc-h2"><a href="#the-canonical-runnable-code">The canonical, runnable code</a>
+</li>
+<li class="toc-h2"><a href="#the-one-idea-behind-everything">The one idea behind everything</a>
+</li>
+<li class="toc-h2"><a href="#prerequisites">Prerequisites</a>
+</li>
+<li class="toc-h2"><a href="#a-note-on-models">A note on models</a>
+</li>
+<li class="toc-h2"><a href="#license--intent">License &amp; intent</a>
+</li>
 </ul>
 </details>
 </header>
@@ -74,7 +85,7 @@ teach the concepts <em>from under the hood</em> so you understand what those fra
 hide — and could rebuild them yourself.</p>
 </blockquote>
 <hr>
-<h2 id="who-this-is-for">Who this is for</h2>
+<h2 id="who-this-is-for">Who this is for<a aria-hidden="true" class="hanchor" href="#who-this-is-for" tabindex="-1">¶</a></h2>
 <p>Written for working engineers <strong>and</strong> for beginners who know functions, lists,
 dictionaries, operators, and <code>client.responses.create(...)</code> — the 🟢 beginner track
 is built in. Either way, it's for anyone who wants to <em>really</em> understand how modern
@@ -91,17 +102,17 @@ phases bridge each gap exactly where it appears. Keep the
 <strong><a href="glossary.html"><code>GLOSSARY.md</code></a></strong> open in a tab: it defines every harness and
 Python term used here, so you never have to leave to look something up.</p>
 </blockquote>
-<h2 id="how-the-guide-is-structured">How the guide is structured</h2>
+<h2 id="how-the-guide-is-structured">How the guide is structured<a aria-hidden="true" class="hanchor" href="#how-the-guide-is-structured" tabindex="-1">¶</a></h2>
 <p>The guide is <strong>incremental</strong>. Each phase is runnable on its own and builds directly
 on the previous one. Phase 1 is a working agent in ~80 lines; by Phase 8 you have a
 Claude-Code-shaped harness.</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
-<th style="text-align: right;">Phase</th>
-<th>File</th>
-<th>What you build</th>
-<th>Key concept</th>
+<th scope="col" style="text-align: right;">Phase</th>
+<th scope="col">File</th>
+<th scope="col">What you build</th>
+<th scope="col">Key concept</th>
 </tr>
 </thead>
 <tbody>
@@ -172,7 +183,7 @@ Claude-Code-shaped harness.</p>
 <td>Every harness/Python term used in the guide, defined for beginners</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <blockquote>
 <p><strong>New and want a plan?</strong> The <strong><a href="learning-path.html">Learning Path</a></strong> turns these
 phases into a step-by-step route with time-budgeted tracks and per-phase
@@ -181,19 +192,19 @@ establishes the API contract and conventions (naming, data shapes, project layou
 that every later phase depends on. If a later code sample looks unfamiliar, Phase 0
 is your reference.</p>
 </blockquote>
-<h3 id="prefer-to-run-it-as-notebooks">Prefer to run it as notebooks?</h3>
+<h3 id="prefer-to-run-it-as-notebooks">Prefer to run it as notebooks?<a aria-hidden="true" class="hanchor" href="#prefer-to-run-it-as-notebooks" tabindex="-1">¶</a></h3>
 <p><strong>Every phase (0–8)</strong> (plus a setup check) has a companion <strong>Jupyter
 notebook</strong> in <a href="notebooks.html"><code>notebooks/</code></a> — small, run-top-to-bottom
 checkpoint runners that execute each phase's ideas against the tested package,
 <strong>fully offline by default</strong> (no API key needed). The phases keep the narrative;
 the notebooks run things. Setup and conventions:
 <a href="notebooks.html"><code>notebooks/README.md</code></a>.</p>
-<h2 id="support-docs-and-what-each-is-for">Support docs and what each is for</h2>
-<table>
+<h2 id="support-docs-and-what-each-is-for">Support docs and what each is for<a aria-hidden="true" class="hanchor" href="#support-docs-and-what-each-is-for" tabindex="-1">¶</a></h2>
+<div class="table-wrap"><table>
 <thead>
 <tr>
-<th>Doc</th>
-<th>Its job</th>
+<th scope="col">Doc</th>
+<th scope="col">Its job</th>
 </tr>
 </thead>
 <tbody>
@@ -218,14 +229,14 @@ the notebooks run things. Setup and conventions:
 <td>A warm-up + a stretch task per phase (with hints), plus the capstone — so you build, not just read.</td>
 </tr>
 </tbody>
-</table>
-<h2 id="the-canonical-runnable-code">The canonical, runnable code</h2>
+</table></div>
+<h2 id="the-canonical-runnable-code">The canonical, runnable code<a aria-hidden="true" class="hanchor" href="#the-canonical-runnable-code" tabindex="-1">¶</a></h2>
 <p>Each phase's markdown shows code <strong>as it grows</strong> — a Phase 3 snippet is deliberately
 simpler than its Phase 8 descendant, and a few designs (the tool registry, the
 conversation object) are intentionally refactored as the guide introduces new needs.
 That's the teaching arc, not the finished product.</p>
 <p>The <strong>single, consistent, end-to-end implementation</strong> lives in
-<a href="../../code/"><code>code/agent_harness/</code></a>. It is the source of truth: one tool registry, one
+<a class="repo-file" href="../../code/" title="Opens a file in the repository checkout — not part of this site"><code>code/agent_harness/</code></a>. It is the source of truth: one tool registry, one
 <code>Conversation</code>, one permission system, wired together and <strong>covered by a passing test
 suite</strong> that runs entirely offline (a <code>FakeClient</code> stands in for the API):</p>
 <div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>code
@@ -235,20 +246,19 @@ python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> <
 
 <p>If a per-phase snippet and the package ever seem to disagree, the package is correct —
 read the phase for the <em>idea</em>, read <code>code/agent_harness/</code> for the <em>implementation</em>.</p>
-<h2 id="the-one-idea-behind-everything">The one idea behind everything</h2>
+<h2 id="the-one-idea-behind-everything">The one idea behind everything<a aria-hidden="true" class="hanchor" href="#the-one-idea-behind-everything" tabindex="-1">¶</a></h2>
 <p>An LLM is a pure function: text in, text out. It can't touch the world or remember
 anything. An <strong>agent harness</strong> is the loop wrapped around it that gives it hands and a
 memory:</p>
-<div class="highlight"><pre><span></span><code>   send conversation ──▶ model wants tools? ──yes──▶ run tools, append results ──┐
+<div class="highlight nocopy"><pre><span></span><code>   send conversation ──▶ model wants tools? ──yes──▶ run tools, append results ──┐
         ▲                        │ no                                            │
         └────────────────────────┼───────────────────────────────────────────────┘
                                   ▼
                             return answer
 </code></pre></div>
-
 <p>Everything in this guide — streaming, permissions, sub-agents, compaction, retries —
 is refinement on top of that loop.</p>
-<h2 id="prerequisites">Prerequisites</h2>
+<h2 id="prerequisites">Prerequisites<a aria-hidden="true" class="hanchor" href="#prerequisites" tabindex="-1">¶</a></h2>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>openai<span class="w">          </span><span class="c1"># the only required dependency</span>
 pip<span class="w"> </span>install<span class="w"> </span>tiktoken<span class="w">        </span><span class="c1"># optional: local token counting (Phase 6)</span>
 <span class="nb">export</span><span class="w"> </span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span><span class="s2">&quot;sk-...&quot;</span>
@@ -256,11 +266,11 @@ pip<span class="w"> </span>install<span class="w"> </span>tiktoken<span class="w
 
 <p>Python 3.10+. Run the sanity-check script at the end of <a href="00-foundations.html">Phase 0</a>
 to confirm your environment and API access before starting Phase 1.</p>
-<h2 id="a-note-on-models">A note on models</h2>
+<h2 id="a-note-on-models">A note on models<a aria-hidden="true" class="hanchor" href="#a-note-on-models" tabindex="-1">¶</a></h2>
 <p>Throughout, code pins a single <code>MODEL</code> constant. Use the latest capable
 Responses-API model available to you; reasoning-capable models give the best agentic
 behavior. Everything here also works on smaller, faster models.</p>
-<h2 id="license--intent">License &amp; intent</h2>
+<h2 id="license--intent">License &amp; intent<a aria-hidden="true" class="hanchor" href="#license--intent" tabindex="-1">¶</a></h2>
 <p>This is educational material. The code is written for clarity over cleverness; in
 several places we deliberately show the "manual" version of something a library would
 hide, then point at the production-grade variant. Read it, run it, break it, rebuild
@@ -271,27 +281,95 @@ it.</p>
 
 <a class="next" href="learning-path.html" rel="next">Learning Path →</a>
 </nav>
-<p class="generated-note">Generated from <code>README.md</code> — the markdown is the source of truth.</p>
+<p class="generated-note">Generated from <code>README.md</code> — the markdown is the source of truth. Links marked ↗ open repository files and need a full checkout (or GitHub).</p>
 </footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
 </main>
 </div>
 <script>
-document.querySelectorAll('div.highlight').forEach(function (block) {
-  var btn = document.createElement('button');
-  btn.className = 'copy-btn';
-  btn.type = 'button';
-  btn.textContent = 'Copy';
-  btn.addEventListener('click', function () {
-    var code = block.querySelector('pre').innerText;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(code).then(function () {
-        btn.textContent = 'Copied!';
-        setTimeout(function () { btn.textContent = 'Copy'; }, 1500);
-      }).catch(function () {});  /* graceful no-op on file:// denial */
-    }
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there. */
+  if (matchMedia('(max-width: 800px)').matches) {
+    var sb = document.querySelector('.sidebar-wrap');
+    if (sb) { sb.removeAttribute('open'); }
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards. */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
   });
-  block.insertBefore(btn, block.firstChild);
-});
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
 </script>
 </body>
 </html>
