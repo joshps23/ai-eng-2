@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<!-- GENERATED from GLOSSARY.md — do not edit; run site/build_site.py -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Every term this guide uses that goes beyond basic Python (functions, lists, dicts, operators, client.responses.create(...)), defined in plain language. When…">
+<title>Glossary — Agent Harness Guide</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:,">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="layout">
+<details class="sidebar-wrap" open>
+<summary class="sidebar-toggle">Guide navigation</summary>
+<nav class="sidebar" aria-label="Guide pages">
+<p class="sidebar-heading">Start here</p>
+<ul>
+<li><a href="index.html">Guide hub</a></li>
+<li><a href="learning-path.html">Learning Path</a></li>
+<li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
+<li><a href="faq.html">Setup &amp; FAQ</a></li>
+</ul>
+<p class="sidebar-heading">Phases</p>
+<ul>
+<li><a href="00-foundations.html">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness.html">Phase 1 — Bare Harness</a></li>
+<li><a href="02-tool-system.html">Phase 2 — Tool System</a></li>
+<li><a href="03-conversation-and-streaming.html">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools.html">Phase 4 — Real Tools</a></li>
+<li><a href="05-permissions-and-safety.html">Phase 5 — Permissions &amp; Safety</a></li>
+<li><a href="06-context-management.html">Phase 6 — Context Management</a></li>
+<li><a href="07-subagents-orchestration.html">Phase 7 — Sub-agents</a></li>
+<li><a href="08-production-harness.html">Phase 8 — Production Harness</a></li>
+</ul>
+<p class="sidebar-heading">Appendix</p>
+<ul>
+<li><a href="09-library-reference.html">Appendix — Library Reference</a></li>
+</ul>
+<p class="sidebar-heading">Practice</p>
+<ul>
+<li><a href="exercises.html">Exercises</a></li>
+<li class="current"><a href="glossary.html" aria-current="page">Glossary</a></li>
+<li><a href="notebooks.html">Notebooks</a></li>
+</ul>
+</nav>
+</details>
+<main id="main">
+<header class="page-header">
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/GLOSSARY.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
+<details class="page-toc">
+<summary>On this page</summary>
+<ul>
+<li class="toc-h2"><a href="#harness--agent-concepts">Harness &amp; agent concepts</a>
+</li>
+<li class="toc-h2"><a href="#model-api--token-concepts">Model, API &amp; token concepts</a>
+</li>
+<li class="toc-h2"><a href="#python-youll-meet-beyond-your-five">Python you&#x27;ll meet (beyond your five)</a>
+</li>
+</ul>
+</details>
+</header>
+<article>
+<h1 id="glossary">Glossary</h1>
+<blockquote>
+<p>Every term this guide uses that goes beyond basic Python (functions, lists,
+dicts, operators, <code>client.responses.create(...)</code>), defined in plain language. When a phase uses a word you don't recognise, look here first.
+Terms are grouped, then alphabetical within a group. 🟢 marks the most
+beginner-essential entries.</p>
+</blockquote>
+<hr>
+<h2 id="harness--agent-concepts">Harness &amp; agent concepts<a aria-label="Permalink to this section" class="hanchor" href="#harness--agent-concepts">¶</a></h2>
+<p><strong>Agent</strong> 🟢 — An LLM wrapped in a loop that lets it <em>act</em>: call tools, read the
+results, and decide what to do next, repeatedly, until the task is done. The model
+alone only produces text; the agent is the model <strong>plus</strong> the code around it.</p>
+<p><strong>Agent loop</strong> 🟢 — The core cycle this whole guide is about: <em>send the
+conversation → did the model ask to use a tool? → if yes, run it and append the
+result, then loop; if no, return the answer.</em> Everything else (streaming,
+permissions, sub-agents) is refinement on top of this loop.</p>
+<p><strong>Harness</strong> 🟢 — The program around the model that gives it "hands and a memory":
+the loop, the tools, the transcript, the safety checks, the CLI. Building this is
+"harness engineering." Tools like Claude Code and Cursor are harnesses.</p>
+<p><strong>Tool</strong> 🟢 — A Python function the model is allowed to call (e.g. <code>read_file</code>,
+<code>bash</code>). You describe it to the model with a <em>schema</em>; when the model "calls" it,
+your harness runs the real function and feeds the result back.</p>
+<p><strong>Tool call / function call</strong> 🟢 — The model's request to run a tool. It comes back
+as an item in the response saying "call this function with these arguments." The
+model does <strong>not</strong> run anything itself — it asks, and your harness executes.</p>
+<p><strong>Tool result / <code>function_call_output</code></strong> — The string your harness sends back after
+running a tool, so the model can see what happened. Paired to the call by a shared
+<code>call_id</code>. This handshake (call → run → result) is the heartbeat of the loop.</p>
+<p><strong>Tool registry</strong> — A lookup (a dict) mapping a tool's name to its function and
+schema, so the harness can find the right function when the model asks for it by
+name.</p>
+<p><strong>Dispatch</strong> — The step where the harness takes a tool call's name, looks it up in
+the registry, and runs the matching function with the given arguments.</p>
+<p><strong>System prompt</strong> — The standing instructions you put at the front of the
+conversation to shape the model's behavior ("you are a coding assistant…"). Sent
+on every turn.</p>
+<p><strong>Transcript / conversation / <code>input_items</code></strong> 🟢 — The growing list of everything
+said so far: user messages, the model's messages, tool calls, and tool results.
+The harness owns this list and sends it back on every turn — that's the model's
+"memory." It is <strong>append-only</strong>: nothing is removed (until context management).</p>
+<p><strong>Turn</strong> — One round of the loop: you send the transcript, the model responds. A
+single user request may take several turns if the model uses tools along the way.</p>
+<p><strong>Sub-agent</strong> — A second agent the main agent spawns to handle a focused subtask
+(e.g. "search the codebase"), often with its own tools and its own short
+conversation. Lets a big job be split up, sometimes run in parallel (Phase 7).</p>
+<p><strong>Orchestration</strong> — Coordinating multiple agents/sub-agents: deciding who does
+what, running them (possibly in parallel), and combining their results.</p>
+<p><strong>Permission / approval gate</strong> 🟢 — A safety check before a risky tool runs (e.g.
+deleting a file, running shell commands). The harness pauses and asks the user, or
+applies a rule, instead of blindly executing (Phase 5).</p>
+<p><strong>Hook</strong> — A function the harness calls at a defined moment (before/after a tool
+runs) so you can add behavior — logging, blocking, modifying — without changing the
+core loop (Phase 5).</p>
+<p><strong>Sandbox</strong> — Restricting what tools can touch (e.g. only files under one
+directory, no network) so a misbehaving model can't do damage.</p>
+<hr>
+<h2 id="model-api--token-concepts">Model, API &amp; token concepts<a aria-label="Permalink to this section" class="hanchor" href="#model-api--token-concepts">¶</a></h2>
+<p><strong>LLM (large language model)</strong> 🟢 — The text-prediction model (e.g. GPT-class).
+Think of it as a pure function: text in, text out. It can't remember anything
+between calls or touch the world on its own — the harness supplies both.</p>
+<p><strong>Responses API</strong> 🟢 — OpenAI's interface this guide builds on, called with
+<code>client.responses.create(...)</code>. You pass the conversation (<code>input</code>) and the tool
+schemas (<code>tools</code>); it returns the model's next move in <code>response.output</code>.</p>
+<p><strong><code>response.output</code></strong> — A <strong>list of items</strong> the model produced this turn. Each item
+has a <code>.type</code>: a <code>message</code> (text for the user) or a <code>function_call</code> (a request to
+run a tool). The loop inspects these to decide what to do next.</p>
+<p><strong><code>output_text</code></strong> — A convenience field holding the model's final text answer as a
+plain string, so you don't have to dig it out of the items yourself.</p>
+<p><strong>Token</strong> 🟢 — The unit models read and bill in — roughly ¾ of a word, or about 4
+characters. "Costs tokens" ≈ "costs words." Both your input and the model's output
+are measured in tokens.</p>
+<p><strong>Context window</strong> 🟢 — The maximum number of tokens the model can consider at once
+(its whole transcript + the reply). Long sessions eventually bump against it, which
+is why Phase 6 exists.</p>
+<p><strong>Context management / compaction</strong> — Techniques to keep a long conversation under
+the context-window limit: trimming old turns, or summarising them so the gist
+survives while the token count drops (Phase 6).</p>
+<p><strong>Token budgeting</strong> — Counting tokens in the transcript and deciding what to keep,
+drop, or summarise so you stay under the window.</p>
+<p><strong>Streaming</strong> — Receiving the model's output incrementally (token by token) as it's
+generated, instead of waiting for the whole reply — so the user sees text appear
+live. Optional; the non-streaming <code>create()</code> is simpler and shown first (Phase 3).</p>
+<p><strong><code>tiktoken</code></strong> — An optional library that counts tokens exactly for a given model.
+Without it, the guide approximates with <code>len(text) // 4</code>.</p>
+<p><strong>Reasoning model</strong> — A model that does extra internal "thinking" before answering;
+tends to give better agentic (tool-using) behavior. The guide works on these and on
+smaller/faster models alike.</p>
+<p><strong>Rate limit</strong> — A cap on how many requests/tokens you can send per minute. Hitting
+it returns an error; production harnesses retry with backoff (Phase 8).</p>
+<p><strong>Retry / backoff</strong> — Re-sending a failed request after waiting, with the wait
+growing each time (1s, 2s, 4s…), to ride out transient errors and rate limits.</p>
+<hr>
+<h2 id="python-youll-meet-beyond-your-five">Python you'll meet (beyond your five)<a aria-label="Permalink to this section" class="hanchor" href="#python-youll-meet-beyond-your-five">¶</a></h2>
+<p><strong><code>class</code> / method / instance</strong> 🟢 — A <code>class</code> bundles related data with the
+functions that act on it (its <em>methods</em>); an <em>instance</em> is one such bundle.
+<code>obj.do(x)</code> means "run <code>do</code>, with <code>obj</code>'s data available." This guide's beginner
+track replaces classes with plain functions wherever it can.</p>
+<p><strong>Attribute / dot-access (<code>item.type</code>)</strong> 🟢 — Reading a field off an object with a
+dot. <code>item.type</code> is the object version of <code>item["type"]</code> on a dict — same idea,
+different punctuation. The Responses API returns objects, so you use the dot.</p>
+<p><strong><code>json.loads</code> / <code>json.dumps</code></strong> 🟢 — <code>loads</code> turns a <em>string that looks like a
+dict</em> (<code>'{"city":"Paris"}'</code>) into a real dict; <code>dumps</code> does the reverse. The API
+hands you tool arguments as a string, so you <code>json.loads</code> them.</p>
+<p><strong>JSON Schema</strong> 🟢 — Just a <strong>dict that describes a function's arguments</strong> (their
+names and types). You send it so the model knows how to call your tool. You already
+know dicts; this is one with an agreed-upon shape.</p>
+<p><strong><code>try</code> / <code>except</code></strong> 🟢 — "Try this; if it raises an error, do that instead of
+crashing." How the harness survives bad tool arguments, missing files, and API
+errors.</p>
+<p><strong>Exception / raise / traceback</strong> — An <em>exception</em> is Python's way of signalling an
+error; code can <code>raise</code> one. A <em>traceback</em> is the error report Python prints when
+one isn't caught — read it bottom-up: the last line is <em>what</em> went wrong.</p>
+<p><strong><code>with ... as x:</code> (context manager)</strong> — Use a resource and clean it up
+automatically when the block ends. <code>with client.responses.create(..., stream=True)
+as stream:</code> = "open the stream, use it, close it for me."</p>
+<p><strong>Type hint (<code>x: str</code>, <code>-&gt; dict</code>)</strong> — An optional note saying "this is a string" or
+"this returns a dict." Ignored at runtime; you can skip them while reading. The
+guide also uses them to <em>auto-generate</em> tool schemas (Phase 2).</p>
+<p><strong>Decorator (<code>@something</code>)</strong> — A line with <code>@</code> above a function that wraps it to add
+behavior (e.g. <code>@tool</code> registers a function as a tool). The beginner track always
+shows the plain-function equivalent.</p>
+<p><strong><code>*args</code> / <code>**kwargs</code></strong> — "Accept any extra positional / keyword arguments."
+<code>run(**kwargs)</code> gathers named arguments into a dict called <code>kwargs</code>.</p>
+<p><strong>f-string (<code>f"hi {name}"</code>)</strong> — A string with <code>{...}</code> holes filled by values.
+<code>f"{a}+{b}"</code> equals <code>str(a) + "+" + str(b)</code>.</p>
+<p><strong>List / dict comprehension (<code>[f(x) for x in xs]</code>)</strong> — A compact way to build a list
+or dict with a loop inside brackets. The guide pairs the first few with the plain
+<code>for</code>-loop they replace.</p>
+<p><strong>Generator / <code>yield</code></strong> — A function that produces values one at a time on demand
+(with <code>yield</code>) instead of building a whole list. Used for streaming.</p>
+<p><strong><code>dataclass</code></strong> — A class that's mostly just named fields — think "a dict with fixed
+keys and dot-access." A shorthand for grouping related data.</p>
+<p><strong><code>Enum</code></strong> — A small set of named constant values (e.g. risk levels). Read it as
+"named string constants kept together."</p>
+<p><strong><code>set</code></strong> — A list with no duplicates and fast "is this in it?" checks. Order
+doesn't matter.</p>
+<p><strong><code>tuple</code></strong> — A fixed, unchangeable list, often used to return several values at
+once: <code>return name, age</code>.</p>
+<p><strong><code>lambda</code></strong> — A tiny unnamed function written inline: <code>lambda x: x + 1</code> is a
+function that adds one.</p>
+<p><strong><code>pathlib.Path</code></strong> — An object for file paths with handy methods
+(<code>path.read_text()</code>, <code>path / "sub"</code>), nicer than juggling path strings.</p>
+<p><strong><code>subprocess</code></strong> — The standard-library way to run external shell commands from
+Python (powers the <code>bash</code> tool).</p>
+<p><strong>Thread / <code>ThreadPoolExecutor</code></strong> — Run several slow things (API or disk calls) at
+the same time instead of one after another. The simple sequential version is always
+shown first; threads are an optional speed-up (parallel tool calls, sub-agents).</p>
+<p><strong><code>asyncio</code> / async-await</strong> — Another way to do many things concurrently. The guide
+prefers threads for beginners and treats async as optional background.</p>
+<p><strong>REPL</strong> — A "read-eval-print loop": an interactive prompt where you type input and
+see a reply. Phase 1's harness is a REPL for chatting with the agent.</p>
+<p><strong>CLI (command-line interface)</strong> — A program you run from the terminal with
+arguments/flags (built with <code>argparse</code> in Phase 8).</p>
+<p><strong><code>argparse</code></strong> — The standard-library tool for reading command-line flags
+(<code>--model gpt-...</code>) into your program.</p>
+<p><strong>Logging / observability</strong> — Recording what the harness did (which tools ran, how
+long, what failed) so you can see inside a run and debug it (Phase 8).</p>
+<p><strong><code>pytest</code> / fixture / mock (<code>FakeClient</code>)</strong> 🟢 — <code>pytest</code> runs your tests. A
+<em>fixture</em> is reusable setup. A <em>mock</em> (here <code>FakeClient</code>) is a stand-in for the
+real API so tests run <strong>offline, with no API key</strong>. Run them with
+<code>python -m pytest</code> from the <code>code/</code> directory.</p>
+<p><strong>Editable install (<code>pip install -e .</code>)</strong> — Installs the package so Python can
+<code>import agent_harness</code> from anywhere, while still pointing at your source files so
+edits take effect immediately.</p>
+<hr>
+<blockquote>
+<p>Spotted a gap or an error? Open an issue on the repo.</p>
+</blockquote>
+</article>
+<footer class="page-footer">
+<nav class="prevnext" aria-label="Previous and next page">
+<a class="prev" href="exercises.html" rel="prev">← Exercises</a>
+<a class="next" href="notebooks.html" rel="next">Notebooks →</a>
+</nav>
+<p class="generated-note">Generated from <code>GLOSSARY.md</code> — the markdown is the source of truth.</p>
+</footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
+</main>
+</div>
+<script>
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there. */
+  if (matchMedia('(max-width: 800px)').matches) {
+    var sb = document.querySelector('.sidebar-wrap');
+    if (sb) { sb.removeAttribute('open'); }
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards. */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
+  });
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
+</script>
+</body>
+</html>

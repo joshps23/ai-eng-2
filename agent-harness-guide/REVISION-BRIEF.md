@@ -111,7 +111,7 @@ Score each phase 1–5 on each axis; the loop revises the lowest-scoring phase n
 
 The evaluator-reviser loop runs **at most 20 times**, then stops on its own.
 
-- Iterations used: **11 / 20** *(cap raised 10 → 20 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
+- Iterations used: **14 / 20** *(cap raised 10 → 20 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
 - Per iteration: score all phases on the rubric, pick the weakest, revise it one notch
   more incremental, increment the counter here, log it below, commit, push. Stop when the
   counter hits 20 **or** every phase scores ≥4 on every axis.
@@ -132,6 +132,48 @@ The evaluator-reviser loop runs **at most 20 times**, then stops on its own.
   Phase 5 gained an explicit "V1+V2 is a legitimate stopping point" paragraph.
 
 ## Revision log (newest first)
+
+- **2026-06-12 — Iteration 14: site re-verification + sign-off polish (cycle 11).**
+  The three personas re-reviewed the fixed site: front-end — ship-ready, all ten
+  findings resolved, zero regressions (heading ids byte-stable vs the old build);
+  UX — 8/12 fully resolved, flagged the TOC-suffix regression and the .ipynb raw-JSON
+  dead-end; beginner — everything resolved, verdict upgraded to "clearly the best way
+  to learn this guide". Their 8 residual items closed in one polish pass (short
+  nearest-step TOC suffixes, .ipynb → GitHub routing, scroll-revealed back-to-top,
+  keyboard-reachable permalink anchors, labeled navs, print tables, index title,
+  focus restore). Final state: byte-idempotent, 0 broken links/anchors, 513 heading
+  ids unchanged, tests green. Cycles 10–11 ran ~420k of the refreshed 1M budget.
+
+- **2026-06-12 — Iteration 13: HTML-site fix cycle (cycle 10).** Applied all three
+  cycle-9 persona reviews: root-cause repair of the blockquote-list fence indentation
+  (04's split/renumbered list — fix also caught a latent identical split in 07),
+  dark-mode AA contrast, print stylesheet + beforeprint details-opener, mobile sidebar
+  collapsed by default, copy-button fallback chain, semantic table wrappers + th
+  scopes, nested/disambiguated long-page TOCs + back-to-top, a distinct Reference-copy
+  component, hover heading anchors, repo-file link affordances (↗ + footer explainer),
+  plus the markdown-side fixes (surface-neutral Warning legend, Exercises deep links,
+  FAQ list spacing, hint/heading name match, Phase-6 box link) and a pinned CI drift
+  gate that regenerates the site and fails on diff. Output re-verified: byte-
+  idempotent, 0 broken links/anchors, all pages parse, tests green.
+
+- **2026-06-12 — Iteration 12: generated HTML site + three-persona review (cycle 9;
+  build + verify only, fixes deferred by maintainer instruction).** Shipped
+  site/build_site.py (offline-first, python-markdown + pygments, no CDN) generating 17
+  pages with GitHub-compatible slugs (every md-authored anchor resolves), rewritten
+  links, styled warnings/beginner boxes, working details blocks, sidebar nav +
+  per-page TOCs + prev/next; byte-idempotent; 1,126 hrefs 0 broken; the markdown
+  remains source of truth. Verified by three personas: a front-end engineer
+  (structural hygiene excellent; found a split/renumbered <ol> around a list-nested
+  fence in 04, a dark-mode AA contrast failure on the current-nav item, no print
+  stylesheet, mobile sidebar defaults open, silent copy-button failure), a UX
+  reviewer (IA and component differentiation beat GitHub; long-page TOC doesn't scale
+  — nine identical "Run it now" entries; Reference-copy banners still visually flat;
+  .ipynb links dead-end off-GitHub), and a beginner reader (zero blockers; code
+  conversion verified byte-identical 93/93 blocks in phases 0–2; verdict: prefers the
+  site over GitHub — but out-of-site links need an affordance, the Learning Path
+  legend says [!WARNING] which the site never displays, FAQ ordered lists flattened).
+  Reports banked as the next cycle's seed (cycle9-fe/ux/beginner-site). Ran under a
+  500k budget (~315k used).
 
 - **2026-06-12 — Iteration 11: companion notebooks for phases 4/5/7/8 (cycle 8, ROADMAP
   Item 12).** Built to the cycle-5 Jupyter-expert v1-scope verdict via a cycle-8

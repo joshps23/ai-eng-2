@@ -45,7 +45,7 @@ This phase adds active context management to the harness: token counting, a conf
 >   passed *by name* (`f(items, keep_last_n=10)`). Ignore the `*`; it changes nothing
 >   about what the function does.
 > - **`sum(count_tokens(t) for t in ...)`** and **`" ".join(... for ...)`** are
->   comprehension-style one-liners (see the [Phase 1 box](./01-bare-harness.md)): a loop
+>   comprehension-style one-liners (see the [Phase 1 box](./01-bare-harness.md#3-version-1--line-by-line-no-functions-no-classes)): a loop
 >   that adds up / joins values. Mentally expand them to a `for` loop if clearer.
 > - **`isinstance(x, list)`** just asks "is `x` a list?" — `True`/`False`.
 >

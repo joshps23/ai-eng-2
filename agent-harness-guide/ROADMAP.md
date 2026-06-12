@@ -61,6 +61,15 @@ Status: ☐ todo · ◐ in progress · ☑ done
 
 Newest first. One line per shipped iteration.
 
+- **2026-06-12** — Cycle 11: three-persona re-verification — all fixes confirmed,
+  beginner verdict upgraded to "the best way to learn this guide"; 8 residual polish
+  items closed (TOC suffixes, .ipynb→GitHub, back-to-top reveal, keyboard anchors).
+- **2026-06-12** — Cycle 10: all ~15 banked site fixes applied (generator + markdown)
+  with a pinned CI drift gate for site/html; output byte-idempotent, 0 broken links.
+- **2026-06-12** — Cycle 9 (build + verify; fixes deferred): generated HTML mirror of
+  the guide (site/build_site.py, 17 offline pages, GitHub-parity anchors, 0 broken
+  links, byte-idempotent) reviewed by front-end/UX/beginner personas — beginner
+  verdict: prefers the site over GitHub. ~15 ranked fixes banked for the next cycle.
 - **2026-06-12** — Cycle 8: shipped Item 12 — companion notebooks for phases 4/5/7/8
   (tmpdir-confined tools, scripted-asker permission gate with deny-beats-session-memory
   asserted, recursive task tool with per-agent FakeClients + depth guard + threaded

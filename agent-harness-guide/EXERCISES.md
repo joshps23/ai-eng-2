@@ -49,7 +49,7 @@ briefly to feel why it matters (then put it back!).
 
 The loop stops when `response.output` has no `function_call` items. A tool that always
 errors keeps the model trying, so the **cap** is the only thing that ends it. See
-"Common Pitfalls" at the end of Phase 1.
+"Pitfalls" at the end of Phase 1.
 </details>
 
 ---

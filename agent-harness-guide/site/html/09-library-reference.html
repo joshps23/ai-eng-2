@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<!-- GENERATED from 09-library-reference.md — do not edit; run site/build_site.py -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="This is a lookup appendix, not a ninth phase — come here when a phase names a stdlib module you want more depth on, not as the next chapter after Phase 8.">
+<title>Appendix — Library Reference — Agent Harness Guide</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:,">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="layout">
+<details class="sidebar-wrap" open>
+<summary class="sidebar-toggle">Guide navigation</summary>
+<nav class="sidebar" aria-label="Guide pages">
+<p class="sidebar-heading">Start here</p>
+<ul>
+<li><a href="index.html">Guide hub</a></li>
+<li><a href="learning-path.html">Learning Path</a></li>
+<li><a href="beginner-notes.html">Python Cheat-Sheet</a></li>
+<li><a href="faq.html">Setup &amp; FAQ</a></li>
+</ul>
+<p class="sidebar-heading">Phases</p>
+<ul>
+<li><a href="00-foundations.html">Phase 0 — Foundations</a></li>
+<li><a href="01-bare-harness.html">Phase 1 — Bare Harness</a></li>
+<li><a href="02-tool-system.html">Phase 2 — Tool System</a></li>
+<li><a href="03-conversation-and-streaming.html">Phase 3 — Conversation &amp; Streaming</a></li>
+<li><a href="04-real-tools.html">Phase 4 — Real Tools</a></li>
+<li><a href="05-permissions-and-safety.html">Phase 5 — Permissions &amp; Safety</a></li>
+<li><a href="06-context-management.html">Phase 6 — Context Management</a></li>
+<li><a href="07-subagents-orchestration.html">Phase 7 — Sub-agents</a></li>
+<li><a href="08-production-harness.html">Phase 8 — Production Harness</a></li>
+</ul>
+<p class="sidebar-heading">Appendix</p>
+<ul>
+<li class="current"><a href="09-library-reference.html" aria-current="page">Appendix — Library Reference</a></li>
+</ul>
+<p class="sidebar-heading">Practice</p>
+<ul>
+<li><a href="exercises.html">Exercises</a></li>
+<li><a href="glossary.html">Glossary</a></li>
+<li><a href="notebooks.html">Notebooks</a></li>
+</ul>
+</nav>
+</details>
+<main id="main">
+<header class="page-header">
+<p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/09-library-reference.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
+<details class="page-toc">
+<summary>On this page</summary>
+<ul>
+<li class="toc-h2"><a href="#1-openai--the-responses-api">1. openai — the Responses API</a>
+<ul>
+<li class="toc-h3"><a href="#11-creating-the-client--openaiopenai">1.1 Creating the client — openai.OpenAI</a></li>
+<li class="toc-h3"><a href="#12-clientresponsescreate--one-model-turn">1.2 client.responses.create(...) — one model turn</a></li>
+<li class="toc-h3"><a href="#13-the-response-object">1.3 The Response object</a></li>
+<li class="toc-h3"><a href="#14-output--input-item-shapes">1.4 Output / input item shapes</a></li>
+<li class="toc-h3"><a href="#15-tool-schemas--the-flat-shape">1.5 Tool schemas — the flat shape</a></li>
+<li class="toc-h3"><a href="#16-error-types-and-retries">1.6 Error types and retries</a></li>
+<li class="toc-h3"><a href="#17-streaming--clientresponsescreate-streamtrue">1.7 Streaming — client.responses.create(..., stream=True)</a></li>
+</ul>
+</li>
+<li class="toc-h2"><a href="#2-tiktoken--local-token-counting">2. tiktoken — local token counting</a>
+<ul>
+<li class="toc-h3"><a href="#21-tiktokenencoding_for_modelmodel_name">2.1 tiktoken.encoding_for_model(model_name)</a></li>
+<li class="toc-h3"><a href="#22-tiktokenget_encodingencoding_name">2.2 tiktoken.get_encoding(encoding_name)</a></li>
+<li class="toc-h3"><a href="#23-the-encoding-object">2.3 The Encoding object</a></li>
+<li class="toc-h3"><a href="#24-the-robust-pattern-the-harness-uses">2.4 The robust pattern the harness uses</a></li>
+</ul>
+</li>
+<li class="toc-h2"><a href="#3-concurrentfutures--running-tools-in-parallel">3. concurrent.futures — running tools in parallel</a>
+<ul>
+<li class="toc-h3"><a href="#31-threadpoolexecutor">3.1 ThreadPoolExecutor</a></li>
+<li class="toc-h3"><a href="#32-the-future-key-idiom">3.2 The {future: key} idiom</a></li>
+</ul>
+</li>
+<li class="toc-h2"><a href="#4-subprocess--running-shell-commands">4. subprocess — running shell commands</a>
+</li>
+<li class="toc-h2"><a href="#where-to-go-next">Where to go next</a>
+</li>
+</ul>
+</details>
+</header>
+<article>
+<p><a href="08-production-harness.html">← Phase 8: The Production Harness</a> · <a href="index.html">Guide index</a></p>
+<h1 id="appendix--library-reference">Appendix — Library Reference</h1>
+<blockquote>
+<p><strong>This is a lookup appendix, not a ninth phase</strong> — come here when a phase names a
+stdlib module you want more depth on, not as the next chapter after Phase 8.</p>
+</blockquote>
+<!-- bq-split -->
+
+<blockquote>
+<p>A focused reference for every <strong>external library</strong> the harness depends on, plus the
+two standard-library modules it leans on most heavily. For each, you get the
+methods we actually use, their parameters, return types, and a small runnable
+example. Nothing here is exhaustive — it's the subset you need to understand the
+harness, with pointers to the official docs for the rest.</p>
+</blockquote>
+<p>The harness has exactly <strong>two third-party dependencies</strong>:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th scope="col">Library</th>
+<th scope="col">Why we use it</th>
+<th scope="col">Required?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#1-openai--the-responses-api"><code>openai</code></a></td>
+<td>Talk to the model via the Responses API</td>
+<td><strong>Yes</strong></td>
+</tr>
+<tr>
+<td><a href="#2-tiktoken--local-token-counting"><code>tiktoken</code></a></td>
+<td>Count tokens locally for context budgeting</td>
+<td>Optional (Phase 6+)</td>
+</tr>
+</tbody>
+</table></div>
+<p>Everything else is the Python standard library. Two stdlib modules are central enough
+to document here too: <a href="#3-concurrentfutures--running-tools-in-parallel"><code>concurrent.futures</code></a>
+(parallel tool/sub-agent execution) and <a href="#4-subprocess--running-shell-commands"><code>subprocess</code></a>
+(the <code>bash</code> tool).</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;openai&gt;=1.66.0&quot;</span><span class="w">   </span><span class="c1"># Responses API was added in 1.66.0</span>
+pip<span class="w"> </span>install<span class="w"> </span>tiktoken<span class="w">           </span><span class="c1"># optional</span>
+</code></pre></div>
+
+<p><strong>Contents:</strong></p>
+<ul>
+<li><a href="#1-openai--the-responses-api">§1 — <code>openai</code>: the Responses API</a></li>
+<li><a href="#2-tiktoken--local-token-counting">§2 — <code>tiktoken</code>: local token counting</a></li>
+<li><a href="#3-concurrentfutures--running-tools-in-parallel">§3 — <code>concurrent.futures</code>: running tools in parallel</a></li>
+<li><a href="#4-subprocess--running-shell-commands">§4 — <code>subprocess</code>: running shell commands</a></li>
+<li><a href="#where-to-go-next">Where to go next</a></li>
+</ul>
+<blockquote class="beginner">
+<p>🟢 <strong>Beginner reading order for this appendix.</strong> <strong>§1 (<code>openai</code>) is the one section
+to actually know</strong> — it's the <code>client.responses.create(...)</code> API you already use, and
+every example there is built from strings, dicts, and lists. Read it closely. The
+other three are <em>background you only need when you reach that feature</em>: §2 <code>tiktoken</code>
+matters only for Phase 6 (and is optional — there's always the <code>len(text)//4</code>
+fallback), and §3 <code>concurrent.futures</code> + §4 <code>subprocess</code> are the <strong>threads</strong> and
+<strong>shell</strong> pieces that earlier green boxes already flagged as advanced/optional. When
+you see <code>with ... as x:</code> or <code>try/except</code> here, they mean the same as in the
+<a href="00-foundations.html">Phase 0</a> and <a href="01-bare-harness.html">Phase 1</a> boxes. So: study
+§1, skim §2–§4 for reference when you need them.</p>
+</blockquote>
+<hr>
+<h2 id="1-openai--the-responses-api">1. <code>openai</code> — the Responses API<a aria-label="Permalink to this section" class="hanchor" href="#1-openai--the-responses-api">¶</a></h2>
+<p>The <code>openai</code> package is the official Python SDK. We use <strong>only</strong> the Responses API
+(<code>client.responses.*</code>). We never touch Chat Completions (<code>client.chat.completions.*</code>).</p>
+<blockquote>
+<p><strong>Version note.</strong> <code>client.responses</code> was introduced in <code>openai==1.66.0</code> (March 2025).
+Examples here were checked against <code>openai==2.x</code>. The shapes below are stable across
+that range.</p>
+</blockquote>
+<h3 id="11-creating-the-client--openaiopenai">1.1 Creating the client — <code>openai.OpenAI</code><a aria-label="Permalink to this section" class="hanchor" href="#11-creating-the-client--openaiopenai">¶</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">openai</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenAI</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">OpenAI</span><span class="p">()</span>                       <span class="c1"># reads OPENAI_API_KEY from the environment</span>
+<span class="n">client</span> <span class="o">=</span> <span class="n">OpenAI</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;sk-...&quot;</span><span class="p">)</span>       <span class="c1"># or pass it explicitly</span>
+</code></pre></div>
+
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th scope="col">Parameter</th>
+<th scope="col">Type</th>
+<th scope="col">Default</th>
+<th scope="col">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>api_key</code></td>
+<td><code>str</code></td>
+<td><code>$OPENAI_API_KEY</code></td>
+<td>Your API key.</td>
+</tr>
+<tr>
+<td><code>base_url</code></td>
+<td><code>str</code></td>
+<td>OpenAI's URL</td>
+<td>Point at a compatible endpoint.</td>
+</tr>
+<tr>
+<td><code>timeout</code></td>
+<td><code>float</code></td>
+<td><code>600</code></td>
+<td>Per-request timeout in seconds.</td>
+</tr>
+<tr>
+<td><code>max_retries</code></td>
+<td><code>int</code></td>
+<td><code>2</code></td>
+<td>SDK-level automatic retries.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Returns:</strong> an <code>OpenAI</code> client instance. The only attribute we use is
+<code>client.responses</code>.</p>
+<h3 id="12-clientresponsescreate--one-model-turn">1.2 <code>client.responses.create(...)</code> — one model turn<a aria-label="Permalink to this section" class="hanchor" href="#12-clientresponsescreate--one-model-turn">¶</a></h3>
+<p>This is the heart of the harness. One call = one model turn.</p>
+<div class="highlight"><pre><span></span><code><span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">responses</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4o&quot;</span><span class="p">,</span>
+    <span class="n">instructions</span><span class="o">=</span><span class="s2">&quot;You are a helpful coding assistant.&quot;</span><span class="p">,</span>
+    <span class="nb">input</span><span class="o">=</span><span class="p">[{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;What is 2 + 2?&quot;</span><span class="p">}],</span>
+    <span class="n">tools</span><span class="o">=</span><span class="p">[],</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">output_text</span><span class="p">)</span>      <span class="c1"># -&gt; &quot;4&quot;</span>
+</code></pre></div>
+
+<p><strong>Parameters we use</strong> (it accepts many more — see the table after):</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th scope="col">Parameter</th>
+<th scope="col">Type</th>
+<th scope="col" style="text-align: center;">Required</th>
+<th scope="col">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>model</code></td>
+<td><code>str</code></td>
+<td style="text-align: center;">✅</td>
+<td>Model id, e.g. <code>"gpt-4o"</code>.</td>
+</tr>
+<tr>
+<td><code>input</code></td>
+<td><code>str \| list[dict]</code></td>
+<td style="text-align: center;">✅</td>
+<td>The conversation so far. A plain string is shorthand for a single user message; normally it's a <strong>list of items</strong> (see §1.4).</td>
+</tr>
+<tr>
+<td><code>instructions</code></td>
+<td><code>str \| None</code></td>
+<td style="text-align: center;">–</td>
+<td>The system prompt. The dedicated channel for "who the assistant is" — prefer this over a <code>role:"system"</code> item in <code>input</code>.</td>
+</tr>
+<tr>
+<td><code>tools</code></td>
+<td><code>list[dict]</code></td>
+<td style="text-align: center;">–</td>
+<td>Tool/function schemas the model may call (see §1.5).</td>
+</tr>
+<tr>
+<td><code>tool_choice</code></td>
+<td><code>str \| dict</code></td>
+<td style="text-align: center;">–</td>
+<td><code>"auto"</code> (default), <code>"none"</code>, <code>"required"</code>, or force a specific tool.</td>
+</tr>
+<tr>
+<td><code>parallel_tool_calls</code></td>
+<td><code>bool</code></td>
+<td style="text-align: center;">–</td>
+<td>Allow the model to emit several tool calls in one turn (default <code>True</code>).</td>
+</tr>
+<tr>
+<td><code>stream</code></td>
+<td><code>bool</code></td>
+<td style="text-align: center;">–</td>
+<td>If <code>True</code>, returns an iterator of events instead of a <code>Response</code> (see §1.7).</td>
+</tr>
+<tr>
+<td><code>reasoning</code></td>
+<td><code>dict</code></td>
+<td style="text-align: center;">–</td>
+<td>For reasoning models, e.g. <code>{"effort": "medium"}</code>.</td>
+</tr>
+<tr>
+<td><code>max_output_tokens</code></td>
+<td><code>int</code></td>
+<td style="text-align: center;">–</td>
+<td>Cap the response length.</td>
+</tr>
+<tr>
+<td><code>temperature</code></td>
+<td><code>float</code></td>
+<td style="text-align: center;">–</td>
+<td>Sampling randomness (0–2).</td>
+</tr>
+<tr>
+<td><code>store</code></td>
+<td><code>bool</code></td>
+<td style="text-align: center;">–</td>
+<td>Whether OpenAI stores the response server-side (default <code>True</code>).</td>
+</tr>
+<tr>
+<td><code>previous_response_id</code></td>
+<td><code>str</code></td>
+<td style="text-align: center;">–</td>
+<td>Continue from a stored response without resending history.</td>
+</tr>
+<tr>
+<td><code>include</code></td>
+<td><code>list[str]</code></td>
+<td style="text-align: center;">–</td>
+<td>Ask for extra fields, e.g. <code>["reasoning.encrypted_content"]</code>.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Returns:</strong> a <code>Response</code> object (see §1.3). Streaming changes the return type (§1.7).</p>
+<p><strong>Raises</strong> (the ones worth catching — see §1.6): <code>RateLimitError</code>,
+<code>APIConnectionError</code>, <code>InternalServerError</code>, <code>BadRequestError</code>,
+<code>AuthenticationError</code>.</p>
+<h3 id="13-the-response-object">1.3 The <code>Response</code> object<a aria-label="Permalink to this section" class="hanchor" href="#13-the-response-object">¶</a></h3>
+<p>The object returned by a non-streaming <code>create()</code>. Fields the harness reads:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th scope="col">Attribute</th>
+<th scope="col">Type</th>
+<th scope="col">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>response.output</code></td>
+<td><code>list</code> of items</td>
+<td>The model's output items, in order: <code>message</code>, <code>function_call</code>, <code>reasoning</code>, … (see §1.4). <strong>This is what you append back into <code>input</code>.</strong></td>
+</tr>
+<tr>
+<td><code>response.output_text</code></td>
+<td><code>str</code></td>
+<td>Convenience: all text parts of all <code>message</code> items, concatenated. <code>""</code> if the turn produced only tool calls.</td>
+</tr>
+<tr>
+<td><code>response.usage</code></td>
+<td><code>ResponseUsage</code></td>
+<td>Token accounting (see below). May be <code>None</code> in some streaming paths — guard with <code>getattr</code>.</td>
+</tr>
+<tr>
+<td><code>response.id</code></td>
+<td><code>str</code></td>
+<td>The response id (use with <code>previous_response_id</code>).</td>
+</tr>
+<tr>
+<td><code>response.status</code></td>
+<td><code>str</code></td>
+<td><code>"completed"</code>, <code>"incomplete"</code>, etc.</td>
+</tr>
+<tr>
+<td><code>response.error</code></td>
+<td>object | <code>None</code></td>
+<td>Set if the response failed.</td>
+</tr>
+</tbody>
+</table></div>
+<p><code>response.usage</code> fields: <code>input_tokens</code> (int), <code>output_tokens</code> (int),
+<code>total_tokens</code> (int), plus <code>input_tokens_details</code> / <code>output_tokens_details</code>
+(breakdowns, e.g. cached and reasoning tokens).</p>
+<div class="highlight"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">usage</span><span class="o">.</span><span class="n">input_tokens</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">usage</span><span class="o">.</span><span class="n">output_tokens</span><span class="p">)</span>
+</code></pre></div>
+
+<h3 id="14-output--input-item-shapes">1.4 Output / input <strong>item</strong> shapes<a aria-label="Permalink to this section" class="hanchor" href="#14-output--input-item-shapes">¶</a></h3>
+<p>The Responses API speaks in <em>items</em>. You send a list of items as <code>input</code>; you get a
+list of items back as <code>response.output</code>. <strong>The core loop is: append every item in
+<code>response.output</code> to your running <code>input</code> list, then call <code>create()</code> again.</strong></p>
+<p>The item types you'll handle:</p>
+<p><strong><code>message</code></strong> — assistant (or user) text.</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;message&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;assistant&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;output_text&quot;</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello!&quot;</span><span class="p">}],</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p><strong><code>function_call</code></strong> — the model wants to run a tool.</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function_call&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;get_current_time&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;arguments&quot;</span><span class="p">:</span> <span class="s2">&quot;{</span><span class="se">\&quot;</span><span class="s2">timezone</span><span class="se">\&quot;</span><span class="s2">: </span><span class="se">\&quot;</span><span class="s2">UTC</span><span class="se">\&quot;</span><span class="s2">}&quot;</span><span class="p">,</span>   <span class="c1"># a JSON *string*, parse it yourself</span>
+    <span class="s2">&quot;call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;call_abc123&quot;</span><span class="p">,</span>                 <span class="c1"># echo this back in your result</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p><strong><code>function_call_output</code></strong> — <em>you</em> send this back with the tool's result. Matched to
+the call by <code>call_id</code> (position doesn't matter).</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function_call_output&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;call_abc123&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="s2">&quot;2025-06-07T12:00:00+00:00&quot;</span><span class="p">,</span>    <span class="c1"># always a string</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p><strong><code>reasoning</code></strong> — opaque reasoning items from reasoning models. You don't read them,
+but because you append <em>all</em> of <code>response.output</code> back into <code>input</code>, they ride along
+automatically, which is exactly what the API wants.</p>
+<blockquote>
+<p><strong>Two gotchas the harness handles for you:</strong>
+1. <code>arguments</code> is a JSON <strong>string</strong>, not a dict — <code>json.loads()</code> it.
+2. When you store <code>response.output</code> items (which are SDK objects) as plain dicts,
+   call <code>item.model_dump()</code>. Do <strong>not</strong> add a top-level <code>output_text</code> key to a
+   <code>message</code> dict — that's a response-level accessor, not a valid input field.</p>
+</blockquote>
+<h3 id="15-tool-schemas--the-flat-shape">1.5 Tool schemas — the <strong>flat</strong> shape<a aria-label="Permalink to this section" class="hanchor" href="#15-tool-schemas--the-flat-shape">¶</a></h3>
+<p>Function tools use a <strong>flat</strong> schema. The function fields are top-level — there is
+<strong>no</strong> nested <code>"function"</code> wrapper (that was the older Chat Completions shape).</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;get_weather&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Get the current weather for a city.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="p">{</span>                       <span class="c1"># a JSON Schema object</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;city&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;City name&quot;</span><span class="p">},</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;city&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;additionalProperties&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="c1"># &quot;strict&quot;: True,                     # optional — see note</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<blockquote>
+<p><strong><code>strict</code> mode.</strong> Setting <code>"strict": True</code> makes the API <em>guarantee</em> the
+arguments validate against your schema. The catch: strict mode requires <strong>every</strong>
+property to appear in <code>required</code> and <code>"additionalProperties": False</code>. So you can't
+have a plain optional parameter under strict mode — you'd model it as required with
+a nullable type (<code>"type": ["string", "null"]</code>). The harness defaults to
+<strong>non-strict</strong> so tools can have ordinary optional parameters.</p>
+</blockquote>
+<h3 id="16-error-types-and-retries">1.6 Error types and retries<a aria-label="Permalink to this section" class="hanchor" href="#16-error-types-and-retries">¶</a></h3>
+<p>Import these from the top-level package:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">openai</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">RateLimitError</span><span class="p">,</span>        <span class="c1"># 429 — back off and retry</span>
+    <span class="n">APIConnectionError</span><span class="p">,</span>    <span class="c1"># network failure — retry</span>
+    <span class="n">InternalServerError</span><span class="p">,</span>   <span class="c1"># 5xx — retry</span>
+    <span class="n">BadRequestError</span><span class="p">,</span>       <span class="c1"># 400 — your request is malformed; do NOT retry</span>
+    <span class="n">AuthenticationError</span><span class="p">,</span>   <span class="c1"># 401 — bad key; do NOT retry</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<p>A minimal retry wrapper (this is what <code>llm.py</code> does):</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">create_with_retry</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">delay</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">responses</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">RateLimitError</span><span class="p">,</span> <span class="n">APIConnectionError</span><span class="p">,</span> <span class="n">InternalServerError</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">attempt</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="k">raise</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">delay</span><span class="p">)</span>
+            <span class="n">delay</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">delay</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">60</span><span class="p">)</span>   <span class="c1"># exponential back-off, capped</span>
+</code></pre></div>
+
+<h3 id="17-streaming--clientresponsescreate-streamtrue">1.7 Streaming — <code>client.responses.create(..., stream=True)</code><a aria-label="Permalink to this section" class="hanchor" href="#17-streaming--clientresponsescreate-streamtrue">¶</a></h3>
+<p>For live, token-by-token output, pass <code>stream=True</code> to the <strong>same</strong> <code>create()</code> call. It
+takes the same parameters as a non-streamed call but returns an iterator of typed events
+instead of a single <code>Response</code>. The returned object is itself a context manager, so the
+HTTP connection closes cleanly on exit.</p>
+<div class="highlight"><pre><span></span><code><span class="n">final</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="k">with</span> <span class="n">client</span><span class="o">.</span><span class="n">responses</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4o&quot;</span><span class="p">,</span>
+    <span class="n">instructions</span><span class="o">=</span><span class="s2">&quot;You are concise.&quot;</span><span class="p">,</span>
+    <span class="nb">input</span><span class="o">=</span><span class="p">[{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;Count to three.&quot;</span><span class="p">}],</span>
+    <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="k">as</span> <span class="n">stream</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;response.output_text.delta&quot;</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">delta</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>   <span class="c1"># a text chunk</span>
+        <span class="k">elif</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;response.completed&quot;</span><span class="p">:</span>
+            <span class="n">final</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">response</span>   <span class="c1"># the same Response object as a non-streamed create()</span>
+<span class="nb">print</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">final</span><span class="o">.</span><span class="n">usage</span><span class="o">.</span><span class="n">total_tokens</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Event types you'll care about:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th scope="col"><code>event.type</code></th>
+<th scope="col">Useful fields</th>
+<th scope="col">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>response.output_text.delta</code></td>
+<td><code>event.delta</code> (str)</td>
+<td>A chunk of assistant text.</td>
+</tr>
+<tr>
+<td><code>response.function_call_arguments.delta</code></td>
+<td><code>event.delta</code> (str)</td>
+<td>A chunk of a tool call's JSON arguments.</td>
+</tr>
+<tr>
+<td><code>response.output_item.done</code></td>
+<td><code>event.item</code></td>
+<td>An output item finished.</td>
+</tr>
+<tr>
+<td><code>response.completed</code></td>
+<td><code>event.response</code></td>
+<td>The whole response is done; carries the final <code>Response</code>.</td>
+</tr>
+<tr>
+<td><code>response.error</code></td>
+<td><code>event.error</code></td>
+<td>Something went wrong.</td>
+</tr>
+</tbody>
+</table></div>
+<p>There is no <code>get_final_response()</code> when you stream this way: you reconstruct the assembled
+<code>Response</code> (same shape as §1.3) yourself by capturing <code>event.response</code> on the
+<code>response.completed</code> event, so after streaming for display you still get <code>output</code>,
+<code>output_text</code>, and <code>usage</code> for your bookkeeping.</p>
+<blockquote>
+<p><strong>Why not <code>client.responses.stream()</code>?</strong> The SDK also ships a higher-level
+<code>client.responses.stream()</code> context-manager helper that auto-accumulates state and
+exposes <code>get_final_response()</code>. We deliberately avoid it throughout this guide: the
+whole point is to drive the event loop and assemble the final response ourselves, so you
+can see exactly what that helper does under the hood. Everything here uses the low-level
+<code>create(stream=True)</code> primitive.</p>
+</blockquote>
+<hr>
+<h2 id="2-tiktoken--local-token-counting">2. <code>tiktoken</code> — local token counting<a aria-label="Permalink to this section" class="hanchor" href="#2-tiktoken--local-token-counting">¶</a></h2>
+<p><code>tiktoken</code> is OpenAI's fast BPE tokenizer. We use it in Phase 6 to count tokens
+<strong>locally</strong> (no API call) so we can budget and prune the conversation. It's optional:
+the harness falls back to a <code>len(text) // 4</code> heuristic if it isn't installed or can't
+load its vocabulary.</p>
+<blockquote>
+<p><strong>The single most important fact:</strong> the <strong>first</strong> time you use an encoding,
+tiktoken <strong>downloads the vocabulary file over the network</strong>. Offline, that raises a
+<code>requests</code> error (e.g. <code>HTTPError</code>), <strong>not</strong> a <code>KeyError</code>. Always catch broadly and
+fall back to the heuristic — see §2.4.</p>
+</blockquote>
+<h3 id="21-tiktokenencoding_for_modelmodel_name">2.1 <code>tiktoken.encoding_for_model(model_name)</code><a aria-label="Permalink to this section" class="hanchor" href="#21-tiktokenencoding_for_modelmodel_name">¶</a></h3>
+<p>Pick the right encoding for a model by name.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th scope="col">Parameter</th>
+<th scope="col">Type</th>
+<th scope="col">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>model_name</code></td>
+<td><code>str</code></td>
+<td>e.g. <code>"gpt-4o"</code>, <code>"gpt-4"</code>.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Returns:</strong> an <code>Encoding</code> object.
+<strong>Raises:</strong> <code>KeyError</code> if the model name is unknown (and a network error on first
+download).</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">tiktoken</span>
+<span class="n">enc</span> <span class="o">=</span> <span class="n">tiktoken</span><span class="o">.</span><span class="n">encoding_for_model</span><span class="p">(</span><span class="s2">&quot;gpt-4o&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h3 id="22-tiktokenget_encodingencoding_name">2.2 <code>tiktoken.get_encoding(encoding_name)</code><a aria-label="Permalink to this section" class="hanchor" href="#22-tiktokenget_encodingencoding_name">¶</a></h3>
+<p>Get an encoding by its raw name (use as a fallback for unknown models).</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th scope="col">Parameter</th>
+<th scope="col">Type</th>
+<th scope="col">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>encoding_name</code></td>
+<td><code>str</code></td>
+<td>One of <code>tiktoken.list_encoding_names()</code>, e.g. <code>"o200k_base"</code> (GPT-4o family), <code>"cl100k_base"</code> (GPT-4/3.5).</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Returns:</strong> an <code>Encoding</code> object. <strong>Raises:</strong> <code>ValueError</code> for an unknown name (and a
+network error on first download).</p>
+<div class="highlight"><pre><span></span><code><span class="n">enc</span> <span class="o">=</span> <span class="n">tiktoken</span><span class="o">.</span><span class="n">get_encoding</span><span class="p">(</span><span class="s2">&quot;o200k_base&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<p><code>tiktoken.list_encoding_names()</code> <strong>returns</strong> <code>list[str]</code>, e.g.
+<code>['gpt2', 'r50k_base', 'p50k_base', 'p50k_edit', 'cl100k_base', 'o200k_base', 'o200k_harmony']</code>.</p>
+<h3 id="23-the-encoding-object">2.3 The <code>Encoding</code> object<a aria-label="Permalink to this section" class="hanchor" href="#23-the-encoding-object">¶</a></h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th scope="col">Method / attribute</th>
+<th scope="col">Signature</th>
+<th scope="col">Returns</th>
+<th scope="col">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enc.encode(text)</code></td>
+<td><code>(text: str) -&gt; list[int]</code></td>
+<td>list of token ids</td>
+<td>Tokenize. <code>len(...)</code> is your token count.</td>
+</tr>
+<tr>
+<td><code>enc.decode(tokens)</code></td>
+<td><code>(tokens: list[int]) -&gt; str</code></td>
+<td>str</td>
+<td>Inverse of <code>encode</code>.</td>
+</tr>
+<tr>
+<td><code>enc.name</code></td>
+<td>attribute</td>
+<td>str</td>
+<td>The encoding's name.</td>
+</tr>
+</tbody>
+</table></div>
+<div class="highlight"><pre><span></span><code><span class="n">ids</span> <span class="o">=</span> <span class="n">enc</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;hello world&quot;</span><span class="p">)</span>     <span class="c1"># e.g. [24912, 2375]</span>
+<span class="n">n_tokens</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>                  <span class="c1"># 2</span>
+<span class="n">text_again</span> <span class="o">=</span> <span class="n">enc</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>         <span class="c1"># &quot;hello world&quot;</span>
+</code></pre></div>
+
+<h3 id="24-the-robust-pattern-the-harness-uses">2.4 The robust pattern the harness uses<a aria-label="Permalink to this section" class="hanchor" href="#24-the-robust-pattern-the-harness-uses">¶</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">_heuristic</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">//</span> <span class="mi">4</span><span class="p">)</span>    <span class="c1"># ~4 chars/token; overestimates slightly (safe)</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">tiktoken</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">_ENC</span> <span class="o">=</span> <span class="n">tiktoken</span><span class="o">.</span><span class="n">encoding_for_model</span><span class="p">(</span><span class="s2">&quot;gpt-4o&quot;</span><span class="p">)</span>
+        <span class="n">_ENC</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;warmup&quot;</span><span class="p">)</span>        <span class="c1"># force the lazy download NOW so we catch failures</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>                <span class="c1"># unknown model OR offline download failure</span>
+        <span class="n">_ENC</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">_ENC</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">count_tokens</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">_heuristic</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="k">if</span> <span class="n">_ENC</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">_ENC</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">text</span><span class="p">))</span>
+</code></pre></div>
+
+<p>This never crashes: missing package, unknown model, or no network all degrade
+gracefully to the heuristic.</p>
+<hr>
+<h2 id="3-concurrentfutures--running-tools-in-parallel">3. <code>concurrent.futures</code> — running tools in parallel<a aria-label="Permalink to this section" class="hanchor" href="#3-concurrentfutures--running-tools-in-parallel">¶</a></h2>
+<p>Standard library. The harness uses a <code>ThreadPoolExecutor</code> to run independent tool
+calls (and sub-agents) at the same time. Threads are the right tool here because the
+work is <strong>I/O-bound</strong> (waiting on the network / disk / subprocesses), so the GIL isn't
+a bottleneck.</p>
+<h3 id="31-threadpoolexecutor">3.1 <code>ThreadPoolExecutor</code><a aria-label="Permalink to this section" class="hanchor" href="#31-threadpoolexecutor">¶</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThreadPoolExecutor</span><span class="p">,</span> <span class="n">as_completed</span>
+</code></pre></div>
+
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th scope="col">Constructor</th>
+<th scope="col"><code>ThreadPoolExecutor(max_workers=None)</code></th>
+<th scope="col"><code>max_workers</code> caps concurrent threads.</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<p>Use it as a context manager so threads are cleaned up automatically.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th scope="col">Method</th>
+<th scope="col">Signature</th>
+<th scope="col">Returns</th>
+<th scope="col">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>executor.submit(fn, *args, **kwargs)</code></td>
+<td>–</td>
+<td><code>Future</code></td>
+<td>Schedule <code>fn</code> to run; returns immediately.</td>
+</tr>
+<tr>
+<td><code>future.result(timeout=None)</code></td>
+<td>–</td>
+<td>the function's return value</td>
+<td>Blocks until done; <strong>re-raises</strong> any exception the function raised.</td>
+</tr>
+<tr>
+<td><code>as_completed(futures)</code></td>
+<td><code>(iterable_of_futures) -&gt; iterator</code></td>
+<td>yields futures</td>
+<td>Yields each future <strong>as it finishes</strong> (completion order, not submission order).</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="32-the-future-key-idiom">3.2 The <code>{future: key}</code> idiom<a aria-label="Permalink to this section" class="hanchor" href="#32-the-future-key-idiom">¶</a></h3>
+<p>Because <code>as_completed</code> yields in completion order, map each future back to its input:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_in_parallel</span><span class="p">(</span><span class="n">calls</span><span class="p">):</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">with</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+        <span class="n">future_to_id</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">pool</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">do_one_call</span><span class="p">,</span> <span class="n">call</span><span class="p">):</span> <span class="n">call</span><span class="p">[</span><span class="s2">&quot;call_id&quot;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">call</span> <span class="ow">in</span> <span class="n">calls</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">as_completed</span><span class="p">(</span><span class="n">future_to_id</span><span class="p">):</span>
+            <span class="n">call_id</span> <span class="o">=</span> <span class="n">future_to_id</span><span class="p">[</span><span class="n">future</span><span class="p">]</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">results</span><span class="p">[</span><span class="n">call_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="n">results</span><span class="p">[</span><span class="n">call_id</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Error: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>   <span class="c1"># never let one failure kill the batch</span>
+    <span class="k">return</span> <span class="n">results</span>
+</code></pre></div>
+
+<p>Returning results keyed by <code>call_id</code> is exactly why ordering doesn't matter for the
+Responses API — <code>function_call_output</code> items are matched to calls by <code>call_id</code>.</p>
+<hr>
+<h2 id="4-subprocess--running-shell-commands">4. <code>subprocess</code> — running shell commands<a aria-label="Permalink to this section" class="hanchor" href="#4-subprocess--running-shell-commands">¶</a></h2>
+<p>Standard library. Powers the <code>bash</code> tool. We use <code>subprocess.run</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+    <span class="s2">&quot;echo hello&quot;</span><span class="p">,</span>
+    <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">cwd</span><span class="o">=</span><span class="s2">&quot;/path/to/workspace&quot;</span><span class="p">,</span>
+    <span class="n">stdin</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">DEVNULL</span><span class="p">,</span>          <span class="c1"># no interactive input — prevents hangs</span>
+    <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+    <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">,</span>          <span class="c1"># fold stderr into stdout</span>
+    <span class="n">timeout</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span>                        <span class="c1"># seconds; raises TimeoutExpired if exceeded</span>
+    <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>                          <span class="c1"># decode bytes -&gt; str</span>
+    <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;replace&quot;</span><span class="p">,</span>                   <span class="c1"># don&#39;t crash on bad UTF-8</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<p>Key <code>run()</code> parameters:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th scope="col">Parameter</th>
+<th scope="col">Type</th>
+<th scope="col">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>args</code></td>
+<td><code>str</code> or <code>list[str]</code></td>
+<td>The command. With <code>shell=True</code>, pass a string.</td>
+</tr>
+<tr>
+<td><code>shell</code></td>
+<td><code>bool</code></td>
+<td>Run via the shell (enables pipes, <code>&amp;&amp;</code>, globs). <strong>Powerful and dangerous</strong> — only with trusted/sandboxed input.</td>
+</tr>
+<tr>
+<td><code>cwd</code></td>
+<td><code>str</code></td>
+<td>Working directory.</td>
+</tr>
+<tr>
+<td><code>timeout</code></td>
+<td><code>float</code></td>
+<td>Kill and raise <code>TimeoutExpired</code> after this many seconds.</td>
+</tr>
+<tr>
+<td><code>capture_output</code></td>
+<td><code>bool</code></td>
+<td>Shortcut for <code>stdout=PIPE, stderr=PIPE</code>.</td>
+</tr>
+<tr>
+<td><code>text</code></td>
+<td><code>bool</code></td>
+<td>Decode output to <code>str</code> (vs <code>bytes</code>).</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Returns:</strong> a <code>CompletedProcess</code> with:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th scope="col">Attribute</th>
+<th scope="col">Type</th>
+<th scope="col">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>result.returncode</code></td>
+<td><code>int</code></td>
+<td><code>0</code> = success.</td>
+</tr>
+<tr>
+<td><code>result.stdout</code></td>
+<td><code>str</code></td>
+<td>Captured stdout (and stderr if folded).</td>
+</tr>
+<tr>
+<td><code>result.stderr</code></td>
+<td><code>str</code></td>
+<td>Captured stderr (if separate).</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Raises:</strong> <code>subprocess.TimeoutExpired</code> on timeout. Catch it and return an error
+<em>string</em> — tools never raise into the agent loop.</p>
+<div class="highlight"><pre><span></span><code><span class="k">try</span><span class="p">:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;sleep 5&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">TimeoutExpired</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;command timed out&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<hr>
+<h2 id="where-to-go-next">Where to go next<a aria-label="Permalink to this section" class="hanchor" href="#where-to-go-next">¶</a></h2>
+<ul>
+<li><strong>OpenAI Responses API</strong> — official docs: <a href="https://platform.openai.com/docs/api-reference/responses">https://platform.openai.com/docs/api-reference/responses</a></li>
+<li><strong>tiktoken</strong> — <a href="https://github.com/openai/tiktoken">https://github.com/openai/tiktoken</a></li>
+<li><strong><code>concurrent.futures</code></strong> — <a href="https://docs.python.org/3/library/concurrent.futures.html">https://docs.python.org/3/library/concurrent.futures.html</a></li>
+<li><strong><code>subprocess</code></strong> — <a href="https://docs.python.org/3/library/subprocess.html">https://docs.python.org/3/library/subprocess.html</a></li>
+</ul>
+<p>These four cover every external and load-bearing-stdlib dependency in the harness. If
+you understand the four pages above, no part of the <code>agent_harness</code> package is a black
+box.</p>
+</article>
+<footer class="page-footer">
+<nav class="prevnext" aria-label="Previous and next page">
+<a class="prev" href="08-production-harness.html" rel="prev">← Phase 8 — Production Harness</a>
+<a class="next" href="exercises.html" rel="next">Exercises →</a>
+</nav>
+<p class="generated-note">Generated from <code>09-library-reference.md</code> — the markdown is the source of truth.</p>
+</footer>
+<a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
+</main>
+</div>
+<script>
+(function () {
+  /* On narrow screens the stacked sidebar would push content below the
+     fold on every load — start it collapsed there. */
+  if (matchMedia('(max-width: 800px)').matches) {
+    var sb = document.querySelector('.sidebar-wrap');
+    if (sb) { sb.removeAttribute('open'); }
+  }
+
+  /* Print: open every <details> (answers, TOC) and revert afterwards. */
+  var openedForPrint = [];
+  window.addEventListener('beforeprint', function () {
+    openedForPrint = [];
+    document.querySelectorAll('details:not([open])').forEach(function (d) {
+      d.setAttribute('open', '');
+      openedForPrint.push(d);
+    });
+  });
+  window.addEventListener('afterprint', function () {
+    openedForPrint.forEach(function (d) { d.removeAttribute('open'); });
+    openedForPrint = [];
+  });
+
+  /* Back-to-top: hidden until the reader scrolls ~1.5 screens down.
+     Without JS the control simply stays visible (the old behavior). */
+  var btt = document.querySelector('.back-to-top');
+  if (btt) {
+    var toggleBtt = function () {
+      btt.classList.toggle('btt-hidden',
+                           window.scrollY < window.innerHeight * 1.5);
+    };
+    window.addEventListener('scroll', toggleBtt, { passive: true });
+    toggleBtt();
+  }
+
+  /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
+     execCommand -> select the block and ask for Ctrl-C.  If no mechanism
+     exists at all, inject nothing. */
+  var hasClipboard = !!(navigator.clipboard && navigator.clipboard.writeText);
+  var hasExec = !!(document.queryCommandSupported &&
+                   document.queryCommandSupported('copy'));
+  if (!hasClipboard && !hasExec && !window.getSelection) { return; }
+
+  function execCopy(text) {
+    if (!hasExec) { return false; }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function selectBlock(pre) {
+    var sel = window.getSelection ? window.getSelection() : null;
+    if (!sel || !document.createRange) { return false; }
+    var range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return true;
+  }
+
+  document.querySelectorAll('div.highlight:not(.nocopy)').forEach(function (block) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    function flash(label) {
+      btn.textContent = label;
+      setTimeout(function () { btn.textContent = 'Copy'; }, 2000);
+    }
+    function fallback(pre, code) {
+      if (execCopy(code)) { btn.focus(); flash('Copied!'); }
+      else if (selectBlock(pre)) { flash('Press Ctrl-C'); }
+      else { flash('Copy failed'); }
+    }
+    btn.addEventListener('click', function () {
+      var pre = block.querySelector('pre');
+      var code = pre.innerText;
+      if (hasClipboard) {
+        navigator.clipboard.writeText(code).then(function () {
+          flash('Copied!');
+        }).catch(function () { fallback(pre, code); });
+      } else {
+        fallback(pre, code);
+      }
+    });
+    block.insertBefore(btn, block.firstChild);
+  });
+})();
+</script>
+</body>
+</html>
