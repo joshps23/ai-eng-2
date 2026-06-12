@@ -74,8 +74,8 @@ phase markdown explains. They exercise the <strong>tested <code>agent_harness</c
 one the test suite covers) rather than re-pasting the phases' growing code ladders.</p>
 <blockquote>
 <p><strong>The contract.</strong> These notebooks are companion runnables of the tested package in
-<a class="repo-file" href="../../code/" title="Opens a file in the repository checkout — not part of this site"><code>../code/</code></a>. When a notebook and a phase snippet differ, that is the same
-deliberate divergence described in <a class="repo-file" href="../../code/README.md" title="Opens a file in the repository checkout — not part of this site"><code>code/README.md</code></a> — the phases
+<a class="repo-file" href="https://github.com/joshps23/ai-eng-2/tree/main/agent-harness-guide/code" title="Opens this repository file on GitHub"><code>../code/</code></a>. When a notebook and a phase snippet differ, that is the same
+deliberate divergence described in <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/code/README.md" title="Opens this repository file on GitHub"><code>code/README.md</code></a> — the phases
 show ideas <em>as they grow</em>, and <strong>the package is correct</strong>.</p>
 </blockquote>
 <h2 id="setup">Setup<a aria-label="Permalink to this section" class="hanchor" href="#setup">¶</a></h2>
@@ -124,7 +124,7 @@ the switch in the parameters cell:</p>
 <p><strong>Caveats.</strong> Colab sessions are ephemeral: the clone + install reruns in each new
 session (about 10 seconds — that's expected, not a bug). And don't commit notebooks
 you've modified <em>in Colab</em> back to the repo without running
-<a class="repo-file" href="../../notebooks/refresh.sh" title="Opens a file in the repository checkout — not part of this site"><code>./refresh.sh</code></a> locally first — Colab strips notebook metadata, which
+<a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/refresh.sh" title="Opens this repository file on GitHub"><code>./refresh.sh</code></a> locally first — Colab strips notebook metadata, which
 breaks the jupytext sync check in CI.</p>
 <h2 id="no-api-key-needed-the-use_real_api-switch">No API key needed (the <code>USE_REAL_API</code> switch)<a aria-label="Permalink to this section" class="hanchor" href="#no-api-key-needed-the-use_real_api-switch">¶</a></h2>
 <p>Every notebook runs <strong>fully offline by default</strong>: a tagged parameter cell near the top
@@ -160,7 +160,7 @@ point (client injection).</p>
 diffs like code) and the <code>.ipynb</code> (carries committed outputs for GitHub rendering).
 <strong>Edit the <code>.py</code>, then run <code>jupytext --sync &lt;file&gt;.py</code></strong> — never hand-edit the <code>.ipynb</code>.
 To re-sync and re-execute everything (refreshing committed outputs), run
-<a class="repo-file" href="../../notebooks/refresh.sh" title="Opens a file in the repository checkout — not part of this site"><code>./refresh.sh</code></a>.</p>
+<a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/refresh.sh" title="Opens this repository file on GitHub"><code>./refresh.sh</code></a>.</p>
 <h2 id="the-notebooks">The notebooks<a aria-label="Permalink to this section" class="hanchor" href="#the-notebooks">¶</a></h2>
 <div class="table-wrap"><table>
 <thead>
@@ -172,52 +172,52 @@ To re-sync and re-execute everything (refreshing committed outputs), run
 </thead>
 <tbody>
 <tr>
-<td><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/setup-check.ipynb" title="Opens the notebook on GitHub (requires repo access) — or use its Open-in-Colab badge"><code>setup-check.ipynb</code></a></td>
+<td><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/setup-check.ipynb" title="Opens the notebook on GitHub — or use its Open-in-Colab badge"><code>setup-check.ipynb</code></a></td>
 <td>~5 cells: verify your kernel, imports, and one offline FakeClient round trip — you're ready.</td>
 <td><a href="00-foundations.html">Phase 0 setup</a> / <a href="faq.html#setup--installation">FAQ</a></td>
 </tr>
 <tr>
-<td><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/00-foundations.ipynb" title="Opens the notebook on GitHub (requires repo access) — or use its Open-in-Colab badge"><code>00-foundations.ipynb</code></a></td>
+<td><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/00-foundations.ipynb" title="Opens the notebook on GitHub — or use its Open-in-Colab badge"><code>00-foundations.ipynb</code></a></td>
 <td>The Responses-API handshake ladder, step by step, ending with the V1→V2 refactor.</td>
 <td><a href="00-foundations.html"><code>00-foundations.md</code></a></td>
 </tr>
 <tr>
-<td><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/01-bare-harness.ipynb" title="Opens the notebook on GitHub (requires repo access) — or use its Open-in-Colab badge"><code>01-bare-harness.ipynb</code></a></td>
+<td><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/01-bare-harness.ipynb" title="Opens the notebook on GitHub — or use its Open-in-Colab badge"><code>01-bare-harness.ipynb</code></a></td>
 <td>The bare agent loop: tool-call round trips, the <code>Agent</code> remembering across cells, the iteration cap.</td>
 <td><a href="01-bare-harness.html"><code>01-bare-harness.md</code></a></td>
 </tr>
 <tr>
-<td><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/02-tool-system.ipynb" title="Opens the notebook on GitHub (requires repo access) — or use its Open-in-Colab badge"><code>02-tool-system.ipynb</code></a></td>
+<td><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/02-tool-system.ipynb" title="Opens the notebook on GitHub — or use its Open-in-Colab badge"><code>02-tool-system.ipynb</code></a></td>
 <td>Schema dicts → dict registry → <code>Tool</code>/<code>ToolRegistry</code> → <code>@tool</code>, with dispatch probes you can poke.</td>
 <td><a href="02-tool-system.html"><code>02-tool-system.md</code></a></td>
 </tr>
 <tr>
-<td><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/03-conversation-and-streaming.ipynb" title="Opens the notebook on GitHub (requires repo access) — or use its Open-in-Colab badge"><code>03-conversation-and-streaming.ipynb</code></a></td>
+<td><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/03-conversation-and-streaming.ipynb" title="Opens the notebook on GitHub — or use its Open-in-Colab badge"><code>03-conversation-and-streaming.ipynb</code></a></td>
 <td>The transcript as memory: two-turn recall, the forgetting A/B, save/load, the <code>Conversation</code> class.</td>
 <td><a href="03-conversation-and-streaming.html"><code>03-conversation-and-streaming.md</code></a></td>
 </tr>
 <tr>
-<td><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/04-real-tools.ipynb" title="Opens the notebook on GitHub (requires repo access) — or use its Open-in-Colab badge"><code>04-real-tools.ipynb</code></a></td>
+<td><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/04-real-tools.ipynb" title="Opens the notebook on GitHub — or use its Open-in-Colab badge"><code>04-real-tools.ipynb</code></a></td>
 <td>Workspace-confined file tools in a throwaway tmpdir: <code>_safe_path</code> stopping <code>../../etc/passwd</code>, a FakeClient-driven read, the production tools from the package.</td>
 <td><a href="04-real-tools.html"><code>04-real-tools.md</code></a></td>
 </tr>
 <tr>
-<td><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/05-permissions-and-safety.ipynb" title="Opens the notebook on GitHub (requires repo access) — or use its Open-in-Colab badge"><code>05-permissions-and-safety.ipynb</code></a></td>
+<td><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/05-permissions-and-safety.ipynb" title="Opens the notebook on GitHub — or use its Open-in-Colab badge"><code>05-permissions-and-safety.ipynb</code></a></td>
 <td>The permission gate offline: risk tiers × modes, a scripted asker standing in for <code>input()</code>, deny-beats-session-memory, a sandboxed subprocess.</td>
 <td><a href="05-permissions-and-safety.html"><code>05-permissions-and-safety.md</code></a></td>
 </tr>
 <tr>
-<td><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/06-context-management.ipynb" title="Opens the notebook on GitHub (requires repo access) — or use its Open-in-Colab badge"><code>06-context-management.ipynb</code></a></td>
+<td><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/06-context-management.ipynb" title="Opens the notebook on GitHub — or use its Open-in-Colab badge"><code>06-context-management.ipynb</code></a></td>
 <td>Feel the window fill up: <code>count_tokens</code>, <code>prune_to_budget</code> (no orphaned call pairs), <code>compact</code>.</td>
 <td><a href="06-context-management.html"><code>06-context-management.md</code></a></td>
 </tr>
 <tr>
-<td><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/07-subagents-orchestration.ipynb" title="Opens the notebook on GitHub (requires repo access) — or use its Open-in-Colab badge"><code>07-subagents-orchestration.ipynb</code></a></td>
+<td><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/07-subagents-orchestration.ipynb" title="Opens the notebook on GitHub — or use its Open-in-Colab badge"><code>07-subagents-orchestration.ipynb</code></a></td>
 <td>A sub-agent is the loop called again: the recursive <code>task</code> tool (one FakeClient per agent), the depth guard, sequential vs threaded timing.</td>
 <td><a href="07-subagents-orchestration.html"><code>07-subagents-orchestration.md</code></a></td>
 </tr>
 <tr>
-<td><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/08-production-harness.ipynb" title="Opens the notebook on GitHub (requires repo access) — or use its Open-in-Colab badge"><code>08-production-harness.ipynb</code></a></td>
+<td><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/08-production-harness.ipynb" title="Opens the notebook on GitHub — or use its Open-in-Colab badge"><code>08-production-harness.ipynb</code></a></td>
 <td>The demo trio: retry-with-backoff, the JSONL tracer + cost accounting, and the real package's 56-test suite run from a cell.</td>
 <td><a href="08-production-harness.html"><code>08-production-harness.md</code></a></td>
 </tr>
@@ -233,7 +233,7 @@ and hands you back to the markdown.</p>
 <a class="prev" href="glossary.html" rel="prev">← Glossary</a>
 
 </nav>
-<p class="generated-note">Generated from <code>notebooks/README.md</code> — the markdown is the source of truth. Links marked ↗ open repository files and need a full checkout (or GitHub).</p>
+<p class="generated-note">Generated from <code>notebooks/README.md</code> — the markdown is the source of truth. Links marked ↗ open files of this project on GitHub.</p>
 </footer>
 <a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
 </main>

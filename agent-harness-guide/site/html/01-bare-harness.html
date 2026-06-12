@@ -129,7 +129,7 @@
 <li><a href="#pitfalls">Pitfalls</a></li>
 </ul>
 <blockquote>
-<p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/01-bare-harness.ipynb" title="Opens the notebook on GitHub (requires repo access) — or use its Open-in-Colab badge"><code>notebooks/01-bare-harness.ipynb</code></a> executes this phase's checkpoints offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
+<p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/01-bare-harness.ipynb" title="Opens the notebook on GitHub — or use its Open-in-Colab badge"><code>notebooks/01-bare-harness.ipynb</code></a> executes this phase's checkpoints offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
 </blockquote>
 <hr>
 <h2 id="2-the-loop-conceptually">2. The Loop, Conceptually<a aria-label="Permalink to this section" class="hanchor" href="#2-the-loop-conceptually">¶</a></h2>
@@ -726,7 +726,7 @@ instead of a global <code>input_items</code>. That's the whole trick: nothing in
 </code></pre></div>
 
 <p>Ask <code>What time is it in Tokyo?</code>, then follow up with <code>And in London?</code> — and notice something new: the model understands <code>"And in London?"</code> because the transcript persisted on <code>agent.input_items</code> between turns. Version 2 forgot everything after each answer; Version 3 remembers, purely because of where the state lives. (Phase 3 is all about this.)</p>
-<p>This <code>Agent</code> shape — a constructor that takes a client and tools, plus a <code>run</code> method around the same loop — is exactly the skeleton the final package uses in <a class="repo-file" href="../../code/agent_harness/agent.py" title="Opens a file in the repository checkout — not part of this site"><code>code/agent_harness/agent.py</code></a>. The production version adds a <code>Conversation</code> object, a <code>ToolRegistry</code>, permissions, and hooks, but when you read it later you'll recognize this same ~40-line core. No decorators, no threads, no inheritance — just the same idea, organized.</p>
+<p>This <code>Agent</code> shape — a constructor that takes a client and tools, plus a <code>run</code> method around the same loop — is exactly the skeleton the final package uses in <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/code/agent_harness/agent.py" title="Opens this repository file on GitHub"><code>code/agent_harness/agent.py</code></a>. The production version adds a <code>Conversation</code> object, a <code>ToolRegistry</code>, permissions, and hooks, but when you read it later you'll recognize this same ~40-line core. No decorators, no threads, no inheritance — just the same idea, organized.</p>
 <hr>
 <h2 id="7-example-session">7. Example Session<a aria-label="Permalink to this section" class="hanchor" href="#7-example-session">¶</a></h2>
 <div class="highlight nocopy"><pre><span></span><code>Agent ready. Type your message (Ctrl-C or empty line to quit).
@@ -842,7 +842,7 @@ Bye.
 <a class="prev" href="00-foundations.html" rel="prev">← Phase 0 — Foundations</a>
 <a class="next" href="02-tool-system.html" rel="next">Phase 2 — Tool System →</a>
 </nav>
-<p class="generated-note">Generated from <code>01-bare-harness.md</code> — the markdown is the source of truth. Links marked ↗ open repository files and need a full checkout (or GitHub).</p>
+<p class="generated-note">Generated from <code>01-bare-harness.md</code> — the markdown is the source of truth. Links marked ↗ open files of this project on GitHub.</p>
 </footer>
 <a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
 </main>

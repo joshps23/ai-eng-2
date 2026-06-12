@@ -139,7 +139,7 @@ classes), V2 functions, V3 classes, and — where the phase taught it — V4 dec
 threads. Phase 8 is where the ladders meet. There is no V1 here, because <em>you already
 climbed it seven times</em>: this phase takes the <strong>top rung of each earlier ladder</strong> and
 shows how those rungs snap together into the single tested package,
-<a class="repo-file" href="../../code/agent_harness/" title="Opens a file in the repository checkout — not part of this site"><code>code/agent_harness/</code></a>.</p>
+<a class="repo-file" href="https://github.com/joshps23/ai-eng-2/tree/main/agent-harness-guide/code/agent_harness" title="Opens this repository file on GitHub"><code>code/agent_harness/</code></a>.</p>
 <p>Here is the map. Each row is a top rung you have already built, and the package module
 it became:</p>
 <div class="table-wrap"><table>
@@ -217,7 +217,7 @@ production listing so you always know where you are on the ladder.</p>
 sometimes shows code under illustrative file names — <code>tracer.py</code>, <code>accounting.py</code>,
 <code>tools.py</code>, <code>sub_agents.py</code> — that the consolidated package merges or renames. When
 you go looking in <code>code/agent_harness/</code>, use the tables above (and the mapping table
-in <a class="repo-file" href="../../code/README.md" title="Opens a file in the repository checkout — not part of this site"><code>code/README.md</code></a>) as your index. When a snippet here and the
+in <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/code/README.md" title="Opens this repository file on GitHub"><code>code/README.md</code></a>) as your index. When a snippet here and the
 package disagree, <strong>the package is the source of truth</strong> — it has the passing tests.</p>
 <p><strong>…and a note on method names.</strong> The same applies to <em>interfaces</em>. The assembled
 listings in Step 4 and §6 credit each line to the phase that taught the idea, but several
@@ -314,7 +314,7 @@ then shows the fully assembled <code>Agent.run_turn</code> where every row plugs
 one at a time, and <strong>§5–§10</strong> harden, assemble, package, test, and close.)</p>
 <p><strong>Contents:</strong></p>
 <blockquote>
-<p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/08-production-harness.ipynb" title="Opens the notebook on GitHub (requires repo access) — or use its Open-in-Colab badge"><code>notebooks/08-production-harness.ipynb</code></a> executes this phase's runnable core offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
+<p><strong>Prefer running this phase as a notebook?</strong> <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/notebooks/08-production-harness.ipynb" title="Opens the notebook on GitHub — or use its Open-in-Colab badge"><code>notebooks/08-production-harness.ipynb</code></a> executes this phase's runnable core offline — see <a href="notebooks.html">notebooks/README.md</a>.</p>
 </blockquote>
 <ul>
 <li><a href="#0-youve-already-built-all-of-this--the-ladder-to-package-map">§0 — the ladder-to-package map</a></li>
@@ -2102,8 +2102,8 @@ production extensions shown here, not separate package modules; and the package 
 tested package's <code>pyproject.toml</code> installs the command as <strong><code>agent-harness</code></strong>
 (equivalently <code>python -m agent_harness.cli</code>) — wherever prose in this phase shortens
 it to <code>agent</code>, that is the command it means. Compare for yourself: the real tree is in
-<a class="repo-file" href="../../code/agent_harness/" title="Opens a file in the repository checkout — not part of this site"><code>code/agent_harness/</code></a> and the name-by-name mapping table is in
-<a class="repo-file" href="../../code/README.md" title="Opens a file in the repository checkout — not part of this site"><code>code/README.md</code></a>.</p>
+<a class="repo-file" href="https://github.com/joshps23/ai-eng-2/tree/main/agent-harness-guide/code/agent_harness" title="Opens this repository file on GitHub"><code>code/agent_harness/</code></a> and the name-by-name mapping table is in
+<a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/code/README.md" title="Opens this repository file on GitHub"><code>code/README.md</code></a>.</p>
 </blockquote>
 <h3 id="pyprojecttoml"><code>pyproject.toml</code><a aria-label="Permalink to this section" class="hanchor" href="#pyprojecttoml">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="k">[build-system]</span>
@@ -2168,7 +2168,7 @@ this phase never prints: <code>permissions</code>, <code>hooks</code>, <code>con
 §0 translation table</strong>, written out as four tiny shims — just enough for §8's tests to
 pass against §6's <code>agent.py</code> exactly as printed. They are honest stand-ins, not the
 real thing: the tested package spells each of these differently (and far more
-completely) in <a class="repo-file" href="../../code/agent_harness/" title="Opens a file in the repository checkout — not part of this site"><code>code/agent_harness/</code></a>.</p>
+completely) in <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/tree/main/agent-harness-guide/code/agent_harness" title="Opens this repository file on GitHub"><code>code/agent_harness/</code></a>.</p>
 <p>Lay the project out like this — note that <code>agent_harness/__init__.py</code> can be a
 completely <strong>empty file</strong>; its only job is to mark the directory as a package:</p>
 <div class="highlight nocopy"><pre><span></span><code>yourproject/
@@ -2552,7 +2552,7 @@ tests/test_agent_loop.py::test_tool_error_does_not_crash_loop PASSED
 package into — a bare <code>pytest</code> on your PATH might belong to a different Python — and puts
 the project root on <code>sys.path</code> so <code>tests.fake_client</code> resolves.)</p>
 <p>This is also exactly how the consolidated package is verified: from
-<a class="repo-file" href="../../code/" title="Opens a file in the repository checkout — not part of this site"><code>code/</code></a>, <code>python -m pytest -q</code> runs the full suite offline — no API key needed,
+<a class="repo-file" href="https://github.com/joshps23/ai-eng-2/tree/main/agent-harness-guide/code" title="Opens this repository file on GitHub"><code>code/</code></a>, <code>python -m pytest -q</code> runs the full suite offline — no API key needed,
 because every test drives the real <code>Agent</code> through the scripted <code>FakeClient</code> in
 <code>testing.py</code>. Your seven ladders, assembled and proven, without a single network call.</p>
 <hr>
@@ -2680,7 +2680,7 @@ because every test drives the real <code>Agent</code> through the scripted <code
 <h2 id="what-youll-have-built--the-final-checklist">What you'll have built — the final checklist<a aria-label="Permalink to this section" class="hanchor" href="#what-youll-have-built--the-final-checklist">¶</a></h2>
 <p>Tick these off. Each line is a capability of the finished harness, the phase whose ladder
 taught it, and the module of the tested package
-(<a class="repo-file" href="../../code/agent_harness/" title="Opens a file in the repository checkout — not part of this site"><code>code/agent_harness/</code></a>) where its top rung now lives:</p>
+(<a class="repo-file" href="https://github.com/joshps23/ai-eng-2/tree/main/agent-harness-guide/code/agent_harness" title="Opens this repository file on GitHub"><code>code/agent_harness/</code></a>) where its top rung now lives:</p>
 <ul class="contains-task-list">
 <li class="task-list-item"><input disabled type="checkbox"> <strong>An agent loop</strong> — call the model, run the tools it asks for, feed results back
       with matching <code>call_id</code>s, repeat until done — <em>Phase 1</em> → <code>agent.py</code></li>
@@ -2731,7 +2731,7 @@ assembled and proven, without a single network call.</p>
   build.</li>
 <li><strong><a href="exercises.html#capstone">The Capstone exercise</a></strong> — one project that exercises
   every phase at once, now that you have all the parts.</li>
-<li><strong><a class="repo-file" href="../../code/README.md" title="Opens a file in the repository checkout — not part of this site">code/README.md</a></strong> — the maintained version of everything built
+<li><strong><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/code/README.md" title="Opens this repository file on GitHub">code/README.md</a></strong> — the maintained version of everything built
   here, with the name-by-name map from guide listings to package modules. When your
   code and a guide snippet disagree, this is the source of truth.</li>
 </ul>
@@ -2742,7 +2742,7 @@ assembled and proven, without a single network call.</p>
 <a class="prev" href="07-subagents-orchestration.html" rel="prev">← Phase 7 — Sub-agents</a>
 <a class="next" href="09-library-reference.html" rel="next">Appendix — Library Reference →</a>
 </nav>
-<p class="generated-note">Generated from <code>08-production-harness.md</code> — the markdown is the source of truth. Links marked ↗ open repository files and need a full checkout (or GitHub).</p>
+<p class="generated-note">Generated from <code>08-production-harness.md</code> — the markdown is the source of truth. Links marked ↗ open files of this project on GitHub.</p>
 </footer>
 <a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
 </main>
