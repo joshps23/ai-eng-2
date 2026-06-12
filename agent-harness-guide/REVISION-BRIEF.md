@@ -107,16 +107,25 @@ Score each phase 1–5 on each axis; the loop revises the lowest-scoring phase n
 5. **Run-it cadence** — are there frequent “▶ Run it now” checkpoints?
 6. **Continuity** — does it still flow, with beginner boxes/recaps/exercises intact?
 
-## Loop control (max 20 iterations)
+## Loop control (max 50 iterations)
 
-The evaluator-reviser loop runs **at most 20 times**, then stops on its own.
+The evaluator-reviser loop runs **at most 50 times**, then stops on its own.
 
-- Iterations used: **19 / 20** *(cap raised 10 → 20 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
+- Iterations used: **20 / 50** *(cap raised 10 → 20, then 20 → 50 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
 - Per iteration: score all phases on the rubric, pick the weakest, revise it one notch
   more incremental, increment the counter here, log it below, commit, push. Stop when the
-  counter hits 20 **or** every phase scores ≥4 on every axis.
+  counter hits 50 **or** every phase scores ≥4 on every axis.
 
 ### Known issues for the loop to address (seed list)
+
+- Content diagrams the markdown genuinely lacks (a Phase 0 handshake sequence, a
+  Phase 6 pruning picture): add them to the md as `text` fences first — the site's
+  figure mechanism will then pick them up (per the cycle-17 designer's doctrine).
+- **(User-seeded, 2026-06-12 — addressed in iteration 20.)** Each HTML page is too lengthy
+  with little visuals. The phase pages render at up to ~73,000px tall with long
+  uninterrupted code/reference stretches and almost no graphical elements beyond
+  the ASCII diagrams. Address within the standing constraints (markdown is source
+  of truth; site is generated; GitHub-parity anchors preserved).
 
 - Phase 3's beginner-track code lives inside a `>` blockquote: renders fine on GitHub,
   but copying from the *raw* file grabs `> ` prefixes. Decide whether to restructure
@@ -132,6 +141,19 @@ The evaluator-reviser loop runs **at most 20 times**, then stops on its own.
   Phase 5 gained an explicit "V1+V2 is a legitimate stopping point" paragraph.
 
 ## Revision log (newest first)
+
+- **2026-06-12 — Iteration 20: pages-too-long / too-few-visuals (cycle 17,
+  user-seeded).** An information-design persona measured the problem (Phase 4:
+  72,403px tall; refcopy regions = 34% of it; zero svg/img site-wide) and specced the
+  answer; implemented in full: the 13 Reference-copy sections collapse to cards with
+  hash auto-expand (anchor contract intact — deep links tested open-and-visible in
+  Chromium), the three markdown ASCII diagrams render as designed inline SVGs via
+  fingerprint matching with a build-failing drift gate, and every phase page gains a
+  medallion + 0–8 rail + generated V1→V4 ladder map + progress bar. Phase 4 measured
+  −33.5% (72,403 → 48,131px). Page-splitting rejected on the record (anchor contract
+  + one-ladder pedagogy). The missing diagrams the markdown never had (Phase 0
+  handshake sequence, Phase 6 pruning picture) belong in the md first — left as a
+  seed item below.
 
 - **2026-06-12 — Iterations 18–19: independent second designer + implementation
   (cycles 15–16).** A second \$10k-designer persona ("Margaux", editorial school,

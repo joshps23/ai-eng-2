@@ -19,6 +19,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 </head>
 <body>
+<div class="progress-bar" aria-hidden="true"></div>
 <a class="skip-link" href="#main">Skip to content</a>
 <div class="layout">
 <details class="sidebar-wrap" open>
@@ -58,6 +59,9 @@
 </details>
 <main id="main">
 <header class="page-header">
+<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">6</span><span class="phase-kicker">Phase 6 of 8</span></p>
+<nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety.html" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management.html" aria-current="page" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration.html" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness.html" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
+<nav class="ladder" aria-label="Version ladder"><a class="ladder-rung" href="#version-1--line-by-line-watch-the-window-fill-up"><span class="ladder-medallion">V1</span> line-by-line</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="#version-2--functions-count_tokens-and-prune_to_budget"><span class="ladder-medallion">V2</span> functions</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="#version-3--the-organized-form-a-contextpy-module-the-loop-consults"><span class="ladder-medallion">V3</span> the organized form</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="#version-4--compact-spend-one-api-call-to-buy-back-context"><span class="ladder-medallion">V4</span> compact</a></nav>
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
@@ -1624,7 +1628,7 @@ needs a way to remember decisions made in previous sessions.</p>
 
 <p>The memory file is injected once into <code>instructions</code> — which is <strong>outside</strong> <code>input_items</code> — so it costs tokens every call but is never lost to compaction.</p>
 <h2 id="the-production-shape-full-contextpy">The production shape: full <code>context.py</code><a aria-label="Permalink to this section" class="hanchor" href="#the-production-shape-full-contextpy">¶</a></h2>
-<p>This is the consolidated module — Versions 3 and 4 in one file, the form that maps onto
+<details class="refsection"><summary>Show the reference copy <span class="refsection-hint">consolidated re-read — skim or skip</span></summary><p>This is the consolidated module — Versions 3 and 4 in one file, the form that maps onto
 <code>code/agent_harness/context.py</code> in the tested package.</p>
 <blockquote class="refcopy">
 <p><strong>Reference copy.</strong> Assembled from Steps 3.1–4.1 unchanged (except: <code>compact</code> gains a
@@ -2006,7 +2010,7 @@ function, but a string annotation is fine — only the type checker ever resolve
 pairs grouped, first user message pinned — rather than the recency-window walk shown
 above. Both satisfy the same two correctness rules; as ever, when a guide snippet and
 the package disagree, the package is the source of truth.</p>
-</blockquote>
+</blockquote></details>
 <h2 id="pitfalls">Pitfalls<a aria-label="Permalink to this section" class="hanchor" href="#pitfalls">¶</a></h2>
 <blockquote>
 <p><strong>Watch out for these common mistakes.</strong></p>
@@ -2170,11 +2174,13 @@ the package disagree, the package is the source of truth.</p>
     });
   }
 
-  /* Print: open every <details> (answers, TOC) and revert afterwards. */
+  /* Print: open every <details> (answers, TOC) and revert afterwards.
+     diagram-text mirrors are excluded — print hides them entirely (the SVG
+     figure already prints; opening the ASCII would print the diagram twice). */
   var openedForPrint = [];
   window.addEventListener('beforeprint', function () {
     openedForPrint = [];
-    document.querySelectorAll('details:not([open])').forEach(function (d) {
+    document.querySelectorAll('details:not(.diagram-text):not([open])').forEach(function (d) {
       d.setAttribute('open', '');
       openedForPrint.push(d);
     });
@@ -2195,6 +2201,54 @@ the package disagree, the package is the source of truth.</p>
     window.addEventListener('scroll', toggleBtt, { passive: true });
     toggleBtt();
   }
+
+  /* Reading progress: the fixed 3px accent bar tracks scroll position.
+     Without JS the element simply stays at width 0 — invisible, harmless. */
+  var pbar = document.querySelector('.progress-bar');
+  if (pbar) {
+    var setProgress = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      pbar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    };
+    window.addEventListener('scroll', setProgress, { passive: true });
+    setProgress();
+  }
+
+  /* Deep links into collapsed sections: open every <details> ancestor of the
+     target, and the refsection that immediately follows a target heading.
+     Re-scroll only if something actually opened (the layout above the target
+     just changed), and instantly — the CSS smooth scroll would crawl across
+     tens of thousands of pixels on the long phase pages. */
+  function openForHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) { return; }
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    var opened = false;
+    var d = el.closest('details');
+    while (d) {
+      if (!d.hasAttribute('open')) { d.setAttribute('open', ''); opened = true; }
+      d = d.parentElement && d.parentElement.closest('details');
+    }
+    var sib = el.nextElementSibling;
+    if (sib && sib.matches('details.refsection') && !sib.hasAttribute('open')) {
+      sib.setAttribute('open', '');
+      opened = true;
+    }
+    if (!opened) { return; }
+    var jump = function () {
+      var y = el.getBoundingClientRect().top + window.scrollY - 16;
+      try { window.scrollTo({ top: y, behavior: 'instant' }); }
+      catch (e) { window.scrollTo(0, y); }
+    };
+    jump();
+    /* the browser's own fragment scroll was computed against the collapsed
+       layout and may still be animating (CSS smooth) — re-assert once, which
+       cancels it */
+    setTimeout(jump, 100);
+  }
+  window.addEventListener('hashchange', openForHash);
+  openForHash();
 
   /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
      execCommand -> select the block and ask for Ctrl-C.  If no mechanism

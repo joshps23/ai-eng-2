@@ -19,6 +19,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 </head>
 <body>
+<div class="progress-bar" aria-hidden="true"></div>
 <a class="skip-link" href="#main">Skip to content</a>
 <div class="layout">
 <details class="sidebar-wrap" open>
@@ -58,6 +59,9 @@
 </details>
 <main id="main">
 <header class="page-header">
+<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">7</span><span class="phase-kicker">Phase 7 of 8</span></p>
+<nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety.html" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management.html" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration.html" aria-current="page" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness.html" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
+<nav class="ladder" aria-label="Version ladder"><a class="ladder-rung" href="#version-1--line-by-line-the-same-loop-pasted-twice"><span class="ladder-medallion">V1</span> Line-by-Line</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="#version-2--functions-the-duplication-collapses"><span class="ladder-medallion">V2</span> Functions</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="#version-3--classes-the-same-harness-organized"><span class="ladder-medallion">V3</span> Classes</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="#version-4--threads-parallel-sub-agents-optional-speed-up"><span class="ladder-medallion">V4</span> Threads</a></nav>
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
@@ -159,6 +163,51 @@
 <p>Different subtasks benefit from different system prompts and different toolsets. A "researcher" agent should have web-search tools and a prompt that emphasises accuracy and citation. A "coder" agent needs file-system tools and a prompt that emphasises correctness and minimal diffs. A "reviewer" agent needs read-only access and a prompt that emphasises finding bugs. Packing all three roles into one agent with one prompt compromises all three.</p>
 <h3 id="14-the-orchestrator-worker-pattern">1.4 The orchestrator-worker pattern<a aria-label="Permalink to this section" class="hanchor" href="#14-the-orchestrator-worker-pattern">¶</a></h3>
 <p>The architecture this phase builds:</p>
+<figure class="diagram" role="group">
+<svg viewBox="0 0 640 420" role="img" aria-labelledby="fig-orch-title">
+<title id="fig-orch-title">Orchestrator-worker fan-out: the orchestrator plans the work and spawns workers via task(); each worker runs with its own transcript and its own tools; their results — summary, diff, findings — fan back in to the orchestrator, which synthesises the final answer.</title>
+<defs>
+<marker id="fig-orch-arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="d-arrow" d="M0 0 L10 5 L0 10 z"/></marker>
+<marker id="fig-orch-arrow-hot" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="d-arrow-hot" d="M0 0 L10 5 L0 10 z"/></marker>
+</defs>
+<path class="d-edge" d="M260 84 L126 125" marker-end="url(#fig-orch-arrow)"/>
+<line class="d-edge" x1="320" y1="84" x2="320" y2="125" marker-end="url(#fig-orch-arrow)"/>
+<path class="d-edge" d="M380 84 L514 125" marker-end="url(#fig-orch-arrow)"/>
+<path class="d-edge" d="M125 230 L249 325" marker-end="url(#fig-orch-arrow)"/>
+<line class="d-edge" x1="320" y1="230" x2="320" y2="325" marker-end="url(#fig-orch-arrow)"/>
+<path class="d-edge" d="M515 230 L391 325" marker-end="url(#fig-orch-arrow)"/>
+<rect class="d-box d-accent" x="190" y="20" width="260" height="64"/>
+<rect class="d-box" x="40" y="130" width="170" height="100"/>
+<rect class="d-box" x="235" y="130" width="170" height="100"/>
+<rect class="d-box" x="430" y="130" width="170" height="100"/>
+<rect class="d-box d-accent" x="190" y="330" width="260" height="60"/>
+<text class="d-label" x="320" y="48" text-anchor="middle">ORCHESTRATOR</text>
+<text class="d-mono" x="320" y="66" text-anchor="middle">plans the work, spawns workers</text>
+<text class="d-mono" x="194" y="102" text-anchor="end">task()</text>
+<text class="d-mono" x="328" y="108" text-anchor="start">task()</text>
+<text class="d-mono" x="446" y="102" text-anchor="start">task()</text>
+<text class="d-label" x="125" y="154" text-anchor="middle">Worker A</text>
+<rect class="d-chip d-chip-accent" x="69" y="164" width="112" height="18"/>
+<text class="d-chip-text d-chip-text-accent" x="125" y="177" text-anchor="middle">role=researcher</text>
+<text class="d-mono" x="125" y="202" text-anchor="middle">own transcript</text>
+<text class="d-mono" x="125" y="218" text-anchor="middle">own tools</text>
+<text class="d-label" x="320" y="154" text-anchor="middle">Worker B</text>
+<rect class="d-chip d-chip-green" x="280" y="164" width="80" height="18"/>
+<text class="d-chip-text d-chip-text-green" x="320" y="177" text-anchor="middle">role=coder</text>
+<text class="d-mono" x="320" y="202" text-anchor="middle">own transcript</text>
+<text class="d-mono" x="320" y="218" text-anchor="middle">own tools</text>
+<text class="d-label" x="515" y="154" text-anchor="middle">Worker C</text>
+<rect class="d-chip d-chip-warn" x="465" y="164" width="100" height="18"/>
+<text class="d-chip-text d-chip-text-warn" x="515" y="177" text-anchor="middle">role=reviewer</text>
+<text class="d-mono" x="515" y="202" text-anchor="middle">own transcript</text>
+<text class="d-mono" x="515" y="218" text-anchor="middle">own tools</text>
+<text class="d-mono" x="177" y="274" text-anchor="end">summary</text>
+<text class="d-mono" x="328" y="278" text-anchor="start">diff</text>
+<text class="d-mono" x="463" y="274" text-anchor="start">findings</text>
+<text class="d-label" x="320" y="354" text-anchor="middle">ORCHESTRATOR synthesises</text>
+<text class="d-label" x="320" y="372" text-anchor="middle">the final answer</text>
+</svg>
+<details class="diagram-text"><summary>Text version of this diagram</summary>
 <div class="highlight nocopy"><pre><span></span><code>                     ┌─────────────────────────────────────┐
                      │           ORCHESTRATOR               │
                      │  (decides what work needs doing,     │
@@ -182,6 +231,8 @@
                      │  final answer            │
                      └─────────────────────────┘
 </code></pre></div>
+</details>
+</figure>
 <p>The critical insight is that the orchestrator <strong>decides at runtime</strong> how many workers to spawn and what each does. This is a <em>dynamic</em> workflow, not a hardcoded pipeline. The model looks at the task, reasons about how to decompose it, and emits the appropriate <code>task</code> tool calls. If the task only warrants one worker, one is spawned. If it warrants seven, seven run in parallel.</p>
 <h2 id="2-the-key-trick--and-the-plan-for-this-phase">2. The Key Trick — and the Plan for This Phase<a aria-label="Permalink to this section" class="hanchor" href="#2-the-key-trick--and-the-plan-for-this-phase">¶</a></h2>
 <blockquote>
@@ -2002,7 +2053,7 @@ git<span class="w"> </span>worktree<span class="w"> </span>add<span class="w"> <
 </li>
 </ol>
 <h2 id="7-full-code--subagentspy">7. Full Code — <code>subagents.py</code><a aria-label="Permalink to this section" class="hanchor" href="#7-full-code--subagentspy">¶</a></h2>
-<p>This is the consolidated file the version ladder was building toward: the Version 3
+<details class="refsection"><summary>Show the reference copy <span class="refsection-hint">consolidated re-read — skim or skip</span></summary><p>This is the consolidated file the version ladder was building toward: the Version 3
 machinery (presets, <code>dispatch_subagent</code>, <code>make_task_tool</code>) and the Version 4 parallel
 runner in one place. It mirrors the shape of the tested package
 (<code>code/agent_harness/subagents.py</code> plus <code>tools/parallel.py</code>); when this listing and the
@@ -2395,7 +2446,7 @@ skim or skip. The maintained version lives in
         <span class="n">depth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="p">)</span>
 </code></pre></div>
-
+</details>
 <h2 id="8-async-alternative">8. Async Alternative<a aria-label="Permalink to this section" class="hanchor" href="#8-async-alternative">¶</a></h2>
 <p>The guide uses <code>ThreadPoolExecutor</code> throughout because it works with the standard <code>OpenAI</code> client, requires no <code>asyncio</code> knowledge, and maps naturally to the I/O-bound nature of LLM calls. For completeness, here is the async equivalent.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># async_orchestrator.py (sketch)</span>
@@ -2546,11 +2597,13 @@ been building since Phase 1.</p>
     });
   }
 
-  /* Print: open every <details> (answers, TOC) and revert afterwards. */
+  /* Print: open every <details> (answers, TOC) and revert afterwards.
+     diagram-text mirrors are excluded — print hides them entirely (the SVG
+     figure already prints; opening the ASCII would print the diagram twice). */
   var openedForPrint = [];
   window.addEventListener('beforeprint', function () {
     openedForPrint = [];
-    document.querySelectorAll('details:not([open])').forEach(function (d) {
+    document.querySelectorAll('details:not(.diagram-text):not([open])').forEach(function (d) {
       d.setAttribute('open', '');
       openedForPrint.push(d);
     });
@@ -2571,6 +2624,54 @@ been building since Phase 1.</p>
     window.addEventListener('scroll', toggleBtt, { passive: true });
     toggleBtt();
   }
+
+  /* Reading progress: the fixed 3px accent bar tracks scroll position.
+     Without JS the element simply stays at width 0 — invisible, harmless. */
+  var pbar = document.querySelector('.progress-bar');
+  if (pbar) {
+    var setProgress = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      pbar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    };
+    window.addEventListener('scroll', setProgress, { passive: true });
+    setProgress();
+  }
+
+  /* Deep links into collapsed sections: open every <details> ancestor of the
+     target, and the refsection that immediately follows a target heading.
+     Re-scroll only if something actually opened (the layout above the target
+     just changed), and instantly — the CSS smooth scroll would crawl across
+     tens of thousands of pixels on the long phase pages. */
+  function openForHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) { return; }
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    var opened = false;
+    var d = el.closest('details');
+    while (d) {
+      if (!d.hasAttribute('open')) { d.setAttribute('open', ''); opened = true; }
+      d = d.parentElement && d.parentElement.closest('details');
+    }
+    var sib = el.nextElementSibling;
+    if (sib && sib.matches('details.refsection') && !sib.hasAttribute('open')) {
+      sib.setAttribute('open', '');
+      opened = true;
+    }
+    if (!opened) { return; }
+    var jump = function () {
+      var y = el.getBoundingClientRect().top + window.scrollY - 16;
+      try { window.scrollTo({ top: y, behavior: 'instant' }); }
+      catch (e) { window.scrollTo(0, y); }
+    };
+    jump();
+    /* the browser's own fragment scroll was computed against the collapsed
+       layout and may still be animating (CSS smooth) — re-assert once, which
+       cancels it */
+    setTimeout(jump, 100);
+  }
+  window.addEventListener('hashchange', openForHash);
+  openForHash();
 
   /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
      execCommand -> select the block and ask for Ctrl-C.  If no mechanism

@@ -19,6 +19,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 </head>
 <body>
+<div class="progress-bar" aria-hidden="true"></div>
 <a class="skip-link" href="#main">Skip to content</a>
 <div class="layout">
 <details class="sidebar-wrap" open>
@@ -58,6 +59,9 @@
 </details>
 <main id="main">
 <header class="page-header">
+<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">5</span><span class="phase-kicker">Phase 5 of 8</span></p>
+<nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety.html" aria-current="page" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management.html" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration.html" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness.html" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
+<nav class="ladder" aria-label="Version ladder"><a class="ladder-rung" href="#version-1--line-by-line-one-inline-if-before-the-tool-runs"><span class="ladder-medallion">V1</span> line-by-line</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="#version-2--functions-a-check_permission-you-can-call-and-test"><span class="ladder-medallion">V2</span> functions</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="#version-3--classes-the-same-gate-as-policy-objects"><span class="ladder-medallion">V3</span> classes</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="#version-4--hooks-functions-you-hand-to-the-harness"><span class="ladder-medallion">V4</span> hooks</a></nav>
 <details class="page-toc">
 <summary>On this page</summary>
 <ul>
@@ -2039,7 +2043,7 @@ consolidated into the multi-file layout the rest of the guide uses. Here is the 
   next loop iteration
 </code></pre></div>
 <h3 id="permissionspy--final-complete-file"><code>permissions.py</code> — final complete file<a aria-label="Permalink to this section" class="hanchor" href="#permissionspy--final-complete-file">¶</a></h3>
-<blockquote class="refcopy">
+<details class="refsection"><summary>Show the reference copy <span class="refsection-hint">consolidated re-read — skim or skip</span></summary><blockquote class="refcopy">
 <p><strong>Reference copy.</strong> Assembled unchanged from Steps 3.2–3.4 — the five-mode table, the
 predicate rules and <code>default_policy()</code>, and the approval gate with session memory.
 Nothing new to type here — skim or skip. The maintained version lives in
@@ -2250,9 +2254,9 @@ Nothing new to type here — skim or skip. The maintained version lives in
             <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">,</span> <span class="s2">&quot;Denied by user (session).&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Please type y, n, a, or d.&quot;</span><span class="p">)</span>
 </code></pre></div>
-
+</details>
 <h3 id="hookspy--final-complete-file"><code>hooks.py</code> — final complete file<a aria-label="Permalink to this section" class="hanchor" href="#hookspy--final-complete-file">¶</a></h3>
-<blockquote class="refcopy">
+<details class="refsection"><summary>Show the reference copy <span class="refsection-hint">consolidated re-read — skim or skip</span></summary><blockquote class="refcopy">
 <p><strong>Reference copy.</strong> Assembled unchanged from Steps 4.2–4.4 plus the
 <code>injection_detector</code> from the prompt-injection interlude; the only code you have not
 seen yet is the small <code>default_hooks()</code> factory at the bottom. The maintained version
@@ -2445,9 +2449,9 @@ lives in <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/ma
         <span class="n">registry</span><span class="o">.</span><span class="n">add_post</span><span class="p">(</span><span class="n">make_audit_logger</span><span class="p">(</span><span class="n">audit_log</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">registry</span>
 </code></pre></div>
-
+</details>
 <h3 id="agent_looppy--updated-safe-dispatch-and-loop"><code>agent_loop.py</code> — updated safe dispatch and loop<a aria-label="Permalink to this section" class="hanchor" href="#agent_looppy--updated-safe-dispatch-and-loop">¶</a></h3>
-<blockquote class="refcopy">
+<details class="refsection"><summary>Show the reference copy <span class="refsection-hint">consolidated re-read — skim or skip</span></summary><blockquote class="refcopy">
 <p><strong>Reference copy — with one new function.</strong> The loop is Version 3's, unchanged; what
 is new is <code>safe_dispatch()</code> (the funnel from the flow diagram above) and the wiring
 that threads <code>policy</code>, <code>mode</code>, and <code>hooks</code> through <code>run_agent()</code>. The consolidated
@@ -2638,7 +2642,7 @@ Read it as: <em>try</em> to parse the arguments; if that failed, the <code>excep
 an error result; <em>else</em> — parsing succeeded — go ahead and dispatch the tool. The
 point of <code>else</code> (rather than putting the dispatch inside the <code>try:</code>) is that an
 exception from <code>safe_dispatch</code> itself can never be mistaken for a JSON-parsing error.</p>
-</blockquote>
+</blockquote></details>
 <h3 id="-check-it-now-no-api-key-needed-2">▶ Check it now (no API key needed)<a aria-label="Permalink to this section" class="hanchor" href="#-check-it-now-no-api-key-needed-2">¶</a></h3>
 <p>Before spending an API call on the full loop, point the two offline checks you already
 wrote at these final files — together they exercise the safety stack with no key:</p>
@@ -2785,11 +2789,13 @@ and graceful handling of very long sessions.</p>
     });
   }
 
-  /* Print: open every <details> (answers, TOC) and revert afterwards. */
+  /* Print: open every <details> (answers, TOC) and revert afterwards.
+     diagram-text mirrors are excluded — print hides them entirely (the SVG
+     figure already prints; opening the ASCII would print the diagram twice). */
   var openedForPrint = [];
   window.addEventListener('beforeprint', function () {
     openedForPrint = [];
-    document.querySelectorAll('details:not([open])').forEach(function (d) {
+    document.querySelectorAll('details:not(.diagram-text):not([open])').forEach(function (d) {
       d.setAttribute('open', '');
       openedForPrint.push(d);
     });
@@ -2810,6 +2816,54 @@ and graceful handling of very long sessions.</p>
     window.addEventListener('scroll', toggleBtt, { passive: true });
     toggleBtt();
   }
+
+  /* Reading progress: the fixed 3px accent bar tracks scroll position.
+     Without JS the element simply stays at width 0 — invisible, harmless. */
+  var pbar = document.querySelector('.progress-bar');
+  if (pbar) {
+    var setProgress = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      pbar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    };
+    window.addEventListener('scroll', setProgress, { passive: true });
+    setProgress();
+  }
+
+  /* Deep links into collapsed sections: open every <details> ancestor of the
+     target, and the refsection that immediately follows a target heading.
+     Re-scroll only if something actually opened (the layout above the target
+     just changed), and instantly — the CSS smooth scroll would crawl across
+     tens of thousands of pixels on the long phase pages. */
+  function openForHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) { return; }
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    var opened = false;
+    var d = el.closest('details');
+    while (d) {
+      if (!d.hasAttribute('open')) { d.setAttribute('open', ''); opened = true; }
+      d = d.parentElement && d.parentElement.closest('details');
+    }
+    var sib = el.nextElementSibling;
+    if (sib && sib.matches('details.refsection') && !sib.hasAttribute('open')) {
+      sib.setAttribute('open', '');
+      opened = true;
+    }
+    if (!opened) { return; }
+    var jump = function () {
+      var y = el.getBoundingClientRect().top + window.scrollY - 16;
+      try { window.scrollTo({ top: y, behavior: 'instant' }); }
+      catch (e) { window.scrollTo(0, y); }
+    };
+    jump();
+    /* the browser's own fragment scroll was computed against the collapsed
+       layout and may still be animating (CSS smooth) — re-assert once, which
+       cancels it */
+    setTimeout(jump, 100);
+  }
+  window.addEventListener('hashchange', openForHash);
+  openForHash();
 
   /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
      execCommand -> select the block and ask for Ctrl-C.  If no mechanism

@@ -19,6 +19,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 </head>
 <body>
+<div class="progress-bar" aria-hidden="true"></div>
 <a class="skip-link" href="#main">Skip to content</a>
 <div class="layout">
 <details class="sidebar-wrap" open>
@@ -271,11 +272,13 @@ parallel sub-agents. The canonical, tested version of all of it lives in
     });
   }
 
-  /* Print: open every <details> (answers, TOC) and revert afterwards. */
+  /* Print: open every <details> (answers, TOC) and revert afterwards.
+     diagram-text mirrors are excluded — print hides them entirely (the SVG
+     figure already prints; opening the ASCII would print the diagram twice). */
   var openedForPrint = [];
   window.addEventListener('beforeprint', function () {
     openedForPrint = [];
-    document.querySelectorAll('details:not([open])').forEach(function (d) {
+    document.querySelectorAll('details:not(.diagram-text):not([open])').forEach(function (d) {
       d.setAttribute('open', '');
       openedForPrint.push(d);
     });
@@ -296,6 +299,54 @@ parallel sub-agents. The canonical, tested version of all of it lives in
     window.addEventListener('scroll', toggleBtt, { passive: true });
     toggleBtt();
   }
+
+  /* Reading progress: the fixed 3px accent bar tracks scroll position.
+     Without JS the element simply stays at width 0 — invisible, harmless. */
+  var pbar = document.querySelector('.progress-bar');
+  if (pbar) {
+    var setProgress = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      pbar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    };
+    window.addEventListener('scroll', setProgress, { passive: true });
+    setProgress();
+  }
+
+  /* Deep links into collapsed sections: open every <details> ancestor of the
+     target, and the refsection that immediately follows a target heading.
+     Re-scroll only if something actually opened (the layout above the target
+     just changed), and instantly — the CSS smooth scroll would crawl across
+     tens of thousands of pixels on the long phase pages. */
+  function openForHash() {
+    var id = decodeURIComponent(location.hash.slice(1));
+    if (!id) { return; }
+    var el = document.getElementById(id);
+    if (!el) { return; }
+    var opened = false;
+    var d = el.closest('details');
+    while (d) {
+      if (!d.hasAttribute('open')) { d.setAttribute('open', ''); opened = true; }
+      d = d.parentElement && d.parentElement.closest('details');
+    }
+    var sib = el.nextElementSibling;
+    if (sib && sib.matches('details.refsection') && !sib.hasAttribute('open')) {
+      sib.setAttribute('open', '');
+      opened = true;
+    }
+    if (!opened) { return; }
+    var jump = function () {
+      var y = el.getBoundingClientRect().top + window.scrollY - 16;
+      try { window.scrollTo({ top: y, behavior: 'instant' }); }
+      catch (e) { window.scrollTo(0, y); }
+    };
+    jump();
+    /* the browser's own fragment scroll was computed against the collapsed
+       layout and may still be animating (CSS smooth) — re-assert once, which
+       cancels it */
+    setTimeout(jump, 100);
+  }
+  window.addEventListener('hashchange', openForHash);
+  openForHash();
 
   /* Copy buttons, with fallbacks: Clipboard API -> hidden-textarea
      execCommand -> select the block and ask for Ctrl-C.  If no mechanism
