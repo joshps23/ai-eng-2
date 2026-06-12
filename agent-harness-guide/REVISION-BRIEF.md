@@ -111,7 +111,7 @@ Score each phase 1–5 on each axis; the loop revises the lowest-scoring phase n
 
 The evaluator-reviser loop runs **at most 20 times**, then stops on its own.
 
-- Iterations used: **17 / 20** *(cap raised 10 → 20 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
+- Iterations used: **19 / 20** *(cap raised 10 → 20 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
 - Per iteration: score all phases on the rubric, pick the weakest, revise it one notch
   more incremental, increment the counter here, log it below, commit, push. Stop when the
   counter hits 20 **or** every phase scores ≥4 on every axis.
@@ -132,6 +132,19 @@ The evaluator-reviser loop runs **at most 20 times**, then stops on its own.
   Phase 5 gained an explicit "V1+V2 is a legitimate stopping point" paragraph.
 
 ## Revision log (newest first)
+
+- **2026-06-12 — Iterations 18–19: independent second designer + implementation
+  (cycles 15–16).** A second \$10k-designer persona ("Margaux", editorial school,
+  deliberately blind to the first spec) reviewed 20 Playwright renders. Independent
+  verdict: 3.5/5 — "\$6–7k work with \$10k bones" — with catches the first pass
+  missed: the stock pygments default still on light mode's code (the largest
+  surface), desktop nav chrome, viewport-overflowing TOCs, an affordance-free mobile
+  toggle, hr+h2 double rules, half-blank print sheets. All 12 of her prioritized
+  inputs implemented and pixel-verified (GitHub-Light token palette with recomputed
+  AA, checkpoint-free TOCs, both-ends toggle fix, book-measure print, mono label
+  voice, typographic agent-harness/ mark). Byte-idempotent; 530/530 heading ids
+  stable; tests green. Two-designer protocol note for the loop: independent fresh
+  eyes found a class of defects the spec-author's own sign-off could not.
 
 - **2026-06-12 — Iteration 17: Playwright visual verification (cycle 14).** By
   maintainer instruction, the verification phase now renders real pixels: a committed
