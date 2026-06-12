@@ -117,8 +117,13 @@ To re-sync and re-execute everything (refreshing committed outputs), run
 | [`01-bare-harness.ipynb`](./01-bare-harness.ipynb) | The bare agent loop: tool-call round trips, the `Agent` remembering across cells, the iteration cap. | [`01-bare-harness.md`](../01-bare-harness.md) |
 | [`02-tool-system.ipynb`](./02-tool-system.ipynb) | Schema dicts → dict registry → `Tool`/`ToolRegistry` → `@tool`, with dispatch probes you can poke. | [`02-tool-system.md`](../02-tool-system.md) |
 | [`03-conversation-and-streaming.ipynb`](./03-conversation-and-streaming.ipynb) | The transcript as memory: two-turn recall, the forgetting A/B, save/load, the `Conversation` class. | [`03-conversation-and-streaming.md`](../03-conversation-and-streaming.md) |
+| [`04-real-tools.ipynb`](./04-real-tools.ipynb) | Workspace-confined file tools in a throwaway tmpdir: `_safe_path` stopping `../../etc/passwd`, a FakeClient-driven read, the production tools from the package. | [`04-real-tools.md`](../04-real-tools.md) |
+| [`05-permissions-and-safety.ipynb`](./05-permissions-and-safety.ipynb) | The permission gate offline: risk tiers × modes, a scripted asker standing in for `input()`, deny-beats-session-memory, a sandboxed subprocess. | [`05-permissions-and-safety.md`](../05-permissions-and-safety.md) |
 | [`06-context-management.ipynb`](./06-context-management.ipynb) | Feel the window fill up: `count_tokens`, `prune_to_budget` (no orphaned call pairs), `compact`. | [`06-context-management.md`](../06-context-management.md) |
+| [`07-subagents-orchestration.ipynb`](./07-subagents-orchestration.ipynb) | A sub-agent is the loop called again: the recursive `task` tool (one FakeClient per agent), the depth guard, sequential vs threaded timing. | [`07-subagents-orchestration.md`](../07-subagents-orchestration.md) |
+| [`08-production-harness.ipynb`](./08-production-harness.ipynb) | The demo trio: retry-with-backoff, the JSONL tracer + cost accounting, and the real package's 56-test suite run from a cell. | [`08-production-harness.md`](../08-production-harness.md) |
 
-Phases 4, 5, 7, and 8 have no notebook on purpose — their material (real file/shell
-tools, permission prompts, sub-agent orchestration, the CLI) belongs in a terminal, not
-a kernel. Follow those phases' ▶ Run-it-now checkpoints directly.
+The companion notebooks cover each phase's *runnable core*. The parts that genuinely
+belong in a terminal — real `input()` permission prompts, the interactive CLI/REPL,
+multi-file package assembly — stay in the phases; each notebook says where it stops
+and hands you back to the markdown.

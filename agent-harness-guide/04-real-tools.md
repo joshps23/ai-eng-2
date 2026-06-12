@@ -68,6 +68,8 @@ looking at a reorganization of a program you already ran — never a brand-new o
 
 **Contents:**
 
+> **Prefer running this phase as a notebook?** [`notebooks/04-real-tools.ipynb`](./notebooks/04-real-tools.ipynb) executes this phase's runnable core offline — see [notebooks/README.md](./notebooks/README.md).
+
 - [Why tools define the agent's power](#why-tools-define-the-agents-power)
 - [Version 1 — line-by-line: the agent touches your disk](#version-1--line-by-line-the-agent-touches-your-disk-no-def-no-classes)
 - [Version 2 — functions: the toolset grows, one tool at a time](#version-2--functions-the-toolset-grows-one-tool-at-a-time)

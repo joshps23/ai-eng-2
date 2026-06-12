@@ -82,6 +82,8 @@ a reorganization of the previous one, never a brand-new program.
 
 **Contents:**
 
+> **Prefer running this phase as a notebook?** [`notebooks/07-subagents-orchestration.ipynb`](./notebooks/07-subagents-orchestration.ipynb) executes this phase's runnable core offline — see [notebooks/README.md](./notebooks/README.md).
+
 - [Version 1 — line-by-line: the same loop, pasted twice](#version-1--line-by-line-the-same-loop-pasted-twice)
 - [Version 2 — functions: the duplication collapses](#version-2--functions-the-duplication-collapses)
 - [Version 3 — classes: the same harness, organized](#version-3--classes-the-same-harness-organized)

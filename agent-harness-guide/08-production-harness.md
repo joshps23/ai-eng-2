@@ -97,6 +97,8 @@ one at a time, and **§5–§10** harden, assemble, package, test, and close.)
 
 **Contents:**
 
+> **Prefer running this phase as a notebook?** [`notebooks/08-production-harness.ipynb`](./notebooks/08-production-harness.ipynb) executes this phase's runnable core offline — see [notebooks/README.md](./notebooks/README.md).
+
 - [§0 — the ladder-to-package map](#0-youve-already-built-all-of-this--the-ladder-to-package-map)
 - [Step 0 — retry with backoff](#step-0--the-smallest-reliability-win-retry-with-backoff)
 - [Step 1 — observability](#step-1--observability-know-what-your-agent-is-doing)

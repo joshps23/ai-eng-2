@@ -45,7 +45,7 @@ module directly: `python -m agent_harness.cli`.
 `X | Y` type unions.
 
 **Q: How do I set up the companion notebooks?**
-The optional [Jupyter notebooks](./notebooks/README.md) (phases 0–3 and 6, plus a
+The optional [Jupyter notebooks](./notebooks/README.md) (every phase 0–8, plus a
 setup check) need one extras group and one kernel registration on top of the canonical
 setup above:
 

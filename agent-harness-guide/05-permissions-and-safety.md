@@ -24,6 +24,8 @@ program. But first, name what we're defending against.
 
 **Contents:**
 
+> **Prefer running this phase as a notebook?** [`notebooks/05-permissions-and-safety.ipynb`](./notebooks/05-permissions-and-safety.ipynb) executes this phase's runnable core offline — see [notebooks/README.md](./notebooks/README.md).
+
 - [Threat model](#threat-model)
 - [Version 1 — line-by-line](#version-1--line-by-line-one-inline-if-before-the-tool-runs)
 - [Version 2 — functions](#version-2--functions-a-check_permission-you-can-call-and-test)
