@@ -111,7 +111,7 @@ Score each phase 1–5 on each axis; the loop revises the lowest-scoring phase n
 
 The evaluator-reviser loop runs **at most 50 times**, then stops on its own.
 
-- Iterations used: **21 / 50** *(cap raised 10 → 20, then 20 → 50 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
+- Iterations used: **22 / 50** *(cap raised 10 → 20, then 20 → 50 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
 - Per iteration: score all phases on the rubric, pick the weakest, revise it one notch
   more incremental, increment the counter here, log it below, commit, push. Stop when the
   counter hits 50 **or** every phase scores ≥4 on every axis.
@@ -157,6 +157,23 @@ The evaluator-reviser loop runs **at most 50 times**, then stops on its own.
   Phase 5 gained an explicit "V1+V2 is a legitimate stopping point" paragraph.
 
 ## Revision log (newest first)
+
+- **2026-06-13 — Iteration 22: persona evals (cycle 19, user-seeded).** Turned the
+  loop's role-played verification into deterministic suites — one "evals agent" per
+  persona — in agent-harness-guide/evals/: a dependency-free harness + runner and five
+  modules (beginner 452, ux 325, notebooks 207, frontend 1688, pedagogy 633 =
+  **3305 machine-checkable cases**, each persona ≥200). They assert that persona's
+  standards offline over the markdown, the 10 notebooks, and the 93 generated HTML
+  pages (AST-parse, checkpoint/expected-output rhythm, keyless path, glossary
+  coverage, link/anchor integrity, the closing-block ritual, notebook bootstrap/guard
+  conventions + jupytext pair-sync, semantics/a11y/computed-WCAG-contrast/token
+  system, lesson position cues/time/Continue chain/bite-size ceiling/anchor parity/
+  partition completeness). Built by five parallel agents that fixed only
+  false-failing cases and negative-control-tested that the cases bite. Outcome: all
+  3305 pass with **zero genuine defects** — the 21 prior persona-review iterations had
+  already hardened the artifacts; the evals now codify those standards as a permanent
+  regression gate, wired into CI (the `evals` job). "Run cycles until all evals pass"
+  satisfied on the first full run. Ran ~0.35M of a 1M budget.
 
 - **2026-06-12 — Iteration 21: bite-sized lesson pages (cycle 18, user-seeded).** A
   learning-science professor persona ("Prof. Okafor") turned the feedback into a

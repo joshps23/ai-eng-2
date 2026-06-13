@@ -99,3 +99,27 @@ jobs:
         run: |
           python build_site.py
           git diff --exit-code html/
+
+  evals:
+    name: persona evals (offline)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: agent-harness-guide/evals
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install jupytext (the notebooks suite's pair-sync check uses it)
+        run: pip install jupytext
+
+      - name: Run every persona eval suite
+        # Deterministic, offline: the suites read the committed markdown,
+        # notebooks, and generated site (kept current by the `site` drift gate)
+        # and assert each persona's standards. >=200 cases per persona.
+        run: python run_all.py
