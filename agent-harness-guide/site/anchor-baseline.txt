@@ -44,7 +44,7 @@ what-changed-from-v1-to-v2
 key-takeaways
 check-yourself
 exercises
-== 01-bare-harness.html (28 ids)
+== 01-bare-harness.html (32 ids)
 main
 phase-1--a-bare-harness-in-80-lines
 1-what-were-building
@@ -52,6 +52,10 @@ phase-1--a-bare-harness-in-80-lines
 fig-iter-title
 fig-iter-arrow
 fig-iter-arrow-hot
+the-loop-is-a-state-machine
+fig-state-title
+fig-state-arrow
+fig-state-arrow-hot
 3-version-1--line-by-line-no-functions-no-classes
 -run-it-now
 4-version-2--functions-the-same-harness-named-in-pieces

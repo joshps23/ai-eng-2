@@ -79,6 +79,10 @@ SHOTS = [
      [("scroll", 'svg[aria-labelledby="fig-arch-title"]')]),
     ("fig-architecture-dark", "08-production-harness.html", (1440, 900), "dark", False,
      [("scroll", 'svg[aria-labelledby="fig-arch-title"]')]),
+    ("fig-state-light", "01-bare-harness.html", (1440, 900), "light", False,
+     [("scroll", 'svg[aria-labelledby="fig-state-title"]')]),
+    ("fig-state-dark", "01-bare-harness.html", (1440, 900), "dark", False,
+     [("scroll", 'svg[aria-labelledby="fig-state-title"]')]),
     # a collapsed "Reference copy" card in Phase 4 ...
     ("phase04-refsection-closed-light", "04-real-tools.html", (1440, 900), "light", False,
      [("scroll", "details.refsection")]),

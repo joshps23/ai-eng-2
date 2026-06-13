@@ -61,6 +61,9 @@ Status: ☐ todo · ◐ in progress · ☑ done
 
 Newest first. One line per shipped iteration.
 
+- **2026-06-13** — Cycle 21 (user-seeded): named the **state machine** concept (it was
+  never covered) — a framing + FSM diagram in Phase 1, a Glossary entry, a Phase 5
+  modes-as-states note, drawn as the 10th designed SVG. Gates green (3366 eval cases).
 - **2026-06-13** — Cycle 20 (user-seeded): completed Item 9 — six new concept diagrams
   (call_id handshake, registry dispatch, transcript-as-memory, permission decision
   flow, context pruning, production architecture) added to the markdown as ASCII and

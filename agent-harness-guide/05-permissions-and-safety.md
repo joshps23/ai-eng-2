@@ -448,7 +448,7 @@ Run `python agent_v2.py` (or add `TOOL_RISK`, `check_permission`, and `ask_user`
 
 The gate above always asks about `caution`-level tools even if you are in the middle of a trusted editing session. **Why now?** You want to say "for this run, auto-approve file writes too" without changing your code — just pick a mode.
 
-A mode is just a string that controls which risk levels are auto-approved. Add a second parameter to `check_permission`:
+A mode is just a string that controls which risk levels are auto-approved — and the harness is always in exactly one mode, a small **state machine** of its own (see the loop's state machine in [Phase 1](./01-bare-harness.md#the-loop-is-a-state-machine)). Add a second parameter to `check_permission`:
 
 ```python
 # For each mode, which risk levels pass without asking?

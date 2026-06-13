@@ -515,6 +515,53 @@ _ARCH_SVG = f"""\
 </svg>"""
 
 
+# ---------------------------------------------------------------------------
+# Figure 10 — the loop as a finite state machine (01-bare-harness §2)
+# ---------------------------------------------------------------------------
+_STATE_ALT = (
+    "The loop as a finite state machine: a START arrow enters CALL THE MODEL "
+    "(send the transcript). The model's reply drives the transition — a "
+    "function_call goes to RUN TOOLS (append output), a message goes to the "
+    "terminal DONE state (return text). RUN TOOLS loops back to CALL THE "
+    "MODEL; that loop-back is the heart of the machine."
+)
+
+_STATE_SVG = f"""\
+<svg viewBox="0 0 560 360" role="img" aria-labelledby="fig-state-title">
+<title id="fig-state-title">{_STATE_ALT}</title>
+{_markers("fig-state")}
+<!-- START into CALL THE MODEL -->
+<line class="d-edge" x1="100" y1="64" x2="187" y2="64" marker-end="url(#fig-state-arrow)"/>
+<text class="d-mono" x="100" y="56" text-anchor="middle">start</text>
+<!-- the loop-back: RUN TOOLS → CALL THE MODEL (the hero accent stroke) -->
+<path class="d-edge-hot" d="M195 270 L40 270 L40 64 L187 64" marker-end="url(#fig-state-arrow-hot)"/>
+<text class="d-mono d-accent-text" x="48" y="166" text-anchor="start">loop back</text>
+<!-- branch on the reply -->
+<line class="d-edge" x1="270" y1="104" x2="270" y2="143" marker-end="url(#fig-state-arrow)"/>
+<text class="d-mono" x="282" y="128" text-anchor="start">the reply contains…</text>
+<path class="d-edge" d="M250 168 L250 196 L250 224" marker-end="url(#fig-state-arrow)"/>
+<path class="d-edge" d="M330 168 L420 196 L420 224" marker-end="url(#fig-state-arrow)"/>
+<text class="d-mono" x="244" y="190" text-anchor="end">function_call</text>
+<text class="d-mono" x="426" y="190" text-anchor="start">message</text>
+<!-- CALL THE MODEL — the accent state -->
+<rect class="d-box d-accent" x="190" y="32" width="200" height="64"/>
+<text class="d-label d-accent-text" x="290" y="58" text-anchor="middle">CALL THE MODEL</text>
+<text class="d-mono" x="290" y="78" text-anchor="middle">send the transcript</text>
+<!-- the reply fork node -->
+<rect class="d-box d-pill" x="240" y="148" width="100" height="22"/>
+<text class="d-mono-label" x="290" y="163" text-anchor="middle">resp.output</text>
+<!-- RUN TOOLS -->
+<rect class="d-box" x="160" y="228" width="180" height="60"/>
+<text class="d-label" x="250" y="254" text-anchor="middle">RUN TOOLS</text>
+<text class="d-mono" x="250" y="273" text-anchor="middle">append output</text>
+<!-- DONE — the green/terminal state -->
+<rect class="d-box d-good" x="350" y="228" width="170" height="60"/>
+<text class="d-label" x="435" y="254" text-anchor="middle">DONE</text>
+<text class="d-mono" x="435" y="273" text-anchor="middle">return text</text>
+<text class="d-mono d-good-text" x="435" y="306" text-anchor="middle">terminal state</text>
+</svg>"""
+
+
 # key = sha256 of normalize(fence_text) — see fingerprint().  Recompute with:
 #   python -c "import figures; print(figures.fingerprint(open('f').read()))"
 FIGURES: dict[str, Figure] = {
@@ -545,4 +592,7 @@ FIGURES: dict[str, Figure] = {
     # 08-production-harness.md — the production architecture, wired together
     "92d184603c5846f92b98ed66041c3d7029c52de6c878e3a90904e3f818528231":
         Figure(_ARCH_SVG, "The production architecture (Phase 8)", _ARCH_ALT),
+    # 01-bare-harness.md — §2 'The loop is a state machine', FSM diagram
+    "987036d4355bbdc8194f1a56b6c3a7b75bd06912213bc6361a21b6aad5040262":
+        Figure(_STATE_SVG, "The loop as a state machine (Phase 1)", _STATE_ALT),
 }
