@@ -111,7 +111,7 @@ Score each phase 1–5 on each axis; the loop revises the lowest-scoring phase n
 
 The evaluator-reviser loop runs **at most 50 times**, then stops on its own.
 
-- Iterations used: **22 / 50** *(cap raised 10 → 20, then 20 → 50 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
+- Iterations used: **23 / 50** *(cap raised 10 → 20, then 20 → 50 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
 - Per iteration: score all phases on the rubric, pick the weakest, revise it one notch
   more incremental, increment the counter here, log it below, commit, push. Stop when the
   counter hits 50 **or** every phase scores ≥4 on every axis.
@@ -134,9 +134,10 @@ The evaluator-reviser loop runs **at most 50 times**, then stops on its own.
   engineering constraints stand: existing GitHub-parity deep links into the phase
   pages must keep working, and the markdown remains the source of truth.
 
-- Content diagrams the markdown genuinely lacks (a Phase 0 handshake sequence, a
-  Phase 6 pruning picture): add them to the md as `text` fences first — the site's
-  figure mechanism will then pick them up (per the cycle-17 designer's doctrine).
+- ~~Content diagrams the markdown genuinely lacks~~ — addressed in iteration 23
+  (cycle 20): six new diagrams (Phase 0 handshake, Phase 2 dispatch, Phase 3 memory,
+  Phase 5 permission flow, Phase 6 pruning, Phase 8 architecture) added as ASCII
+  fences and rendered as designed SVGs; ROADMAP Item 9 now ☑.
 - **(User-seeded, 2026-06-12 — addressed in iteration 20.)** Each HTML page is too lengthy
   with little visuals. The phase pages render at up to ~73,000px tall with long
   uninterrupted code/reference stretches and almost no graphical elements beyond
@@ -157,6 +158,23 @@ The evaluator-reviser loop runs **at most 50 times**, then stops on its own.
   Phase 5 gained an explicit "V1+V2 is a legitimate stopping point" paragraph.
 
 ## Revision log (newest first)
+
+- **2026-06-13 — Iteration 23: ROADMAP Item 9 completed (cycle 20, user-seeded).**
+  Six new concept diagrams added where a beginner most needs a picture — the call_id
+  handshake (Phase 0), registry dispatch (Phase 2), transcript-as-memory (Phase 3),
+  the permission decision flow with its hard-deny-first boundary (Phase 5), context
+  pruning with pinned-task/kept-pairs (Phase 6), and the production architecture
+  (Phase 8). Each was authored as an ASCII `text` fence in the markdown (source of
+  truth; GitHub shows the ASCII) and drawn as a designed inline SVG in figures.py
+  (the site swaps it in; ASCII stays in a collapsed text-version), bringing the figure
+  set from 3 to 9. The lesson splitter now excludes the collapsed diagram-text from
+  the bite-size word budget (mirroring the refsection exclusion); total lessons moved
+  76 → 77 (a Phase 5 prose-driven sub-split). Verified: drift gate matches all 9
+  figures, byte-idempotent, anchor contract intact (only new SVG ids added, zero
+  heading ids changed), pytest 56, all five eval suites green at **3364 cases** (a new
+  frontend block asserts every figure's role=img/title/aria + ASCII mirror). Two
+  rendered figures independently pixel-checked in both schemes. Ran ~0.25M of the 1M
+  remainder.
 
 - **2026-06-13 — Iteration 22: persona evals (cycle 19, user-seeded).** Turned the
   loop's role-played verification into deterministic suites — one "evals agent" per

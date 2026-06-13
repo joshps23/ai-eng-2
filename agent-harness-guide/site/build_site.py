@@ -112,6 +112,12 @@ VERSION_RE = re.compile(r"\bVersion (\d)\b")   # same rung regex as the ladder
 RITUAL_RE = re.compile(r"^(pitfalls|key takeaways)\b", re.I)
 TAG_RE = re.compile(r"<[^>]+>")
 ID_RE = re.compile(r'id="([^"]*)"')
+# A figure's collapsed ASCII mirror (<details class="diagram-text">): the
+# reader sees the SVG, not this text, so it is excluded from the lesson
+# visible-word budget exactly as a refsection's content is (the eval-side
+# visible_words proxy strips the same node — keep the two in lock-step).
+DIAGRAM_TEXT_RE = re.compile(
+    r'<details class="diagram-text">.*?</details>', re.S)
 ANCHOR_BASELINE = "anchor-baseline.txt"   # pinned id snapshot, lives in site/
 
 # Fingerprints from figures.FIGURES that matched a fence during this build.
@@ -644,12 +650,16 @@ class Chunk:
                        and "refsection" in (el.get("class") or ""))
         # Visible-word budget: refsection content is excluded at exactly the
         # collapsed-unit granularity (a refsection is always a top-level
-        # <details> — _collapse_refsections works on root children only).
+        # <details> — _collapse_refsections works on root children only).  A
+        # figure's collapsed ASCII mirror (details.diagram-text, nested inside
+        # the <figure>) is excluded too: the reader sees the designed SVG, so
+        # the duplicated ASCII must not inflate the lesson's reading budget.
         # Tags are stripped with "" (itertext() semantics): pygments wraps
         # every code token in a span, and a " " replacement would count
         # `client.responses.create(...)` as half a dozen words.
+        counted = DIAGRAM_TEXT_RE.sub("", self.html)
         self.words = 0 if self.is_ref else len(
-            html_mod.unescape(TAG_RE.sub("", self.html)).split())
+            html_mod.unescape(TAG_RE.sub("", counted)).split())
         self.is_checkpoint = (self.level == 3
                               and (self.text or "").startswith("▶"))
 
@@ -1526,6 +1536,7 @@ BASE_CSS = """\
   --green: #166F33;         /* 6.16:1 on bg, 5.57:1 on its 7% tint */
   --warn: #8A5C04;          /* 5.72:1 on bg, 5.39:1 on its 8% tint */
   --warn-border: #D4A72C;
+  --danger: #B42318;        /* diagram DENY/drop: 6.04:1 on bg, 5.50:1 on its 8% tint */
   --selection: #CDD3FF;     /* fg on it: 11.29:1 */
   --font-sans: ui-sans-serif, -apple-system, BlinkMacSystemFont,
     "Segoe UI Variable Text", "Segoe UI", Roboto, "Helvetica Neue", Arial,
@@ -1547,6 +1558,7 @@ BASE_CSS = """\
     --green: #3FB950;         /* 7.49:1 on bg, 6.68:1 on its 9% tint */
     --warn: #D29922;          /* 7.53:1 on bg, 7.01:1 on its 9% tint */
     --warn-border: #9E6A03;
+    --danger: #FF8A80;        /* diagram DENY/drop: 8.07:1 on bg, 7.32:1 on its 10% tint */
     --selection: #3D4380;     /* fg on it: 7.55:1 */
   }
 }
@@ -1838,6 +1850,17 @@ figure.diagram { margin: 1.5rem 0; padding: 0; }
 .d-chip-text-accent { fill: var(--accent-deep); }
 .d-chip-text-green  { fill: var(--green); }
 .d-chip-text-warn   { fill: var(--warn); }
+/* text emphasis that rides the box tints (labels carry their own contrast) */
+.d-accent-text { fill: var(--accent-deep); }
+.d-good-text   { fill: var(--green); }
+.d-id   { fill: var(--accent-deep); font-weight: 600; }  /* the shared call_id */
+/* DENY terminals / dropped (pruned) groups — a danger treatment distinct from
+   the green "kept" boxes, palette-driven and AA-safe in both schemes */
+.d-deny { stroke: var(--danger); fill: color-mix(in srgb, var(--danger) 8%, var(--bg)); }
+.d-deny-text { fill: var(--danger); font-weight: 700; }
+.d-drop { stroke: var(--danger); fill: color-mix(in srgb, var(--danger) 7%, var(--bg)); }
+.d-drop-text { fill: var(--danger); }
+.d-dash { stroke-dasharray: 5 4; }   /* the budget line / hard-deny boundary */
 details.diagram-text { margin: 0.75rem 0 0; font-size: 0.875rem; }
 details.diagram-text > summary {
   color: var(--muted); font-weight: 600; font-size: 0.8125rem;

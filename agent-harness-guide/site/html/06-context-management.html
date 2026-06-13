@@ -584,6 +584,91 @@ agent that forgets its task is useless.</p>
     <span class="k">return</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">kept</span> <span class="k">if</span> <span class="n">group</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">group</span><span class="p">]</span>
 </code></pre></div>
 
+<p>Picture what those two rules do. Pruning is <strong>not</strong> a blind <code>del items[:k]</code>: it
+drops the oldest <em>droppable</em> groups, but it pins the task and keeps every
+<code>function_call</code> glued to its <code>function_call_output</code>.</p>
+<figure class="diagram" role="group">
+<svg viewBox="0 0 640 420" role="img" aria-labelledby="fig-prune-title">
+<title id="fig-prune-title">Context pruning: before, the transcript is over budget. prune_to_budget drops the oldest droppable groups (call#0–2 with their outputs) but pins the first user message — the task — and keeps each function_call glued to its function_call_output, so the result fits the budget and no pair is ever orphaned.</title>
+<defs>
+<marker id="fig-prune-arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="d-arrow" d="M0 0 L10 5 L0 10 z"/></marker>
+<marker id="fig-prune-arrow-hot" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="d-arrow-hot" d="M0 0 L10 5 L0 10 z"/></marker>
+</defs>
+<text class="d-label" x="160" y="22" text-anchor="middle">BEFORE (over budget)</text>
+<text class="d-label" x="480" y="22" text-anchor="middle">AFTER prune_to_budget</text>
+<!-- BEFORE column -->
+<rect class="d-box d-accent" x="40" y="34" width="240" height="34"/>
+<text class="d-mono-label d-accent-text" x="52" y="55" text-anchor="start">user: the task</text>
+<rect class="d-chip d-chip-accent" x="190" y="42" width="78" height="18"/>
+<text class="d-chip-text d-chip-text-accent" x="229" y="55" text-anchor="middle">★ pinned</text>
+<rect class="d-box d-drop" x="40" y="74" width="200" height="38"/>
+<text class="d-mono d-drop-text" x="52" y="91" text-anchor="start">call#0 ┐ pair (oldest)</text>
+<text class="d-mono d-drop-text" x="52" y="106" text-anchor="start">output#0 ┘</text>
+<text class="d-mono d-drop-text" x="248" y="97" text-anchor="start">drop ✗</text>
+<rect class="d-box d-drop" x="40" y="118" width="200" height="38"/>
+<text class="d-mono d-drop-text" x="52" y="135" text-anchor="start">call#1 ┐ pair</text>
+<text class="d-mono d-drop-text" x="52" y="150" text-anchor="start">output#1 ┘</text>
+<text class="d-mono d-drop-text" x="248" y="141" text-anchor="start">drop ✗</text>
+<rect class="d-box d-drop" x="40" y="162" width="200" height="38"/>
+<text class="d-mono d-drop-text" x="52" y="179" text-anchor="start">call#2 ┐ pair</text>
+<text class="d-mono d-drop-text" x="52" y="194" text-anchor="start">output#2 ┘</text>
+<text class="d-mono d-drop-text" x="248" y="185" text-anchor="start">drop ✗</text>
+<rect class="d-box d-good" x="40" y="206" width="200" height="38"/>
+<text class="d-mono" x="52" y="223" text-anchor="start">call#3 ┐ pair</text>
+<text class="d-mono" x="52" y="238" text-anchor="start">output#3 ┘</text>
+<text class="d-mono" x="248" y="229" text-anchor="start">keep</text>
+<rect class="d-box d-good" x="40" y="250" width="200" height="38"/>
+<text class="d-mono" x="52" y="267" text-anchor="start">call#4 ┐ pair (newest)</text>
+<text class="d-mono" x="52" y="282" text-anchor="start">output#4 ┘</text>
+<text class="d-mono" x="248" y="273" text-anchor="start">keep</text>
+<line class="d-edge-hot d-dash" x1="40" y1="300" x2="280" y2="300"/>
+<text class="d-mono d-deny-text" x="40" y="316" text-anchor="start">── budget line ──  ✗ over</text>
+<!-- the kept set survives -->
+<path class="d-edge" d="M280 51 C330 51 330 130 388 130" marker-end="url(#fig-prune-arrow)"/>
+<path class="d-edge" d="M240 225 C320 225 320 175 388 175" marker-end="url(#fig-prune-arrow)"/>
+<path class="d-edge" d="M240 269 C330 269 330 220 388 220" marker-end="url(#fig-prune-arrow)"/>
+<!-- AFTER column -->
+<rect class="d-box d-accent" x="390" y="110" width="240" height="34"/>
+<text class="d-mono-label d-accent-text" x="402" y="131" text-anchor="start">user: the task  ★ pin</text>
+<text class="d-mono d-accent-text" x="402" y="103" text-anchor="start">always kept</text>
+<rect class="d-box d-good" x="390" y="158" width="200" height="38"/>
+<text class="d-mono" x="402" y="175" text-anchor="start">call#3 ┐ pair</text>
+<text class="d-mono" x="402" y="190" text-anchor="start">output#3 ┘</text>
+<rect class="d-box d-good" x="390" y="203" width="200" height="38"/>
+<text class="d-mono" x="402" y="220" text-anchor="start">call#4 ┐ pair (newest)</text>
+<text class="d-mono" x="402" y="235" text-anchor="start">output#4 ┘</text>
+<line class="d-edge d-dash" x1="390" y1="250" x2="630" y2="250"/>
+<text class="d-mono d-good-text" x="390" y="266" text-anchor="start">── budget line ──  ✓ fits</text>
+<text class="d-mono d-accent-text" x="20" y="328" text-anchor="start">a call and its output drop together (never orphan one); the task is</text>
+<text class="d-mono d-accent-text" x="20" y="344" text-anchor="start">pinned no matter how old it gets.</text>
+</svg>
+<details class="diagram-text"><summary>Text version of this diagram</summary>
+<div class="highlight nocopy"><pre><span></span><code>   BEFORE (over budget)                 AFTER prune_to_budget(items, budget)
+   ─────────────────────                ────────────────────────────────────
+   ┌──────────────────────┐
+   │ user: the task  ★pin │──────────┐  ┌──────────────────────┐
+   ├──────────────────────┤          └─▶│ user: the task  ★pin │  always kept
+   │ call#0  ┐ pair       │ drop        ├──────────────────────┤
+   │ output#0┘ (oldest)   │ ✗           │ call#3  ┐ pair       │
+   ├──────────────────────┤             │ output#3┘            │
+   │ call#1  ┐ pair       │ drop        ├──────────────────────┤
+   │ output#1┘            │ ✗           │ call#4  ┐ pair       │
+   ├──────────────────────┤             │ output#4┘ (newest)   │
+   │ call#2  ┐ pair       │ drop        └──────────────────────┘
+   │ output#2┘            │ ✗           ── budget line ───────────  ✓ fits
+   ├──────────────────────┤
+   │ call#3  ┐ pair       │ keep
+   │ output#3┘            │
+   ├──────────────────────┤
+   │ call#4  ┐ pair       │ keep
+   │ output#4┘ (newest)   │
+   └──────────────────────┘
+   ── budget line ───────  ✗ over
+</code></pre></div>
+</details>
+</figure>
+<p>A call and its output are dropped together (never orphan one), and the first
+user message — the goal — is pinned no matter how old it gets.</p>
 <h3 id="-run-it-now-no-api-key-needed-3">▶ Run it now (no API key needed)<a aria-label="Permalink to this section" class="hanchor" href="#-run-it-now-no-api-key-needed-3">¶</a></h3>
 <p>Verify both rules offline:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Build a transcript: one goal message, then five tool round-trips.</span>

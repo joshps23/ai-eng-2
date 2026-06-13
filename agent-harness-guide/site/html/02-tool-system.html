@@ -463,6 +463,57 @@ Final answer:
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Error (</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
 </code></pre></div>
 
+<p>Here is what <code>dispatch</code> does, drawn out — the registry is a name→function
+lookup table, so adding a tool never touches the loop:</p>
+<figure class="diagram" role="group">
+<svg viewBox="0 0 600 380" role="img" aria-labelledby="fig-disp-title">
+<title id="fig-disp-title">Registry dispatch: the model wants add {a:2, b:3}; the TOOLS dict is a plain name→function lookup table, so looking up "add" returns its {fn, schema}; the harness runs fn(**args) and the result string "5" goes back into the conversation. Adding a tool is adding one row.</title>
+<defs>
+<marker id="fig-disp-arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="d-arrow" d="M0 0 L10 5 L0 10 z"/></marker>
+<marker id="fig-disp-arrow-hot" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="d-arrow-hot" d="M0 0 L10 5 L0 10 z"/></marker>
+</defs>
+<rect class="d-box d-accent d-pill" x="150" y="16" width="300" height="38"/>
+<text class="d-mono-label" x="300" y="40" text-anchor="middle">model wants:  add  {"a": 2, "b": 3}</text>
+<line class="d-edge" x1="300" y1="56" x2="300" y2="83" marker-end="url(#fig-disp-arrow)"/>
+<!-- the TOOLS lookup table — the lesson element -->
+<rect class="d-box d-accent" x="120" y="86" width="360" height="86"/>
+<text class="d-label d-accent-text" x="138" y="108" text-anchor="start">TOOLS  (a plain dict)</text>
+<text class="d-mono" x="468" y="104" text-anchor="end">look the NAME up</text>
+<line class="d-edge-hot" x1="138" y1="116" x2="372" y2="116"/>
+<text class="d-mono-label" x="138" y="138" text-anchor="start">"add"        → {fn, schema}</text>
+<text class="d-mono" x="138" y="160" text-anchor="start">"word_count" → {fn, schema}</text>
+<rect class="d-chip d-chip-accent" x="372" y="126" width="78" height="18"/>
+<text class="d-chip-text d-chip-text-accent" x="411" y="139" text-anchor="middle">match</text>
+<line class="d-edge" x1="300" y1="172" x2="300" y2="206" marker-end="url(#fig-disp-arrow)"/>
+<text class="d-mono" x="312" y="192" text-anchor="start">found fn + schema</text>
+<rect class="d-box" x="125" y="209" width="350" height="40"/>
+<text class="d-mono-label" x="300" y="234" text-anchor="middle">run  fn(**{"a": 2, "b": 3})  →  "5"</text>
+<line class="d-edge" x1="300" y1="249" x2="300" y2="283" marker-end="url(#fig-disp-arrow)"/>
+<rect class="d-box d-good" x="105" y="286" width="390" height="40"/>
+<text class="d-mono-label" x="300" y="311" text-anchor="middle">result string "5"  →  back into the conversation</text>
+<text class="d-mono" x="300" y="352" text-anchor="middle">adding a tool = adding one row — the loop never changes</text>
+</svg>
+<details class="diagram-text"><summary>Text version of this diagram</summary>
+<div class="highlight nocopy"><pre><span></span><code>   model wants:  add  {&quot;a&quot;: 2, &quot;b&quot;: 3}
+                  │
+                  ▼
+        ┌───────────────────────┐
+        │  TOOLS  (a plain dict) │   look the NAME up
+        │  ─────────────────────  │
+        │  &quot;add&quot;        → {fn, schema}  ◀── match
+        │  &quot;word_count&quot; → {fn, schema}  │
+        └───────────────────────┘
+                  │  found fn + schema
+                  ▼
+        run  fn(**{&quot;a&quot;: 2, &quot;b&quot;: 3})  →  &quot;5&quot;
+                  │
+                  ▼
+   result string  &quot;5&quot;  ──▶ back into the conversation
+</code></pre></div>
+</details>
+</figure>
+<p>Adding a tool means adding one row to that table — the loop and <code>dispatch</code>
+never change.</p>
 <h3 id="-check-it-now-no-api-key-needed-1">▶ Check it now (no API key needed)<a aria-label="Permalink to this section" class="hanchor" href="#-check-it-now-no-api-key-needed-1">¶</a></h3>
 <p>With everything above in one file, no API key is needed to test dispatch itself. Add and run:</p>
 <div class="highlight"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="n">dispatch</span><span class="p">(</span><span class="s2">&quot;add&quot;</span><span class="p">,</span> <span class="s1">&#39;{&quot;a&quot;: 2, &quot;b&quot;: 3}&#39;</span><span class="p">))</span>      <span class="c1"># 5</span>

@@ -4,17 +4,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Here is Version 3 as a single runnable program: the pieces from Steps 3.1–3.4 plus the loop from Version 2, which is unchanged except for the gate call (it n…">
+<meta name="description" content="The gate combines mode, policy, and per-session memory into a single decision function. When the answer is ASK, it prompts the terminal and remembers the cho…">
 <link rel="canonical" href="https://joshps23.github.io/ai-eng-2/05-permissions-and-safety.html">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://joshps23.github.io/ai-eng-2/05-permissions-and-safety-6.html">
 <meta property="og:site_name" content="Agent Harness Guide">
-<meta property="og:title" content="Phase 5 · Lesson 6 — classes · part 3 of 3 — Agent Harness Guide">
-<meta property="og:description" content="Here is Version 3 as a single runnable program: the pieces from Steps 3.1–3.4 plus the loop from Version 2, which is unchanged except for the gate call (it n…">
+<meta property="og:title" content="Phase 5 · Lesson 6 — classes · part 3 of 4 — Agent Harness Guide">
+<meta property="og:description" content="The gate combines mode, policy, and per-session memory into a single decision function. When the answer is ASK, it prompts the terminal and remembers the cho…">
 <meta name="twitter:card" content="summary">
 <meta name="theme-color" content="#FDFDFE" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
-<title>Phase 5 · Lesson 6 — classes · part 3 of 3 — Agent Harness Guide</title>
+<title>Phase 5 · Lesson 6 — classes · part 3 of 4 — Agent Harness Guide</title>
 <link rel="stylesheet" href="style.css">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 </head>
@@ -59,267 +59,230 @@
 </details>
 <main id="main">
 <header class="page-header">
-<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">5</span><span class="phase-kicker">Phase 5 · Lesson 6 of 9</span><span class="lesson-time">~10 min</span><span class="lesson-cp">1 <span aria-hidden="true">▶</span> checkpoint</span></p>
+<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">5</span><span class="phase-kicker">Phase 5 · Lesson 6 of 10</span><span class="lesson-time">~7 min</span></p>
 <nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations-1.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness-1.html" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system-1.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming-1.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools-1.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety-1.html" aria-current="true" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management-1.html" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration-1.html" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness-1.html" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
-<nav class="lesson-rail" aria-label="Lessons in this phase"><a class="lesson-tick" href="05-permissions-and-safety-1.html" title="Lesson 1: Permissions, Safety &amp; the… (~3 min)" aria-label="Lesson 1: Permissions, Safety &amp; the… (~3 min)">1</a><a class="lesson-tick" href="05-permissions-and-safety-2.html" title="Lesson 2: line-by-line (~7 min)" aria-label="Lesson 2: line-by-line (~7 min)">2</a><a class="lesson-tick" href="05-permissions-and-safety-3.html" title="Lesson 3: functions (~22 min)" aria-label="Lesson 3: functions (~22 min)">3</a><a class="lesson-tick" href="05-permissions-and-safety-4.html" title="Lesson 4: classes · part 1 of 3 (~9 min)" aria-label="Lesson 4: classes · part 1 of 3 (~9 min)">4</a><a class="lesson-tick" href="05-permissions-and-safety-5.html" title="Lesson 5: classes · part 2 of 3 (~11 min)" aria-label="Lesson 5: classes · part 2 of 3 (~11 min)">5</a><a class="lesson-tick" href="05-permissions-and-safety-6.html" aria-current="page" title="Lesson 6: classes · part 3 of 3 (~10 min)" aria-label="Lesson 6: classes · part 3 of 3 (~10 min)">6</a><a class="lesson-tick" href="05-permissions-and-safety-7.html" title="Lesson 7: hooks (~16 min)" aria-label="Lesson 7: hooks (~16 min)">7</a><a class="lesson-tick" href="05-permissions-and-safety-8.html" title="Lesson 8: Sandboxing (~19 min)" aria-label="Lesson 8: Sandboxing (~19 min)">8</a><a class="lesson-tick" href="05-permissions-and-safety-9.html" title="Wrap-up: Pitfalls (~6 min)" aria-label="Wrap-up: Pitfalls (~6 min)">9</a></nav>
-<nav class="ladder" aria-label="Version ladder"><a class="ladder-rung" href="05-permissions-and-safety-2.html#version-1--line-by-line-one-inline-if-before-the-tool-runs"><span class="ladder-medallion">V1</span> line-by-line</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="05-permissions-and-safety-3.html#version-2--functions-a-check_permission-you-can-call-and-test"><span class="ladder-medallion">V2</span> functions</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="05-permissions-and-safety-4.html#version-3--classes-the-same-gate-as-policy-objects"><span class="ladder-medallion">V3</span> classes</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="05-permissions-and-safety-7.html#version-4--hooks-functions-you-hand-to-the-harness"><span class="ladder-medallion">V4</span> hooks</a></nav>
+<nav class="lesson-rail" aria-label="Lessons in this phase"><a class="lesson-tick" href="05-permissions-and-safety-1.html" title="Lesson 1: Permissions, Safety &amp; the… (~3 min)" aria-label="Lesson 1: Permissions, Safety &amp; the… (~3 min)">1</a><a class="lesson-tick" href="05-permissions-and-safety-2.html" title="Lesson 2: line-by-line (~7 min)" aria-label="Lesson 2: line-by-line (~7 min)">2</a><a class="lesson-tick" href="05-permissions-and-safety-3.html" title="Lesson 3: functions (~22 min)" aria-label="Lesson 3: functions (~22 min)">3</a><a class="lesson-tick" href="05-permissions-and-safety-4.html" title="Lesson 4: classes · part 1 of 4 (~9 min)" aria-label="Lesson 4: classes · part 1 of 4 (~9 min)">4</a><a class="lesson-tick" href="05-permissions-and-safety-5.html" title="Lesson 5: classes · part 2 of 4 (~5 min)" aria-label="Lesson 5: classes · part 2 of 4 (~5 min)">5</a><a class="lesson-tick" href="05-permissions-and-safety-6.html" aria-current="page" title="Lesson 6: classes · part 3 of 4 (~7 min)" aria-label="Lesson 6: classes · part 3 of 4 (~7 min)">6</a><a class="lesson-tick" href="05-permissions-and-safety-7.html" title="Lesson 7: classes · part 4 of 4 (~10 min)" aria-label="Lesson 7: classes · part 4 of 4 (~10 min)">7</a><a class="lesson-tick" href="05-permissions-and-safety-8.html" title="Lesson 8: hooks (~16 min)" aria-label="Lesson 8: hooks (~16 min)">8</a><a class="lesson-tick" href="05-permissions-and-safety-9.html" title="Lesson 9: Sandboxing (~19 min)" aria-label="Lesson 9: Sandboxing (~19 min)">9</a><a class="lesson-tick" href="05-permissions-and-safety-10.html" title="Wrap-up: Pitfalls (~6 min)" aria-label="Wrap-up: Pitfalls (~6 min)">10</a></nav>
+<nav class="ladder" aria-label="Version ladder"><a class="ladder-rung" href="05-permissions-and-safety-2.html#version-1--line-by-line-one-inline-if-before-the-tool-runs"><span class="ladder-medallion">V1</span> line-by-line</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="05-permissions-and-safety-3.html#version-2--functions-a-check_permission-you-can-call-and-test"><span class="ladder-medallion">V2</span> functions</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="05-permissions-and-safety-4.html#version-3--classes-the-same-gate-as-policy-objects"><span class="ladder-medallion">V3</span> classes</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="05-permissions-and-safety-8.html#version-4--hooks-functions-you-hand-to-the-harness"><span class="ladder-medallion">V4</span> hooks</a></nav>
 </header>
 <article>
-<h3 id="version-3-assembled--one-paste-able-file">Version 3, assembled — one paste-able file<a aria-label="Permalink to this section" class="hanchor" href="05-permissions-and-safety.html#version-3-assembled--one-paste-able-file">¶</a></h3>
-<p>Here is Version 3 as a single runnable program: the pieces from Steps 3.1–3.4 plus the
-loop from Version 2, which is <strong>unchanged except for the gate call</strong> (it now unpacks a
-<code>(decision, reason)</code> tuple). The rule list and mode set are trimmed slightly to keep the
-file readable — the full-fat versions you just read drop in without any other change,
-and the consolidated multi-file form appears at the end of the phase.</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># agent_v3.py — Phase 5, Version 3 assembled: the same harness with policy objects.</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+<h3 id="step-34--the-approval-gate-production-shape">Step 3.4 — The Approval Gate (production shape)<a aria-label="Permalink to this section" class="hanchor" href="05-permissions-and-safety.html#step-34--the-approval-gate-production-shape">¶</a></h3>
+<blockquote>
+<p><strong>Why upgrade from the Version 2 gate?</strong> The simple gate returned just <code>"allow"/"deny"/"ask"</code>. The production gate also returns a <em>reason string</em>, remembers per-session y/a/d/n answers across loop iterations (so it does not ask twice about the same tool), and integrates with the <code>Tool</code> dataclass's <code>.risk</code> field and the <code>PermissionPolicy</code> rules.</p>
+</blockquote>
+<p>The gate combines mode, policy, and per-session memory into a single decision function. When the answer is ASK, it prompts the terminal and remembers the choice for the rest of the session.</p>
+<p>The order of the checks is the whole point. The two <em>hard denials</em> — the mode refusing a
+risk tier, then a policy DENY rule — run <strong>first</strong>, so nothing below them (not even an
+"always allow" the user clicked earlier) can ever re-open a blocked tool:</p>
+<figure class="diagram" role="group">
+<svg viewBox="0 0 620 470" role="img" aria-labelledby="fig-perm-title">
+<title id="fig-perm-title">The permission decision flow, in order: (1) does the mode hard-deny this risk tier? (2) does a policy DENY rule match? Those two hard denials run FIRST and end the decision. Only below that boundary does (3) session memory and (4) risk×mode run — so a remembered "always allow" can never re-open a tool the hard denials blocked.</title>
+<defs>
+<marker id="fig-perm-arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="d-arrow" d="M0 0 L10 5 L0 10 z"/></marker>
+<marker id="fig-perm-arrow-hot" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="d-arrow-hot" d="M0 0 L10 5 L0 10 z"/></marker>
+</defs>
+<rect class="d-box d-pill" x="180" y="12" width="300" height="32"/>
+<text class="d-mono" x="330" y="32" text-anchor="middle">tool call (tool, args, mode, policy)</text>
+<line class="d-edge" x1="330" y1="44" x2="330" y2="63" marker-end="url(#fig-perm-arrow)"/>
+<!-- 1. mode hard-deny -->
+<rect class="d-box d-accent" x="70" y="66" width="380" height="34"/>
+<text class="d-label" x="86" y="88" text-anchor="start">1. Mode hard-denies this risk tier?</text>
+<line class="d-edge-hot" x1="450" y1="83" x2="540" y2="83" marker-end="url(#fig-perm-arrow-hot)"/>
+<text class="d-mono d-accent-text" x="495" y="77" text-anchor="middle">yes</text>
+<rect class="d-box d-deny" x="540" y="68" width="60" height="30"/>
+<text class="d-label d-deny-text" x="570" y="88" text-anchor="middle">DENY</text>
+<line class="d-edge" x1="330" y1="100" x2="330" y2="119" marker-end="url(#fig-perm-arrow)"/>
+<text class="d-mono" x="342" y="114" text-anchor="start">no</text>
+<!-- 2. policy DENY -->
+<rect class="d-box d-accent" x="70" y="122" width="380" height="34"/>
+<text class="d-label" x="86" y="144" text-anchor="start">2. A policy DENY rule matches?</text>
+<line class="d-edge-hot" x1="450" y1="139" x2="540" y2="139" marker-end="url(#fig-perm-arrow-hot)"/>
+<text class="d-mono d-accent-text" x="495" y="133" text-anchor="middle">yes</text>
+<rect class="d-box d-deny" x="540" y="124" width="60" height="30"/>
+<text class="d-label d-deny-text" x="570" y="144" text-anchor="middle">DENY</text>
+<line class="d-edge" x1="330" y1="156" x2="330" y2="200" marker-end="url(#fig-perm-arrow)"/>
+<text class="d-mono" x="320" y="170" text-anchor="end">no</text>
+<!-- THE BOUNDARY: hard denials end here / session memory starts below -->
+<text class="d-mono d-accent-text" x="330" y="184" text-anchor="middle">↑ hard denials end here · session memory starts below ↓</text>
+<line class="d-edge-hot d-dash" x1="40" y1="192" x2="600" y2="192"/>
+<!-- 3. session memory -->
+<rect class="d-box" x="70" y="202" width="380" height="44"/>
+<text class="d-label" x="86" y="220" text-anchor="start">3. In session memory?</text>
+<text class="d-mono" x="86" y="238" text-anchor="start">(remembered "always allow / always deny")</text>
+<line class="d-edge" x1="450" y1="218" x2="540" y2="218" marker-end="url(#fig-perm-arrow)"/>
+<text class="d-mono" x="495" y="212" text-anchor="middle">deny</text>
+<rect class="d-box d-deny" x="540" y="203" width="60" height="28"/>
+<text class="d-label d-deny-text" x="570" y="222" text-anchor="middle">DENY</text>
+<line class="d-edge" x1="450" y1="236" x2="540" y2="236" marker-end="url(#fig-perm-arrow)"/>
+<text class="d-mono" x="495" y="252" text-anchor="middle">allow</text>
+<rect class="d-box d-good" x="540" y="240" width="60" height="28"/>
+<text class="d-label" x="570" y="259" text-anchor="middle">ALLOW</text>
+<line class="d-edge" x1="330" y1="246" x2="330" y2="287" marker-end="url(#fig-perm-arrow)"/>
+<text class="d-mono" x="342" y="270" text-anchor="start">neither</text>
+<!-- 4. risk x mode -->
+<rect class="d-box" x="70" y="290" width="380" height="34"/>
+<text class="d-label" x="86" y="312" text-anchor="start">4. risk × mode decides</text>
+<line class="d-edge" x1="450" y1="307" x2="540" y2="307" marker-end="url(#fig-perm-arrow)"/>
+<text class="d-mono" x="495" y="301" text-anchor="middle">allow</text>
+<rect class="d-box d-good" x="540" y="292" width="60" height="30"/>
+<text class="d-label" x="570" y="312" text-anchor="middle">ALLOW</text>
+<line class="d-edge" x1="330" y1="324" x2="330" y2="367" marker-end="url(#fig-perm-arrow)"/>
+<text class="d-mono" x="342" y="346" text-anchor="start">otherwise</text>
+<!-- ASK -->
+<rect class="d-box d-pill" x="170" y="370" width="320" height="40"/>
+<text class="d-label" x="330" y="388" text-anchor="middle">ASK the user → ALLOW / DENY</text>
+<text class="d-mono" x="330" y="404" text-anchor="middle">(y/n, or a/d to remember in step 3)</text>
+</svg>
+<details class="diagram-text"><summary>Text version of this diagram</summary>
+<div class="highlight nocopy"><pre><span></span><code>                      tool call (tool, args, mode, policy)
+                                     │
+                                     ▼
+          ┌──────────────────────────────────────────────┐
+          │ 1. Mode hard-denies this risk tier?           │── yes ──▶ DENY
+          └──────────────────────────────────────────────┘
+                                     │ no
+                                     ▼
+          ┌──────────────────────────────────────────────┐
+          │ 2. A policy DENY rule matches?                │── yes ──▶ DENY
+          └──────────────────────────────────────────────┘
+                                     │ no   ◄── hard denials end here;
+                                     ▼          session memory starts below
+          ┌──────────────────────────────────────────────┐
+          │ 3. In session memory?                         │── deny ─▶ DENY
+          │    (remembered &quot;always allow / always deny&quot;)  │── allow ▶ ALLOW
+          └──────────────────────────────────────────────┘
+                                     │ neither
+                                     ▼
+          ┌──────────────────────────────────────────────┐
+          │ 4. risk × mode decides                        │── allow ▶ ALLOW
+          └──────────────────────────────────────────────┘
+                                     │ otherwise
+                                     ▼
+                              ASK the user ──▶ ALLOW / DENY
+                              (y/n, or a/d to remember in step 3)
+</code></pre></div>
+</details>
+</figure>
+<p>The lesson the order encodes: <strong>hard denials are checked first, and session memory can
+never override them.</strong> A single "always allow" on <code>bash(ls)</code> must not silently re-enable
+<code>bash(rm -rf /)</code> — so the convenience layer (step 3) only ever runs <em>after</em> steps 1–2
+have already let the call through.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># permissions.py  (continued)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">fnmatch</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">openai</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenAI</span>
-
-<span class="n">client</span> <span class="o">=</span> <span class="n">OpenAI</span><span class="p">()</span>   <span class="c1"># reads OPENAI_API_KEY from the environment</span>
-
-<span class="c1"># ── Risk levels &amp; modes (Steps 3.1 / 3.2) ─────────────────────────────────────</span>
-
-<span class="n">RISK_SAFE</span>      <span class="o">=</span> <span class="s2">&quot;safe&quot;</span>
-<span class="n">RISK_CAUTION</span>   <span class="o">=</span> <span class="s2">&quot;caution&quot;</span>
-<span class="n">RISK_DANGEROUS</span> <span class="o">=</span> <span class="s2">&quot;dangerous&quot;</span>
-
-<span class="k">class</span><span class="w"> </span><span class="nc">Mode</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
-    <span class="n">PLAN</span>         <span class="o">=</span> <span class="s2">&quot;plan&quot;</span>
-    <span class="n">AUTO</span>         <span class="o">=</span> <span class="s2">&quot;auto&quot;</span>
-    <span class="n">ALWAYS_ALLOW</span> <span class="o">=</span> <span class="s2">&quot;always-allow&quot;</span>
-
-<span class="n">_AUTO_APPROVED</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Mode</span><span class="p">,</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="n">Mode</span><span class="o">.</span><span class="n">PLAN</span><span class="p">:</span>         <span class="p">{</span><span class="n">RISK_SAFE</span><span class="p">},</span>
-    <span class="n">Mode</span><span class="o">.</span><span class="n">AUTO</span><span class="p">:</span>         <span class="p">{</span><span class="n">RISK_SAFE</span><span class="p">,</span> <span class="n">RISK_CAUTION</span><span class="p">},</span>
-    <span class="n">Mode</span><span class="o">.</span><span class="n">ALWAYS_ALLOW</span><span class="p">:</span> <span class="p">{</span><span class="n">RISK_SAFE</span><span class="p">,</span> <span class="n">RISK_CAUTION</span><span class="p">,</span> <span class="n">RISK_DANGEROUS</span><span class="p">},</span>
-<span class="p">}</span>
-<span class="n">_HARD_DENY_IN_MODE</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Mode</span><span class="p">,</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="n">Mode</span><span class="o">.</span><span class="n">PLAN</span><span class="p">:</span> <span class="p">{</span><span class="n">RISK_CAUTION</span><span class="p">,</span> <span class="n">RISK_DANGEROUS</span><span class="p">},</span>
-<span class="p">}</span>
-
-<span class="k">class</span><span class="w"> </span><span class="nc">Decision</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
-    <span class="n">ALLOW</span> <span class="o">=</span> <span class="s2">&quot;allow&quot;</span>
-    <span class="n">DENY</span>  <span class="o">=</span> <span class="s2">&quot;deny&quot;</span>
-    <span class="n">ASK</span>   <span class="o">=</span> <span class="s2">&quot;ask&quot;</span>
-
-<span class="c1"># ── Policy objects (Step 3.3) ─────────────────────────────────────────────────</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_render_summary</span><span class="p">(</span><span class="n">tool_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="k">if</span> <span class="n">tool_name</span> <span class="o">==</span> <span class="s2">&quot;bash&quot;</span> <span class="ow">and</span> <span class="s2">&quot;command&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
-        <span class="n">arg_part</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;command&quot;</span><span class="p">]</span>
-    <span class="k">elif</span> <span class="s2">&quot;path&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
-        <span class="n">arg_part</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="s2">&quot;path&quot;</span><span class="p">]</span>
-    <span class="k">elif</span> <span class="n">args</span><span class="p">:</span>
-        <span class="n">arg_part</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">values</span><span class="p">())))[:</span><span class="mi">80</span><span class="p">]</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">arg_part</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tool_name</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="n">arg_part</span><span class="si">}</span><span class="s2">)&quot;</span>
-
-<span class="nd">@dataclass</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">PolicyRule</span><span class="p">:</span>
-    <span class="n">decision</span><span class="p">:</span> <span class="n">Decision</span>
-    <span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span>    <span class="c1"># fnmatch glob against &quot;tool_name(arg_summary)&quot;</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">matches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">fnmatch</span><span class="p">(</span><span class="n">_render_summary</span><span class="p">(</span><span class="n">tool_name</span><span class="p">,</span> <span class="n">args</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">pattern</span><span class="p">)</span>
-
-<span class="nd">@dataclass</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">PermissionPolicy</span><span class="p">:</span>
-    <span class="n">rules</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">PolicyRule</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Decision</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">rule</span><span class="o">.</span><span class="n">matches</span><span class="p">(</span><span class="n">tool_name</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">rule</span><span class="o">.</span><span class="n">decision</span>
-        <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">ASK</span>
-
-<span class="n">POLICY</span> <span class="o">=</span> <span class="n">PermissionPolicy</span><span class="p">(</span><span class="n">rules</span><span class="o">=</span><span class="p">[</span>
-    <span class="c1"># Hard denials first — first match wins.</span>
-    <span class="n">PolicyRule</span><span class="p">(</span><span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">,</span>  <span class="s2">&quot;bash(*rm -rf*)&quot;</span><span class="p">),</span>
-    <span class="n">PolicyRule</span><span class="p">(</span><span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">,</span>  <span class="s2">&quot;bash(sudo *)&quot;</span><span class="p">),</span>
-    <span class="c1"># Explicit allows for safe git reads.</span>
-    <span class="n">PolicyRule</span><span class="p">(</span><span class="n">Decision</span><span class="o">.</span><span class="n">ALLOW</span><span class="p">,</span> <span class="s2">&quot;bash(git status*)&quot;</span><span class="p">),</span>
-    <span class="n">PolicyRule</span><span class="p">(</span><span class="n">Decision</span><span class="o">.</span><span class="n">ALLOW</span><span class="p">,</span> <span class="s2">&quot;bash(git diff*)&quot;</span><span class="p">),</span>
-<span class="p">])</span>
-
-<span class="c1"># ── The approval gate (Step 3.4) ──────────────────────────────────────────────</span>
-
+<span class="c1"># Session memory: tool names the user said &quot;always allow&quot; or &quot;always deny&quot; this run.</span>
 <span class="n">_session_always_allow</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 <span class="n">_session_always_deny</span><span class="p">:</span>  <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 
+
 <span class="k">def</span><span class="w"> </span><span class="nf">check_permission</span><span class="p">(</span>
-    <span class="n">tool</span><span class="p">:</span> <span class="s2">&quot;Tool&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">policy</span><span class="p">:</span> <span class="n">PermissionPolicy</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="n">Mode</span><span class="p">,</span>
+    <span class="n">tool</span><span class="p">:</span> <span class="s2">&quot;Tool&quot;</span><span class="p">,</span>
+    <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+    <span class="n">policy</span><span class="p">:</span> <span class="n">PermissionPolicy</span><span class="p">,</span>
+    <span class="n">mode</span><span class="p">:</span> <span class="n">Mode</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Decision</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-    <span class="c1"># Hard denials first — session memory must never outrank these.</span>
-    <span class="k">if</span> <span class="n">tool</span><span class="o">.</span><span class="n">risk</span> <span class="ow">in</span> <span class="n">_HARD_DENY_IN_MODE</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="nb">set</span><span class="p">()):</span>
-        <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Mode &#39;</span><span class="si">{</span><span class="n">mode</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&#39; does not allow &#39;</span><span class="si">{</span><span class="n">tool</span><span class="o">.</span><span class="n">risk</span><span class="si">}</span><span class="s2">&#39; tools.&quot;</span>
-    <span class="n">decision</span> <span class="o">=</span> <span class="n">policy</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">tool</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">decision</span> <span class="o">==</span> <span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Blocked by policy: &#39;</span><span class="si">{</span><span class="n">_render_summary</span><span class="p">(</span><span class="n">tool</span><span class="o">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
-    <span class="c1"># Session memory: remembered a/d answers (checked only after the hard denials).</span>
-    <span class="k">if</span> <span class="n">tool</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">_session_always_deny</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Denied for this session (you denied &#39;</span><span class="si">{</span><span class="n">tool</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; earlier).&quot;</span>
-    <span class="k">if</span> <span class="n">tool</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">_session_always_allow</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return (decision, reason_string).</span>
+
+<span class="sd">    The reason is a human/model-readable explanation used when the decision</span>
+<span class="sd">    is DENY so the model can incorporate it as feedback.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tool_name</span> <span class="o">=</span> <span class="n">tool</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="c1"># --- 1. Hard denials first: mode, then policy DENY rules. ---</span>
+    <span class="c1"># Session memory must NEVER outrank these — &quot;always allow&quot; (the `a` answer)</span>
+    <span class="c1"># is a convenience for repeated prompts, not a licence to bypass the deny list.</span>
+    <span class="n">hard_deny_risks</span> <span class="o">=</span> <span class="n">_HARD_DENY_IN_MODE</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="nb">set</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">tool</span><span class="o">.</span><span class="n">risk</span> <span class="ow">in</span> <span class="n">hard_deny_risks</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;Mode &#39;</span><span class="si">{</span><span class="n">mode</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&#39; does not allow &#39;</span><span class="si">{</span><span class="n">tool</span><span class="o">.</span><span class="n">risk</span><span class="si">}</span><span class="s2">&#39; tools. &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Running in plan/read-only mode.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">policy_decision</span> <span class="o">=</span> <span class="n">policy</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">tool_name</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">policy_decision</span> <span class="o">==</span> <span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Blocked by policy rule matching &#39;</span><span class="si">{</span><span class="n">_render_summary</span><span class="p">(</span><span class="n">tool_name</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
+
+    <span class="c1"># --- 2. Session memory (only consulted once nothing hard-denies) ---</span>
+    <span class="k">if</span> <span class="n">tool_name</span> <span class="ow">in</span> <span class="n">_session_always_deny</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Denied for this session (you denied &#39;</span><span class="si">{</span><span class="n">tool_name</span><span class="si">}</span><span class="s2">&#39; earlier).&quot;</span>
+    <span class="k">if</span> <span class="n">tool_name</span> <span class="ow">in</span> <span class="n">_session_always_allow</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">ALLOW</span><span class="p">,</span> <span class="s2">&quot;Allowed by session memory.&quot;</span>
-    <span class="k">if</span> <span class="n">decision</span> <span class="o">==</span> <span class="n">Decision</span><span class="o">.</span><span class="n">ALLOW</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">ALLOW</span><span class="p">,</span> <span class="s2">&quot;Explicitly allowed by policy.&quot;</span>
+
+    <span class="c1"># --- 3. Policy ALLOW ---</span>
+    <span class="k">if</span> <span class="n">policy_decision</span> <span class="o">==</span> <span class="n">Decision</span><span class="o">.</span><span class="n">ALLOW</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">ALLOW</span><span class="p">,</span> <span class="s2">&quot;Explicitly allowed by policy rule.&quot;</span>
+
+    <span class="c1"># policy_decision == ASK — fall through to mode check</span>
+
+    <span class="c1"># --- 4. Mode auto-approval ---</span>
     <span class="k">if</span> <span class="n">tool</span><span class="o">.</span><span class="n">risk</span> <span class="ow">in</span> <span class="n">_AUTO_APPROVED</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="nb">set</span><span class="p">()):</span>
-        <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">ALLOW</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Auto-approved (mode=&#39;</span><span class="si">{</span><span class="n">mode</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&#39;, risk=&#39;</span><span class="si">{</span><span class="n">tool</span><span class="o">.</span><span class="n">risk</span><span class="si">}</span><span class="s2">&#39;).&quot;</span>
-    <span class="c1"># Must ask the user.</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">[Permission required]  </span><span class="si">{</span><span class="n">_render_summary</span><span class="p">(</span><span class="n">tool</span><span class="o">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  y = allow once   n = deny once   a/d = always allow/deny this session&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">ALLOW</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Auto-approved in mode &#39;</span><span class="si">{</span><span class="n">mode</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&#39; (risk=&#39;</span><span class="si">{</span><span class="n">tool</span><span class="o">.</span><span class="n">risk</span><span class="si">}</span><span class="s2">&#39;).&quot;</span>
+
+    <span class="c1"># --- 5. Must ask the user ---</span>
+    <span class="k">return</span> <span class="n">_ask_user</span><span class="p">(</span><span class="n">tool_name</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_ask_user</span><span class="p">(</span><span class="n">tool_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Decision</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="n">summary</span> <span class="o">=</span> <span class="n">_render_summary</span><span class="p">(</span><span class="n">tool_name</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">[Permission required]  </span><span class="si">{</span><span class="n">summary</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  y = allow once   n = deny once&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  a = always allow this tool this session&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  d = always deny  this tool this session&quot;</span><span class="p">)</span>
     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">answer</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;  Allow? [y/n/a/d] &gt; &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="k">except</span> <span class="p">(</span><span class="ne">EOFError</span><span class="p">,</span> <span class="ne">KeyboardInterrupt</span><span class="p">):</span>
+            <span class="c1"># Non-interactive environment — default to deny</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">(Non-interactive; defaulting to deny)&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">,</span> <span class="s2">&quot;Denied: non-interactive environment.&quot;</span>
         <span class="k">if</span> <span class="n">answer</span> <span class="o">==</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">ALLOW</span><span class="p">,</span> <span class="s2">&quot;Allowed by user (once).&quot;</span>
         <span class="k">if</span> <span class="n">answer</span> <span class="o">==</span> <span class="s2">&quot;n&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">,</span> <span class="s2">&quot;Denied by user.&quot;</span>
         <span class="k">if</span> <span class="n">answer</span> <span class="o">==</span> <span class="s2">&quot;a&quot;</span><span class="p">:</span>
-            <span class="n">_session_always_allow</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">tool</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">_session_always_allow</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">tool_name</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">ALLOW</span><span class="p">,</span> <span class="s2">&quot;Allowed by user (session).&quot;</span>
         <span class="k">if</span> <span class="n">answer</span> <span class="o">==</span> <span class="s2">&quot;d&quot;</span><span class="p">:</span>
-            <span class="n">_session_always_deny</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">tool</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">_session_always_deny</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">tool_name</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">,</span> <span class="s2">&quot;Denied by user (session).&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Please type y, n, a, or d.&quot;</span><span class="p">)</span>
-
-<span class="c1"># ── Tools with risk attached (Step 3.1) ───────────────────────────────────────</span>
-
-<span class="nd">@dataclass</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">Tool</span><span class="p">:</span>
-    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">parameters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
-    <span class="n">run</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
-    <span class="n">risk</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">RISK_SAFE</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">to_api_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
-            <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span>
-        <span class="p">}</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_read_file</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;replace&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Error: cannot read file: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_write_file</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Wrote </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">content</span><span class="p">)</span><span class="si">}</span><span class="s2"> characters to </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">.&quot;</span>
-    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Error: cannot write file: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_bash</span><span class="p">(</span><span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">proc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
-            <span class="n">command</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">proc</span><span class="o">.</span><span class="n">stdout</span> <span class="o">+</span> <span class="n">proc</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;(no output)&quot;</span>
-    <span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">TimeoutExpired</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;Error: command timed out after 30s.&quot;</span>
-
-<span class="n">_STR</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">}</span>
-<span class="n">REGISTRY</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tool</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">t</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="p">[</span>
-    <span class="n">Tool</span><span class="p">(</span><span class="s2">&quot;read_file&quot;</span><span class="p">,</span> <span class="s2">&quot;Read a text file and return its contents.&quot;</span><span class="p">,</span>
-         <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span> <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="n">_STR</span><span class="p">},</span> <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;path&quot;</span><span class="p">]},</span>
-         <span class="n">_read_file</span><span class="p">,</span> <span class="n">RISK_SAFE</span><span class="p">),</span>
-    <span class="n">Tool</span><span class="p">(</span><span class="s2">&quot;write_file&quot;</span><span class="p">,</span> <span class="s2">&quot;Write content to a file, overwriting it.&quot;</span><span class="p">,</span>
-         <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span> <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="n">_STR</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">_STR</span><span class="p">},</span>
-          <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;path&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">]},</span>
-         <span class="n">_write_file</span><span class="p">,</span> <span class="n">RISK_CAUTION</span><span class="p">),</span>
-    <span class="n">Tool</span><span class="p">(</span><span class="s2">&quot;bash&quot;</span><span class="p">,</span> <span class="s2">&quot;Run a shell command and return its combined stdout/stderr.&quot;</span><span class="p">,</span>
-         <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span> <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;command&quot;</span><span class="p">:</span> <span class="n">_STR</span><span class="p">},</span> <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;command&quot;</span><span class="p">]},</span>
-         <span class="n">_bash</span><span class="p">,</span> <span class="n">RISK_DANGEROUS</span><span class="p">),</span>
-<span class="p">]}</span>
-
-<span class="c1"># ── The loop (unchanged from Version 2, except the gate call) ─────────────────</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">run_agent</span><span class="p">(</span><span class="n">task</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="n">Mode</span> <span class="o">=</span> <span class="n">Mode</span><span class="o">.</span><span class="n">AUTO</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="n">input_items</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">task</span><span class="p">}]</span>
-    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-        <span class="n">resp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">responses</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4o&quot;</span><span class="p">,</span>
-            <span class="nb">input</span><span class="o">=</span><span class="n">input_items</span><span class="p">,</span>
-            <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">to_api_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">REGISTRY</span><span class="o">.</span><span class="n">values</span><span class="p">()],</span>
-        <span class="p">)</span>
-        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">resp</span><span class="o">.</span><span class="n">output</span><span class="p">:</span>
-            <span class="n">input_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">model_dump</span><span class="p">())</span>
-
-        <span class="n">tool_calls</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">resp</span><span class="o">.</span><span class="n">output</span> <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;function_call&quot;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">tool_calls</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">resp</span><span class="o">.</span><span class="n">output</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;message&quot;</span><span class="p">:</span>
-                    <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">content</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">block</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;output_text&quot;</span><span class="p">:</span>
-                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ANSWER:&quot;</span><span class="p">,</span> <span class="n">block</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-            <span class="k">return</span>
-
-        <span class="k">for</span> <span class="n">tc</span> <span class="ow">in</span> <span class="n">tool_calls</span><span class="p">:</span>
-            <span class="n">args</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">tc</span><span class="o">.</span><span class="n">arguments</span><span class="p">)</span>
-            <span class="n">tool</span> <span class="o">=</span> <span class="n">REGISTRY</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tc</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">tool</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">result</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Error: unknown tool &#39;</span><span class="si">{</span><span class="n">tc</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">decision</span><span class="p">,</span> <span class="n">reason</span> <span class="o">=</span> <span class="n">check_permission</span><span class="p">(</span><span class="n">tool</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">POLICY</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">decision</span> <span class="o">==</span> <span class="n">Decision</span><span class="o">.</span><span class="n">DENY</span><span class="p">:</span>
-                    <span class="n">result</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Permission denied: </span><span class="si">{</span><span class="n">reason</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">try</span><span class="p">:</span>
-                        <span class="n">result</span> <span class="o">=</span> <span class="n">tool</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="o">**</span><span class="n">args</span><span class="p">)</span>
-                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-                        <span class="n">result</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Error: tool raised unexpectedly: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
-
-            <span class="n">input_items</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function_call_output&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;call_id&quot;</span><span class="p">:</span> <span class="n">tc</span><span class="o">.</span><span class="n">call_id</span><span class="p">,</span>
-                <span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="n">result</span><span class="p">,</span>
-            <span class="p">})</span>
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">run_agent</span><span class="p">(</span><span class="s2">&quot;Run `git status`, then read README.md and summarize it.&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">Mode</span><span class="o">.</span><span class="n">AUTO</span><span class="p">)</span>
 </code></pre></div>
-<h3 id="-run-it-now-4">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="05-permissions-and-safety.html#-run-it-now-4">¶</a></h3>
-<div class="highlight"><pre><span></span><code>python<span class="w"> </span>agent_v3.py
-</code></pre></div>
-<p><code>git status</code> should run <strong>without any prompt</strong> — the explicit <code>ALLOW</code> policy rule
-matches even though <code>bash</code> is a dangerous tool. When the model reads <code>README.md</code>,
-nothing is asked either (safe tool, auto-approved). Now edit the <code>__main__</code> task to
-something like <code>"Run git push"</code> — no rule matches, <code>bash</code> isn't auto-approved in
-<code>auto</code> mode, so you get the <code>[y/n/a/d]</code> prompt. Answer <code>d</code>, then watch any further
-<code>bash</code> attempt in the same run get denied instantly by session memory. (Answer <code>a</code>
-instead and later harmless <code>bash</code> calls run without prompting — but a <code>rm -rf</code>-style
-command is <em>still</em> blocked, because the gate checks the hard-deny rules before it ever
-consults session memory.)</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p><p><strong>The order of the checks is load-bearing.</strong> Hard denials — the mode's hard-deny set and
+the policy's DENY rules — are evaluated <em>before</em> session memory. Session memory is filled
+in when the user answers <code>a</code> once, for <em>any</em> call of that tool, however harmless; if it
+were consulted first, a single <code>a</code> on <code>bash(ls)</code> would silently re-enable
+<code>bash(rm -rf /)</code> for the rest of the session. Convenience layers must never outrank the
+deny list.</p>
+</div>
+<!-- bq-split -->
+<blockquote class="beginner">
+<p>🟢 <strong>Why is the parameter type written <code>"Tool"</code> — in quotes?</strong> A string in a
+type-hint position is a <em>forward reference</em>: at the point this function is defined,
+the <code>Tool</code> class lives in another file (or further down the same file), so quoting the
+name tells Python "don't look this up now — it's only for type checkers." Annotations
+are never executed at runtime, so this costs nothing. Two related incantations you'll
+see in the final files: <code>from __future__ import annotations</code> (makes <em>every</em> annotation
+behave like a string, so the quotes become optional) and <code>if TYPE_CHECKING: from
+risk_tools import Tool</code> (an import that only happens during static type checking,
+never at runtime — handy for avoiding circular imports). All three are cosmetic
+machinery for tooling; the running program ignores them.</p>
+</blockquote>
+<p><strong>Critical design point:</strong> a DENY does not raise an exception. It returns a <code>(Decision.DENY, reason)</code> tuple. The caller converts this into a tool result string and appends it to <code>input_items</code>. The model sees "Permission denied by policy: ..." and can adapt — ask for a safer alternative, explain what it was trying to do, or give up gracefully. Crashing or silently skipping would make the loop incoherent.</p>
 </article>
 <footer class="page-footer">
 <nav class="continue" aria-label="Continue">
 <a class="continue-card" href="05-permissions-and-safety-7.html" rel="next">
-<span class="continue-kicker">Next · Lesson 7 of 9</span>
-<span class="continue-title">hooks<span class="continue-time">~16 min</span><span class="continue-arrow" aria-hidden="true">→</span></span>
+<span class="continue-kicker">Next · Lesson 7 of 10</span>
+<span class="continue-title">classes · part 4 of 4<span class="continue-time">~10 min</span><span class="continue-arrow" aria-hidden="true">→</span></span>
 </a>
 <p class="continue-aux">
-<a href="05-permissions-and-safety-5.html" rel="prev">← Lesson 5 · classes · part 2 of 3</a>
-<a class="continue-fullpage" href="05-permissions-and-safety.html#version-3-assembled--one-paste-able-file">View this lesson on the single page</a>
+<a href="05-permissions-and-safety-5.html" rel="prev">← Lesson 5 · classes · part 2 of 4</a>
+<a class="continue-fullpage" href="05-permissions-and-safety.html#step-34--the-approval-gate-production-shape">View this lesson on the single page</a>
 </p>
 </nav>
-<p class="generated-note">Generated from <code>05-permissions-and-safety.md</code> — lesson 6 of 9 in the derived lesson view (boundaries may move when the markdown changes; the <a href="05-permissions-and-safety.html">single page</a> is the permanent address).</p>
+<p class="generated-note">Generated from <code>05-permissions-and-safety.md</code> — lesson 6 of 10 in the derived lesson view (boundaries may move when the markdown changes; the <a href="05-permissions-and-safety.html">single page</a> is the permanent address).</p>
 <p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/05-permissions-and-safety.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
 </footer>
 <a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>

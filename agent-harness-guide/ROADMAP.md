@@ -52,7 +52,7 @@ Status: ☐ todo · ◐ in progress · ☑ done
 | 6 | **Beginner FAQ / troubleshooting** page: API keys, rate limits, common tracebacks, Windows vs. mac/Linux | 1, 4 | ☑ |
 | 7 | **CI** that runs the test suite (and ideally a markdown link/code-block check) on every push | 6 | ☑ |
 | 8 | **Verify phase code samples** against the canonical package — flag any drift between snippets and `code/` | 6 | ☑ |
-| 9 | **Visual diagrams**: replace/augment ASCII with clearer flow diagrams where it helps a beginner | 4 | ◐ |
+| 9 | **Visual diagrams**: replace/augment ASCII with clearer flow diagrams where it helps a beginner | 4 | ☑ |
 | 10 | **"What you'll have built" capstone** + a checklist mapping each phase's output to a feature of a real harness | 5 | ☐ |
 | 11 | **Notebook resource**: executed jupytext companion notebooks for phases 0–3 + 6, offline CI gate, kernel/setup docs | 1, 3, 4 | ☑ |
 | 12 | **Companion notebooks for phases 4/5/7/8** (hybrid slices per the expert v1-scope verdict: scripted-asker permission gate, tmpdir tools, sub-agent core, Phase-8 demo trio) | 3 | ☑ |
@@ -61,6 +61,11 @@ Status: ☐ todo · ◐ in progress · ☑ done
 
 Newest first. One line per shipped iteration.
 
+- **2026-06-13** — Cycle 20 (user-seeded): completed Item 9 — six new concept diagrams
+  (call_id handshake, registry dispatch, transcript-as-memory, permission decision
+  flow, context pruning, production architecture) added to the markdown as ASCII and
+  rendered as designed inline SVGs (nine figures total); a new frontend eval block
+  asserts their accessibility. All gates green (3364 eval cases).
 - **2026-06-13** — Cycle 19 (user-seeded): persona-eval framework — five deterministic
   suites (beginner/ux/notebooks/frontend/pedagogy, 3305 cases, ≥200 each) codifying
   every persona's standards as offline machine-checks; all green, wired into CI as a

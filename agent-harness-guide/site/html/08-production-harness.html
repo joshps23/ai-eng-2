@@ -178,6 +178,86 @@ it became:</p>
 </tr>
 </tbody>
 </table></div>
+<p>Snapped together, those rungs form one picture. The <code>Agent</code> loop sits at the
+centre and does nothing clever itself — it just calls each collaborator you
+already built, in a fixed order. Nothing below is new; it is the same parts,
+wired up.</p>
+<figure class="diagram" role="group">
+<svg viewBox="0 0 660 420" role="img" aria-labelledby="fig-arch-title">
+<title id="fig-arch-title">The production architecture: the Agent loop sits at the centre and calls each collaborator in a fixed order — Conversation owns the transcript; LLMClient wraps responses.create with retry/backoff to the model; the permissions+hooks gate checks every tool call BEFORE it runs (a denial becomes an error string); allowed calls go to the ToolRegistry's parallel dispatch over files, shell, task. It is the parts you already built, wired up.</title>
+<defs>
+<marker id="fig-arch-arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="d-arrow" d="M0 0 L10 5 L0 10 z"/></marker>
+<marker id="fig-arch-arrow-hot" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="d-arrow-hot" d="M0 0 L10 5 L0 10 z"/></marker>
+</defs>
+<!-- Agent loop, centre -->
+<rect class="d-box d-accent" x="200" y="20" width="300" height="64"/>
+<text class="d-label d-accent-text" x="350" y="44" text-anchor="middle">AGENT loop</text>
+<text class="d-mono" x="350" y="62" text-anchor="middle">calls each collaborator</text>
+<text class="d-mono" x="350" y="76" text-anchor="middle">in a fixed order — no cleverness</text>
+<!-- Conversation, left -->
+<rect class="d-box" x="20" y="110" width="150" height="70"/>
+<text class="d-label" x="95" y="134" text-anchor="middle">Conversation</text>
+<text class="d-mono" x="95" y="152" text-anchor="middle">owns the</text>
+<text class="d-mono" x="95" y="166" text-anchor="middle">transcript</text>
+<path class="d-edge" d="M170 130 C188 130 188 52 200 52" marker-end="url(#fig-arch-arrow)"/>
+<path class="d-edge" d="M200 64 C188 64 188 150 170 150" marker-end="url(#fig-arch-arrow)"/>
+<text class="d-mono" x="183" y="100" text-anchor="middle">transcript in/out</text>
+<!-- LLMClient + model, right -->
+<rect class="d-box" x="430" y="110" width="160" height="56"/>
+<text class="d-label" x="510" y="132" text-anchor="middle">LLMClient</text>
+<text class="d-mono" x="510" y="150" text-anchor="middle">retry / backoff</text>
+<rect class="d-box" x="600" y="118" width="50" height="40"/>
+<text class="d-mono-label" x="625" y="142" text-anchor="middle">model</text>
+<path class="d-edge" d="M500 84 C500 96 510 96 510 108" marker-end="url(#fig-arch-arrow)"/>
+<text class="d-mono" x="556" y="100" text-anchor="middle">responses.create</text>
+<line class="d-edge" x1="590" y1="132" x2="598" y2="132" marker-end="url(#fig-arch-arrow)"/>
+<line class="d-edge" x1="600" y1="148" x2="592" y2="148" marker-end="url(#fig-arch-arrow)"/>
+<!-- down the spine to the gate -->
+<line class="d-edge" x1="350" y1="84" x2="350" y2="201" marker-end="url(#fig-arch-arrow)"/>
+<text class="d-mono" x="362" y="180" text-anchor="start">each tool call</text>
+<!-- permissions + hooks gate (BEFORE) -->
+<rect class="d-box d-accent" x="230" y="204" width="240" height="50"/>
+<text class="d-label d-accent-text" x="350" y="226" text-anchor="middle">permissions + hooks gate</text>
+<text class="d-mono" x="350" y="244" text-anchor="middle">check BEFORE it runs</text>
+<!-- deny -> error string back to loop (the lesson: the gate guards) -->
+<path class="d-edge-hot" d="M470 218 L560 218 L560 312" marker-end="url(#fig-arch-arrow-hot)"/>
+<text class="d-mono d-accent-text" x="476" y="212" text-anchor="start">deny → error string</text>
+<text class="d-mono d-accent-text" x="566" y="316" text-anchor="start">(back to loop)</text>
+<line class="d-edge" x1="350" y1="254" x2="350" y2="293" marker-end="url(#fig-arch-arrow)"/>
+<text class="d-mono" x="362" y="276" text-anchor="start">allow</text>
+<!-- ToolRegistry -->
+<rect class="d-box" x="230" y="296" width="240" height="50"/>
+<text class="d-label" x="350" y="318" text-anchor="middle">ToolRegistry</text>
+<text class="d-mono" x="350" y="336" text-anchor="middle">parallel dispatch</text>
+<line class="d-edge" x1="470" y1="321" x2="540" y2="321" marker-end="url(#fig-arch-arrow)"/>
+<text class="d-mono" x="350" y="372" text-anchor="middle">files · shell · task …</text>
+<text class="d-mono" x="350" y="388" text-anchor="middle">(results → transcript)</text>
+</svg>
+<details class="diagram-text"><summary>Text version of this diagram</summary>
+<div class="highlight nocopy"><pre><span></span><code>                      ┌──────────────────────────────────┐
+        transcript    │             AGENT loop           │     retry/backoff
+      ┌──in/out──────▶│  (calls each collaborator in a   │──┐  around
+      │               │   fixed order; holds no cleverness)│  │  responses.create
+      ▼               └───────────────┬──────────────────┘  ▼
+┌──────────────┐                      │           ┌───────────────────┐   ┌───────┐
+│ Conversation │                      │           │     LLMClient     │──▶│ model │
+│ owns the     │                      │           │ (retry / backoff) │◀──│       │
+│ transcript   │                      │           └───────────────────┘   └───────┘
+└──────────────┘                      │ each tool call
+                                      ▼
+                         ┌─────────────────────────┐  deny ⟶ error string
+                         │ permissions + hooks gate │──────────────────────┐
+                         │ (check BEFORE it runs)   │                      │
+                         └────────────┬─────────────┘                      ▼
+                                      │ allow                         (back to loop)
+                                      ▼
+                         ┌─────────────────────────┐
+                         │       ToolRegistry      │──▶ files · shell · task …
+                         │ (parallel dispatch)     │    (results ⟶ transcript)
+                         └─────────────────────────┘
+</code></pre></div>
+</details>
+</figure>
 <p>What is genuinely <em>new</em> in Phase 8 is only the production wrapping — and each new piece
 gets its own rung-by-rung treatment below, exactly like the earlier phases:</p>
 <div class="table-wrap"><table>

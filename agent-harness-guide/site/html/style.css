@@ -15,6 +15,7 @@
   --green: #166F33;         /* 6.16:1 on bg, 5.57:1 on its 7% tint */
   --warn: #8A5C04;          /* 5.72:1 on bg, 5.39:1 on its 8% tint */
   --warn-border: #D4A72C;
+  --danger: #B42318;        /* diagram DENY/drop: 6.04:1 on bg, 5.50:1 on its 8% tint */
   --selection: #CDD3FF;     /* fg on it: 11.29:1 */
   --font-sans: ui-sans-serif, -apple-system, BlinkMacSystemFont,
     "Segoe UI Variable Text", "Segoe UI", Roboto, "Helvetica Neue", Arial,
@@ -36,6 +37,7 @@
     --green: #3FB950;         /* 7.49:1 on bg, 6.68:1 on its 9% tint */
     --warn: #D29922;          /* 7.53:1 on bg, 7.01:1 on its 9% tint */
     --warn-border: #9E6A03;
+    --danger: #FF8A80;        /* diagram DENY/drop: 8.07:1 on bg, 7.32:1 on its 10% tint */
     --selection: #3D4380;     /* fg on it: 7.55:1 */
   }
 }
@@ -327,6 +329,17 @@ figure.diagram { margin: 1.5rem 0; padding: 0; }
 .d-chip-text-accent { fill: var(--accent-deep); }
 .d-chip-text-green  { fill: var(--green); }
 .d-chip-text-warn   { fill: var(--warn); }
+/* text emphasis that rides the box tints (labels carry their own contrast) */
+.d-accent-text { fill: var(--accent-deep); }
+.d-good-text   { fill: var(--green); }
+.d-id   { fill: var(--accent-deep); font-weight: 600; }  /* the shared call_id */
+/* DENY terminals / dropped (pruned) groups — a danger treatment distinct from
+   the green "kept" boxes, palette-driven and AA-safe in both schemes */
+.d-deny { stroke: var(--danger); fill: color-mix(in srgb, var(--danger) 8%, var(--bg)); }
+.d-deny-text { fill: var(--danger); font-weight: 700; }
+.d-drop { stroke: var(--danger); fill: color-mix(in srgb, var(--danger) 7%, var(--bg)); }
+.d-drop-text { fill: var(--danger); }
+.d-dash { stroke-dasharray: 5 4; }   /* the budget line / hard-deny boundary */
 details.diagram-text { margin: 0.75rem 0 0; font-size: 0.875rem; }
 details.diagram-text > summary {
   color: var(--muted); font-weight: 600; font-size: 0.8125rem;
