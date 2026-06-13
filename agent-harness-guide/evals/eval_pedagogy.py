@@ -60,7 +60,7 @@ PHASES = [
     "05-permissions-and-safety", "06-context-management",
     "07-subagents-orchestration", "08-production-harness",
 ]
-EXPECTED_TOTAL_LESSONS = 78
+EXPECTED_TOTAL_LESSONS = 79
 MIN_LESSONS_PER_PHASE = 4
 
 TAG_RE = re.compile(r"<[^>]+>")
