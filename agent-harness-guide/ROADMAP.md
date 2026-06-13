@@ -61,6 +61,10 @@ Status: ☐ todo · ◐ in progress · ☑ done
 
 Newest first. One line per shipped iteration.
 
+- **2026-06-13** — Cycle 19 (user-seeded): persona-eval framework — five deterministic
+  suites (beginner/ux/notebooks/frontend/pedagogy, 3305 cases, ≥200 each) codifying
+  every persona's standards as offline machine-checks; all green, wired into CI as a
+  permanent regression gate.
 - **2026-06-12** — Cycle 18 (user-seeded): bite-sized lesson delivery — 76 ~10-minute
   lesson pages with hubs, Continue cards, time estimates, and a lesson rail, specced
   by a learning-science persona and gated on anchor parity (full pages id-identical),
