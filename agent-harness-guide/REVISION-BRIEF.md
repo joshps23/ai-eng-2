@@ -111,7 +111,7 @@ Score each phase 1–5 on each axis; the loop revises the lowest-scoring phase n
 
 The evaluator-reviser loop runs **at most 50 times**, then stops on its own.
 
-- Iterations used: **23 / 50** *(cap raised 10 → 20, then 20 → 50 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
+- Iterations used: **24 / 50** *(cap raised 10 → 20, then 20 → 50 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
 - Per iteration: score all phases on the rubric, pick the weakest, revise it one notch
   more incremental, increment the counter here, log it below, commit, push. Stop when the
   counter hits 50 **or** every phase scores ≥4 on every axis.
@@ -158,6 +158,19 @@ The evaluator-reviser loop runs **at most 50 times**, then stops on its own.
   Phase 5 gained an explicit "V1+V2 is a legitimate stopping point" paragraph.
 
 ## Revision log (newest first)
+
+- **2026-06-13 — Iteration 24: name the state-machine concept (cycle 21, user-seeded).**
+  Maintainer noted state machines were never covered — yet the agent loop, the
+  permission modes, and the turn lifecycle all are finite state machines (the concept
+  appeared zero times across phases/glossary). Added a "The loop is a state machine"
+  framing + ASCII FSM diagram to Phase 1 §2 (call-the-model → run-tools → done, the
+  transition driven by the model's reply), a Glossary entry, and a Phase 5 note that
+  permission modes are a second, smaller state machine — cross-linked. Drew the FSM as
+  the 10th designed SVG (loop-back as the accent hero stroke; ASCII preserved in the
+  text-version mirror). Verified: drift gate matches all 10 figures, byte-idempotent,
+  anchor contract intact (only the new heading + 3 SVG ids added, zero heading ids
+  changed), pytest 56, all five eval suites green at 3366, lesson count held at 77.
+  The figure independently pixel-checked. Ran ~0.1M of a 400k cap.
 
 - **2026-06-13 — Iteration 23: ROADMAP Item 9 completed (cycle 20, user-seeded).**
   Six new concept diagrams added where a beginner most needs a picture — the call_id

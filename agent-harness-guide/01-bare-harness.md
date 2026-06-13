@@ -70,6 +70,28 @@ Every agent iteration is the same three-step cycle:
 
 The transcript is **append-only**: nothing is ever removed, and the model's own output items travel back in unchanged as part of the next call's `input`.
 
+### The loop is a state machine
+
+Step back from the code and the loop has a shape you may already know: it is a **state machine**. At any moment the harness sits in exactly one *state*, and the model's reply — not your code — decides which state comes next.
+
+```text
+                  ┌────────────────────────────┐
+        start ──► │       CALL THE MODEL       │ ◄──────────┐
+                  │    (send the transcript)   │            │
+                  └──────────────┬─────────────┘            │
+                                 │  the reply contains…     │
+              function_call ┌────┴─────┐ message            │
+                            ▼          ▼                    │
+                  ┌──────────────┐  ┌──────────────────┐    │
+                  │  RUN TOOLS   │  │       DONE        │    │
+                  │ append output│  │   (return text)   │    │
+                  └──────┬───────┘  └──────────────────┘    │
+                         └─────────────────────────────────┘
+                           loop back to CALL THE MODEL
+```
+
+Two working states — **call the model** and **run tools** — and one terminal state, **done**. The transition is never your choice; the *model's* reply (a `function_call` versus a plain `message`) drives it. Almost every later phase just adds machinery *inside* a state — real tools in the "run tools" state (Phase 4), a permission check just before it (Phase 5), transcript pruning just before "call the model" (Phase 6) — while the machine itself stays exactly this. (See **State machine** in the [Glossary](./GLOSSARY.md).)
+
 ---
 
 ## 3. Version 1 — Line-by-Line: No Functions, No Classes

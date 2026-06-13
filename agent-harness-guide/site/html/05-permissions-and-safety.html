@@ -596,7 +596,7 @@ looked up, and you won't need to touch the permission layer when you add them la
 <hr>
 <h3 id="step-22--add-permission-modes-one-new-idea-a-mode-controls-whats-auto-allowed">Step 2.2 — Add permission modes (one new idea: a mode controls what's auto-allowed)<a aria-label="Permalink to this section" class="hanchor" href="#step-22--add-permission-modes-one-new-idea-a-mode-controls-whats-auto-allowed">¶</a></h3>
 <p>The gate above always asks about <code>caution</code>-level tools even if you are in the middle of a trusted editing session. <strong>Why now?</strong> You want to say "for this run, auto-approve file writes too" without changing your code — just pick a mode.</p>
-<p>A mode is just a string that controls which risk levels are auto-approved. Add a second parameter to <code>check_permission</code>:</p>
+<p>A mode is just a string that controls which risk levels are auto-approved — and the harness is always in exactly one mode, a small <strong>state machine</strong> of its own (see the loop's state machine in <a href="01-bare-harness.html#the-loop-is-a-state-machine">Phase 1</a>). Add a second parameter to <code>check_permission</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># For each mode, which risk levels pass without asking?</span>
 <span class="n">AUTO_OK</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;plan&quot;</span><span class="p">:</span>  <span class="p">[</span><span class="s2">&quot;safe&quot;</span><span class="p">],</span>                          <span class="c1"># read-only; never mutate</span>

@@ -18,6 +18,15 @@ conversation → did the model ask to use a tool? → if yes, run it and append 
 result, then loop; if no, return the answer.* Everything else (streaming,
 permissions, sub-agents) is refinement on top of this loop.
 
+**State machine (finite state machine)** 🟢 — A system that is always in exactly
+one of a few named **states** and moves between them along defined **transitions**.
+The **agent loop** is one: it sits in *call the model* or *run tools*, and the
+model's reply (a tool call vs. a plain message) decides the next state — until it
+reaches the terminal *done* state and returns the answer. Naming the shape helps:
+almost every later phase adds machinery *inside* a state without changing the
+machine. Permission **modes** are a second, smaller state machine — the harness is
+in exactly one mode at a time.
+
 **Harness** 🟢 — The program around the model that gives it "hands and a memory":
 the loop, the tools, the transcript, the safety checks, the CLI. Building this is
 "harness engineering." Tools like Claude Code and Cursor are harnesses.
