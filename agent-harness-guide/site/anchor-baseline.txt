@@ -44,7 +44,7 @@ what-changed-from-v1-to-v2
 key-takeaways
 check-yourself
 exercises
-== 01-bare-harness.html (32 ids)
+== 01-bare-harness.html (41 ids)
 main
 phase-1--a-bare-harness-in-80-lines
 1-what-were-building
@@ -72,6 +72,15 @@ step-4--add-a-max_iterations-cap
 6-version-3--classes-a-minimal-agent-preview
 what-changed-from-v2-to-v3
 -run-it-now-5
+65-version-4--state-machine-the-loops-shape-made-explicit
+step-1--name-the-states
+step-2--name-the-events-that-drive-transitions
+step-3--the-transition-table
+step-4--the-tiny-driver
+the-complete-version-4-file
+what-changed-from-v3-to-v4
+-run-it-now-6
+the-package-keeps-the-simple-loop--honestly
 7-example-session
 pitfalls
 key-takeaways

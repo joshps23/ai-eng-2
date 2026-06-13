@@ -17,13 +17,14 @@ By the end of this phase you will have a single Python file — `bare_harness.py
 
 The tool is deliberately trivial (`get_current_time`), because the goal is to make the **loop** visible, not to build useful tooling yet. Once you understand this loop, you understand 90% of every agent ever written — the rest is scaffolding around it.
 
-We'll build it as a **ladder of three complete versions** — each one a full program you can paste into a file and run, and each one *the same harness, reorganized*:
+We'll build it as a **ladder of four complete versions** — each one a full program you can paste into a file and run, and each one *the same harness, reorganized*:
 
 - **Version 1 — line-by-line.** The entire agent as a straight-line script: no `def`, no classes. Just statements, a `while True`, and some `if`s. You can read it top to bottom like a recipe.
 - **Version 2 — functions.** The same harness with its parts given names: `get_current_time`, `dispatch`, `run_agent`, `main`. Along the way we add error handling, a REPL, and a safety cap — one idea per step.
 - **Version 3 — classes.** The same harness with its *state* (client, tools, transcript) grouped into one small `Agent` class — a preview of the shape the final package uses.
+- **Version 4 — state machine.** The same harness with its control flow named: the loop's states become an `Enum`, the model's reply becomes an *event*, and a small **transition table** plus a tiny **driver** replace the `while True` + `if`s.
 
-Nothing conceptually new happens after Version 1. Versions 2 and 3 are reorganizations — the loop you see in Version 1 is the loop you ship.
+Nothing conceptually new happens after Version 1. Versions 2, 3, and 4 are reorganizations — the loop you see in Version 1 is the loop you ship.
 
 **Contents:**
 
@@ -32,6 +33,7 @@ Nothing conceptually new happens after Version 1. Versions 2 and 3 are reorganiz
 - [Version 2 — Functions](#4-version-2--functions-the-same-harness-named-in-pieces)
 - [The Complete File (Version 2, Polished)](#5-the-complete-file-version-2-polished)
 - [Version 3 — Classes: A Minimal `Agent`](#6-version-3--classes-a-minimal-agent-preview)
+- [Version 4 — State Machine: The Loop's Shape Made Explicit](#65-version-4--state-machine-the-loops-shape-made-explicit)
 - [Example Session](#7-example-session)
 - [Pitfalls](#pitfalls)
 
@@ -712,6 +714,307 @@ This `Agent` shape — a constructor that takes a client and tools, plus a `run`
 
 ---
 
+## 6.5 Version 4 — State Machine: The Loop's Shape Made Explicit
+
+**Why one more rung?** Versions 1–3 all hide the same secret in plain sight: the loop is a **state machine** (you saw its diagram back in [§2 "The loop is a state machine"](#the-loop-is-a-state-machine)). In V3 that machine is *implicit* — it lives in a `while` loop and an `if tool_calls / else` branch. You can read the states off the code, but they have no names; the transition logic is buried in control flow. Version 4 makes the machine **visible**: each state gets a name, the model's reply becomes a named **event**, and the branching logic moves out of `if`s and into a **transition table** — a plain dict you can print, draw, and test. It is *the same bare harness, reorganized one last time*. The loop you ship does not change.
+
+The three boxes in the §2 figure — **CALL THE MODEL**, **RUN TOOLS**, **DONE** — become exactly three of our four states, now written as code. The one addition is **CAPPED**: the `MAX_ITERATIONS` guard from Version 2, promoted from a fall-through `print` into a real terminal state (a second exit from the machine — the safety cap drawn as its own door out).
+
+We build it in four small steps: name the states, name the events, write the transition table, then write the tiny driver that reads the table.
+
+### Step 1 — Name the states
+
+**Why now?** A state machine has, by definition, a fixed set of states it can be in. In V3 those states were unnamed positions in the control flow. Give them names — an `Enum` is exactly the right tool — and the machine's vocabulary becomes explicit.
+
+```python
+from enum import Enum
+
+class LoopState(Enum):
+    CALL_MODEL = "call_model"   # about to send the transcript to the model
+    RUN_TOOLS  = "run_tools"    # the model asked for tools; run them, append results
+    DONE       = "done"         # the model returned a final message — terminal
+    CAPPED     = "capped"       # hit the iteration cap — terminal (the safety guard)
+```
+
+Four states, **two of them terminal** (`DONE` and `CAPPED`). `CAPPED` is included deliberately to teach a real fact about loops: a machine can have *more than one way to stop*. The normal exit is `DONE` (the model gave a final answer); the safety exit is `CAPPED` (we ran out of iterations). Both end the run — they just mean different things when you read the output.
+
+> 🟢 **`Enum` in one minute.** `class LoopState(Enum):` defines a small fixed set of named constants. `LoopState.CALL_MODEL` is a distinct value you can compare with `==` and store in a set — far safer than passing the bare string `"call_model"` around, because a typo becomes an `AttributeError` immediately instead of a silent mismatch.
+
+### Step 2 — Name the events that drive transitions
+
+**Why now?** A state alone doesn't tell you where to go next — you need to know *what just happened*. In a state machine, the thing that happens is an **event**. Here there are exactly three events, and the crucial point is **where they come from**: you do not pick them, you *read them off the model's reply*.
+
+```python
+class Event(Enum):
+    HAS_TOOL_CALLS = "has_tool_calls"   # the reply contained >=1 function_call
+    NO_TOOL_CALLS  = "no_tool_calls"    # the reply was a plain message
+    CAP_REACHED    = "cap_reached"      # iteration count hit MAX_ITERATIONS
+```
+
+This is the pedagogical heart of the whole phase: **the model drives the machine.** Whether the next event is `HAS_TOOL_CALLS` or `NO_TOOL_CALLS` is decided entirely by what the model sent back — a `function_call` versus a plain `message`. The only event your *code* originates is `CAP_REACHED`, and even that is just reading a counter. The harness never *chooses* the path; it observes the reply and looks up the consequence.
+
+### Step 3 — The transition table
+
+**Why now?** With states and events named, the entire control flow of the agent collapses into one piece of **data**: a dict mapping `(current state, event)` to the next state. This is the move that makes the machine inspectable — the logic is no longer scattered across `if`s, it is a table you can print, draw as a graph, and unit-test.
+
+```python
+INITIAL = LoopState.CALL_MODEL
+TERMINAL = {LoopState.DONE, LoopState.CAPPED}
+
+TRANSITIONS = {
+    (LoopState.CALL_MODEL, Event.HAS_TOOL_CALLS): LoopState.RUN_TOOLS,
+    (LoopState.CALL_MODEL, Event.NO_TOOL_CALLS):  LoopState.DONE,
+    (LoopState.CALL_MODEL, Event.CAP_REACHED):    LoopState.CAPPED,
+    (LoopState.RUN_TOOLS,  Event.CAP_REACHED):    LoopState.CAPPED,
+    (LoopState.RUN_TOOLS,  Event.HAS_TOOL_CALLS): LoopState.CALL_MODEL,
+}
+
+def next_state(state, event):
+    """Pure transition function: (state, event) -> next state. Never raises into the loop."""
+    try:
+        return TRANSITIONS[(state, event)]
+    except KeyError:
+        raise ValueError(f"no transition from {state} on {event}")
+```
+
+Because the machine is now data, we can state its properties precisely — and they are exactly the properties that make a finite state machine *well-formed*:
+
+- **Single initial state.** `INITIAL = LoopState.CALL_MODEL`, declared once: every run starts by asking the model.
+- **Two terminal states.** `TERMINAL = {LoopState.DONE, LoopState.CAPPED}`. Both appear only as transition *targets*, never as a source key — so a terminal state has **no outgoing transitions**. Once you reach it, you stop.
+- **No dead ends.** Every *non-terminal* state (`CALL_MODEL`, `RUN_TOOLS`) has at least one outgoing transition. You can never get stuck in a working state with nowhere to go.
+- **No dangling targets.** Every value in the table is a declared `LoopState` member — no transition points at a state that doesn't exist.
+- **Deterministic.** Each `(state, event)` key appears exactly once, so a given state-plus-event yields exactly one next state. There is no ambiguity about where to go.
+- **All states reachable.** From `CALL_MODEL` you can reach `RUN_TOOLS` (on `HAS_TOOL_CALLS`), `DONE` (on `NO_TOOL_CALLS`), and `CAPPED` (on `CAP_REACHED`); `RUN_TOOLS` loops back to `CALL_MODEL`. Every state — and both terminals — is reachable from the start.
+
+One modeling choice worth naming: the `RUN_TOOLS → CALL_MODEL` edge is keyed on `HAS_TOOL_CALLS`, used here purely as the "tools finished, go ask again" pulse. After running tools the harness *always* returns to the model, so rather than invent a third "tools done" event we reuse `HAS_TOOL_CALLS` as that pulse. This keeps the table total over every reachable `(state, event)` pair while staying minimal.
+
+### Step 4 — The tiny driver
+
+**Why now?** With the table written, the loop body becomes almost mechanical: it does the work for the current state, reads an event off the result, and asks the table where to go next. The entire control flow is now one line — `while state not in TERMINAL:` — and everything inside is "what to *do* in each state," not "where to go next" (the table decides that).
+
+```python
+def run_state_machine(client, tools, user_message):
+    """Same bare harness as V1-V3, expressed as an explicit FSM driver."""
+    input_items = [{"role": "user", "content": user_message}]
+    state = INITIAL
+    iteration = 0
+    pending_calls = []
+
+    while state not in TERMINAL:          # <-- the whole control flow, in one line
+        if state == LoopState.CALL_MODEL:
+            if iteration >= MAX_ITERATIONS:
+                state = next_state(state, Event.CAP_REACHED)
+                continue
+            iteration += 1
+            resp = client.responses.create(model=MODEL, input=input_items, tools=tools)
+            input_items += resp.output
+            pending_calls = [it for it in resp.output if it.type == "function_call"]
+            if pending_calls:
+                state = next_state(state, Event.HAS_TOOL_CALLS)
+            else:
+                final_text = resp.output_text
+                state = next_state(state, Event.NO_TOOL_CALLS)
+
+        elif state == LoopState.RUN_TOOLS:
+            for tc in pending_calls:
+                result = dispatch(tc.name, tc.arguments)
+                print(f"  [tool] {tc.name}({tc.arguments}) → {result}")
+                input_items.append({
+                    "type": "function_call_output",
+                    "call_id": tc.call_id,
+                    "output": result,
+                })
+            state = next_state(state, Event.HAS_TOOL_CALLS)   # tools done → ask again
+
+    if state == LoopState.DONE:
+        print(f"\nAssistant: {final_text}\n")
+    else:  # LoopState.CAPPED
+        print(f"[Agent stopped: reached {MAX_ITERATIONS}-iteration safety cap]")
+```
+
+Notice what is *not* here: there is no `break`, no `return` buried mid-loop. The loop ends precisely when `state` lands in `TERMINAL`, and the final `if` reads which terminal it was to print the right thing. The `responses.create` call, the `input_items += resp.output` ordering, and the `function_call_output` handshake (same `call_id`, string `output`) are all **byte-identical** to Versions 1–3.
+
+### The complete Version 4 file
+
+Here is the whole thing — paste it into `bare_harness_v4.py`. It reuses the `get_current_time` tool and `dispatch` helper from Versions 2 and 3, then adds the enums, the table, and the driver:
+
+```python
+#!/usr/bin/env python3
+"""
+bare_harness_v4.py — Phase 1, Version 4: the same harness, as an explicit state machine.
+
+Requires:
+    pip install openai
+    export OPENAI_API_KEY=sk-...
+"""
+
+import datetime
+import json
+import zoneinfo
+from enum import Enum
+from openai import OpenAI
+
+MODEL = "gpt-4o"
+MAX_ITERATIONS = 25
+
+GET_CURRENT_TIME_SCHEMA = {
+    "type": "function",
+    "name": "get_current_time",
+    "description": "Return the current date and time in an IANA timezone (empty → UTC).",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "timezone": {"type": "string", "description": "IANA name, e.g. 'Asia/Tokyo'"}
+        },
+        "required": [],
+    },
+}
+
+
+# ── Tool + dispatcher (reused from Version 2 / Version 3) ──────────────────────
+
+def get_current_time(timezone: str = "") -> str:
+    """Return the current time as an ISO-8601 string in the requested zone."""
+    tz = zoneinfo.ZoneInfo(timezone) if timezone else datetime.timezone.utc
+    return datetime.datetime.now(tz=tz).isoformat(timespec="seconds")
+
+
+def dispatch(name, arguments):
+    """Route a tool call. Always returns a string; never raises."""
+    try:
+        args = json.loads(arguments)
+    except json.JSONDecodeError as exc:
+        return f"ERROR: could not parse arguments JSON — {exc}"
+    try:
+        if name == "get_current_time":
+            return get_current_time(**args)
+        return f"ERROR: unknown tool '{name}'"
+    except Exception as exc:
+        return f"ERROR: {type(exc).__name__}: {exc}"
+
+
+# ── The machine: states, events, transitions ──────────────────────────────────
+
+class LoopState(Enum):
+    CALL_MODEL = "call_model"   # about to send the transcript to the model
+    RUN_TOOLS  = "run_tools"    # the model asked for tools; run them, append results
+    DONE       = "done"         # the model returned a final message — terminal
+    CAPPED     = "capped"       # hit the iteration cap — terminal (the safety guard)
+
+
+class Event(Enum):
+    HAS_TOOL_CALLS = "has_tool_calls"   # the reply contained >=1 function_call
+    NO_TOOL_CALLS  = "no_tool_calls"    # the reply was a plain message
+    CAP_REACHED    = "cap_reached"      # iteration count hit MAX_ITERATIONS
+
+
+INITIAL = LoopState.CALL_MODEL
+TERMINAL = {LoopState.DONE, LoopState.CAPPED}
+
+TRANSITIONS = {
+    (LoopState.CALL_MODEL, Event.HAS_TOOL_CALLS): LoopState.RUN_TOOLS,
+    (LoopState.CALL_MODEL, Event.NO_TOOL_CALLS):  LoopState.DONE,
+    (LoopState.CALL_MODEL, Event.CAP_REACHED):    LoopState.CAPPED,
+    (LoopState.RUN_TOOLS,  Event.CAP_REACHED):    LoopState.CAPPED,
+    (LoopState.RUN_TOOLS,  Event.HAS_TOOL_CALLS): LoopState.CALL_MODEL,
+}
+
+
+def next_state(state, event):
+    """Pure transition function: (state, event) -> next state. Never raises into the loop."""
+    try:
+        return TRANSITIONS[(state, event)]
+    except KeyError:
+        raise ValueError(f"no transition from {state} on {event}")
+
+
+# ── The driver ────────────────────────────────────────────────────────────────
+
+def run_state_machine(client, tools, user_message):
+    """Same bare harness as V1-V3, expressed as an explicit FSM driver."""
+    input_items = [{"role": "user", "content": user_message}]
+    state = INITIAL
+    iteration = 0
+    pending_calls = []
+
+    while state not in TERMINAL:          # <-- the whole control flow, in one line
+        if state == LoopState.CALL_MODEL:
+            if iteration >= MAX_ITERATIONS:
+                state = next_state(state, Event.CAP_REACHED)
+                continue
+            iteration += 1
+            resp = client.responses.create(model=MODEL, input=input_items, tools=tools)
+            input_items += resp.output
+            pending_calls = [it for it in resp.output if it.type == "function_call"]
+            if pending_calls:
+                state = next_state(state, Event.HAS_TOOL_CALLS)
+            else:
+                final_text = resp.output_text
+                state = next_state(state, Event.NO_TOOL_CALLS)
+
+        elif state == LoopState.RUN_TOOLS:
+            for tc in pending_calls:
+                result = dispatch(tc.name, tc.arguments)
+                print(f"  [tool] {tc.name}({tc.arguments}) → {result}")
+                input_items.append({
+                    "type": "function_call_output",
+                    "call_id": tc.call_id,
+                    "output": result,
+                })
+            state = next_state(state, Event.HAS_TOOL_CALLS)   # tools done → ask again
+
+    if state == LoopState.DONE:
+        print(f"\nAssistant: {final_text}\n")
+    else:  # LoopState.CAPPED
+        print(f"[Agent stopped: reached {MAX_ITERATIONS}-iteration safety cap]")
+
+
+def main():
+    client = OpenAI()
+    run_state_machine(client, [GET_CURRENT_TIME_SCHEMA], "What time is it in Tokyo right now?")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### What changed from V3 to V4
+
+- V3's implicit `while True` + `if tool_calls / else` becomes a set of **named states** (`LoopState`) — the positions in the control flow now have a vocabulary.
+- The branch condition (tool calls vs. a plain message) is named as an **event** (`Event`), read off the model's reply rather than decided by your code.
+- The control flow moves out of `if`s and into a **transition table** (`TRANSITIONS`) read by `next_state` — the logic is now *data you can print, draw, and test*, not buried branches.
+- The Version 2 `MAX_ITERATIONS` fall-through becomes a real terminal state, **`CAPPED`** — the machine now has *two* terminal states (`DONE` and `CAPPED`).
+- The loop *body* is otherwise unchanged: same `responses.create`, same `input_items += resp.output` ordering, same `function_call_output` handshake (same `call_id`, string `output`).
+
+### ▶ Run it now
+
+```bash
+python bare_harness_v4.py
+```
+
+You should see exactly the same output as every other version in this phase:
+
+```text
+  [tool] get_current_time({"timezone": "Asia/Tokyo"}) → 2026-06-06T22:47:13+09:00
+
+Assistant: The current time in Tokyo is 10:47 PM on Saturday, June 6, 2026 (JST).
+```
+
+The behavior is identical to V1–V3 because *it is the same harness* — only the control flow is organized differently. The `[tool]` line is still printed by your driver, and the machine still stops the instant the model returns a plain message (event `NO_TOOL_CALLS` → state `DONE`).
+
+> 🟢 **No API key?** Like every ▶ checkpoint in this phase, this script calls the real
+> API and stops at `openai.OpenAIError: Missing credentials` on `OpenAI()` without a key.
+> To run the *machine* offline, drive `run_state_machine(client, tools, msg)` with the
+> `FakeClient` from [`code/agent_harness/testing.py`](./code/agent_harness/testing.py)
+> instead of `OpenAI()` — it scripts the same `responses.create` replies with no key, the
+> same way the offline test suite does (`python -m pytest -q` from `code/`).
+
+### The package keeps the simple loop — honestly
+
+This explicit state machine is a **teaching rung**, exactly like Version 1's no-`def` script: it exists to make an idea *visible*, not because the shipped code looks like this. The production harness in [`code/agent_harness/agent.py`](./code/agent_harness/agent.py) keeps the plain `for`-loop form from Version 2/3 — there is no `LoopState` enum and no `TRANSITIONS` table in the package. The machine was always there, implicit in that loop; V4 just draws it out so you can see its shape. Don't reach for a table-driven FSM in real code unless the states genuinely multiply (Phase 5's permission modes are a closer case). For the agent loop, the simple version *is* the machine — V4 is the same machine with the lights on. (See **State machine** in the [Glossary](./GLOSSARY.md).)
+
+---
+
 ## 7. Example Session
 
 ```text
@@ -757,7 +1060,8 @@ The second question does not call `get_current_time` at all — the model answer
 - The `function_call_output` handshake needs exactly two fields beyond `type`: the **same `call_id`** from the call, and a **string** `output`. Always return one output per call, even on error.
 - A `dispatch` helper that **catches all exceptions** and returns error strings keeps the loop alive — the model can read the error and try again or explain the failure.
 - A **`MAX_ITERATIONS` cap** is not optional for production code. Always include one.
-- All three versions in this phase are **the same harness**. V1 → V2 names the pieces and adds robustness; V2 → V3 groups the state into an `Agent` object. The loop itself never changed — and the `Agent` class is the shape the final package builds on.
+- All four versions in this phase are **the same harness**. V1 → V2 names the pieces and adds robustness; V2 → V3 groups the state into an `Agent` object. The loop itself never changed — and the `Agent` class is the shape the final package builds on.
+- **Version 4** makes the loop's hidden states explicit: named `LoopState` members, a model-driven `Event`, and a `TRANSITIONS` table read by a tiny driver — the same machine that was always implicit in the loop, now visible as inspectable data. The package keeps the simple loop; this rung is the concept made visible.
 
 ## Check yourself
 
