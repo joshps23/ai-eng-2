@@ -190,6 +190,36 @@ Transcript now has 4 items.
 The model answered "Alex" on turn 2 because `input_items` still contained the turn-1
 exchange. That list *is* the memory.
 
+Seen as a picture, the model is a stateless box — it forgets everything the instant
+each call returns. The *harness* owns `input_items` and resends the whole list every
+turn, so "remembering your name" is nothing the model stored; it's the transcript
+arriving again:
+
+```text
+   THE MODEL (stateless)              THE HARNESS owns input_items
+   forgets after every call           (a list that only grows)
+   ────────────────────────           ────────────────────────────
+
+   Turn 1                             input_items = []
+   ┌──────────────────┐  send         ├─ user: "My name is Alex."
+   │  responses       │ ◄──────────── └─ (list so far)
+   │  .create(...)    │  reply
+   └────────┬─────────┘ ─────────►    append both:
+            │                         ├─ user:  "My name is Alex."
+            │                         └─ model: "Got it, Alex."
+            ▼
+   Turn 2                             RESEND the WHOLE list ▼
+   ┌──────────────────┐  send         ├─ user:  "My name is Alex."
+   │  responses       │ ◄──────────── ├─ model: "Got it, Alex."
+   │  .create(...)    │               └─ user:  "What is my name?"
+   └────────┬─────────┘  reply
+            └─────────► "Your name is Alex."   ◄─ it "remembers"
+                         because the list was re-sent, not stored
+```
+
+The lesson: memory is the harness re-sending the transcript, not anything the model
+holds onto. Lose the list and the model is a blank slate again.
+
 > 🟢 **What just happened?**
 > After each `responses.create()` call you called `.model_dump()` on every item in
 > `resp.output` to convert it from an SDK object (a Python class instance) to a plain

@@ -902,6 +902,44 @@ def default_policy() -> PermissionPolicy:
 
 The gate combines mode, policy, and per-session memory into a single decision function. When the answer is ASK, it prompts the terminal and remembers the choice for the rest of the session.
 
+The order of the checks is the whole point. The two *hard denials* — the mode refusing a
+risk tier, then a policy DENY rule — run **first**, so nothing below them (not even an
+"always allow" the user clicked earlier) can ever re-open a blocked tool:
+
+```text
+                      tool call (tool, args, mode, policy)
+                                     │
+                                     ▼
+          ┌──────────────────────────────────────────────┐
+          │ 1. Mode hard-denies this risk tier?           │── yes ──▶ DENY
+          └──────────────────────────────────────────────┘
+                                     │ no
+                                     ▼
+          ┌──────────────────────────────────────────────┐
+          │ 2. A policy DENY rule matches?                │── yes ──▶ DENY
+          └──────────────────────────────────────────────┘
+                                     │ no   ◄── hard denials end here;
+                                     ▼          session memory starts below
+          ┌──────────────────────────────────────────────┐
+          │ 3. In session memory?                         │── deny ─▶ DENY
+          │    (remembered "always allow / always deny")  │── allow ▶ ALLOW
+          └──────────────────────────────────────────────┘
+                                     │ neither
+                                     ▼
+          ┌──────────────────────────────────────────────┐
+          │ 4. risk × mode decides                        │── allow ▶ ALLOW
+          └──────────────────────────────────────────────┘
+                                     │ otherwise
+                                     ▼
+                              ASK the user ──▶ ALLOW / DENY
+                              (y/n, or a/d to remember in step 3)
+```
+
+The lesson the order encodes: **hard denials are checked first, and session memory can
+never override them.** A single "always allow" on `bash(ls)` must not silently re-enable
+`bash(rm -rf /)` — so the convenience layer (step 3) only ever runs *after* steps 1–2
+have already let the call through.
+
 ```python
 # permissions.py  (continued)
 import sys

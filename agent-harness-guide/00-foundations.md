@@ -429,6 +429,33 @@ Then you call `client.responses.create(...)` again with the grown `input_items`.
 That is the entire loop. The `call_id` is the glue that ties a request to its
 result — **echoing it back exactly is mandatory**.
 
+Here is the handshake, end to end:
+
+```text
+  YOUR CODE                                  THE MODEL
+  ─────────                                  ─────────
+  send conversation ──────────────────────▶ thinks…
+                                                │
+                              function_call     │
+                       ◀──────────────────────  ▼
+                       │  name: get_weather
+                       │  arguments: {"city":"Paris"}
+                       │  call_id: call_xyz789  ────┐
+                       ▼                            │ same
+  run get_weather("Paris") → "Sunny, 21°C"         │ call_id
+                       │                            │ pairs
+                       │  function_call_output      │ request
+                       │  call_id: call_xyz789  ◀───┘ to result
+                       │  output: "Sunny, 21°C"
+                       ▼
+  send conversation ──────────────────────▶ thinks…
+                       ◀──────────────────────  message
+                          "It's sunny and 21°C in Paris."
+```
+
+The two `call_id` lines carry the **same** value — that pairing is the whole
+point: it tells the model which request your result is answering.
+
 > **Two ways to carry state.** Either (a) keep your own `input_items` list and append
 > output items + tool results yourself (explicit, portable, what we do), or (b) pass
 > `previous_response_id=resp.id` and send *only the new* `function_call_output`

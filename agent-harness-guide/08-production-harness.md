@@ -30,6 +30,35 @@ it became:
 | Phase 6 — **V2–V4**: `count_tokens`, `prune_to_budget`, `compact` | `context.py` |
 | Phase 7 — **V3/V4**: the `task` tool reusing `Agent` + threaded dispatch | `subagents.py` + `tools/parallel.py` |
 
+Snapped together, those rungs form one picture. The `Agent` loop sits at the
+centre and does nothing clever itself — it just calls each collaborator you
+already built, in a fixed order. Nothing below is new; it is the same parts,
+wired up.
+
+```text
+                      ┌──────────────────────────────────┐
+        transcript    │             AGENT loop           │     retry/backoff
+      ┌──in/out──────▶│  (calls each collaborator in a   │──┐  around
+      │               │   fixed order; holds no cleverness)│  │  responses.create
+      ▼               └───────────────┬──────────────────┘  ▼
+┌──────────────┐                      │           ┌───────────────────┐   ┌───────┐
+│ Conversation │                      │           │     LLMClient     │──▶│ model │
+│ owns the     │                      │           │ (retry / backoff) │◀──│       │
+│ transcript   │                      │           └───────────────────┘   └───────┘
+└──────────────┘                      │ each tool call
+                                      ▼
+                         ┌─────────────────────────┐  deny ⟶ error string
+                         │ permissions + hooks gate │──────────────────────┐
+                         │ (check BEFORE it runs)   │                      │
+                         └────────────┬─────────────┘                      ▼
+                                      │ allow                         (back to loop)
+                                      ▼
+                         ┌─────────────────────────┐
+                         │       ToolRegistry      │──▶ files · shell · task …
+                         │ (parallel dispatch)     │    (results ⟶ transcript)
+                         └─────────────────────────┘
+```
+
 What is genuinely *new* in Phase 8 is only the production wrapping — and each new piece
 gets its own rung-by-rung treatment below, exactly like the earlier phases:
 

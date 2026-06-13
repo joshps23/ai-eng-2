@@ -341,6 +341,30 @@ def dispatch(name, arguments_str):
         return f"Error ({type(exc).__name__}): {exc}"
 ```
 
+Here is what `dispatch` does, drawn out — the registry is a name→function
+lookup table, so adding a tool never touches the loop:
+
+```text
+   model wants:  add  {"a": 2, "b": 3}
+                  │
+                  ▼
+        ┌───────────────────────┐
+        │  TOOLS  (a plain dict) │   look the NAME up
+        │  ─────────────────────  │
+        │  "add"        → {fn, schema}  ◀── match
+        │  "word_count" → {fn, schema}  │
+        └───────────────────────┘
+                  │  found fn + schema
+                  ▼
+        run  fn(**{"a": 2, "b": 3})  →  "5"
+                  │
+                  ▼
+   result string  "5"  ──▶ back into the conversation
+```
+
+Adding a tool means adding one row to that table — the loop and `dispatch`
+never change.
+
 ### ▶ Check it now (no API key needed)
 
 With everything above in one file, no API key is needed to test dispatch itself. Add and run:
