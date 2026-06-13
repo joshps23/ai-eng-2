@@ -11,8 +11,13 @@
 > - **Version 2 — functions.** The same harness reorganized into plain functions.
 >   No classes, no decorators.
 > - **Version 3 — classes.** The same harness with state grouped into classes.
-> - **Version 4+ — decorators / threads / etc.** Only the advanced machinery the
->   phase actually teaches (e.g. `@tool` in Phase 2, threading in Phase 7).
+> - **Version 4+ — decorators / threads / state machines / etc.** Only the advanced
+>   machinery the phase actually teaches (e.g. `@tool` in Phase 2, threading in
+>   Phase 7, and — where a phase's control flow is *naturally* a finite state machine
+>   (Phase 1's loop, Phase 5's modes) — an explicit **state machine**: the harness
+>   re-expressed as named states + a transition table, the control flow made into
+>   inspectable data. The package keeps the simple loop; these rungs are the concept
+>   made visible.
 >
 > Each version is a **complete program the reader can run**, not a fragment, and each
 > is explicitly framed as *“the same harness, reorganized”* — with a short “what
@@ -68,7 +73,7 @@ A beginner reading a phase should experience a **ladder**, not a cliff:
 | Phase | V1 line-by-line | V2 functions | V3 classes | V4+ |
 |------:|:---------------:|:------------:|:----------:|-----|
 | 0 | ✓ (handshake script) | ✓ (tiny helpers ok) | — | — (stays conceptual) |
-| 1 | ✓ (loop with inline tool, **no `def`**) | ✓ (`dispatch`, `run_agent`) | ✓ (a minimal `Agent` class preview) | — |
+| 1 | ✓ (loop with inline tool, **no `def`**) | ✓ (`dispatch`, `run_agent`) | ✓ (a minimal `Agent` class preview) | ✓ explicit **state machine** (states + transition table + driver) |
 | 2 | ✓ (if/elif dispatch inline) | ✓ (dict registry of functions) | ✓ (`Tool` + `ToolRegistry`) | ✓ `@tool` decorator |
 | 3 | ✓ (transcript as a plain list inline) | ✓ (helper functions) | ✓ (`Conversation` class) | streaming events |
 | 4 | ✓ (one file-tool inline) | ✓ (tool functions + confinement helpers) | ✓ (workspace-confined tool set) | — |
@@ -111,7 +116,7 @@ Score each phase 1–5 on each axis; the loop revises the lowest-scoring phase n
 
 The evaluator-reviser loop runs **at most 50 times**, then stops on its own.
 
-- Iterations used: **24 / 50** *(cap raised 10 → 20, then 20 → 50 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
+- Iterations used: **25 / 50** *(cap raised 10 → 20, then 20 → 50 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
 - Per iteration: score all phases on the rubric, pick the weakest, revise it one notch
   more incremental, increment the counter here, log it below, commit, push. Stop when the
   counter hits 50 **or** every phase scores ≥4 on every axis.
@@ -158,6 +163,28 @@ The evaluator-reviser loop runs **at most 50 times**, then stops on its own.
   Phase 5 gained an explicit "V1+V2 is a legitimate stopping point" paragraph.
 
 ## Revision log (newest first)
+
+- **2026-06-13 — Iteration 25: teach building a state machine; add it as the V4 ladder
+  rung (cycle 22, user-seeded).** Maintainer: the curriculum should detail HOW to create
+  a state machine and place it as a rung above classes (line-by-line → functions →
+  classes → **state machine**), with a documented state-machine-expert eval, run to
+  green. A new "state-machine expert" persona (Dr. Volkov) produced a content spec + the
+  eval suite. Shipped: Phase 1 §6.5 **Version 4 — State Machine** — the same bare harness
+  re-expressed as an explicit FSM, built step by step (name the states as a `LoopState`
+  Enum incl. two terminals → name the events the model's reply drives → a `TRANSITIONS`
+  table + `next_state` with `INITIAL`/`TERMINAL` → a tiny `run_state_machine` driver),
+  a complete FakeClient-runnable listing (verified it executes CALL_MODEL→RUN_TOOLS→
+  CALL_MODEL→DONE), a What-changed-from-V3 note, a ▶ checkpoint, and an honest "the
+  package keeps the simple loop" note. The ladder doctrine (this brief) and the Phase 1
+  ladder map now carry four rungs. NEW eval suite **eval_statemachine.py (215 cases)** —
+  the documented state-machine-expert checks: it *parses the taught FSM out of the
+  markdown* and asserts formal graph properties (every state reachable, ≥1 reachable
+  terminal, no dead-end non-terminals, no dangling transitions, determinism, terminals
+  with no outgoing edges, single initial) plus structural/consistency checks — wired
+  into run_all + the CI evals job. Verified: all six suites green (**3613 cases**),
+  pytest 56, byte-idempotent, anchor contract intact (9 new V4 heading ids added, zero
+  removed; baseline re-pinned), lesson count 77→78, ladder map shows V1→V4. Ran ~0.15M
+  of an 800k cap.
 
 - **2026-06-13 — Iteration 24: name the state-machine concept (cycle 21, user-seeded).**
   Maintainer noted state machines were never covered — yet the agent loop, the

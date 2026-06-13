@@ -20,6 +20,7 @@ SUITE_MODULES = {
     "notebooks": "eval_notebooks",
     "frontend": "eval_frontend",
     "pedagogy": "eval_pedagogy",
+    "statemachine": "eval_statemachine",
 }
 
 

@@ -61,6 +61,11 @@ Status: ☐ todo · ◐ in progress · ☑ done
 
 Newest first. One line per shipped iteration.
 
+- **2026-06-13** — Cycle 22 (user-seeded): teach BUILDING a state machine — a new Phase 1
+  **Version 4 — State Machine** ladder rung (above classes): explicit states + a
+  transition table + a driver, FakeClient-runnable. New state-machine-expert eval suite
+  (215 cases) that parses the taught FSM and graph-checks its correctness; six suites
+  green (3613 cases).
 - **2026-06-13** — Cycle 21 (user-seeded): named the **state machine** concept (it was
   never covered) — a framing + FSM diagram in Phase 1, a Glossary entry, a Phase 5
   modes-as-states note, drawn as the 10th designed SVG. Gates green (3366 eval cases).
