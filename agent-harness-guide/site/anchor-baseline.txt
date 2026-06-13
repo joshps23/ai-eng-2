@@ -1,4 +1,4 @@
-== 00-foundations.html (42 ids)
+== 00-foundations.html (45 ids)
 main
 phase-0--foundations-the-agent-loop-and-the-responses-api
 01-what-is-an-agent-harness
@@ -17,6 +17,9 @@ the-phase-map
 035-step-3--defining-a-tool-and-seeing-the-model-request-it
 -run-it-now-2
 036-step-4--the-tool-call--result-handshake-the-critical-step
+fig-hand-title
+fig-hand-arrow
+fig-hand-arrow-hot
 -run-it-now-3
 037-carrying-model-output-back-into-the-conversation
 04-version-2--the-same-handshake-organized-into-functions
@@ -70,7 +73,7 @@ pitfalls
 key-takeaways
 check-yourself
 exercises
-== 02-tool-system.html (67 ids)
+== 02-tool-system.html (70 ids)
 main
 phase-2--a-real-tool-system
 where-we-left-off
@@ -88,6 +91,9 @@ what-changed-from-v1-to-v2
 22-register-them-in-a-plain-dict
 23-build-the-list-the-api-needs
 24-dispatch-look-up-a-tool-and-call-it
+fig-disp-title
+fig-disp-arrow
+fig-disp-arrow-hot
 -check-it-now-no-api-key-needed-1
 25-handle-multiple-tool-calls--a-plain-for-loop
 26-the-full-agent-loop-using-only-functions-and-dicts
@@ -138,7 +144,7 @@ pitfalls
 key-takeaways
 check-yourself
 exercises
-== 03-conversation-and-streaming.html (48 ids)
+== 03-conversation-and-streaming.html (51 ids)
 main
 phase-3--conversation-state--streaming
 -beginner-track-two-things-to-know-before-you-start
@@ -146,6 +152,9 @@ two-orthogonal-concerns
 version-1--line-by-line-the-transcript-is-just-a-list
 step-11--two-turns-fully-inline
 -run-it-now
+fig-mem-title
+fig-mem-arrow
+fig-mem-arrow-hot
 step-12--a-chat-repl-the-same-two-turn-script-in-a-while-loop
 -run-it-now-1
 version-2--functions-name-the-moves
@@ -256,7 +265,7 @@ blocking-on-interactive-commands
 encoding-errors
 key-takeaways
 check-yourself
-== 05-permissions-and-safety.html (50 ids)
+== 05-permissions-and-safety.html (53 ids)
 main
 phase-5--permissions-safety--the-hook-system
 the-plan-four-versions-of-the-same-harness
@@ -278,6 +287,9 @@ step-31--risk-classification-production-shape
 step-32--permission-modes-production-shape
 step-33--the-policy-engine-production-shape
 step-34--the-approval-gate-production-shape
+fig-perm-title
+fig-perm-arrow
+fig-perm-arrow-hot
 version-3-assembled--one-paste-able-file
 -run-it-now-4
 version-4--hooks-functions-you-hand-to-the-harness
@@ -307,7 +319,7 @@ summary-of-files-added-in-phase-5
 pitfalls
 key-takeaways
 check-yourself
-== 06-context-management.html (54 ids)
+== 06-context-management.html (57 ids)
 main
 phase-6--context-management-token-budgeting--compaction
 -beginner-track-one-idea-three-tactics--all-plain-functions
@@ -327,6 +339,9 @@ step-21--name-the-estimate-count_tokens-and-count_items
 -run-it-now-no-api-key-needed-2
 step-22--rule-1-pairs-travel-together
 step-23--rule-2-keep-the-first-user-message--prune_to_budget
+fig-prune-title
+fig-prune-arrow
+fig-prune-arrow-hot
 -run-it-now-no-api-key-needed-3
 step-24--the-full-version-2-file
 -run-it-now-1
@@ -424,10 +439,13 @@ pitfalls
 key-takeaways
 check-yourself
 exercises
-== 08-production-harness.html (39 ids)
+== 08-production-harness.html (42 ids)
 main
 phase-8--the-production-harness-assembling-claude-code
 0-youve-already-built-all-of-this--the-ladder-to-package-map
+fig-arch-title
+fig-arch-arrow
+fig-arch-arrow-hot
 1-what-separates-a-demo-from-a-production-harness
 -beginner-track-this-phase-is-polish-not-new-core-ideas
 step-0--the-smallest-reliability-win-retry-with-backoff

@@ -491,6 +491,37 @@ def prune_to_budget(items, budget):
     return [item for group in kept if group is not None for item in group]
 ```
 
+Picture what those two rules do. Pruning is **not** a blind `del items[:k]`: it
+drops the oldest *droppable* groups, but it pins the task and keeps every
+`function_call` glued to its `function_call_output`.
+
+```text
+   BEFORE (over budget)                 AFTER prune_to_budget(items, budget)
+   ─────────────────────                ────────────────────────────────────
+   ┌──────────────────────┐
+   │ user: the task  ★pin │──────────┐  ┌──────────────────────┐
+   ├──────────────────────┤          └─▶│ user: the task  ★pin │  always kept
+   │ call#0  ┐ pair       │ drop        ├──────────────────────┤
+   │ output#0┘ (oldest)   │ ✗           │ call#3  ┐ pair       │
+   ├──────────────────────┤             │ output#3┘            │
+   │ call#1  ┐ pair       │ drop        ├──────────────────────┤
+   │ output#1┘            │ ✗           │ call#4  ┐ pair       │
+   ├──────────────────────┤             │ output#4┘ (newest)   │
+   │ call#2  ┐ pair       │ drop        └──────────────────────┘
+   │ output#2┘            │ ✗           ── budget line ───────────  ✓ fits
+   ├──────────────────────┤
+   │ call#3  ┐ pair       │ keep
+   │ output#3┘            │
+   ├──────────────────────┤
+   │ call#4  ┐ pair       │ keep
+   │ output#4┘ (newest)   │
+   └──────────────────────┘
+   ── budget line ───────  ✗ over
+```
+
+A call and its output are dropped together (never orphan one), and the first
+user message — the goal — is pinned no matter how old it gets.
+
 ### ▶ Run it now (no API key needed)
 
 Verify both rules offline:

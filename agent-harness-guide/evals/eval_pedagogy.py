@@ -60,7 +60,7 @@ PHASES = [
     "05-permissions-and-safety", "06-context-management",
     "07-subagents-orchestration", "08-production-harness",
 ]
-EXPECTED_TOTAL_LESSONS = 76
+EXPECTED_TOTAL_LESSONS = 77
 MIN_LESSONS_PER_PHASE = 4
 
 TAG_RE = re.compile(r"<[^>]+>")
@@ -70,6 +70,10 @@ _SCRIPT_STYLE_RE = re.compile(r"<(script|style)\b[^>]*>.*?</\1>", re.S)
 # from the visible-word budget; strip them so our proxy matches the generator.
 _REFSECTION_RE = re.compile(
     r'<details class="refsection"[^>]*>.*?</details>', re.S)
+# A figure's collapsed ASCII mirror is excluded too (the reader sees the SVG);
+# mirror the generator's Chunk.words DIAGRAM_TEXT_RE so the proxies stay aligned.
+_DIAGRAM_TEXT_RE = re.compile(
+    r'<details class="diagram-text">.*?</details>', re.S)
 _ID_RE = re.compile(r'id="([^"]*)"')
 _H2_ID_RE = re.compile(r'<h2 id="([^"]*)"')
 
@@ -111,6 +115,7 @@ def visible_words(article: str) -> int:
     strip tags with "" (collapsing pygments code spans), unescape, count."""
     a = _SCRIPT_STYLE_RE.sub("", article)
     a = _REFSECTION_RE.sub("", a)
+    a = _DIAGRAM_TEXT_RE.sub("", a)
     a = html_mod.unescape(TAG_RE.sub("", a))
     return len(a.split())
 

@@ -266,10 +266,12 @@ def _make_contents_cases():
 
         def contents_near_top(ph=ph):
             # "Near the top" = within the opening region, before the bulk of the
-            # phase. Some phases carry a longer series-context blockquote and/or a
-            # beginner-track box ahead of the TOC, so allow generous headroom.
+            # phase. Some phases carry a longer series-context blockquote, a
+            # beginner-track box, and/or an in-intro concept diagram (Phase 8's
+            # production-architecture ASCII sits ahead of its TOC) before the
+            # mini-TOC, so allow generous headroom.
             ln = line_no(text_of(ph), r"^\*\*Contents:\*\*")
-            ok = 0 < ln <= 120
+            ok = 0 < ln <= 140
             return ok, "" if ok else f"{ph}:{ln} **Contents:** not near the top"
         SUITE.add(f"contents/{ph}/near-top", contents_near_top)
 

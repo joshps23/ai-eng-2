@@ -635,6 +635,80 @@ for _cls in _PYG_CLASSES:
     SUITE.add(f"pyg_contrast_dark__{_cls}", _pyg_case("dark", _PYG_DARK_BLOCK, _cls, DARK_CODE_BG))
 
 
+# ---------------------------------------------------------------------------
+# Build-time SVG figures (ROADMAP Item 9): every guide diagram that the site
+# upgrades from ASCII to a designed SVG must stay accessible — role="img",
+# a <title>, aria-labelledby, and the ASCII preserved in a collapsed
+# <details class="diagram-text"> mirror. The nine figures live in figures.py.
+# ---------------------------------------------------------------------------
+import os as _os
+import sys as _sys
+
+_SITE_DIR = _os.path.join(_os.path.dirname(SITE_HTML.rstrip(_os.sep)))  # .../site
+if _SITE_DIR not in _sys.path:
+    _sys.path.insert(0, _SITE_DIR)
+
+# Full pages that carry at least one upgraded figure (the diagram's home page).
+_FIGURE_PAGES = [
+    "00-foundations.html", "01-bare-harness.html", "02-tool-system.html",
+    "03-conversation-and-streaming.html", "05-permissions-and-safety.html",
+    "06-context-management.html", "07-subagents-orchestration.html",
+    "08-production-harness.html",
+]
+
+_FIG_RE = re.compile(r'<figure class="diagram"[^>]*>(.*?)</figure>', re.S)
+
+
+def _fig_page_case(page, kind):
+    def fn():
+        html = read(_os.path.join(SITE_HTML, page))
+        figs = _FIG_RE.findall(html)
+        if not figs:
+            return False, f"{page}: no <figure class=\"diagram\"> found"
+        for i, f in enumerate(figs):
+            if kind == "svg-role" and 'role="img"' not in f:
+                return False, f"{page} figure {i}: <svg> lacks role=\"img\""
+            if kind == "title" and "<title" not in f:
+                return False, f"{page} figure {i}: no <title>"
+            if kind == "aria" and "aria-labelledby" not in f:
+                return False, f"{page} figure {i}: no aria-labelledby"
+            if kind == "text-mirror" and 'class="diagram-text"' not in f:
+                return False, f"{page} figure {i}: no <details class=diagram-text> ASCII mirror"
+        return True, ""
+    return fn
+
+
+for _pg in _FIGURE_PAGES:
+    for _kind in ("svg-role", "title", "aria", "text-mirror"):
+        SUITE.add(f"figure/{_pg}/{_kind}", _fig_page_case(_pg, _kind))
+
+
+def _figures_module_case(kind):
+    def fn():
+        try:
+            import figures
+        except Exception as exc:  # figures.py must import cleanly
+            return False, f"cannot import figures.py: {exc}"
+        figs = figures.FIGURES
+        if kind == "count-ge-9":
+            return (len(figs) >= 9, f"FIGURES has {len(figs)} entries, want >= 9")
+        if kind == "svg-shape":
+            for key, fig in figs.items():
+                if 'role="img"' not in fig.svg:
+                    return False, f"figure {key[:8]}: svg missing role=img"
+                if "<title" not in fig.svg:
+                    return False, f"figure {key[:8]}: svg missing <title>"
+                if not fig.alt_summary.strip():
+                    return False, f"figure {key[:8]}: empty alt_summary"
+            return True, ""
+        return False, "unknown kind"
+    return fn
+
+
+SUITE.add("figures-module/count-ge-9", _figures_module_case("count-ge-9"))
+SUITE.add("figures-module/svg-shape", _figures_module_case("svg-shape"))
+
+
 if __name__ == "__main__":
     from harness import main
     main(SUITE)
