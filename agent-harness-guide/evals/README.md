@@ -15,7 +15,7 @@ that a persona *would* have caught now fails a test instead.
 | `eval_notebooks.py` | Jupyter expert | the 10 notebooks: bootstrap cell, `USE_REAL_API` guard, no `input()`/bare `OpenAI()`, committed outputs, jupytext pair-sync |
 | `eval_frontend.py` | $10k front-end designer | the generated site: semantics, a11y, computed WCAG contrast, the design-token system, no stock-pygments leakage |
 | `eval_pedagogy.py` | learning-science professor | the bite-sized lessons: position cues, time estimates, Continue cards, the bite-size word ceiling, anchor parity, partition completeness |
-| `eval_statemachine.py` | state-machine expert | the state-machine curriculum: the Phase 1 V4 rung exists and teaches it, and the *taught* FSM is well-formed — graph reachability, terminals, no dead ends, determinism, no dangling transitions (parsed from the markdown) |
+| `eval_statemachine.py` | state-machine expert | the state-machine curriculum: the Phase 1 V4 rung exists and teaches it **with plain dictionaries and strings, not enums**, and the *taught* FSM is well-formed — graph reachability, terminals, no dead ends, determinism, no dangling transitions (parsed from the `STATES` set + `TRANSITIONS` dict-of-dicts in the markdown) |
 
 `harness.py` is the shared, dependency-free framework (a `Suite` of named
 `(ok, detail)` cases + a runner). `run_all.py` runs every suite.

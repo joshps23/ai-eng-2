@@ -14,10 +14,11 @@
 > - **Version 4+ — decorators / threads / state machines / etc.** Only the advanced
 >   machinery the phase actually teaches (e.g. `@tool` in Phase 2, threading in
 >   Phase 7, and — where a phase's control flow is *naturally* a finite state machine
->   (Phase 1's loop, Phase 5's modes) — an explicit **state machine**: the harness
->   re-expressed as named states + a transition table, the control flow made into
->   inspectable data. The package keeps the simple loop; these rungs are the concept
->   made visible.
+>   (Phase 1's loop, Phase 5's modes) — an explicit **state machine** built from
+>   **plain dictionaries and strings** (not enums): named string states + a
+>   transition table (a dict-of-dicts) + a tiny driver, the control flow made into
+>   inspectable data a beginner can `print()`. The package keeps the simple loop;
+>   these rungs are the concept made visible.
 >
 > Each version is a **complete program the reader can run**, not a fragment, and each
 > is explicitly framed as *“the same harness, reorganized”* — with a short “what
@@ -73,7 +74,7 @@ A beginner reading a phase should experience a **ladder**, not a cliff:
 | Phase | V1 line-by-line | V2 functions | V3 classes | V4+ |
 |------:|:---------------:|:------------:|:----------:|-----|
 | 0 | ✓ (handshake script) | ✓ (tiny helpers ok) | — | — (stays conceptual) |
-| 1 | ✓ (loop with inline tool, **no `def`**) | ✓ (`dispatch`, `run_agent`) | ✓ (a minimal `Agent` class preview) | ✓ explicit **state machine** (states + transition table + driver) |
+| 1 | ✓ (loop with inline tool, **no `def`**) | ✓ (`dispatch`, `run_agent`) | ✓ (a minimal `Agent` class preview) | ✓ explicit **state machine** (string states + a `dict`-of-`dict`s transition table + driver) |
 | 2 | ✓ (if/elif dispatch inline) | ✓ (dict registry of functions) | ✓ (`Tool` + `ToolRegistry`) | ✓ `@tool` decorator |
 | 3 | ✓ (transcript as a plain list inline) | ✓ (helper functions) | ✓ (`Conversation` class) | streaming events |
 | 4 | ✓ (one file-tool inline) | ✓ (tool functions + confinement helpers) | ✓ (workspace-confined tool set) | — |
@@ -116,7 +117,7 @@ Score each phase 1–5 on each axis; the loop revises the lowest-scoring phase n
 
 The evaluator-reviser loop runs **at most 50 times**, then stops on its own.
 
-- Iterations used: **25 / 50** *(cap raised 10 → 20, then 20 → 50 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
+- Iterations used: **26 / 50** *(cap raised 10 → 20, then 20 → 50 on 2026-06-12 by maintainer decision; reset 2026-06-10 for the version-ladder pass; iterations 4–10 ran 2026-06-11 as the persona dev loop below — beginner persona for 4–6 and 9, UX designer for 7, Jupyter expert for 8, user-seeded Colab pass for 10)*
 - Per iteration: score all phases on the rubric, pick the weakest, revise it one notch
   more incremental, increment the counter here, log it below, commit, push. Stop when the
   counter hits 50 **or** every phase scores ≥4 on every axis.
@@ -163,6 +164,27 @@ The evaluator-reviser loop runs **at most 50 times**, then stops on its own.
   Phase 5 gained an explicit "V1+V2 is a legitimate stopping point" paragraph.
 
 ## Revision log (newest first)
+
+- **2026-06-13 — Iteration 26: re-teach the V4 state machine with dictionaries, not
+  enums (cycle 23, user-seeded).** Maintainer: the V4 rung used `Enum` classes; it should
+  teach the machine with **dictionaries** instead, so adjust the persona + evals and run
+  to green. Rewrote Phase 1 §6.5 to model the machine as plain data: states and events are
+  now **strings** collected in `STATES`/`EVENTS` sets, and `TRANSITIONS` is a **dict-of-dicts**
+  (`state -> {event -> next_state}`) with `next_state` doing the nested `TRANSITIONS[state][event]`
+  lookup; `INITIAL`/`TERMINAL` are strings/`set`s; the driver branches on `state == "call_model"`.
+  The pedagogy: a beginner already knows `dict`/`set`, so the whole machine becomes data they
+  can `print()` — no new types, no `enum` import. The §2 FSM figure, the graph shape, the
+  four-rung ladder, and the honest "package keeps the simple loop" note are all unchanged.
+  Reworked Dr. Volkov's eval suite to parse the **dictionary** form (resolving string
+  literals/consts out of `STATES`, `EVENTS`, and the nested `TRANSITIONS`), added an explicit
+  **"uses dicts, not `Enum`"** gate plus a nested-lookup check, and re-pinned every expected
+  member to its string value. Verification: all six eval suites green — **3643 cases**
+  (statemachine 221), `python -m pytest` 56 passed, byte-idempotent build, anchor contract
+  intact (heading ids unchanged — the V4 headings kept their text, so zero anchor churn),
+  lesson count 78 → 79 (the dict form's extra `STATES`/`EVENTS` sets + rationale box pushed
+  §6.5 past the bite-size ceiling, so the paginator split it into two parts — each within
+  budget). Ladder doctrine + Phase 1 ladder map now say "string states + a dict-of-dicts
+  transition table." Ran ~0.2M tokens (budget 600k).
 
 - **2026-06-13 — Iteration 25: teach building a state machine; add it as the V4 ladder
   rung (cycle 22, user-seeded).** Maintainer: the curriculum should detail HOW to create

@@ -6,6 +6,13 @@ version ladder:
 
     line-by-line (V1) -> functions (V2) -> classes (V3) -> STATE MACHINE (V4).
 
+A second maintainer directive refined *how* it is taught: the machine must be
+expressed with **plain dictionaries and strings**, NOT `Enum` classes. A beginner
+already knows `dict` and `set`; rendering the whole machine as ordinary data they
+can `print()` is the pedagogical win. So Version 4 names its states and events as
+**strings**, declares them in `STATES`/`EVENTS` sets, and encodes the transition
+function as a **dict-of-dicts** — `state -> {event -> next_state}`.
+
 Phase 1's agent loop *is* a finite state machine (§2 already names it and draws
 the figure). "Version 4 — State Machine" re-expresses the very same bare harness
 as explicit, named states + a transition table + a tiny driver loop — the
@@ -14,20 +21,20 @@ expert's verification, turned into machine-checkable cases over the COMMITTED
 markdown (`01-bare-harness.md`, the Glossary, Phase 5, and the §2 figure). It
 never edits the markdown — it only reads it.
 
-This suite is written BEFORE the V4 content lands, so most cases will FAIL until
-the "Version 4 — State Machine" section exists. That failing set is the content
-worklist; the parser is resilient (a missing section yields a clear
-"V4 section not found" detail, never a crash). The pinned identifiers it parses
-are fixed by the content spec (/tmp/devloop/sm-spec.md):
+The pinned identifiers it parses are fixed by the content spec
+(/tmp/devloop/sm-spec.md), in their **dictionary** form:
 
-    states enum   : LoopState  (>=3 members; spec uses CALL_MODEL, RUN_TOOLS,
-                    DONE, CAPPED)
-    events enum   : Event      (HAS_TOOL_CALLS, NO_TOOL_CALLS, CAP_REACHED)
-    transitions   : TRANSITIONS dict keyed (LoopState.X, Event.Y) -> LoopState.Z
-    transition fn : next_state(state, event)
-    initial       : INITIAL  = LoopState.CALL_MODEL
-    terminal set  : TERMINAL = {LoopState.DONE, LoopState.CAPPED}
+    states set    : STATES   = {"call_model", "run_tools", "done", "capped"}
+    events set    : EVENTS   = {"has_tool_calls", "no_tool_calls", "cap_reached"}
+    transitions   : TRANSITIONS  dict-of-dicts, state -> {event -> next_state}
+    transition fn : next_state(state, event)  ->  TRANSITIONS[state][event]
+    initial       : INITIAL  = "call_model"
+    terminal set  : TERMINAL = {"done", "capped"}
     driver        : run_state_machine(...) with `while state not in TERMINAL`
+
+Critically, the suite asserts the machine is taught with **dictionaries, not
+enums**: the V4 code must NOT `import enum` or subclass `Enum`, and the states /
+events it parses must be Python strings.
 
 # Categories (what a state-machine expert verifies)
 
@@ -37,15 +44,16 @@ are fixed by the content spec (/tmp/devloop/sm-spec.md):
    Glossary "State machine" entry exists; the Phase 5 modes-as-FSM note exists;
    the §2 "The loop is a state machine" figure exists.
 
-2. CODE PRESENCE & PARSE — the V4 code fences AST-parse; the pinned identifiers
-   are present: the `LoopState` Enum (>=3 members), the `Event` Enum, the
-   `TRANSITIONS` table, `next_state`, an INITIAL state, a TERMINAL set, and the
+2. CODE PRESENCE & PARSE — the V4 code fences AST-parse; the machine is built
+   from dictionaries (NO `Enum`); the pinned identifiers are present: the
+   `STATES` set (>=3 string members), the `EVENTS` set, the `TRANSITIONS`
+   dict-of-dicts, `next_state`, an INITIAL state, a TERMINAL set, and the
    `while state not in TERMINAL` driver loop.
 
 3. FSM-GRAPH CORRECTNESS (the signature category) — parse the taught machine out
-   of the markdown (the states enum + the TRANSITIONS table), build the directed
-   graph, and assert formal automata properties, PARAMETRIZED per-state and
-   per-transition so the coverage is exhaustive:
+   of the markdown (the `STATES` set + the `TRANSITIONS` dict-of-dicts), build
+   the directed graph, and assert formal automata properties, PARAMETRIZED
+   per-state and per-transition so the coverage is exhaustive:
      * every declared state is REACHABLE from the initial state;
      * >=1 TERMINAL state exists and is reachable;
      * every NON-TERMINAL state has >=1 outgoing transition (no dead ends);
@@ -56,12 +64,12 @@ are fixed by the content spec (/tmp/devloop/sm-spec.md):
      * the INITIAL state is declared exactly once;
      * global: NO unreachable states; NO orphan (no-incoming, non-initial) states.
 
-4. CONSISTENCY — the state names used in the V4 prose match the `LoopState`
+4. CONSISTENCY — the state names used in the V4 prose match the `STATES`
    members; the §2 figure's state labels (CALL THE MODEL / RUN TOOLS / DONE)
    match the code's states.
 
 Stdlib only, offline, deterministic. The parser prefers a real `ast` parse of
-the V4 code and falls back to tolerant regex for the enum/table/figure labels.
+the V4 code and falls back to tolerant regex for the string/table/figure labels.
 """
 from __future__ import annotations
 
@@ -78,26 +86,27 @@ PHASE1 = os.path.join(GUIDE_DIR, "01-bare-harness.md")
 PHASE5 = os.path.join(GUIDE_DIR, "05-permissions-and-safety.md")
 GLOSSARY = os.path.join(GUIDE_DIR, "GLOSSARY.md")
 
-# --- pinned identifiers (from /tmp/devloop/sm-spec.md) --------------------
-STATES_ENUM = "LoopState"
-EVENTS_ENUM = "Event"
+# --- pinned identifiers (from /tmp/devloop/sm-spec.md, dictionary form) ----
+STATES_NAME = "STATES"
+EVENTS_NAME = "EVENTS"
 TRANSITIONS_NAME = "TRANSITIONS"
 NEXT_STATE_FN = "next_state"
 INITIAL_NAME = "INITIAL"
 TERMINAL_NAME = "TERMINAL"
 DRIVER_FN = "run_state_machine"
 
-# The spec's intended members (used to anchor consistency/graph expectations).
-EXPECTED_STATE_MEMBERS = ["CALL_MODEL", "RUN_TOOLS", "DONE", "CAPPED"]
-EXPECTED_INITIAL_MEMBER = "CALL_MODEL"
-EXPECTED_TERMINAL_MEMBERS = {"DONE", "CAPPED"}
-EXPECTED_EVENT_MEMBERS = ["HAS_TOOL_CALLS", "NO_TOOL_CALLS", "CAP_REACHED"]
+# The spec's intended members (string-valued now, used to anchor the
+# consistency / graph expectations).
+EXPECTED_STATE_MEMBERS = ["call_model", "run_tools", "done", "capped"]
+EXPECTED_INITIAL_MEMBER = "call_model"
+EXPECTED_TERMINAL_MEMBERS = {"done", "capped"}
+EXPECTED_EVENT_MEMBERS = ["has_tool_calls", "no_tool_calls", "cap_reached"]
 
 # §2 figure state labels (tolerant: spacing/case folded before compare).
 FIGURE_LABELS = {
-    "CALL_MODEL": ["CALL THE MODEL", "CALL MODEL"],
-    "RUN_TOOLS": ["RUN TOOLS"],
-    "DONE": ["DONE"],
+    "call_model": ["CALL THE MODEL", "CALL MODEL"],
+    "run_tools": ["RUN TOOLS"],
+    "done": ["DONE"],
 }
 
 V4_HEADING_RE = re.compile(r"Version\s*4\s*[—\-–]\s*State\s*Machine", re.I)
@@ -109,17 +118,6 @@ RUNIT_RE = re.compile(r"▶\s*Run it now", re.I)
 # ==========================================================================
 def _phase1() -> str:
     return read(PHASE1)
-
-
-def _split_sections(md: str) -> list[tuple[str, int, int]]:
-    """Return [(heading_text, start, end)] for every ## / ### heading block."""
-    heads = list(re.finditer(r"(?m)^(#{2,3})\s+(.*)$", md))
-    out = []
-    for i, h in enumerate(heads):
-        start = h.start()
-        end = heads[i + 1].start() if i + 1 < len(heads) else len(md)
-        out.append((h.group(2).strip(), start, end))
-    return out
 
 
 def v4_section() -> str | None:
@@ -168,12 +166,14 @@ def _parse(src: str):
 # FSM model parsed from the V4 code (the signature category's foundation)
 # ==========================================================================
 class FSM:
-    """A directed graph parsed from `LoopState` + `TRANSITIONS` in the V4 code.
+    """A directed graph parsed from `STATES` + `TRANSITIONS` in the V4 code.
 
-    states     : list[str]                member names of LoopState
-    initial    : str | None               INITIAL's LoopState member
-    terminal   : set[str]                 TERMINAL's LoopState members
-    edges      : list[(src, event, dst)]  one per TRANSITIONS entry
+    states     : list[str]                declared members of the STATES set
+    events     : list[str]                declared members of the EVENTS set
+    initial    : str | None               INITIAL's string value
+    terminal   : set[str]                 TERMINAL's string members
+    edges      : list[(src, event, dst)]  one per inner TRANSITIONS entry
+    nested     : bool                     TRANSITIONS parsed as a dict-of-dicts
     error      : str | None               why the parse failed (for details)
     """
 
@@ -183,31 +183,31 @@ class FSM:
         self.initial: str | None = None
         self.terminal: set[str] = set()
         self.edges: list[tuple[str, str, str]] = []
+        self.nested: bool = False
         self.error: str | None = None
 
 
-def _enum_members(tree, enum_name: str) -> list[str]:
-    """Member names of a `class enum_name(Enum)` (AST-based)."""
+def _const_strings(tree) -> dict[str, str]:
+    """Map of top-level `NAME = "literal"` string constants (so the table may
+    optionally use named string constants and still resolve)."""
+    consts: dict[str, str] = {}
     for node in ast.walk(tree):
-        if isinstance(node, ast.ClassDef) and node.name == enum_name:
-            members = []
-            for stmt in node.body:
-                if isinstance(stmt, ast.Assign):
-                    for tgt in stmt.targets:
-                        if isinstance(tgt, ast.Name):
-                            members.append(tgt.id)
-                elif isinstance(stmt, ast.AnnAssign) and isinstance(stmt.target, ast.Name):
-                    members.append(stmt.target.id)
-            return members
-    return []
+        if (isinstance(node, ast.Assign) and len(node.targets) == 1
+                and isinstance(node.targets[0], ast.Name)
+                and isinstance(node.value, ast.Constant)
+                and isinstance(node.value.value, str)):
+            consts[node.targets[0].id] = node.value.value
+    return consts
 
 
-def _attr_member(node, enum_name: str) -> str | None:
-    """If node is `enum_name.MEMBER`, return MEMBER, else None."""
-    if (isinstance(node, ast.Attribute)
-            and isinstance(node.value, ast.Name)
-            and node.value.id == enum_name):
-        return node.attr
+def _str(node, consts: dict[str, str]) -> str | None:
+    """Resolve an AST node to a string: a string literal, or a Name bound to a
+    top-level string constant. Anything else (incl. an `Enum` member access)
+    returns None."""
+    if isinstance(node, ast.Constant) and isinstance(node.value, str):
+        return node.value
+    if isinstance(node, ast.Name) and node.id in consts:
+        return consts[node.id]
     return None
 
 
@@ -219,6 +219,30 @@ def _find_assign(tree, name: str):
                 if isinstance(tgt, ast.Name) and tgt.id == name:
                     return node.value
     return None
+
+
+def _set_members(tree, name: str, consts: dict[str, str]) -> list[str]:
+    """String members of a `name = {..}` set (or list/tuple) literal."""
+    val = _find_assign(tree, name)
+    out: list[str] = []
+    if isinstance(val, (ast.Set, ast.List, ast.Tuple)):
+        for elt in val.elts:
+            s = _str(elt, consts)
+            if s is not None:
+                out.append(s)
+    return out
+
+
+def _uses_enum() -> bool:
+    """True if the V4 code imports/subclasses Enum (it must not — dict form)."""
+    src = v4_code()
+    if not src:
+        return False
+    if re.search(r"(?m)^\s*(from\s+enum\s+import|import\s+enum)\b", src):
+        return True
+    if re.search(r"class\s+\w+\s*\(\s*(?:enum\.)?(?:Enum|IntEnum|StrEnum)\s*\)", src):
+        return True
+    return False
 
 
 def parse_fsm() -> FSM:
@@ -235,38 +259,60 @@ def parse_fsm() -> FSM:
         fsm.error = "V4 code does not AST-parse"
         return fsm
 
-    fsm.states = _enum_members(tree, STATES_ENUM)
-    fsm.events = _enum_members(tree, EVENTS_ENUM)
-    if not fsm.states:
-        fsm.error = f"could not find `class {STATES_ENUM}(Enum)` with members"
-        return fsm
+    consts = _const_strings(tree)
 
-    # INITIAL = LoopState.X
+    # STATES / EVENTS declared sets (authoritative when present).
+    fsm.states = _set_members(tree, STATES_NAME, consts)
+    fsm.events = _set_members(tree, EVENTS_NAME, consts)
+
+    # INITIAL = "call_model"
     init_val = _find_assign(tree, INITIAL_NAME)
     if init_val is not None:
-        fsm.initial = _attr_member(init_val, STATES_ENUM)
+        fsm.initial = _str(init_val, consts)
 
-    # TERMINAL = {LoopState.X, LoopState.Y} (set or list/tuple literal)
+    # TERMINAL = {"done", "capped"} (set/list/tuple of strings)
     term_val = _find_assign(tree, TERMINAL_NAME)
     if isinstance(term_val, (ast.Set, ast.List, ast.Tuple)):
         for elt in term_val.elts:
-            m = _attr_member(elt, STATES_ENUM)
-            if m:
-                fsm.terminal.add(m)
+            s = _str(elt, consts)
+            if s is not None:
+                fsm.terminal.add(s)
 
-    # TRANSITIONS = { (LoopState.X, Event.Y): LoopState.Z, ... }
+    # TRANSITIONS = { "state": { "event": "next_state", ... }, ... }
     trans_val = _find_assign(tree, TRANSITIONS_NAME)
     if isinstance(trans_val, ast.Dict):
-        for key, val in zip(trans_val.keys, trans_val.values):
-            if not isinstance(key, ast.Tuple) or len(key.elts) != 2:
-                continue
-            src_m = _attr_member(key.elts[0], STATES_ENUM)
-            evt_m = _attr_member(key.elts[1], EVENTS_ENUM)
-            dst_m = _attr_member(val, STATES_ENUM)
-            # record edge even if a piece is None, so dangling-target checks bite
-            fsm.edges.append((src_m, evt_m, dst_m))
+        fsm.nested = True
+        for skey, sval in zip(trans_val.keys, trans_val.values):
+            src_m = _str(skey, consts)
+            if isinstance(sval, ast.Dict):
+                for ekey, eval_ in zip(sval.keys, sval.values):
+                    evt_m = _str(ekey, consts)
+                    dst_m = _str(eval_, consts)
+                    # record edge even if a piece is None, so dangling checks bite
+                    fsm.edges.append((src_m, evt_m, dst_m))
+            else:
+                # inner value is not a dict — table is not a dict-of-dicts
+                fsm.nested = False
+                fsm.edges.append((src_m, None, None))
     elif trans_val is None:
         fsm.error = f"could not find `{TRANSITIONS_NAME} = {{...}}` table"
+    else:
+        fsm.error = f"`{TRANSITIONS_NAME}` is not a dict literal"
+
+    # Fallbacks if the author omitted the explicit declaration sets.
+    if not fsm.states:
+        derived = set()
+        for s, _e, d in fsm.edges:
+            if s:
+                derived.add(s)
+            if d:
+                derived.add(d)
+        if fsm.initial:
+            derived.add(fsm.initial)
+        derived |= fsm.terminal
+        fsm.states = sorted(derived)
+    if not fsm.events:
+        fsm.events = sorted({e for _s, e, _d in fsm.edges if e})
 
     return fsm
 
@@ -434,6 +480,18 @@ def _v4_refs_fig():
             "figure")
 
 
+@SUITE.case("struct/v4-explains-why-dict-not-enum")
+def _v4_dict_rationale():
+    sec = v4_section()
+    if sec is None:
+        return False, "V4 section not found"
+    # the section should motivate the dictionary/string choice for the reader.
+    ok = (re.search(r"\bdict(?:ionary|ionaries)?\b", sec, re.I)
+          and re.search(r"\bstring", sec, re.I))
+    return (bool(ok),
+            "V4 section does not explain the dictionary/string modelling choice")
+
+
 # ==========================================================================
 # 2. CODE PRESENCE & PARSE
 # ==========================================================================
@@ -454,28 +512,48 @@ def _ast():
     return (_parse(src) is not None, "V4 code blocks do not AST-parse")
 
 
-@SUITE.case("code/loopstate-enum-present")
-def _enum_present():
-    if FSM_MODEL.error:
+@SUITE.case("code/machine-uses-dicts-not-enum")
+def _no_enum():
+    src = v4_code()
+    if not src:
+        return False, "no V4 code"
+    return (not _uses_enum(),
+            "V4 imports/subclasses Enum — the machine must be taught with "
+            "plain dicts and strings, not enums")
+
+
+@SUITE.case("code/states-set-present")
+def _states_present():
+    if FSM_MODEL.error and not FSM_MODEL.states:
         return False, FSM_MODEL.error
     return (bool(FSM_MODEL.states),
-            f"`class {STATES_ENUM}(Enum)` not found in V4 code")
+            f"`{STATES_NAME} = {{...}}` set of states not found in V4 code")
 
 
-@SUITE.case("code/loopstate-has-ge-3-members")
-def _enum_ge3():
-    if FSM_MODEL.error:
+@SUITE.case("code/states-has-ge-3-members")
+def _states_ge3():
+    if FSM_MODEL.error and not FSM_MODEL.states:
         return False, FSM_MODEL.error
     n = len(FSM_MODEL.states)
-    return (n >= 3, f"{STATES_ENUM} has {n} members ({FSM_MODEL.states}); want >=3")
+    return (n >= 3, f"{STATES_NAME} has {n} members ({FSM_MODEL.states}); want >=3")
 
 
-@SUITE.case("code/event-enum-present")
-def _event_present():
-    if FSM_MODEL.error:
+@SUITE.case("code/states-are-strings")
+def _states_are_strings():
+    if FSM_MODEL.error and not FSM_MODEL.states:
+        return False, FSM_MODEL.error
+    # every declared state resolved to a python str (parser only keeps strings)
+    bad = [s for s in FSM_MODEL.states if not isinstance(s, str)]
+    return (not bad and bool(FSM_MODEL.states),
+            f"non-string states parsed: {bad}")
+
+
+@SUITE.case("code/events-set-present")
+def _events_present():
+    if FSM_MODEL.error and not FSM_MODEL.events:
         return False, FSM_MODEL.error
     return (bool(FSM_MODEL.events),
-            f"`class {EVENTS_ENUM}(Enum)` not found in V4 code")
+            f"`{EVENTS_NAME} = {{...}}` set of events not found in V4 code")
 
 
 @SUITE.case("code/transitions-table-present")
@@ -484,6 +562,15 @@ def _trans_present():
         return False, FSM_MODEL.error
     return (len(FSM_MODEL.edges) >= 1,
             f"`{TRANSITIONS_NAME}` table missing or empty")
+
+
+@SUITE.case("code/transitions-is-dict-of-dicts")
+def _trans_nested():
+    if FSM_MODEL.error and not FSM_MODEL.edges:
+        return False, FSM_MODEL.error
+    return (FSM_MODEL.nested,
+            f"`{TRANSITIONS_NAME}` is not a dict-of-dicts "
+            f"(state -> {{event -> next_state}})")
 
 
 @SUITE.case("code/next-state-fn-present")
@@ -499,12 +586,25 @@ def _next_state_present():
             f"`def {NEXT_STATE_FN}(...)` not found (functions: {fns})")
 
 
+@SUITE.case("code/next-state-double-lookup")
+def _next_state_lookup():
+    src = v4_code()
+    if not src:
+        return False, "no V4 code"
+    # the dict-of-dicts transition fn does a nested lookup TRANSITIONS[state][event]
+    ok = re.search(TRANSITIONS_NAME + r"\s*\[\s*state\s*\]\s*\[\s*event\s*\]",
+                   src) is not None
+    return (ok,
+            f"`{NEXT_STATE_FN}` does not do the nested "
+            f"`{TRANSITIONS_NAME}[state][event]` lookup")
+
+
 @SUITE.case("code/initial-state-declared")
 def _initial_present():
     if FSM_MODEL.error and FSM_MODEL.initial is None:
         return False, FSM_MODEL.error
     return (FSM_MODEL.initial is not None,
-            f"`{INITIAL_NAME} = {STATES_ENUM}.<member>` not found")
+            f"`{INITIAL_NAME} = \"<state>\"` not found")
 
 
 @SUITE.case("code/terminal-set-declared")
@@ -555,7 +655,7 @@ def _graph_ready() -> tuple[bool, str]:
     if FSM_MODEL.error:
         return False, FSM_MODEL.error
     if not FSM_MODEL.states:
-        return False, f"{STATES_ENUM} not parsed"
+        return False, f"{STATES_NAME} not parsed"
     if not FSM_MODEL.edges:
         return False, f"{TRANSITIONS_NAME} not parsed"
     return True, ""
@@ -573,9 +673,9 @@ def _g_initial_once():
     # that every such declaration names the SAME state (one consistent initial),
     # not that the line is textually unique.
     members = re.findall(
-        r"(?m)^\s*" + INITIAL_NAME + r"\s*=\s*" + STATES_ENUM + r"\.(\w+)", src)
+        r"(?m)^\s*" + INITIAL_NAME + r"\s*=\s*[\"'](\w+)[\"']", src)
     if not members:
-        return False, f"{INITIAL_NAME} never declared as a {STATES_ENUM} member"
+        return False, f"{INITIAL_NAME} never declared as a string state"
     distinct = set(members)
     return (len(distinct) == 1,
             f"{INITIAL_NAME} declared with conflicting initial states {distinct}; "
@@ -588,7 +688,7 @@ def _g_initial_declared():
     if not ok:
         return False, why
     if FSM_MODEL.initial is None:
-        return False, f"{INITIAL_NAME} did not resolve to a {STATES_ENUM} member"
+        return False, f"{INITIAL_NAME} did not resolve to a string state"
     return (FSM_MODEL.initial in FSM_MODEL.states,
             f"initial {FSM_MODEL.initial!r} not a declared state "
             f"{FSM_MODEL.states}")
@@ -691,6 +791,24 @@ def _g_sources_declared():
     return (not bad and not none_sources, detail)
 
 
+@SUITE.case("graph/every-event-is-declared")
+def _g_events_declared():
+    ok, why = _graph_ready()
+    if not ok:
+        return False, why
+    if not FSM_MODEL.events:
+        return False, f"{EVENTS_NAME} not parsed"
+    bad = sorted({e for _s, e, _d in FSM_MODEL.edges
+                  if e is not None and e not in FSM_MODEL.events})
+    none_events = sum(1 for _s, e, _d in FSM_MODEL.edges if e is None)
+    detail = ""
+    if bad:
+        detail = f"transition events not declared in {EVENTS_NAME}: {bad}"
+    elif none_events:
+        detail = f"{none_events} transition(s) have an unparseable event key"
+    return (not bad and not none_events, detail)
+
+
 @SUITE.case("graph/determinism-global")
 def _g_determinism():
     ok, why = _graph_ready()
@@ -732,7 +850,7 @@ def _g_nonterminal_out_global():
 
 # --- per-state parametrized gates (exhaustive over the EXPECTED states) -----
 # These register against the spec's intended members so the suite is exhaustive
-# *and* fails loudly when a state is missing from the parsed enum.
+# *and* fails loudly when a state is missing from the parsed set.
 def _register_state_cases(member: str, is_terminal_expected: bool) -> None:
 
     @SUITE.case(f"graph/state/{member}/declared")
@@ -741,7 +859,7 @@ def _register_state_cases(member: str, is_terminal_expected: bool) -> None:
         if not ok:
             return False, why
         return (member in FSM_MODEL.states,
-                f"expected state {member!r} not in {STATES_ENUM} "
+                f"expected state {member!r} not in {STATES_NAME} "
                 f"{FSM_MODEL.states}")
 
     @SUITE.case(f"graph/state/{member}/reachable")
@@ -813,15 +931,15 @@ def _register_edge_cases() -> None:
         def _wf(s=s, e=e, d=d):
             problems = []
             if s is None:
-                problems.append("source not a LoopState.<member>")
+                problems.append("source is not a string state")
             elif s not in FSM_MODEL.states:
                 problems.append(f"source {s!r} not declared")
             if e is None:
-                problems.append("event not an Event.<member>")
+                problems.append("event is not a string")
             elif FSM_MODEL.events and e not in FSM_MODEL.events:
-                problems.append(f"event {e!r} not a declared Event member")
+                problems.append(f"event {e!r} not a declared {EVENTS_NAME} member")
             if d is None:
-                problems.append("target not a LoopState.<member>")
+                problems.append("target is not a string state")
             elif d not in FSM_MODEL.states:
                 problems.append(f"target {d!r} not declared")
             return (not problems, "; ".join(problems))
@@ -842,20 +960,20 @@ _register_edge_cases()
 
 
 # ==========================================================================
-# 4. CONSISTENCY (prose <-> enum; figure <-> enum)
+# 4. CONSISTENCY (prose <-> states; figure <-> states)
 # ==========================================================================
 def _register_prose_state_cases(member: str) -> None:
-    """Each enum state member should be named somewhere in the V4 prose/code."""
+    """Each state member should be named somewhere in the V4 prose/code."""
 
     @SUITE.case(f"consistency/prose-names-state/{member}")
     def _named(member=member):
         sec = v4_section()
         if sec is None:
             return False, "V4 section not found"
-        # the member appears as code (LoopState.MEMBER or bare MEMBER) in the
-        # section — guarantees prose and enum agree on the state set.
+        # the member string appears (as "call_model" or bare call_model) in the
+        # section — guarantees prose and the state set agree on the state set.
         ok = re.search(r"\b" + re.escape(member) + r"\b", sec) is not None
-        return (ok, f"state {member!r} (from {STATES_ENUM}) never appears in "
+        return (ok, f"state {member!r} (from {STATES_NAME}) never appears in "
                     f"the V4 section text")
 
 
@@ -865,11 +983,11 @@ for _m in EXPECTED_STATE_MEMBERS:
 
 @SUITE.case("consistency/parsed-states-match-spec")
 def _states_match_spec():
-    if FSM_MODEL.error:
+    if FSM_MODEL.error and not FSM_MODEL.states:
         return False, FSM_MODEL.error
     missing = [m for m in EXPECTED_STATE_MEMBERS if m not in FSM_MODEL.states]
     return (not missing,
-            f"{STATES_ENUM} is missing spec-pinned members: {missing} "
+            f"{STATES_NAME} is missing spec-pinned members: {missing} "
             f"(parsed: {FSM_MODEL.states})")
 
 
@@ -915,14 +1033,14 @@ for _m, _labels in FIGURE_LABELS.items():
     _register_figure_consistency(_m, _labels)
 
 
-@SUITE.case("consistency/figure-states-subset-of-enum")
+@SUITE.case("consistency/figure-states-subset-of-states")
 def _fig_subset():
-    # every figure-labelled state must exist as a LoopState member
-    if FSM_MODEL.error:
+    # every figure-labelled state must exist as a STATES member
+    if FSM_MODEL.error and not FSM_MODEL.states:
         return False, FSM_MODEL.error
     missing = [m for m in FIGURE_LABELS if m not in FSM_MODEL.states]
     return (not missing,
-            f"states drawn in the §2 figure but absent from {STATES_ENUM}: "
+            f"states drawn in the §2 figure but absent from {STATES_NAME}: "
             f"{missing}")
 
 
@@ -931,11 +1049,11 @@ def _fig_subset():
 # expected per the spec's transition table. This documents the intended graph
 # edge-by-edge and makes any deviation in the taught table a precise failure.
 SPEC_EDGES = {
-    ("CALL_MODEL", "RUN_TOOLS"),
-    ("CALL_MODEL", "DONE"),
-    ("CALL_MODEL", "CAPPED"),
-    ("RUN_TOOLS", "CAPPED"),
-    ("RUN_TOOLS", "CALL_MODEL"),
+    ("call_model", "run_tools"),
+    ("call_model", "done"),
+    ("call_model", "capped"),
+    ("run_tools", "capped"),
+    ("run_tools", "call_model"),
 }
 
 
@@ -966,11 +1084,11 @@ for _s in EXPECTED_STATE_MEMBERS:
 # (expected-state x expected-event) cell is asserted present-or-absent against
 # the parsed table — an exhaustive, documented transition matrix.
 SPEC_TABLE = {
-    ("CALL_MODEL", "HAS_TOOL_CALLS"): "RUN_TOOLS",
-    ("CALL_MODEL", "NO_TOOL_CALLS"): "DONE",
-    ("CALL_MODEL", "CAP_REACHED"): "CAPPED",
-    ("RUN_TOOLS", "CAP_REACHED"): "CAPPED",
-    ("RUN_TOOLS", "HAS_TOOL_CALLS"): "CALL_MODEL",
+    ("call_model", "has_tool_calls"): "run_tools",
+    ("call_model", "no_tool_calls"): "done",
+    ("call_model", "cap_reached"): "capped",
+    ("run_tools", "cap_reached"): "capped",
+    ("run_tools", "has_tool_calls"): "call_model",
 }
 
 
@@ -1019,12 +1137,12 @@ def _register_event_case(event: str) -> None:
 
     @SUITE.case(f"consistency/event-declared/{event}")
     def _ev_decl(event=event):
-        if FSM_MODEL.error:
+        if FSM_MODEL.error and not FSM_MODEL.events:
             return False, FSM_MODEL.error
         if not FSM_MODEL.events:
-            return False, f"{EVENTS_ENUM} enum not parsed"
+            return False, f"{EVENTS_NAME} set not parsed"
         return (event in FSM_MODEL.events,
-                f"event {event!r} not declared in {EVENTS_ENUM} "
+                f"event {event!r} not declared in {EVENTS_NAME} "
                 f"{FSM_MODEL.events}")
 
 

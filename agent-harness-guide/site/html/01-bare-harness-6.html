@@ -9,12 +9,12 @@
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://joshps23.github.io/ai-eng-2/01-bare-harness-6.html">
 <meta property="og:site_name" content="Agent Harness Guide">
-<meta property="og:title" content="Phase 1 · Lesson 6 — State Machine — Agent Harness Guide">
+<meta property="og:title" content="Phase 1 · Lesson 6 — State Machine · part 1 of 2 — Agent Harness Guide">
 <meta property="og:description" content="Why one more rung? Versions 1–3 all hide the same secret in plain sight: the loop is a state machine (you saw its diagram back in §2 &quot;The loop is a state mac…">
 <meta name="twitter:card" content="summary">
 <meta name="theme-color" content="#FDFDFE" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0E1016" media="(prefers-color-scheme: dark)">
-<title>Phase 1 · Lesson 6 — State Machine — Agent Harness Guide</title>
+<title>Phase 1 · Lesson 6 — State Machine · part 1 of 2 — Agent Harness Guide</title>
 <link rel="stylesheet" href="style.css">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3.5' fill='%234F46E5'/%3E%3Cpath d='M11.5 8.5a3.5 3.5 0 1 1-1-2.45' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round'/%3E%3Cpath d='M11.7 3.6v2.6H9.1' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 </head>
@@ -59,9 +59,9 @@
 </details>
 <main id="main">
 <header class="page-header">
-<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">1</span><span class="phase-kicker">Phase 1 · Lesson 6 of 7</span><span class="lesson-time">~20 min</span><span class="lesson-cp">1 <span aria-hidden="true">▶</span> checkpoint</span></p>
+<p class="phase-eyebrow"><span class="phase-medallion" aria-hidden="true">1</span><span class="phase-kicker">Phase 1 · Lesson 6 of 8</span><span class="lesson-time">~11 min</span></p>
 <nav class="phase-rail" aria-label="All phases"><a class="rail-dot" href="00-foundations-1.html" title="Phase 0 — Foundations" aria-label="Phase 0 — Foundations">0</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="01-bare-harness-1.html" aria-current="true" title="Phase 1 — Bare Harness" aria-label="Phase 1 — Bare Harness">1</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="02-tool-system-1.html" title="Phase 2 — Tool System" aria-label="Phase 2 — Tool System">2</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="03-conversation-and-streaming-1.html" title="Phase 3 — Conversation &amp; Streaming" aria-label="Phase 3 — Conversation &amp; Streaming">3</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="04-real-tools-1.html" title="Phase 4 — Real Tools" aria-label="Phase 4 — Real Tools">4</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="05-permissions-and-safety-1.html" title="Phase 5 — Permissions &amp; Safety" aria-label="Phase 5 — Permissions &amp; Safety">5</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="06-context-management-1.html" title="Phase 6 — Context Management" aria-label="Phase 6 — Context Management">6</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="07-subagents-orchestration-1.html" title="Phase 7 — Sub-agents" aria-label="Phase 7 — Sub-agents">7</a><span class="rail-link" aria-hidden="true"></span><a class="rail-dot" href="08-production-harness-1.html" title="Phase 8 — Production Harness" aria-label="Phase 8 — Production Harness">8</a></nav>
-<nav class="lesson-rail" aria-label="Lessons in this phase"><a class="lesson-tick" href="01-bare-harness-1.html" title="Lesson 1: A Bare Harness in ~80 Lines (~6 min)" aria-label="Lesson 1: A Bare Harness in ~80 Lines (~6 min)">1</a><a class="lesson-tick" href="01-bare-harness-2.html" title="Lesson 2: Line-by-Line (~7 min)" aria-label="Lesson 2: Line-by-Line (~7 min)">2</a><a class="lesson-tick" href="01-bare-harness-3.html" title="Lesson 3: Functions (~17 min)" aria-label="Lesson 3: Functions (~17 min)">3</a><a class="lesson-tick" href="01-bare-harness-4.html" title="Lesson 4: 5. The Complete File… (~7 min)" aria-label="Lesson 4: 5. The Complete File… (~7 min)">4</a><a class="lesson-tick" href="01-bare-harness-5.html" title="Lesson 5: Classes (~8 min)" aria-label="Lesson 5: Classes (~8 min)">5</a><a class="lesson-tick" href="01-bare-harness-6.html" aria-current="page" title="Lesson 6: State Machine (~20 min)" aria-label="Lesson 6: State Machine (~20 min)">6</a><a class="lesson-tick" href="01-bare-harness-7.html" title="Wrap-up: Pitfalls (~6 min)" aria-label="Wrap-up: Pitfalls (~6 min)">7</a></nav>
+<nav class="lesson-rail" aria-label="Lessons in this phase"><a class="lesson-tick" href="01-bare-harness-1.html" title="Lesson 1: A Bare Harness in ~80 Lines (~6 min)" aria-label="Lesson 1: A Bare Harness in ~80 Lines (~6 min)">1</a><a class="lesson-tick" href="01-bare-harness-2.html" title="Lesson 2: Line-by-Line (~7 min)" aria-label="Lesson 2: Line-by-Line (~7 min)">2</a><a class="lesson-tick" href="01-bare-harness-3.html" title="Lesson 3: Functions (~17 min)" aria-label="Lesson 3: Functions (~17 min)">3</a><a class="lesson-tick" href="01-bare-harness-4.html" title="Lesson 4: 5. The Complete File… (~7 min)" aria-label="Lesson 4: 5. The Complete File… (~7 min)">4</a><a class="lesson-tick" href="01-bare-harness-5.html" title="Lesson 5: Classes (~8 min)" aria-label="Lesson 5: Classes (~8 min)">5</a><a class="lesson-tick" href="01-bare-harness-6.html" aria-current="page" title="Lesson 6: State Machine · part 1 of 2 (~11 min)" aria-label="Lesson 6: State Machine · part 1 of 2 (~11 min)">6</a><a class="lesson-tick" href="01-bare-harness-7.html" title="Lesson 7: State Machine · part 2 of 2 (~10 min)" aria-label="Lesson 7: State Machine · part 2 of 2 (~10 min)">7</a><a class="lesson-tick" href="01-bare-harness-8.html" title="Wrap-up: Pitfalls (~6 min)" aria-label="Wrap-up: Pitfalls (~6 min)">8</a></nav>
 <nav class="ladder" aria-label="Version ladder"><a class="ladder-rung" href="01-bare-harness-2.html#3-version-1--line-by-line-no-functions-no-classes"><span class="ladder-medallion">V1</span> Line-by-Line</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="01-bare-harness-3.html#4-version-2--functions-the-same-harness-named-in-pieces"><span class="ladder-medallion">V2</span> Functions</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="01-bare-harness-5.html#6-version-3--classes-a-minimal-agent-preview"><span class="ladder-medallion">V3</span> Classes</a><span class="ladder-sep" aria-hidden="true">→</span><a class="ladder-rung" href="01-bare-harness-6.html#65-version-4--state-machine-the-loops-shape-made-explicit"><span class="ladder-medallion">V4</span> State Machine</a></nav>
 <details class="page-toc">
 <summary>On this page</summary>
@@ -72,12 +72,7 @@
 <li class="toc-h3"><a href="#step-2--name-the-events-that-drive-transitions">Step 2 — Name the events that drive transitions</a></li>
 <li class="toc-h3"><a href="#step-3--the-transition-table">Step 3 — The transition table</a></li>
 <li class="toc-h3"><a href="#step-4--the-tiny-driver">Step 4 — The tiny driver</a></li>
-<li class="toc-h3"><a href="#the-complete-version-4-file">The complete Version 4 file</a></li>
-<li class="toc-h3"><a href="#what-changed-from-v3-to-v4">What changed from V3 to V4</a></li>
-<li class="toc-h3"><a href="#the-package-keeps-the-simple-loop--honestly">The package keeps the simple loop — honestly</a></li>
 </ul>
-</li>
-<li class="toc-h2"><a href="#7-example-session">7. Example Session</a>
 </li>
 </ul>
 </details>
@@ -88,57 +83,65 @@
 <p>The three boxes in the §2 figure — <strong>CALL THE MODEL</strong>, <strong>RUN TOOLS</strong>, <strong>DONE</strong> — become exactly three of our four states, now written as code. The one addition is <strong>CAPPED</strong>: the <code>MAX_ITERATIONS</code> guard from Version 2, promoted from a fall-through <code>print</code> into a real terminal state (a second exit from the machine — the safety cap drawn as its own door out).</p>
 <p>We build it in four small steps: name the states, name the events, write the transition table, then write the tiny driver that reads the table.</p>
 <h3 id="step-1--name-the-states">Step 1 — Name the states<a aria-label="Permalink to this section" class="hanchor" href="01-bare-harness.html#step-1--name-the-states">¶</a></h3>
-<p><strong>Why now?</strong> A state machine has, by definition, a fixed set of states it can be in. In V3 those states were unnamed positions in the control flow. Give them names — an <code>Enum</code> is exactly the right tool — and the machine's vocabulary becomes explicit.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
-
-<span class="k">class</span><span class="w"> </span><span class="nc">LoopState</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-    <span class="n">CALL_MODEL</span> <span class="o">=</span> <span class="s2">&quot;call_model&quot;</span>   <span class="c1"># about to send the transcript to the model</span>
-    <span class="n">RUN_TOOLS</span>  <span class="o">=</span> <span class="s2">&quot;run_tools&quot;</span>    <span class="c1"># the model asked for tools; run them, append results</span>
-    <span class="n">DONE</span>       <span class="o">=</span> <span class="s2">&quot;done&quot;</span>         <span class="c1"># the model returned a final message — terminal</span>
-    <span class="n">CAPPED</span>     <span class="o">=</span> <span class="s2">&quot;capped&quot;</span>       <span class="c1"># hit the iteration cap — terminal (the safety guard)</span>
+<p><strong>Why now?</strong> A state machine has, by definition, a fixed set of states it can be in. In V3 those states were unnamed positions in the control flow. Give each one a name — and a name is just a <strong>string</strong> — and the machine's vocabulary becomes explicit. We collect them in a <code>set</code> so the whole vocabulary lives in one place.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># A state is just a string naming where the loop is. Four states in all —</span>
+<span class="c1"># two of them terminal (&quot;done&quot; and &quot;capped&quot;), meaning the loop stops there.</span>
+<span class="n">STATES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;call_model&quot;</span><span class="p">,</span>   <span class="c1"># about to send the transcript to the model</span>
+    <span class="s2">&quot;run_tools&quot;</span><span class="p">,</span>    <span class="c1"># the model asked for tools; run them, append results</span>
+    <span class="s2">&quot;done&quot;</span><span class="p">,</span>         <span class="c1"># the model returned a final message — terminal</span>
+    <span class="s2">&quot;capped&quot;</span><span class="p">,</span>       <span class="c1"># hit the iteration cap — terminal (the safety guard)</span>
+<span class="p">}</span>
 </code></pre></div>
-<p>Four states, <strong>two of them terminal</strong> (<code>DONE</code> and <code>CAPPED</code>). <code>CAPPED</code> is included deliberately to teach a real fact about loops: a machine can have <em>more than one way to stop</em>. The normal exit is <code>DONE</code> (the model gave a final answer); the safety exit is <code>CAPPED</code> (we ran out of iterations). Both end the run — they just mean different things when you read the output.</p>
+<p>Four states, <strong>two of them terminal</strong> (<code>"done"</code> and <code>"capped"</code>). <code>"capped"</code> is included deliberately to teach a real fact about loops: a machine can have <em>more than one way to stop</em>. The normal exit is <code>"done"</code> (the model gave a final answer); the safety exit is <code>"capped"</code> (we ran out of iterations). Both end the run — they just mean different things when you read the output.</p>
 <blockquote class="beginner">
-<p>🟢 <strong><code>Enum</code> in one minute.</strong> <code>class LoopState(Enum):</code> defines a small fixed set of named constants. <code>LoopState.CALL_MODEL</code> is a distinct value you can compare with <code>==</code> and store in a set — far safer than passing the bare string <code>"call_model"</code> around, because a typo becomes an <code>AttributeError</code> immediately instead of a silent mismatch.</p>
+<p>🟢 <strong>Why plain strings and a dict (not an <code>Enum</code>)?</strong> A state is just a label, so a string like <code>"call_model"</code> is enough — no new types, no imports, only the <code>set</code> and <code>dict</code> you already know. The payoff comes in Step 3: the entire machine becomes <em>data</em> you can <code>print()</code> and read at a glance. The one tradeoff is that a mistyped string is a silent <code>KeyError</code> at runtime rather than an error up front, so we write each state <strong>once</strong> here in <code>STATES</code> (and each event once in <code>EVENTS</code>) and let <code>next_state</code> raise loudly if the table is ever asked for a pair it doesn't know.</p>
 </blockquote>
 <h3 id="step-2--name-the-events-that-drive-transitions">Step 2 — Name the events that drive transitions<a aria-label="Permalink to this section" class="hanchor" href="01-bare-harness.html#step-2--name-the-events-that-drive-transitions">¶</a></h3>
 <p><strong>Why now?</strong> A state alone doesn't tell you where to go next — you need to know <em>what just happened</em>. In a state machine, the thing that happens is an <strong>event</strong>. Here there are exactly three events, and the crucial point is <strong>where they come from</strong>: you do not pick them, you <em>read them off the model's reply</em>.</p>
-<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Event</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-    <span class="n">HAS_TOOL_CALLS</span> <span class="o">=</span> <span class="s2">&quot;has_tool_calls&quot;</span>   <span class="c1"># the reply contained &gt;=1 function_call</span>
-    <span class="n">NO_TOOL_CALLS</span>  <span class="o">=</span> <span class="s2">&quot;no_tool_calls&quot;</span>    <span class="c1"># the reply was a plain message</span>
-    <span class="n">CAP_REACHED</span>    <span class="o">=</span> <span class="s2">&quot;cap_reached&quot;</span>      <span class="c1"># iteration count hit MAX_ITERATIONS</span>
+<div class="highlight"><pre><span></span><code><span class="c1"># An event is what just happened — also just a string. Three in all.</span>
+<span class="n">EVENTS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;has_tool_calls&quot;</span><span class="p">,</span>   <span class="c1"># the reply contained &gt;=1 function_call</span>
+    <span class="s2">&quot;no_tool_calls&quot;</span><span class="p">,</span>    <span class="c1"># the reply was a plain message</span>
+    <span class="s2">&quot;cap_reached&quot;</span><span class="p">,</span>      <span class="c1"># iteration count hit MAX_ITERATIONS</span>
+<span class="p">}</span>
 </code></pre></div>
-<p>This is the pedagogical heart of the whole phase: <strong>the model drives the machine.</strong> Whether the next event is <code>HAS_TOOL_CALLS</code> or <code>NO_TOOL_CALLS</code> is decided entirely by what the model sent back — a <code>function_call</code> versus a plain <code>message</code>. The only event your <em>code</em> originates is <code>CAP_REACHED</code>, and even that is just reading a counter. The harness never <em>chooses</em> the path; it observes the reply and looks up the consequence.</p>
+<p>This is the pedagogical heart of the whole phase: <strong>the model drives the machine.</strong> Whether the next event is <code>"has_tool_calls"</code> or <code>"no_tool_calls"</code> is decided entirely by what the model sent back — a <code>function_call</code> versus a plain <code>message</code>. The only event your <em>code</em> originates is <code>"cap_reached"</code>, and even that is just reading a counter. The harness never <em>chooses</em> the path; it observes the reply and looks up the consequence.</p>
 <h3 id="step-3--the-transition-table">Step 3 — The transition table<a aria-label="Permalink to this section" class="hanchor" href="01-bare-harness.html#step-3--the-transition-table">¶</a></h3>
-<p><strong>Why now?</strong> With states and events named, the entire control flow of the agent collapses into one piece of <strong>data</strong>: a dict mapping <code>(current state, event)</code> to the next state. This is the move that makes the machine inspectable — the logic is no longer scattered across <code>if</code>s, it is a table you can print, draw as a graph, and unit-test.</p>
-<div class="highlight"><pre><span></span><code><span class="n">INITIAL</span> <span class="o">=</span> <span class="n">LoopState</span><span class="o">.</span><span class="n">CALL_MODEL</span>
-<span class="n">TERMINAL</span> <span class="o">=</span> <span class="p">{</span><span class="n">LoopState</span><span class="o">.</span><span class="n">DONE</span><span class="p">,</span> <span class="n">LoopState</span><span class="o">.</span><span class="n">CAPPED</span><span class="p">}</span>
+<p><strong>Why now?</strong> With states and events named, the entire control flow of the agent collapses into one piece of <strong>data</strong>: a dictionary that, for each state, maps each event to the next state. This is the move that makes the machine inspectable — the logic is no longer scattered across <code>if</code>s, it is a <code>dict</code> you can <code>print</code>, draw as a graph, and unit-test. We nest it as <code>state -&gt; {event -&gt; next state}</code> so each state's options read as their own little block.</p>
+<div class="highlight"><pre><span></span><code><span class="n">INITIAL</span> <span class="o">=</span> <span class="s2">&quot;call_model&quot;</span>
+<span class="n">TERMINAL</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;done&quot;</span><span class="p">,</span> <span class="s2">&quot;capped&quot;</span><span class="p">}</span>
 
+<span class="c1"># The whole control flow as one dictionary: state -&gt; {event -&gt; next state}.</span>
 <span class="n">TRANSITIONS</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="p">(</span><span class="n">LoopState</span><span class="o">.</span><span class="n">CALL_MODEL</span><span class="p">,</span> <span class="n">Event</span><span class="o">.</span><span class="n">HAS_TOOL_CALLS</span><span class="p">):</span> <span class="n">LoopState</span><span class="o">.</span><span class="n">RUN_TOOLS</span><span class="p">,</span>
-    <span class="p">(</span><span class="n">LoopState</span><span class="o">.</span><span class="n">CALL_MODEL</span><span class="p">,</span> <span class="n">Event</span><span class="o">.</span><span class="n">NO_TOOL_CALLS</span><span class="p">):</span>  <span class="n">LoopState</span><span class="o">.</span><span class="n">DONE</span><span class="p">,</span>
-    <span class="p">(</span><span class="n">LoopState</span><span class="o">.</span><span class="n">CALL_MODEL</span><span class="p">,</span> <span class="n">Event</span><span class="o">.</span><span class="n">CAP_REACHED</span><span class="p">):</span>    <span class="n">LoopState</span><span class="o">.</span><span class="n">CAPPED</span><span class="p">,</span>
-    <span class="p">(</span><span class="n">LoopState</span><span class="o">.</span><span class="n">RUN_TOOLS</span><span class="p">,</span>  <span class="n">Event</span><span class="o">.</span><span class="n">CAP_REACHED</span><span class="p">):</span>    <span class="n">LoopState</span><span class="o">.</span><span class="n">CAPPED</span><span class="p">,</span>
-    <span class="p">(</span><span class="n">LoopState</span><span class="o">.</span><span class="n">RUN_TOOLS</span><span class="p">,</span>  <span class="n">Event</span><span class="o">.</span><span class="n">HAS_TOOL_CALLS</span><span class="p">):</span> <span class="n">LoopState</span><span class="o">.</span><span class="n">CALL_MODEL</span><span class="p">,</span>
+    <span class="s2">&quot;call_model&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;has_tool_calls&quot;</span><span class="p">:</span> <span class="s2">&quot;run_tools&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;no_tool_calls&quot;</span><span class="p">:</span>  <span class="s2">&quot;done&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;cap_reached&quot;</span><span class="p">:</span>    <span class="s2">&quot;capped&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;run_tools&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;has_tool_calls&quot;</span><span class="p">:</span> <span class="s2">&quot;call_model&quot;</span><span class="p">,</span>   <span class="c1"># tools finished → ask the model again</span>
+        <span class="s2">&quot;cap_reached&quot;</span><span class="p">:</span>    <span class="s2">&quot;capped&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
 <span class="p">}</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">next_state</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pure transition function: (state, event) -&gt; next state. Never raises into the loop.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pure transition function: (state, event) -&gt; next state. Raises loudly on an unknown pair.&quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">TRANSITIONS</span><span class="p">[(</span><span class="n">state</span><span class="p">,</span> <span class="n">event</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">TRANSITIONS</span><span class="p">[</span><span class="n">state</span><span class="p">][</span><span class="n">event</span><span class="p">]</span>
     <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no transition from </span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s2"> on </span><span class="si">{</span><span class="n">event</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no transition from </span><span class="si">{</span><span class="n">state</span><span class="si">!r}</span><span class="s2"> on </span><span class="si">{</span><span class="n">event</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>Because the machine is now data, we can state its properties precisely — and they are exactly the properties that make a finite state machine <em>well-formed</em>:</p>
 <ul>
-<li><strong>Single initial state.</strong> <code>INITIAL = LoopState.CALL_MODEL</code>, declared once: every run starts by asking the model.</li>
-<li><strong>Two terminal states.</strong> <code>TERMINAL = {LoopState.DONE, LoopState.CAPPED}</code>. Both appear only as transition <em>targets</em>, never as a source key — so a terminal state has <strong>no outgoing transitions</strong>. Once you reach it, you stop.</li>
-<li><strong>No dead ends.</strong> Every <em>non-terminal</em> state (<code>CALL_MODEL</code>, <code>RUN_TOOLS</code>) has at least one outgoing transition. You can never get stuck in a working state with nowhere to go.</li>
-<li><strong>No dangling targets.</strong> Every value in the table is a declared <code>LoopState</code> member — no transition points at a state that doesn't exist.</li>
-<li><strong>Deterministic.</strong> Each <code>(state, event)</code> key appears exactly once, so a given state-plus-event yields exactly one next state. There is no ambiguity about where to go.</li>
-<li><strong>All states reachable.</strong> From <code>CALL_MODEL</code> you can reach <code>RUN_TOOLS</code> (on <code>HAS_TOOL_CALLS</code>), <code>DONE</code> (on <code>NO_TOOL_CALLS</code>), and <code>CAPPED</code> (on <code>CAP_REACHED</code>); <code>RUN_TOOLS</code> loops back to <code>CALL_MODEL</code>. Every state — and both terminals — is reachable from the start.</li>
+<li><strong>Single initial state.</strong> <code>INITIAL = "call_model"</code>, declared once: every run starts by asking the model.</li>
+<li><strong>Two terminal states.</strong> <code>TERMINAL = {"done", "capped"}</code>. Neither is an outer key in <code>TRANSITIONS</code> — they appear only as next-state <em>values</em> — so a terminal state has <strong>no outgoing transitions</strong>. Once you reach it, you stop.</li>
+<li><strong>No dead ends.</strong> Every <em>non-terminal</em> state (<code>"call_model"</code>, <code>"run_tools"</code>) is an outer key whose inner dict holds at least one event. You can never get stuck in a working state with nowhere to go.</li>
+<li><strong>No dangling targets.</strong> Every next-state value in the table is a member of <code>STATES</code> — no transition points at a state that doesn't exist.</li>
+<li><strong>Deterministic.</strong> Within each state's inner dict an event key appears exactly once, so a given state-plus-event yields exactly one next state. There is no ambiguity about where to go.</li>
+<li><strong>All states reachable.</strong> From <code>"call_model"</code> you can reach <code>"run_tools"</code> (on <code>"has_tool_calls"</code>), <code>"done"</code> (on <code>"no_tool_calls"</code>), and <code>"capped"</code> (on <code>"cap_reached"</code>); <code>"run_tools"</code> loops back to <code>"call_model"</code>. Every state — and both terminals — is reachable from the start.</li>
 </ul>
-<p>One modeling choice worth naming: the <code>RUN_TOOLS → CALL_MODEL</code> edge is keyed on <code>HAS_TOOL_CALLS</code>, used here purely as the "tools finished, go ask again" pulse. After running tools the harness <em>always</em> returns to the model, so rather than invent a third "tools done" event we reuse <code>HAS_TOOL_CALLS</code> as that pulse. This keeps the table total over every reachable <code>(state, event)</code> pair while staying minimal.</p>
+<p>One modeling choice worth naming: the <code>"run_tools" → "call_model"</code> edge is keyed on <code>"has_tool_calls"</code>, used here purely as the "tools finished, go ask again" pulse. After running tools the harness <em>always</em> returns to the model, so rather than invent a third "tools done" event we reuse <code>"has_tool_calls"</code> as that pulse. This keeps the table total over every reachable <code>(state, event)</code> pair while staying minimal.</p>
 <h3 id="step-4--the-tiny-driver">Step 4 — The tiny driver<a aria-label="Permalink to this section" class="hanchor" href="01-bare-harness.html#step-4--the-tiny-driver">¶</a></h3>
 <p><strong>Why now?</strong> With the table written, the loop body becomes almost mechanical: it does the work for the current state, reads an event off the result, and asks the table where to go next. The entire control flow is now one line — <code>while state not in TERMINAL:</code> — and everything inside is "what to <em>do</em> in each state," not "where to go next" (the table decides that).</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_state_machine</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">tools</span><span class="p">,</span> <span class="n">user_message</span><span class="p">):</span>
@@ -149,21 +152,21 @@
     <span class="n">pending_calls</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">while</span> <span class="n">state</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">TERMINAL</span><span class="p">:</span>          <span class="c1"># &lt;-- the whole control flow, in one line</span>
-        <span class="k">if</span> <span class="n">state</span> <span class="o">==</span> <span class="n">LoopState</span><span class="o">.</span><span class="n">CALL_MODEL</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;call_model&quot;</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">iteration</span> <span class="o">&gt;=</span> <span class="n">MAX_ITERATIONS</span><span class="p">:</span>
-                <span class="n">state</span> <span class="o">=</span> <span class="n">next_state</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">Event</span><span class="o">.</span><span class="n">CAP_REACHED</span><span class="p">)</span>
+                <span class="n">state</span> <span class="o">=</span> <span class="n">next_state</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="s2">&quot;cap_reached&quot;</span><span class="p">)</span>
                 <span class="k">continue</span>
             <span class="n">iteration</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">resp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">responses</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">MODEL</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="n">input_items</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span><span class="n">tools</span><span class="p">)</span>
             <span class="n">input_items</span> <span class="o">+=</span> <span class="n">resp</span><span class="o">.</span><span class="n">output</span>
             <span class="n">pending_calls</span> <span class="o">=</span> <span class="p">[</span><span class="n">it</span> <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="n">resp</span><span class="o">.</span><span class="n">output</span> <span class="k">if</span> <span class="n">it</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;function_call&quot;</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">pending_calls</span><span class="p">:</span>
-                <span class="n">state</span> <span class="o">=</span> <span class="n">next_state</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">Event</span><span class="o">.</span><span class="n">HAS_TOOL_CALLS</span><span class="p">)</span>
+                <span class="n">state</span> <span class="o">=</span> <span class="n">next_state</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="s2">&quot;has_tool_calls&quot;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">final_text</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">output_text</span>
-                <span class="n">state</span> <span class="o">=</span> <span class="n">next_state</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">Event</span><span class="o">.</span><span class="n">NO_TOOL_CALLS</span><span class="p">)</span>
+                <span class="n">state</span> <span class="o">=</span> <span class="n">next_state</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="s2">&quot;no_tool_calls&quot;</span><span class="p">)</span>
 
-        <span class="k">elif</span> <span class="n">state</span> <span class="o">==</span> <span class="n">LoopState</span><span class="o">.</span><span class="n">RUN_TOOLS</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;run_tools&quot;</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">tc</span> <span class="ow">in</span> <span class="n">pending_calls</span><span class="p">:</span>
                 <span class="n">result</span> <span class="o">=</span> <span class="n">dispatch</span><span class="p">(</span><span class="n">tc</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">tc</span><span class="o">.</span><span class="n">arguments</span><span class="p">)</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  [tool] </span><span class="si">{</span><span class="n">tc</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="n">tc</span><span class="o">.</span><span class="n">arguments</span><span class="si">}</span><span class="s2">) → </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -172,211 +175,27 @@
                     <span class="s2">&quot;call_id&quot;</span><span class="p">:</span> <span class="n">tc</span><span class="o">.</span><span class="n">call_id</span><span class="p">,</span>
                     <span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="n">result</span><span class="p">,</span>
                 <span class="p">})</span>
-            <span class="n">state</span> <span class="o">=</span> <span class="n">next_state</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">Event</span><span class="o">.</span><span class="n">HAS_TOOL_CALLS</span><span class="p">)</span>   <span class="c1"># tools done → ask again</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="n">next_state</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="s2">&quot;has_tool_calls&quot;</span><span class="p">)</span>   <span class="c1"># tools done → ask again</span>
 
-    <span class="k">if</span> <span class="n">state</span> <span class="o">==</span> <span class="n">LoopState</span><span class="o">.</span><span class="n">DONE</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;done&quot;</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Assistant: </span><span class="si">{</span><span class="n">final_text</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>  <span class="c1"># LoopState.CAPPED</span>
+    <span class="k">else</span><span class="p">:</span>  <span class="c1"># &quot;capped&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[Agent stopped: reached </span><span class="si">{</span><span class="n">MAX_ITERATIONS</span><span class="si">}</span><span class="s2">-iteration safety cap]&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>Notice what is <em>not</em> here: there is no <code>break</code>, no <code>return</code> buried mid-loop. The loop ends precisely when <code>state</code> lands in <code>TERMINAL</code>, and the final <code>if</code> reads which terminal it was to print the right thing. The <code>responses.create</code> call, the <code>input_items += resp.output</code> ordering, and the <code>function_call_output</code> handshake (same <code>call_id</code>, string <code>output</code>) are all <strong>byte-identical</strong> to Versions 1–3.</p>
-<h3 id="the-complete-version-4-file">The complete Version 4 file<a aria-label="Permalink to this section" class="hanchor" href="01-bare-harness.html#the-complete-version-4-file">¶</a></h3>
-<p>Here is the whole thing — paste it into <code>bare_harness_v4.py</code>. It reuses the <code>get_current_time</code> tool and <code>dispatch</code> helper from Versions 2 and 3, then adds the enums, the table, and the driver:</p>
-<div class="highlight"><pre><span></span><code><span class="ch">#!/usr/bin/env python3</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">bare_harness_v4.py — Phase 1, Version 4: the same harness, as an explicit state machine.</span>
-
-<span class="sd">Requires:</span>
-<span class="sd">    pip install openai</span>
-<span class="sd">    export OPENAI_API_KEY=sk-...</span>
-<span class="sd">&quot;&quot;&quot;</span>
-
-<span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">zoneinfo</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">openai</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenAI</span>
-
-<span class="n">MODEL</span> <span class="o">=</span> <span class="s2">&quot;gpt-4o&quot;</span>
-<span class="n">MAX_ITERATIONS</span> <span class="o">=</span> <span class="mi">25</span>
-
-<span class="n">GET_CURRENT_TIME_SCHEMA</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;get_current_time&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Return the current date and time in an IANA timezone (empty → UTC).&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;timezone&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;IANA name, e.g. &#39;Asia/Tokyo&#39;&quot;</span><span class="p">}</span>
-        <span class="p">},</span>
-        <span class="s2">&quot;required&quot;</span><span class="p">:</span> <span class="p">[],</span>
-    <span class="p">},</span>
-<span class="p">}</span>
-
-
-<span class="c1"># ── Tool + dispatcher (reused from Version 2 / Version 3) ──────────────────────</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">get_current_time</span><span class="p">(</span><span class="n">timezone</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the current time as an ISO-8601 string in the requested zone.&quot;&quot;&quot;</span>
-    <span class="n">tz</span> <span class="o">=</span> <span class="n">zoneinfo</span><span class="o">.</span><span class="n">ZoneInfo</span><span class="p">(</span><span class="n">timezone</span><span class="p">)</span> <span class="k">if</span> <span class="n">timezone</span> <span class="k">else</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span>
-    <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="n">tz</span><span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(</span><span class="n">timespec</span><span class="o">=</span><span class="s2">&quot;seconds&quot;</span><span class="p">)</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">dispatch</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">arguments</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Route a tool call. Always returns a string; never raises.&quot;&quot;&quot;</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">args</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">arguments</span><span class="p">)</span>
-    <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;ERROR: could not parse arguments JSON — </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;get_current_time&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">get_current_time</span><span class="p">(</span><span class="o">**</span><span class="n">args</span><span class="p">)</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;ERROR: unknown tool &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
-    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;ERROR: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
-
-
-<span class="c1"># ── The machine: states, events, transitions ──────────────────────────────────</span>
-
-<span class="k">class</span><span class="w"> </span><span class="nc">LoopState</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-    <span class="n">CALL_MODEL</span> <span class="o">=</span> <span class="s2">&quot;call_model&quot;</span>   <span class="c1"># about to send the transcript to the model</span>
-    <span class="n">RUN_TOOLS</span>  <span class="o">=</span> <span class="s2">&quot;run_tools&quot;</span>    <span class="c1"># the model asked for tools; run them, append results</span>
-    <span class="n">DONE</span>       <span class="o">=</span> <span class="s2">&quot;done&quot;</span>         <span class="c1"># the model returned a final message — terminal</span>
-    <span class="n">CAPPED</span>     <span class="o">=</span> <span class="s2">&quot;capped&quot;</span>       <span class="c1"># hit the iteration cap — terminal (the safety guard)</span>
-
-
-<span class="k">class</span><span class="w"> </span><span class="nc">Event</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-    <span class="n">HAS_TOOL_CALLS</span> <span class="o">=</span> <span class="s2">&quot;has_tool_calls&quot;</span>   <span class="c1"># the reply contained &gt;=1 function_call</span>
-    <span class="n">NO_TOOL_CALLS</span>  <span class="o">=</span> <span class="s2">&quot;no_tool_calls&quot;</span>    <span class="c1"># the reply was a plain message</span>
-    <span class="n">CAP_REACHED</span>    <span class="o">=</span> <span class="s2">&quot;cap_reached&quot;</span>      <span class="c1"># iteration count hit MAX_ITERATIONS</span>
-
-
-<span class="n">INITIAL</span> <span class="o">=</span> <span class="n">LoopState</span><span class="o">.</span><span class="n">CALL_MODEL</span>
-<span class="n">TERMINAL</span> <span class="o">=</span> <span class="p">{</span><span class="n">LoopState</span><span class="o">.</span><span class="n">DONE</span><span class="p">,</span> <span class="n">LoopState</span><span class="o">.</span><span class="n">CAPPED</span><span class="p">}</span>
-
-<span class="n">TRANSITIONS</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="p">(</span><span class="n">LoopState</span><span class="o">.</span><span class="n">CALL_MODEL</span><span class="p">,</span> <span class="n">Event</span><span class="o">.</span><span class="n">HAS_TOOL_CALLS</span><span class="p">):</span> <span class="n">LoopState</span><span class="o">.</span><span class="n">RUN_TOOLS</span><span class="p">,</span>
-    <span class="p">(</span><span class="n">LoopState</span><span class="o">.</span><span class="n">CALL_MODEL</span><span class="p">,</span> <span class="n">Event</span><span class="o">.</span><span class="n">NO_TOOL_CALLS</span><span class="p">):</span>  <span class="n">LoopState</span><span class="o">.</span><span class="n">DONE</span><span class="p">,</span>
-    <span class="p">(</span><span class="n">LoopState</span><span class="o">.</span><span class="n">CALL_MODEL</span><span class="p">,</span> <span class="n">Event</span><span class="o">.</span><span class="n">CAP_REACHED</span><span class="p">):</span>    <span class="n">LoopState</span><span class="o">.</span><span class="n">CAPPED</span><span class="p">,</span>
-    <span class="p">(</span><span class="n">LoopState</span><span class="o">.</span><span class="n">RUN_TOOLS</span><span class="p">,</span>  <span class="n">Event</span><span class="o">.</span><span class="n">CAP_REACHED</span><span class="p">):</span>    <span class="n">LoopState</span><span class="o">.</span><span class="n">CAPPED</span><span class="p">,</span>
-    <span class="p">(</span><span class="n">LoopState</span><span class="o">.</span><span class="n">RUN_TOOLS</span><span class="p">,</span>  <span class="n">Event</span><span class="o">.</span><span class="n">HAS_TOOL_CALLS</span><span class="p">):</span> <span class="n">LoopState</span><span class="o">.</span><span class="n">CALL_MODEL</span><span class="p">,</span>
-<span class="p">}</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">next_state</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pure transition function: (state, event) -&gt; next state. Never raises into the loop.&quot;&quot;&quot;</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">TRANSITIONS</span><span class="p">[(</span><span class="n">state</span><span class="p">,</span> <span class="n">event</span><span class="p">)]</span>
-    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no transition from </span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s2"> on </span><span class="si">{</span><span class="n">event</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-
-<span class="c1"># ── The driver ────────────────────────────────────────────────────────────────</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">run_state_machine</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">tools</span><span class="p">,</span> <span class="n">user_message</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Same bare harness as V1-V3, expressed as an explicit FSM driver.&quot;&quot;&quot;</span>
-    <span class="n">input_items</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">user_message</span><span class="p">}]</span>
-    <span class="n">state</span> <span class="o">=</span> <span class="n">INITIAL</span>
-    <span class="n">iteration</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">pending_calls</span> <span class="o">=</span> <span class="p">[]</span>
-
-    <span class="k">while</span> <span class="n">state</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">TERMINAL</span><span class="p">:</span>          <span class="c1"># &lt;-- the whole control flow, in one line</span>
-        <span class="k">if</span> <span class="n">state</span> <span class="o">==</span> <span class="n">LoopState</span><span class="o">.</span><span class="n">CALL_MODEL</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">iteration</span> <span class="o">&gt;=</span> <span class="n">MAX_ITERATIONS</span><span class="p">:</span>
-                <span class="n">state</span> <span class="o">=</span> <span class="n">next_state</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">Event</span><span class="o">.</span><span class="n">CAP_REACHED</span><span class="p">)</span>
-                <span class="k">continue</span>
-            <span class="n">iteration</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="n">resp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">responses</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">MODEL</span><span class="p">,</span> <span class="nb">input</span><span class="o">=</span><span class="n">input_items</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span><span class="n">tools</span><span class="p">)</span>
-            <span class="n">input_items</span> <span class="o">+=</span> <span class="n">resp</span><span class="o">.</span><span class="n">output</span>
-            <span class="n">pending_calls</span> <span class="o">=</span> <span class="p">[</span><span class="n">it</span> <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="n">resp</span><span class="o">.</span><span class="n">output</span> <span class="k">if</span> <span class="n">it</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;function_call&quot;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">pending_calls</span><span class="p">:</span>
-                <span class="n">state</span> <span class="o">=</span> <span class="n">next_state</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">Event</span><span class="o">.</span><span class="n">HAS_TOOL_CALLS</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">final_text</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">output_text</span>
-                <span class="n">state</span> <span class="o">=</span> <span class="n">next_state</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">Event</span><span class="o">.</span><span class="n">NO_TOOL_CALLS</span><span class="p">)</span>
-
-        <span class="k">elif</span> <span class="n">state</span> <span class="o">==</span> <span class="n">LoopState</span><span class="o">.</span><span class="n">RUN_TOOLS</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">tc</span> <span class="ow">in</span> <span class="n">pending_calls</span><span class="p">:</span>
-                <span class="n">result</span> <span class="o">=</span> <span class="n">dispatch</span><span class="p">(</span><span class="n">tc</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">tc</span><span class="o">.</span><span class="n">arguments</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  [tool] </span><span class="si">{</span><span class="n">tc</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="n">tc</span><span class="o">.</span><span class="n">arguments</span><span class="si">}</span><span class="s2">) → </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="n">input_items</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function_call_output&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;call_id&quot;</span><span class="p">:</span> <span class="n">tc</span><span class="o">.</span><span class="n">call_id</span><span class="p">,</span>
-                    <span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="n">result</span><span class="p">,</span>
-                <span class="p">})</span>
-            <span class="n">state</span> <span class="o">=</span> <span class="n">next_state</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">Event</span><span class="o">.</span><span class="n">HAS_TOOL_CALLS</span><span class="p">)</span>   <span class="c1"># tools done → ask again</span>
-
-    <span class="k">if</span> <span class="n">state</span> <span class="o">==</span> <span class="n">LoopState</span><span class="o">.</span><span class="n">DONE</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Assistant: </span><span class="si">{</span><span class="n">final_text</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>  <span class="c1"># LoopState.CAPPED</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[Agent stopped: reached </span><span class="si">{</span><span class="n">MAX_ITERATIONS</span><span class="si">}</span><span class="s2">-iteration safety cap]&quot;</span><span class="p">)</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
-    <span class="n">client</span> <span class="o">=</span> <span class="n">OpenAI</span><span class="p">()</span>
-    <span class="n">run_state_machine</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="p">[</span><span class="n">GET_CURRENT_TIME_SCHEMA</span><span class="p">],</span> <span class="s2">&quot;What time is it in Tokyo right now?&quot;</span><span class="p">)</span>
-
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">main</span><span class="p">()</span>
-</code></pre></div>
-<h3 id="what-changed-from-v3-to-v4">What changed from V3 to V4<a aria-label="Permalink to this section" class="hanchor" href="01-bare-harness.html#what-changed-from-v3-to-v4">¶</a></h3>
-<ul>
-<li>V3's implicit <code>while True</code> + <code>if tool_calls / else</code> becomes a set of <strong>named states</strong> (<code>LoopState</code>) — the positions in the control flow now have a vocabulary.</li>
-<li>The branch condition (tool calls vs. a plain message) is named as an <strong>event</strong> (<code>Event</code>), read off the model's reply rather than decided by your code.</li>
-<li>The control flow moves out of <code>if</code>s and into a <strong>transition table</strong> (<code>TRANSITIONS</code>) read by <code>next_state</code> — the logic is now <em>data you can print, draw, and test</em>, not buried branches.</li>
-<li>The Version 2 <code>MAX_ITERATIONS</code> fall-through becomes a real terminal state, <strong><code>CAPPED</code></strong> — the machine now has <em>two</em> terminal states (<code>DONE</code> and <code>CAPPED</code>).</li>
-<li>The loop <em>body</em> is otherwise unchanged: same <code>responses.create</code>, same <code>input_items += resp.output</code> ordering, same <code>function_call_output</code> handshake (same <code>call_id</code>, string <code>output</code>).</li>
-</ul>
-<h3 id="-run-it-now-6">▶ Run it now<a aria-label="Permalink to this section" class="hanchor" href="01-bare-harness.html#-run-it-now-6">¶</a></h3>
-<div class="highlight"><pre><span></span><code>python<span class="w"> </span>bare_harness_v4.py
-</code></pre></div>
-<p>You should see exactly the same output as every other version in this phase:</p>
-<div class="highlight nocopy"><pre><span></span><code>  [tool] get_current_time({&quot;timezone&quot;: &quot;Asia/Tokyo&quot;}) → 2026-06-06T22:47:13+09:00
-
-Assistant: The current time in Tokyo is 10:47 PM on Saturday, June 6, 2026 (JST).
-</code></pre></div>
-<p>The behavior is identical to V1–V3 because <em>it is the same harness</em> — only the control flow is organized differently. The <code>[tool]</code> line is still printed by your driver, and the machine still stops the instant the model returns a plain message (event <code>NO_TOOL_CALLS</code> → state <code>DONE</code>).</p>
-<blockquote class="beginner">
-<p>🟢 <strong>No API key?</strong> Like every ▶ checkpoint in this phase, this script calls the real
-API and stops at <code>openai.OpenAIError: Missing credentials</code> on <code>OpenAI()</code> without a key.
-To run the <em>machine</em> offline, drive <code>run_state_machine(client, tools, msg)</code> with the
-<code>FakeClient</code> from <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/code/agent_harness/testing.py" title="Opens this repository file on GitHub"><code>code/agent_harness/testing.py</code></a>
-instead of <code>OpenAI()</code> — it scripts the same <code>responses.create</code> replies with no key, the
-same way the offline test suite does (<code>python -m pytest -q</code> from <code>code/</code>).</p>
-</blockquote>
-<h3 id="the-package-keeps-the-simple-loop--honestly">The package keeps the simple loop — honestly<a aria-label="Permalink to this section" class="hanchor" href="01-bare-harness.html#the-package-keeps-the-simple-loop--honestly">¶</a></h3>
-<p>This explicit state machine is a <strong>teaching rung</strong>, exactly like Version 1's no-<code>def</code> script: it exists to make an idea <em>visible</em>, not because the shipped code looks like this. The production harness in <a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/code/agent_harness/agent.py" title="Opens this repository file on GitHub"><code>code/agent_harness/agent.py</code></a> keeps the plain <code>for</code>-loop form from Version 2/3 — there is no <code>LoopState</code> enum and no <code>TRANSITIONS</code> table in the package. The machine was always there, implicit in that loop; V4 just draws it out so you can see its shape. Don't reach for a table-driven FSM in real code unless the states genuinely multiply (Phase 5's permission modes are a closer case). For the agent loop, the simple version <em>is</em> the machine — V4 is the same machine with the lights on. (See <strong>State machine</strong> in the <a href="glossary.html">Glossary</a>.)</p>
-<h2 id="7-example-session">7. Example Session<a aria-label="Permalink to this section" class="hanchor" href="01-bare-harness.html#7-example-session">¶</a></h2>
-<div class="highlight nocopy"><pre><span></span><code>Agent ready. Type your message (Ctrl-C or empty line to quit).
-
-You: What time is it in Tokyo right now?
-  [tool] get_current_time({&quot;timezone&quot;: &quot;Asia/Tokyo&quot;}) → 2026-06-06T22:47:13+09:00
-Assistant: The current time in Tokyo is 10:47 PM on Saturday, June 6, 2026 (JST).
-[tokens used: 312 in / 45 out / 357 total]
-
-You: What is 2 + 2?
-
-Assistant: 2 + 2 = 4.
-[tokens used: 298 in / 12 out / 310 total]
-
-You:
-Bye.
-</code></pre></div>
-<p>The second question does not call <code>get_current_time</code> at all — the model answers directly from its own knowledge. Notice that <code>tool_calls</code> was empty, so the loop broke immediately after the first <code>responses.create</code> call.</p>
 </article>
 <footer class="page-footer">
 <nav class="continue" aria-label="Continue">
 <a class="continue-card" href="01-bare-harness-7.html" rel="next">
-<span class="continue-kicker">Next · Wrap-up · Lesson 7 of 7</span>
-<span class="continue-title">Pitfalls<span class="continue-time">~6 min</span><span class="continue-arrow" aria-hidden="true">→</span></span>
+<span class="continue-kicker">Next · Lesson 7 of 8</span>
+<span class="continue-title">State Machine · part 2 of 2<span class="continue-time">~10 min</span><span class="continue-arrow" aria-hidden="true">→</span></span>
 </a>
 <p class="continue-aux">
 <a href="01-bare-harness-5.html" rel="prev">← Lesson 5 · Classes</a>
 <a class="continue-fullpage" href="01-bare-harness.html#65-version-4--state-machine-the-loops-shape-made-explicit">View this lesson on the single page</a>
 </p>
 </nav>
-<p class="generated-note">Generated from <code>01-bare-harness.md</code> — lesson 6 of 7 in the derived lesson view (boundaries may move when the markdown changes; the <a href="01-bare-harness.html">single page</a> is the permanent address).</p>
+<p class="generated-note">Generated from <code>01-bare-harness.md</code> — lesson 6 of 8 in the derived lesson view (boundaries may move when the markdown changes; the <a href="01-bare-harness.html">single page</a> is the permanent address).</p>
 <p class="source-link"><a class="repo-file" href="https://github.com/joshps23/ai-eng-2/blob/main/agent-harness-guide/01-bare-harness.md" title="Requires access to the repository">View the markdown source on GitHub</a></p>
 </footer>
 <a class="back-to-top" href="#top" aria-label="Back to top">↑ Top</a>
